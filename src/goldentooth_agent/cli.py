@@ -1,7 +1,9 @@
 import asyncio
 import typer
+from dotenv import load_dotenv
 from .agent import GoldentoothAgent
 
+load_dotenv()
 app = typer.Typer()
 
 @app.command()
