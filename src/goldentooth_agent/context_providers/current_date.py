@@ -1,10 +1,12 @@
-from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
-from datetime import datetime
+from typing import List
+from .base import ContextProviderBase
 
-class CurrentDate(SystemPromptContextProviderBase):
-  def __init__(self, title: str = "") -> None:
-    super().__init__(title=title or "Current Date")
+class CurrentDate(ContextProviderBase):
+  """Context provider that provides information about the current date."""
 
-  def get_info(self) -> str:
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    return f"The current date is: {current_date}"
+  def get_instructions(self) -> List[str]:
+    date_string = self.initial_context.current_date.strftime("%Y-%m-%d")
+    return [
+      f"The current date is {date_string}.",
+      "You can use this date to provide context for your responses.",
+    ]

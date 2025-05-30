@@ -1,7 +1,8 @@
 import asyncio
 import typer
 from dotenv import load_dotenv
-from .agent import GoldentoothAgent
+from .chat_session import ChatSession
+from .initial_context import InitialContext
 
 load_dotenv()
 app = typer.Typer()
@@ -11,8 +12,9 @@ def chat():
   """
   Start a chat session
   """
-  agent = GoldentoothAgent()
-  asyncio.run(agent.chat())
+  initial_context = InitialContext()
+  chat_session = ChatSession(initial_context)
+  asyncio.run(chat_session.start())
 
 @app.command()
 def null():
