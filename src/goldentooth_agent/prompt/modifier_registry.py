@@ -13,11 +13,11 @@ class PromptModifierRegistry:
     """Initialize the registry with an empty list of modifiers."""
     self.modifiers: List[PromptModifier] = []
 
-  def register(self, modifier) -> None:
+  def register(self, modifier: PromptModifier) -> None:
     """Register a new prompt modifier."""
     self.modifiers.append(modifier)
 
-  def unregister(self, modifier) -> None:
+  def unregister(self, modifier: PromptModifier) -> None:
     """Unregister an existing prompt modifier."""
     self.modifiers = [m for m in self.modifiers if m is not modifier]
 
@@ -56,6 +56,7 @@ class PromptModifierRegistry:
       self.load_module(full_module_name)
 
   def load_module(self, full_module_name: str) -> None:
+    """Load a module and register all PromptModifier subclasses found in it."""
     try:
       module = importlib.import_module(full_module_name)
       for _, obj in inspect.getmembers(module, inspect.isclass):
