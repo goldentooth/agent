@@ -43,4 +43,5 @@ class ChatSession:
         async for partial_response in self.agent.run_async(user_input):
           if hasattr(partial_response, "chat_message") and partial_response.chat_message:
             if partial_response.chat_message != current_response:
-              live.update(self.format_agent_text(partial_response.chat_message))
+              current_response = partial_response.chat_message
+              live.update(self.format_agent_text(current_response))
