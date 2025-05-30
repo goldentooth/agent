@@ -5,21 +5,30 @@ from rich.text import Text
 from rich.live import Live
 from atomic_agents.lib.components.agent_memory import AgentMemory
 from atomic_agents.agents.base_agent import BaseAgent, BaseAgentConfig, BaseAgentInputSchema, BaseAgentOutputSchema
-from .prompt import PromptGenerator
+from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator
+from .context_provider_discovery import ContextProviderDiscovery
 
 class GoldentoothAgent:
-  """A simple chat agent using the Atomic Agents framework."""
+  """A simple chat agent."""
   def __init__(self):
     self.console = Console()
     self.memory = AgentMemory()
     self.model = "claude-sonnet-4-20250514"
 
-    initial_chat_message = "Hello! How can I assist you today?"
-    initial_message = BaseAgentOutputSchema(chat_message=initial_chat_message)
-    self.memory.add_message("assistant", initial_message)
-    self.initial_message = initial_message
-    self.prompt_generator = PromptGenerator()
-    self.prompt_generator.prepare()
+    initial_chat_message = "Hello! I am Goldentooth, your chat agent. How can I assist you today?"
+    self.initial_message = BaseAgentOutputSchema(chat_message=initial_chat_message)
+    self.memory.add_message("assistant", self.initial_message)
+
+    system_prompt_generator = SystemPromptGenerator(
+      background=[
+        "You are Goldentooth, a chat agent designed to assist users with various tasks and provide information.",
+      ],
+      output_instructions=[
+        "Respond to user queries in a helpful and informative manner.",
+        "Maintain a friendly and engaging tone throughout the conversation.",
+        "If you don't know the answer, acknowledge it and suggest alternative ways to find the information.",
+      ],
+    )
 
     client = instructor.from_anthropic(anthropic.AsyncClient())
     self.agent = BaseAgent(
@@ -27,16 +36,22 @@ class GoldentoothAgent:
         client=client,
         memory=self.memory,
         model=self.model,
-        system_prompt_generator=self.prompt_generator.generate(),
+        system_prompt_generator=system_prompt_generator,
         model_api_parameters={
           "max_tokens": 2048,
         },
       )
     )
 
+    self.context_provider_discovery = ContextProviderDiscovery()
+    self.context_provider_discovery.load_all()
+    for provider in self.context_provider_discovery.context_providers:
+      self.agent.register_context_provider(provider.title, provider)
+
   def display_initial_message(self):
-    self.console.print(Text("Agent:", style="bold green"), end=" ")
-    self.console.print(Text(self.initial_message.chat_message, style="green"))
+    """Display the initial message in a styled format."""
+    display_text = Text.assemble(("Goldentooth: ", "bold yellow"), (self.initial_message.chat_message, "yellow"))
+    self.console.print(display_text)
 
   def prompt_user(self) -> str:
     """Prompt the user for input with a styled prompt."""
@@ -60,5 +75,5 @@ class GoldentoothAgent:
           if hasattr(partial_response, "chat_message") and partial_response.chat_message:
             if partial_response.chat_message != current_response:
               current_response = partial_response.chat_message
-              display_text = Text.assemble(("Agent: ", "bold yellow"), (current_response, "yellow"))
+              display_text = Text.assemble(("Goldentooth: ", "bold yellow"), (current_response, "yellow"))
               live.update(display_text)
