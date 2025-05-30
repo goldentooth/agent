@@ -12,11 +12,16 @@ class ChatSession:
     self.initial_context = initial_context
     self.agent = AgentFactory.create_agent(initial_context)
 
-  def display_greeting(self, greeting: str) -> None:
-    """Display the greeting in a styled format."""
+  def format_agent_text(self, text: str) -> Text:
+    """Format the agent's text with a specific style."""
+    return Text.assemble(("Goldentooth: ", "bold yellow"), (text, "yellow"))
+
+  def greet_user(self) -> None:
+    """Display a greeting message to the user."""
+    self.console.print()
+    greeting = self.initial_context.get_greeting()
     self.agent.memory.add_message("assistant", BaseAgentOutputSchema(chat_message=greeting))
-    display_text = Text.assemble(("Goldentooth: ", "bold yellow"), (greeting, "yellow"))
-    self.console.print(display_text)
+    self.console.print(self.format_agent_text(greeting))
 
   def prompt_user(self) -> str:
     """Prompt the user for input with a styled prompt."""
@@ -28,18 +33,14 @@ class ChatSession:
 
   async def start(self) -> None:
     """Start a chat session with the agent."""
-    self.console.print()
-    self.display_greeting(self.initial_context.get_greeting())
+    self.greet_user()
 
     while True:
-      user_input = self.prompt_user()
-      input_schema = BaseAgentInputSchema(chat_message=user_input)
+      user_input = BaseAgentInputSchema(chat_message=self.prompt_user())
 
       with Live("", refresh_per_second=10, auto_refresh=True) as live:
         current_response = ""
-        async for partial_response in self.agent.run_async(input_schema):
+        async for partial_response in self.agent.run_async(user_input):
           if hasattr(partial_response, "chat_message") and partial_response.chat_message:
             if partial_response.chat_message != current_response:
-              current_response = partial_response.chat_message
-              display_text = Text.assemble(("Goldentooth: ", "bold yellow"), (current_response, "yellow"))
-              live.update(display_text)
+              live.update(self.format_agent_text(partial_response.chat_message))
