@@ -1,5 +1,5 @@
 from typing import List
-from .base import ContextProviderBase
+from ..context_provider.base import ContextProviderBase
 
 class CurrentDate(ContextProviderBase):
   """Context provider that provides information about the current date."""

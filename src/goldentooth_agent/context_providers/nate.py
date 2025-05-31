@@ -1,5 +1,5 @@
 from typing import List
-from .base import ContextProviderBase
+from ..context_provider.base import ContextProviderBase
 
 class Nate(ContextProviderBase):
   """Context provider that provides information about Nate, the schmuck who programmed this."""
