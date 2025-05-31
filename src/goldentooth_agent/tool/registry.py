@@ -1,6 +1,8 @@
-from typing import List, Dict, Type
+from __future__ import annotations
+from typing import List, Dict, Type, TYPE_CHECKING
 from atomic_agents.agents.base_agent import BaseIOSchema
-from .base import ToolBase
+if TYPE_CHECKING:
+  from .base import ToolBase
 
 class ToolRegistry:
   _registry: Dict[str, Type[ToolBase]] = {}

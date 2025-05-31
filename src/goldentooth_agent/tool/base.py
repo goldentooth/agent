@@ -1,7 +1,12 @@
-from typing import Type
+from __future__ import annotations
+from typing import Type, TYPE_CHECKING
+from atomic_agents.lib.base.base_tool import BaseTool
 from .meta import ToolMeta
-from .metadata import ToolMetadata
-from atomic_agents.lib.base.base_tool import BaseTool, BaseToolConfig, BaseIOSchema
+
+if TYPE_CHECKING:
+  from .metadata import ToolMetadata
+  from atomic_agents.agents.base_agent import BaseIOSchema
+  from atomic_agents.lib.base.base_tool import BaseToolConfig
 
 class ToolBase(BaseTool, metaclass=ToolMeta):
   """Abstract base class for all tools."""

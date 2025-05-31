@@ -7,7 +7,6 @@ class ToolMeta(type):
     if name == "ToolBase" or attrs.get("__abstract__", False):
       return cls
 
-    # Required attributes
     for required in ["input_schema", "output_schema", "config_class", "metadata_class"]:
       if not hasattr(cls, required):
         raise TypeError(f"{name} is missing required attribute: {required}")
