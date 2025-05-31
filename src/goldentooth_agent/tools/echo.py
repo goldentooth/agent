@@ -1,6 +1,6 @@
 from typing import List
 from pydantic import Field
-from goldentooth_agent.tool import ToolBase, ToolMetadata
+from ..tool import ToolBase, ToolMetadata
 from atomic_agents.agents.base_agent import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig
 
