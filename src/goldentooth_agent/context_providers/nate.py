@@ -5,6 +5,7 @@ class Nate(ContextProviderBase):
   """Context provider that provides information about Nate, the schmuck who programmed this."""
 
   def get_instructions(self) -> List[str]:
+    """Get instructions for the Nate context provider."""
     return [
       "Nate is also known as 'Nate Dogg', 'Nug Doug', or 'Niddle Diddle'.",
       "He is an experienced platform engineer with deep knowledge of Linux, distributed systems, and symbolic computation.",
@@ -27,3 +28,15 @@ class Nate(ContextProviderBase):
       "He prefers to run services with declarative specs, minimal defaults, and non-ephemeral state surfaces.",
       "He values tools that expose behavioral drift, causal ambiguity, and system topology.",
     ]
+
+if __name__ == "__main__":
+  # Example usage
+  from ..initial_context import InitialContext
+  initial_context = InitialContext(current_date=None)  # No date context needed for this provider
+  nate_provider = Nate(initial_context)
+
+  print("Instructions:")
+  for instruction in nate_provider.get_instructions():
+    print(f"- {instruction}")
+
+  print("Nate context provided.")

@@ -5,8 +5,6 @@ from ..initial_context import InitialContext
 class ContextProviderBase(SystemPromptContextProviderBase):
   """Base class for context providers in the Goldentooth agent."""
 
-  initial_context: InitialContext
-
   def __init__(self, initial_context: InitialContext) -> None:
     """Initialize the context provider with the initial context."""
     self.initial_context = initial_context
@@ -23,3 +21,19 @@ class ContextProviderBase(SystemPromptContextProviderBase):
   def get_info(self) -> str:
     """Get information about the context provider."""
     return "\n".join(self.get_instructions())
+
+if __name__ == "__main__":
+  # Example usage
+  from ..initial_context import InitialContext
+  from datetime import datetime
+
+  initial_context = InitialContext(current_date=datetime.now())
+  context_provider = ContextProviderBase(initial_context)
+
+  print("Context Provider Title:", context_provider.title)
+  print("Instructions:")
+  for instruction in context_provider.get_instructions():
+    print(f"- {instruction}")
+
+  print("Info:", context_provider.get_info())
+  print("Current date context provided:", initial_context.current_date)
