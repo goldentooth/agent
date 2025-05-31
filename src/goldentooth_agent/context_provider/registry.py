@@ -42,7 +42,7 @@ class ContextProviderRegistry:
     return list(cls._registry.values())
 
   @classmethod
-  def register_with_agent(cls, agent: BaseAgent, initial_context: InitialContext) -> None:
+  def populate(cls, agent: BaseAgent, initial_context: InitialContext) -> None:
     """Populate the agent with all discovered context providers."""
     for title, cp_cls in cls.items():
       agent.register_context_provider(title, cp_cls(initial_context))
