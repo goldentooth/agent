@@ -1,16 +1,33 @@
+from typing import TYPE_CHECKING
 from rich.console import Console
 from rich.text import Text
-# from goldentooth_agent.initial_context import InitialContext
-from ..agent_factory import AgentFactory
-# from .io_schema import ChatSessionIOSchema
+from ..agent import AgentFactory
 from atomic_agents.agents.base_agent import BaseIOSchema
+from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator
+from ..initial_context import InitialContext
 
 class ChatSession:
-  def __init__(self, initial_context):#: InitialContext) -> None:
-    self.agent = AgentFactory.create_agent(initial_context)
+  def __init__(self,
+    initial_context: InitialContext,
+    system_prompt_generator: SystemPromptGenerator,
+  ) -> None:
+    self.agent = AgentFactory.create_agent(
+      initial_context=initial_context,
+      system_prompt_generator=system_prompt_generator,
+    )
     self.console = Console()
     self.memory = self.agent.memory
     self.initial_context = initial_context
+
+  async def start(self) -> None:
+    """Start a chat session with the agent."""
+    self.console.print()
+    self.greet_user()
+
+  def greet_user(self) -> None:
+    """Display a greeting message to the user."""
+    from .visitors.greeter import GreeterVisitor
+    GreeterVisitor().visit(self)
 
 #  async def run(self) -> None:
 #    from .visitors.greeter import GreeterVisitor
