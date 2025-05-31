@@ -1,3 +1,5 @@
+from .registry import ToolRegistry
+
 class ToolMeta(type):
   def __new__(mcs, name, bases, attrs):
     cls = super().__new__(mcs, name, bases, attrs)
@@ -17,7 +19,6 @@ class ToolMeta(type):
     except Exception as e:
       raise TypeError(f"{name} has invalid metadata_class: {e}")
 
-    from .registry import ToolRegistry
     ToolRegistry.register(cls)
 
     return cls
