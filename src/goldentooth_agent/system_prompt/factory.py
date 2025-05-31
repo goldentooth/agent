@@ -1,11 +1,12 @@
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator
 from ..tool.registry import ToolRegistry
+from ..initial_context import InitialContext
 
 class SystemPromptFactory:
   """Class for managing the system prompt generator."""
 
   @classmethod
-  def get(cls) -> SystemPromptGenerator:
+  def get(cls, initial_context: InitialContext) -> SystemPromptGenerator:
     """Get the system prompt generator for the Goldentooth agent."""
     background = [
       "You are Goldentooth, a chat agent designed to assist users with various tasks and provide information.",

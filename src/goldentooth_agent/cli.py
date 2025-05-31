@@ -14,7 +14,7 @@ def chat():
   Start a chat session
   """
   initial_context = InitialContext()
-  system_prompt_generator = SystemPromptFactory.get()
+  system_prompt_generator = SystemPromptFactory.get(initial_context)
   chat_session = ChatSession(
     initial_context=initial_context,
     system_prompt_generator=system_prompt_generator,

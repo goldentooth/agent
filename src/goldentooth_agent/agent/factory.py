@@ -41,7 +41,7 @@ if __name__ == "__main__":
   from datetime import datetime
   from ..system_prompt import SystemPromptFactory
   initial_context = InitialContext(current_date=datetime.now())
-  system_prompt_generator = SystemPromptFactory.get()
+  system_prompt_generator = SystemPromptFactory.get(initial_context)
   agent = AgentFactory.create_agent(
     initial_context=initial_context,
     system_prompt_generator=system_prompt_generator,

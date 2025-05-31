@@ -19,7 +19,7 @@ if __name__ == "__main__":
   from ...initial_context import InitialContext
   from ...system_prompt import SystemPromptFactory
   initial_context = InitialContext()
-  system_prompt_generator = SystemPromptFactory.get()
+  system_prompt_generator = SystemPromptFactory.get(initial_context)
   session = ChatSession(
     initial_context=initial_context,
     system_prompt_generator=system_prompt_generator,
