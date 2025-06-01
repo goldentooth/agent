@@ -1,8 +1,9 @@
 from . import (
-    chat, cli,
+  chat,
+  tools,
 )
 
 __all__ = [
   "chat",
-  "cli",
+  "tools",
 ]
