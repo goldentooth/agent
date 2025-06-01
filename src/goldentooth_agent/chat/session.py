@@ -1,4 +1,5 @@
-from antidote import injectable
+from antidote import injectable, inject
+from ..agent import AgentBase
 
 @injectable(factory_method='create')
 class ChatSession:
@@ -9,6 +10,7 @@ class ChatSession:
     """Create a new chat session instance."""
     return cls()
 
-  async def start(self) -> None:
+  @inject
+  async def start(self, agent: AgentBase = inject.me()) -> None:
     """Start a chat session with the agent."""
     print("Hello, world!")
