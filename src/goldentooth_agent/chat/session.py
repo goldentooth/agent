@@ -5,6 +5,11 @@ from ..agent import AgentBase
 class ChatSession:
   """Base class for chat sessions with agents."""
 
+  def __init__(
+    self,
+  ) -> None:
+    """Initialize the chat session."""
+
   @classmethod
   def create(cls) -> 'ChatSession':
     """Create a new chat session instance."""

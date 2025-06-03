@@ -4,6 +4,7 @@ from ..agent_config.client import get_client
 from ..agent_config.model import get_model_version
 from ..agent_config.persona import get_persona
 from ..agent_config.system_prompt_generator import get_system_prompt_generator
+from atomic_agents.lib.components.agent_memory import AgentMemory
 
 @implements(AgentConfigBase)
 @injectable(factory_method='create')
@@ -24,4 +25,5 @@ class DefaultAgentConfig(AgentConfigBase):
       model=model_version,
       system_prompt_generator=system_prompt_generator,
       persona=persona,
+      memory=AgentMemory(),
     )

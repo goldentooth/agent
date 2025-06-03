@@ -21,9 +21,9 @@ DEFAULT_OUTPUT_INSTRUCTIONS = [
 @injectable
 class SystemPromptGeneratorOptions:
   """Options for the client configuration."""
-  BACKGROUND = const.env("SYSTEM_PROMPT_BACKGROUND", default=json.dumps(DEFAULT_BACKGROUND))
-  STEPS = const.env("SYSTEM_PROMPT_STEPS", default=json.dumps(DEFAULT_STEPS))
-  OUTPUT_INSTRUCTIONS = const.env("SYSTEM_PROMPT_OUTPUT_INSTRUCTIONS", default=json.dumps(DEFAULT_OUTPUT_INSTRUCTIONS))
+  background: list[str] = DEFAULT_BACKGROUND
+  steps: list[str] = DEFAULT_STEPS
+  output_instructions: list[str] = DEFAULT_OUTPUT_INSTRUCTIONS
 
 @interface.lazy
 def get_system_prompt_generator(
@@ -35,14 +35,12 @@ def get_system_prompt_generator(
 
 @implements.lazy(get_system_prompt_generator)
 def get_env_system_prompt_generator(
-  background: str = inject[SystemPromptGeneratorOptions.BACKGROUND],
-  steps: str = inject[SystemPromptGeneratorOptions.STEPS],
-  output_instructions: str = inject[SystemPromptGeneratorOptions.OUTPUT_INSTRUCTIONS],
+  options: SystemPromptGeneratorOptions = inject[SystemPromptGeneratorOptions]
 ) -> SystemPromptGenerator:
   """Get the system prompt generator from environment variables."""
   return SystemPromptGenerator(
-    background=json.loads(background),
-    steps=json.loads(steps),
-    output_instructions=json.loads(output_instructions),
+    background=options.background,
+    steps=options.steps,
+    output_instructions=options.output_instructions,
   )
 

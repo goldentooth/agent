@@ -5,12 +5,10 @@ class Persona(str, Enum):
   default = "default"
   straight = "straight"
 
-DEFAULT_PERSONA = Persona.default
-
 @injectable
 class PersonaOptions:
   """Options for the persona configuration."""
-  PERSONA = const.env("PERSONA", default=DEFAULT_PERSONA.value)
+  persona: Persona = Persona.default
 
 @interface.lazy
 def get_persona() -> Persona:
@@ -20,6 +18,6 @@ def get_persona() -> Persona:
   )
 
 @implements.lazy(get_persona)
-def get_env_persona(persona: str = inject[PersonaOptions.PERSONA]) -> Persona:
+def get_env_persona(options: PersonaOptions = inject[PersonaOptions]) -> Persona:
   """Get the persona from environment variables."""
-  return Persona(persona) if persona else DEFAULT_PERSONA
+  return PersonaOptions.persona
