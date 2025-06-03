@@ -1,6 +1,6 @@
 from atomic_agents.agents.base_agent import BaseAgent
 from antidote import interface, inject
-from .config import AgentConfigBase
+from ..agent_config import AgentConfigBase
 
 @interface
 class AgentBase(BaseAgent):

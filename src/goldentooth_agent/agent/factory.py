@@ -1,6 +1,6 @@
 from antidote import inject
 from .base import AgentBase
-from .config import AgentConfigBase
+from ..agent_config import AgentConfigBase
 
 class AgentFactory:
   """Factory class for creating agent instances."""
