@@ -1,9 +1,7 @@
 import typer
-from dataclasses import dataclass
 from rich import print
-from antidote import world, injectable, inject
+from antidote import world, inject
 import asyncio
-from typing import TYPE_CHECKING
 from typing_extensions import Annotated
 from ...chat import ChatOptions, ChatPersona, ChatSession
 
@@ -24,7 +22,7 @@ def is_chat_persona(value: str, current: str = inject[ChatOptions.persona]) -> b
 @app.command("chat")
 def chat(
   persona: Annotated[
-    ChatPersona, typer.Option(help="Which persona to use.")#, autocompletion=autocomplete_persona)
+    ChatPersona, typer.Option(help="Which persona to use.")
   ] = ChatPersona.default,
   tool_mode: Annotated[
     bool, typer.Option(help="Specialized tool-focused mode.")
