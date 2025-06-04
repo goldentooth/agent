@@ -4,7 +4,8 @@ from antidote import world, inject
 import asyncio
 from typing_extensions import Annotated
 from ...agent_config.persona import PersonaOptions, Persona
-from ...chat import ChatSession
+from ...chat.session import ChatSession, ChatSessionPipeline
+from ...chat.session_middlewares import greeting_mw
 
 app = typer.Typer()
 
@@ -26,4 +27,6 @@ def chat(
   print(f"Persona: {persona}")
   options = world[PersonaOptions]
   options.persona = persona
+  pipeline = world[ChatSessionPipeline]
+  pipeline.use(greeting_mw)
   asyncio.run(world[ChatSession].start())

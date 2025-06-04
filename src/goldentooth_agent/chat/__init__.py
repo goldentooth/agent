@@ -1,5 +1,5 @@
-from .session import ChatSession
+from . import session
 
 __all__ = [
-  "ChatSession",
+  "session",
 ]

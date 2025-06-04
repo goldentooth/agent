@@ -1,5 +1,5 @@
 from enum import Enum
-from antidote import const, implements, inject, injectable, interface
+from antidote import implements, inject, injectable, interface
 
 class Persona(str, Enum):
   default = "default"
