@@ -6,12 +6,11 @@ from ..session import ChatSessionContext
 
 @middleware
 @inject
-async def greeting(
+async def starting_chat(
   context: ChatSessionContext,
   next: NextMiddleware,
   console: Console = inject[get_console],
 ):
-  console.print("[bold yellow]Welcome to Goldentooth![/bold yellow]")
-  console.print(context)
+  console.print(f"[bold green]Starting chat...[/bold green]")
   await next()
 

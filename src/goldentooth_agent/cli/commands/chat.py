@@ -1,15 +1,15 @@
 import typer
-from rich import print
-from antidote import world, inject
+from antidote import world
 import asyncio
 from typing_extensions import Annotated
 from ...agent_config.persona import PersonaOptions, Persona
 from ...chat.session import ChatSession, ChatSessionPipeline
-from ...chat.session_middlewares import greeting_mw
+from ...chat.session_middlewares import greeting, starting_chat
 
 app = typer.Typer()
 
 def autocomplete_persona(incomplete: str) -> list[str]:
+  """Autocomplete function for persona options."""
   completion = []
   for name in Persona.__members__.keys():
     if name.startswith(incomplete):
@@ -23,10 +23,9 @@ def chat(
   ] = Persona.default,
 ):
   """Start a chat session with the Goldentooth Agent."""
-  print(f"[bold green]Starting chat...[/bold green]")
-  print(f"Persona: {persona}")
   options = world[PersonaOptions]
   options.persona = persona
   pipeline = world[ChatSessionPipeline]
-  pipeline.use(greeting_mw)
+  pipeline.use(starting_chat)
+  pipeline.use(greeting)
   asyncio.run(world[ChatSession].start())
