@@ -4,7 +4,7 @@ import asyncio
 from typing_extensions import Annotated
 from ...agent_config.persona import PersonaOptions, Persona
 from ...chat.session import ChatSession, ChatSessionPipeline
-from ...chat.session_middlewares import greeting, starting_chat
+from ...chat.session_middlewares import core_loop, greeting, farewell, starting_chat
 
 app = typer.Typer()
 
@@ -28,4 +28,6 @@ def chat(
   pipeline = world[ChatSessionPipeline]
   pipeline.use(starting_chat)
   pipeline.use(greeting)
+  pipeline.use(core_loop)
+  pipeline.use(farewell)
   asyncio.run(world[ChatSession].start())
