@@ -1,0 +1,43 @@
+from typing import Union, Optional
+from pydantic import Field, create_model
+from .tool.registry import ToolRegistry
+from atomic_agents.agents.base_agent import BaseIOSchema
+from atomic_agents.lib.base.base_tool import BaseToolConfig
+
+tool_input_schemas = tuple(tool.input_schema for tool in ToolRegistry.all())
+tool_parameter_union = Union[*tool_input_schemas] if tool_input_schemas else BaseIOSchema
+
+class GoldentoothInputSchema(BaseIOSchema):
+  """Schema for the input to the Goldentooth agent."""
+  chat_message: str = Field(..., description="The user's message.")
+
+GoldentoothOutputSchema = create_model(
+  "GoldentoothOutputSchema",
+  __doc__="Output schema for Goldentooth tool execution.",
+  chat_message=(str, Field(..., description="The response message to return to the user.")),
+  tool=(Optional[str], Field(..., description=f"The tool to use (one of: {', '.join(ToolRegistry.keys())}), or None if no tool is used.")),
+  tool_parameters=(Optional[tool_parameter_union], Field(..., description="Parameters for the selected tool; only required if a tool is used.")),
+  __base__=BaseIOSchema,
+)
+
+class FinalAnswerSchema(BaseIOSchema):
+  """Schema for the final answer returned by the Goldentooth tool."""
+  chat_message: str = Field(..., description="The final answer to return to the user.")
+
+# Collect config fields
+config_fields = {
+  tool.metadata_class.get_name(): (tool.config_class, ...)
+  for tool in ToolRegistry.all()
+}
+
+# Build the model using explicit kwarg unpacking *after* other named args
+GoldentoothToolConfig = create_model(
+  "GoldentoothToolConfig",
+  __base__=BaseToolConfig,
+  __doc__="Configuration for the Goldentooth tool.",
+  **{
+    "input_schema": (GoldentoothInputSchema, ...),
+    "output_schema": (GoldentoothOutputSchema, ...),
+    **config_fields,
+  },
+)

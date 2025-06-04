@@ -13,4 +13,3 @@ async def starting_chat(
 ):
   console.print(f"[bold green]Starting chat...[/bold green]")
   await next()
-
