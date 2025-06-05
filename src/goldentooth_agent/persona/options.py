@@ -18,6 +18,6 @@ def get_persona() -> Persona:
   )
 
 @implements.lazy(get_persona)
-def get_env_persona(options: PersonaOptions = inject[PersonaOptions]) -> Persona:
-  """Get the persona from environment variables."""
-  return PersonaOptions.persona
+def get_current_persona(options: PersonaOptions = inject[PersonaOptions]) -> Persona:
+  """Get the current persona."""
+  return options.persona

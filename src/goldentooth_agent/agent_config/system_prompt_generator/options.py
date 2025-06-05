@@ -1,6 +1,5 @@
-from antidote import const, implements, inject, injectable, interface
+from antidote import implements, inject, injectable, interface
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator
-import json
 
 DEFAULT_BACKGROUND = [
   "You are an intelligent agent named Goldentooth, designed by Nathan Douglas ('Nug Doug').",
@@ -26,21 +25,19 @@ class SystemPromptGeneratorOptions:
   output_instructions: list[str] = DEFAULT_OUTPUT_INSTRUCTIONS
 
 @interface.lazy
-def get_system_prompt_generator(
-) -> SystemPromptGenerator:
+def get_system_prompt_generator() -> SystemPromptGenerator:
   """Get the system prompt generator."""
   raise NotImplementedError(
     "The 'get_system_prompt_generator' function must be implemented by the client provider."
   )
 
 @implements.lazy(get_system_prompt_generator)
-def get_env_system_prompt_generator(
+def get_current_system_prompt_generator(
   options: SystemPromptGeneratorOptions = inject[SystemPromptGeneratorOptions]
 ) -> SystemPromptGenerator:
-  """Get the system prompt generator from environment variables."""
+  """Get the current system prompt generator."""
   return SystemPromptGenerator(
     background=options.background,
     steps=options.steps,
     output_instructions=options.output_instructions,
   )
-

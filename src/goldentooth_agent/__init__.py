@@ -1,6 +1,6 @@
 from . import (
   agent, agent_config, agent_configs, agents,
-  chat, cli, event, pipeline
+  chat, cli, event, greeting, pipeline
 )
 
 __all__ = [
@@ -11,5 +11,6 @@ __all__ = [
   "chat",
   "cli",
   "event",
+  "greeting",
   "pipeline",
 ]

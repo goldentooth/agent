@@ -2,9 +2,11 @@ import typer
 from antidote import world
 import asyncio
 from typing_extensions import Annotated
-from ...agent_config.persona import PersonaOptions, Persona
-from ...chat.session import ChatSession, ChatSessionPipeline
-from ...chat.session_middlewares import core_loop, greeting, farewell, starting_chat
+from ...persona import PersonaOptions, Persona
+from ...chat.loop_actions import empty
+from ...chat.session import ChatSession, ChatSessionContext, ChatSessionPipeline
+from ...chat.session_middlewares import core_loop, farewell, starting_chat
+from ...greeting.loop_actions import greeting
 
 app = typer.Typer()
 
@@ -25,9 +27,10 @@ def chat(
   """Start a chat session with the Goldentooth Agent."""
   options = world[PersonaOptions]
   options.persona = persona
+  chat_session_context = world[ChatSessionContext]
+  chat_session_context.loop_action = greeting
   pipeline = world[ChatSessionPipeline]
   pipeline.use(starting_chat)
-  pipeline.use(greeting)
   pipeline.use(core_loop)
   pipeline.use(farewell)
-  asyncio.run(world[ChatSession].start())
+  asyncio.run(world[ChatSession].start(chat_session_context))

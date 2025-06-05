@@ -1,10 +1,12 @@
 from .base import AgentConfigBase
-from . import client, model, persona, system_prompt_generator
+from . import (
+  client, model, schemata, system_prompt_generator,
+)
 
 __all__ = [
   "AgentConfigBase",
   "client",
   "model",
-  "persona",
+  "schemata",
   "system_prompt_generator",
 ]

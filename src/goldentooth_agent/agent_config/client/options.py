@@ -1,6 +1,6 @@
 import anthropic
 import instructor
-from antidote import const, implements, inject, injectable, interface
+from antidote import implements, inject, injectable, interface
 
 @injectable
 class ClientOptions:

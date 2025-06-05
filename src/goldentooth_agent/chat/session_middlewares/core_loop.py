@@ -12,6 +12,7 @@ async def core_loop(
 ):
   """Core loop for the chat session, executing the next pipeline until exit condition."""
   print("Starting core loop with context:", chat_loop_context)
+  chat_loop_context.next_action = context.loop_action
   while chat_loop_context.next_action is not None:
     print("Current action:", chat_loop_context.next_action)
     chat_loop_context = await chat_loop_context.next_action(chat_loop_context)

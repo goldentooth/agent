@@ -1,4 +1,4 @@
-from antidote import const, implements, inject, injectable, interface
+from antidote import implements, inject, injectable, interface
 
 DEFAULT_MODEL_VERSION = 'claude-3-5-sonnet-20240620'
 
@@ -15,6 +15,6 @@ def get_model_version() -> str:
   )
 
 @implements.lazy(get_model_version)
-def get_env_model_version(options: ModelOptions = inject[ModelOptions]) -> str:
+def get_current_model_version(options: ModelOptions = inject[ModelOptions]) -> str:
   """Get the model version from environment variables."""
   return options.version

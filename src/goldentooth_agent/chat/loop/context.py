@@ -1,10 +1,9 @@
 from antidote import injectable
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Optional
 from .action import ChatLoopAction
 
-@injectable
+@injectable(lifetime='transient')
 @dataclass
 class ChatLoopContext:
   """Context for a chat loop."""
