@@ -2,7 +2,7 @@ from enum import Enum
 from antidote import implements, inject, injectable, interface
 
 class Persona(str, Enum):
-  """Enumeration for different personas."""
+  """Enumeration for different personae."""
   default = "default"
   straight = "straight"
 

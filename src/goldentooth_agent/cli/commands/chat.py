@@ -2,7 +2,7 @@ import typer
 from antidote import world
 import asyncio
 from typing_extensions import Annotated
-from goldentooth_agent.plugins.chat_session.middlewares import core_loop, farewell, starting_chat
+from goldentooth_agent.plugins.chat_session import core_loop, print_message_middleware
 from goldentooth_agent.foundation.persona import PersonaOptions, Persona
 from goldentooth_agent.core.chat_session import ChatSession, ChatSessionContext, ChatSessionPipeline
 from goldentooth_agent.plugins.greeting.chat_session_loop_action import greeting
@@ -29,7 +29,7 @@ def chat(
   chat_session_context = world[ChatSessionContext]
   chat_session_context.loop_action = greeting
   pipeline = world[ChatSessionPipeline]
-  pipeline.use(starting_chat)
+  pipeline.use(print_message_middleware("Starting chat...", "bold green"))
   pipeline.use(core_loop)
-  pipeline.use(farewell)
+  pipeline.use(print_message_middleware("✌️"))
   asyncio.run(world[ChatSession].start(chat_session_context))

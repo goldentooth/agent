@@ -1,7 +1,7 @@
-from .middlewares import core_loop, farewell, starting_chat
+from .middlewares import core_loop
+from .middleware_fns import print_message_middleware
 
 __all__ = [
   "core_loop",
-  "farewell",
-  "starting_chat",
+  "print_message_middleware",
 ]
