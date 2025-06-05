@@ -2,14 +2,14 @@ from antidote import inject
 from rich.console import Console
 from ...console import get_console
 from ...pipeline import NextMiddleware, middleware
-from ..session import ChatSessionContext
+from ...chat_session import ChatSessionContext
 
 @middleware
 @inject
-async def farewell(
+async def starting_chat(
   context: ChatSessionContext,
   next: NextMiddleware,
   console: Console = inject[get_console],
 ):
-  console.print("✌️")
+  console.print(f"[bold green]Starting chat...[/bold green]")
   await next()

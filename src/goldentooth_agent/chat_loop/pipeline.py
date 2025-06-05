@@ -1,6 +1,6 @@
 from antidote import injectable
 from .context import ChatLoopContext
-from ...pipeline import Pipeline
+from ..pipeline import Pipeline
 
 @injectable
 class ChatLoopPipeline(Pipeline):

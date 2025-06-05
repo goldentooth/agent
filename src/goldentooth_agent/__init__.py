@@ -1,6 +1,7 @@
 from . import (
-  agent, agent_config, agent_configs, agents,
-  chat, cli, event, greeting, pipeline
+  agent, agent_config, agent_configs, agents, atoms,
+  chat_loop, chat_session, cli, console, event,
+  greeting, persona, pipeline,
 )
 
 __all__ = [
@@ -8,9 +9,13 @@ __all__ = [
   "agent_config",
   "agent_configs",
   "agents",
-  "chat",
+  "atoms",
+  "chat_loop",
+  "chat_session",
   "cli",
+  "console",
   "event",
   "greeting",
+  "persona",
   "pipeline",
 ]

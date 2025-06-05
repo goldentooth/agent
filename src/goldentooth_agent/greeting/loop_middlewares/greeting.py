@@ -4,7 +4,7 @@ from ...agent import AgentBase
 from ...persona import get_persona
 from ...console import get_console
 from ...pipeline import NextMiddleware, middleware
-from ...chat.loop import ChatLoopContext
+from ...chat_loop import ChatLoopContext
 from ..provider import GreetingProvider
 from ..schemata import GreetingSchema
 

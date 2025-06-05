@@ -1,7 +1,7 @@
 from antidote import inject
 from ...pipeline import NextMiddleware, middleware
-from ..session import ChatSessionContext
-from ..loop import ChatLoopContext
+from ...chat_session import ChatSessionContext
+from ...chat_loop import ChatLoopContext
 
 @middleware
 @inject

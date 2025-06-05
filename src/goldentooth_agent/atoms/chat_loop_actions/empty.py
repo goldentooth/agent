@@ -1,4 +1,4 @@
-from ..loop import ChatLoopContext
+from ...chat_loop import ChatLoopContext
 
 async def empty(context: ChatLoopContext) -> ChatLoopContext:
   """Empty action for the chat loop, which does nothing."""

@@ -2,10 +2,9 @@ import typer
 from antidote import world
 import asyncio
 from typing_extensions import Annotated
+from ...atoms.chat_session_middlewares import core_loop, farewell, starting_chat
 from ...persona import PersonaOptions, Persona
-from ...chat.loop_actions import empty
-from ...chat.session import ChatSession, ChatSessionContext, ChatSessionPipeline
-from ...chat.session_middlewares import core_loop, farewell, starting_chat
+from ...chat_session import ChatSession, ChatSessionContext, ChatSessionPipeline
 from ...greeting.loop_actions import greeting
 
 app = typer.Typer()
