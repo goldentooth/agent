@@ -7,7 +7,7 @@
 # tool_input_schemata = tuple(tool.input_schema for tool in ToolRegistry.all())
 # tool_output_schemata = tuple(tool.output_schema for tool in ToolRegistry.all())
 # tool_input_schemata_union = Union[*tool_input_schemata] if tool_input_schemata else BaseIOSchema
-# tool_output_schemata_union = Union[*tool_output_schemata] if tool_output_schemata else BaseIOSchema
+# tool_output_schemata_union = Union[*tool_output_schemata] if tool_output_schemata else
 #
 # ChatSessionIOSchema = create_model(
 #   "ChatSessionIOSchema",
