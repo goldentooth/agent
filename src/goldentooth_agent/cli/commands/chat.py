@@ -2,10 +2,10 @@ import typer
 from antidote import world
 import asyncio
 from typing_extensions import Annotated
-from ...atoms.chat_session_middlewares import core_loop, farewell, starting_chat
-from ...persona import PersonaOptions, Persona
-from ...chat_session import ChatSession, ChatSessionContext, ChatSessionPipeline
-from ...greeting.loop_actions import greeting
+from goldentooth_agent.plugins.chat_session.middlewares import core_loop, farewell, starting_chat
+from goldentooth_agent.foundation.persona import PersonaOptions, Persona
+from goldentooth_agent.core.chat_session import ChatSession, ChatSessionContext, ChatSessionPipeline
+from goldentooth_agent.plugins.greeting.chat_session_loop_action import greeting
 
 app = typer.Typer()
 
