@@ -4,6 +4,7 @@ from .base import AgentConfigBase
 from goldentooth_agent.core.client import get_client
 from goldentooth_agent.core.model import get_model_version
 from goldentooth_agent.core.system_prompt import SystemPromptRegistry
+from atomic_agents.agents.base_agent import BaseAgentInputSchema, BaseAgentOutputSchema
 
 @implements(AgentConfigBase)
 @injectable(factory_method='create')
@@ -24,4 +25,6 @@ class DefaultAgentConfig(AgentConfigBase):
       model=model_version,
       system_prompt_generator=system_prompt_generator,
       memory=AgentMemory(),
+      input_schema=BaseAgentInputSchema,
+      output_schema=BaseAgentOutputSchema,
     )
