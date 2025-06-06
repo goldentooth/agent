@@ -20,7 +20,12 @@ scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 
 [tool.poetry]
 packages = [{ include = "goldentooth_agent", from = "src" }]
-include = [{ path = "src/data", format = "sdist" }]
+include = [
+  { path = "src/goldentooth_data/personae/*.yaml", format = [
+    "sdist",
+    "wheel",
+  ] },
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
