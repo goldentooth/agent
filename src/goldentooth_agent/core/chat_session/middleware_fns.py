@@ -2,9 +2,10 @@ from antidote import inject
 from rich.console import Console
 from goldentooth_agent.foundation.console import get_console
 from goldentooth_agent.foundation.pipeline import NextMiddleware, middleware
-from goldentooth_agent.core.chat_session import ChatSessionContext
+from .context import ChatSessionContext
 
 def print_message_middleware(message: str, style: str = ""):
+  """Middleware generator returning a middleware to print a message to the console with optional styling."""
   @middleware
   @inject
   async def _middleware(context: ChatSessionContext, next: NextMiddleware, console: Console = inject[get_console]):

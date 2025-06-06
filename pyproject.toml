@@ -21,6 +21,10 @@ dependencies = [
 goldentooth-agent = "goldentooth_agent.cli.main:app"
 
 [tool.poetry]
+include = [{ path = "src/data", format = "sdist" }]
+
+# Include all YAML files in the personas/ directory inside the package
+[tool.poetry]
 packages = [{ include = "goldentooth_agent", from = "src" }]
 
 [build-system]
