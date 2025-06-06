@@ -1,13 +1,9 @@
 from .base import AgentConfigBase
 from .default import DefaultAgentConfig
-from . import (
-  client, model, schemata,
-)
+from . import schemata
 
 __all__ = [
   "AgentConfigBase",
   "DefaultAgentConfig",
-  "client",
-  "model",
   "schemata",
 ]
