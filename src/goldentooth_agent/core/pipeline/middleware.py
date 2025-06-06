@@ -1,8 +1,21 @@
-from typing import Awaitable, Callable
+from __future__ import annotations
+from typing import Awaitable, Callable, Generic, TypeVar
 
-type Middleware = Callable[..., Awaitable[None]]
-type NextMiddleware = Callable[[], Awaitable[None]]
+T = TypeVar('T')
 
-def middleware(fn: Middleware) -> Middleware:
+NextMiddleware = Callable[[], Awaitable[None]]
+
+class Middleware(Generic[T]):
+  """Protocol for a middleware function in the pipeline."""
+
+  def __init__(self, fn: Callable[[T, NextMiddleware], Awaitable[None]]) -> None:
+    """Call the middleware with the context and the next middleware function."""
+    self.fn = fn
+
+  async def __call__(self, ctx: T, next: NextMiddleware) -> None:
+    """Call the middleware with the given context and next function."""
+    return await self.fn(ctx, next)
+
+def middleware(fn: Callable[[T, NextMiddleware], Awaitable[None]]) -> Middleware[T]:
   """Decorator to mark a function as a middleware in the pipeline."""
-  return fn
+  return Middleware[T](fn)
