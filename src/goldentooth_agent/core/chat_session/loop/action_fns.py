@@ -1,4 +1,4 @@
-from goldentooth_agent.foundation.pipeline import Middleware
+from goldentooth_agent.core.pipeline import Middleware
 from .context import ChatSessionLoopContext
 from .pipeline import ChatSessionLoopPipeline
 

@@ -1,9 +1,9 @@
 from antidote import implements, injectable, inject
 from atomic_agents.lib.components.agent_memory import AgentMemory
 from .base import AgentConfigBase
-from goldentooth_agent.foundation.client import get_client
-from goldentooth_agent.foundation.model import get_model_version
-from goldentooth_agent.foundation.system_prompt import SystemPromptRegistry
+from goldentooth_agent.core.client import get_client
+from goldentooth_agent.core.model import get_model_version
+from goldentooth_agent.core.system_prompt import SystemPromptRegistry
 
 @implements(AgentConfigBase)
 @injectable(factory_method='create')

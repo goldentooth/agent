@@ -1,7 +1,7 @@
 from antidote import inject
 from rich.console import Console
-from goldentooth_agent.foundation.console import get_console
-from goldentooth_agent.foundation.pipeline import NextMiddleware, middleware
+from goldentooth_agent.core.console import get_console
+from goldentooth_agent.core.pipeline import NextMiddleware, middleware
 from .context import ChatSessionContext
 
 def print_message_middleware(message: str, style: str = ""):

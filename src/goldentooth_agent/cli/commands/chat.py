@@ -1,10 +1,11 @@
+from __future__ import annotations
 import typer
 from antidote import world
 import asyncio
 from typing_extensions import Annotated
-from goldentooth_agent.plugins.chat_session import core_loop
-from goldentooth_agent.foundation.straightness import StraightnessOptions
 from goldentooth_agent.core.chat_session import ChatSession, ChatSessionContext, ChatSessionPipeline, print_message_middleware
+from goldentooth_agent.core.straightness import StraightnessOptions
+from goldentooth_agent.plugins.chat_session import core_loop
 from goldentooth_agent.plugins.greeting.main import greeting
 
 app = typer.Typer()

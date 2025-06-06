@@ -2,8 +2,8 @@ from antidote import inject, instanceOf, world
 from rich.console import Console
 from pydantic import BaseModel
 from goldentooth_agent.core.agent import AgentBase
-from goldentooth_agent.foundation.console import get_console
-from goldentooth_agent.foundation.pipeline import NextMiddleware, middleware
+from goldentooth_agent.core.console import get_console
+from goldentooth_agent.core.pipeline import NextMiddleware, middleware
 from .context import ChatSessionLoopContext
 
 def schema_message_middleware(

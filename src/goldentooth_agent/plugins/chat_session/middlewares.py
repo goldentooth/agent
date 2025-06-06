@@ -1,5 +1,5 @@
 from antidote import inject
-from goldentooth_agent.foundation.pipeline import NextMiddleware, middleware
+from goldentooth_agent.core.pipeline import NextMiddleware, middleware
 from goldentooth_agent.core.chat_session import ChatSessionContext
 from goldentooth_agent.core.chat_session.loop import ChatSessionLoopContext
 

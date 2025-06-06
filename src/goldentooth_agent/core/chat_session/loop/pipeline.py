@@ -1,6 +1,7 @@
+from __future__ import annotations
 from antidote import injectable
 from .context import ChatSessionLoopContext
-from goldentooth_agent.foundation.pipeline import Pipeline
+from ...pipeline import Pipeline
 
 @injectable
 class ChatSessionLoopPipeline(Pipeline):
