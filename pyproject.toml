@@ -16,16 +16,11 @@ dependencies = [
   "antidote (>=2.0.0,<3.0.0)",
   "pyee (>=13.0.0,<14.0.0)",
 ]
+scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 
-[tool.poetry.scripts]
-goldentooth-agent = "goldentooth_agent.cli.main:app"
-
-[tool.poetry]
-include = [{ path = "src/data", format = "sdist" }]
-
-# Include all YAML files in the personas/ directory inside the package
 [tool.poetry]
 packages = [{ include = "goldentooth_agent", from = "src" }]
+include = [{ path = "src/data", format = "sdist" }]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
