@@ -1,6 +1,6 @@
 from . import (
   client, console, event, message_provider, model,
-  paths, straightness, pipeline, system_prompt
+  paths, pipeline, straightness, system_prompt
 )
 
 __all__ = [
@@ -10,7 +10,7 @@ __all__ = [
   "message_provider",
   "model",
   "paths",
-  "straightness",
   "pipeline",
+  "straightness",
   "system_prompt",
 ]
