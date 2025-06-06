@@ -18,4 +18,4 @@ class Middleware(Generic[T]):
 
 def middleware(fn: Callable[[T, NextMiddleware], Awaitable[None]]) -> Middleware[T]:
   """Decorator to mark a function as a middleware in the pipeline."""
-  return Middleware[T](fn)
+  return Middleware(fn)

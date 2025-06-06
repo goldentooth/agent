@@ -1,3 +1,4 @@
+from __future__ import annotations
 from antidote import injectable, inject
 from .context import ChatSessionContext
 from .pipeline import ChatSessionPipeline
@@ -12,7 +13,7 @@ class ChatSession:
     self.should_exit = False
 
   @classmethod
-  def create(cls) -> 'ChatSession':
+  def create(cls) -> ChatSession:
     """Create a new chat session instance."""
     return cls()
 

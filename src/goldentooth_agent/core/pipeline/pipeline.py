@@ -1,4 +1,5 @@
 from __future__ import annotations
+from antidote import injectable
 from typing import Generic, List, Optional, TypeVar
 from inspect import iscoroutinefunction
 from .middleware import Middleware, NextMiddleware

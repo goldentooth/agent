@@ -24,3 +24,7 @@ def compose[A, B, C](
       return None
     return await g(intermediate)
   return Thunk(composed)
+
+def thunk(fn: Callable[[TIn], Awaitable[Optional[TOut]]]) -> Thunk[TIn, TOut]:
+  """Decorator to mark a function as a thunk."""
+  return Thunk(fn)
