@@ -1,7 +1,7 @@
 from .base import AgentConfigBase
 from .default import DefaultAgentConfig
 from . import (
-  client, model, schemata, system_prompt_generator,
+  client, model, schemata,
 )
 
 __all__ = [
@@ -10,5 +10,4 @@ __all__ = [
   "client",
   "model",
   "schemata",
-  "system_prompt_generator",
 ]

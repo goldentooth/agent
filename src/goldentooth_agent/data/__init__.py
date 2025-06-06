@@ -1,3 +1,5 @@
-from . import personae
+from . import system_prompts
 
-__all__ = ["personae"]
+__all__ = [
+  "system_prompts",
+]

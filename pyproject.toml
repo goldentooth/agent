@@ -15,13 +15,14 @@ dependencies = [
   "instructor (>=1.8.3,<2.0.0)",
   "pyee (>=13.0.0,<14.0.0)",
   "typer (>=0.16.0,<0.17.0)",
+  "platformdirs (>=4.3.8,<5.0.0)",
 ]
 scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 
 [tool.poetry]
 packages = [{ include = "goldentooth_agent", from = "src" }]
 include = [
-  { path = "src/goldentooth_data/personae/*.yaml", format = [
+  { path = "src/goldentooth_agent/data/system_prompts/*.yaml", format = [
     "sdist",
     "wheel",
   ] },
