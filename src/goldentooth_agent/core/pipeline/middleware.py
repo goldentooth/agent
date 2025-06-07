@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import Awaitable, Callable, Generic, TypeVar
+from typing import Awaitable, Callable, Generic, TypeVar, TYPE_CHECKING
+if TYPE_CHECKING:
+  from .pipeline import Pipeline
 
 T = TypeVar('T')
 
@@ -16,6 +18,15 @@ class Middleware(Generic[T]):
     """Call the middleware with the given context and next function."""
     return await self.fn(ctx, next)
 
+  def as_pipeline(self) -> Pipeline[T]:
+    """Convert a middleware to a pipeline."""
+    from .pipeline import Pipeline  # Import here to avoid circular dependency
+    pipeline = Pipeline[T]()
+    pipeline.use(self)
+    return pipeline
+
 def middleware(fn: Callable[[T, NextMiddleware], Awaitable[None]]) -> Middleware[T]:
   """Decorator to mark a function as a middleware in the pipeline."""
   return Middleware(fn)
+
+
