@@ -1,9 +1,7 @@
-from . import (
-  cli, core, plugins
-)
+from . import cli, core, data
 
 __all__ = [
   "cli",
   "core",
-  "plugins",
+  "data",
 ]
