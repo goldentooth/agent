@@ -24,20 +24,35 @@ class Pipeline(Generic[T]):
   async def run(self, context: T) -> None:
     """Run the middleware pipeline with the given context."""
 
-    async def call_next(index: int):
+    async def _call_next(index: int):
       """Call the next middleware in the pipeline."""
       if index >= len(self._middleware):
         return
 
       middleware: Middleware[T] = self._middleware[index]
-      next_fn: NextMiddleware = lambda: call_next(index + 1)
+      next_fn: NextMiddleware = lambda: _call_next(index + 1)
       await middleware(context, next_fn)
 
-    await call_next(0)
+    await _call_next(0)
 
   def as_thunk(self) -> Thunk[T, T]:
     """Convert the pipeline to a thunk that runs the middleware."""
-    async def run(ctx: T) -> Optional[T]:
+    async def _run(ctx: T) -> T:
       await self.run(ctx)
       return ctx
-    return Thunk(run)
+    return Thunk(_run)
+
+if __name__ == "__main__":
+  # Example usage of the Pipeline class
+  async def example_middleware(ctx: str, next: NextMiddleware) -> None:
+    print(f"Processing context: {ctx}")
+    await next()
+    print(f"Finished processing context: {ctx}")
+
+  example = Middleware(example_middleware)
+  pipeline = Pipeline[str]()
+  pipeline.use(example)
+
+  import asyncio
+  asyncio.run(pipeline.run("Test Context"))
+  print("Pipeline executed successfully.")

@@ -1,8 +1,9 @@
-from .thunk import Thunk, compose
-from .trampoline import trampoline
+from .main import Thunk, compose_chain, thunk, trampoline, final_thunk
 
 __all__ = [
   "Thunk",
-  "compose",
-  "trampoline"
+  "compose_chain",
+  "final_thunk",
+  "thunk",
+  "trampoline",
 ]

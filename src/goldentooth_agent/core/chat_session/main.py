@@ -10,7 +10,6 @@ class ChatSession:
   @inject
   def __init__(self) -> None:
     """Initialize the chat session."""
-    self.should_exit = False
 
   @classmethod
   def create(cls) -> ChatSession:

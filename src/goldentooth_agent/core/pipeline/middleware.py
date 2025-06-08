@@ -21,7 +21,7 @@ class Middleware(Generic[T]):
   def as_pipeline(self) -> Pipeline[T]:
     """Convert a middleware to a pipeline."""
     from .pipeline import Pipeline  # Import here to avoid circular dependency
-    pipeline = Pipeline[T]()
+    pipeline = Pipeline()
     pipeline.use(self)
     return pipeline
 
@@ -29,4 +29,20 @@ def middleware(fn: Callable[[T, NextMiddleware], Awaitable[None]]) -> Middleware
   """Decorator to mark a function as a middleware in the pipeline."""
   return Middleware(fn)
 
+if __name__ == "__main__":
+  import asyncio
 
+  # Example usage of the Middleware class
+  async def example_middleware(ctx: str, next: NextMiddleware) -> None:
+    print(f"Processing context: {ctx}")
+    await next()
+    print(f"Finished processing context: {ctx}")
+
+  example = middleware(example_middleware)
+  # This would typically be used in a pipeline, but here is just an example of instantiation
+  print("Middleware created:", example)
+
+  example_pipeline = example.as_pipeline()
+  print("Pipeline created from middleware:", example_pipeline)
+
+  asyncio.run(example_pipeline.run("Test Context"))
