@@ -37,10 +37,10 @@ class Pipeline(Generic[T]):
 
   def as_thunk(self) -> Thunk[T, T]:
     """Convert the pipeline to a thunk that runs the middleware."""
-    async def _run(ctx: T) -> T:
+    async def _thunk(ctx: T) -> T:
       await self.run(ctx)
       return ctx
-    return Thunk(_run)
+    return Thunk(_thunk)
 
 if __name__ == "__main__":
   # Example usage of the Pipeline class

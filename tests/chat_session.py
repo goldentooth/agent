@@ -87,47 +87,47 @@ class ChatSession:
           else:
             self.console.print(Text.assemble(("Error: ", "bold red"), f"Tool '{current_tool}' not found."))
 
-#   def handle_user_input(self, user_input: str):
-#     """Full request-response cycle for a user message."""
-#     # Phase 1: Intent resolution
-#     parsed = self.resolve_intent(user_input)
-#     if type(parsed) is not GoldentoothOutputSchema:
-#       raise ValueError("Expected GoldentoothOutputSchema, got: " + str(type(parsed)))
-#
-#     # Phase 2: Tool invocation
-#     if parsed.tool and parsed.tool_parameters:
-#       tool_result = self.execute_tool(parsed.tool, parsed.tool_parameters)
-#
-#       # Phase 3: Result synthesis
-#       final_message = self.synthesize_response(parsed.tool, parsed.tool_parameters, tool_result)
-#       self.console.print(self.format_agent_text(final_message))
-#     else:
-#       self.console.print(self.format_agent_text(parsed.chat_message))
-#
-#   def resolve_intent(self, user_input: str) -> BaseIOSchema:
-#     """Send the message to the agent and get back tool call (if any)."""
-#     self.agent.output_schema = GoldentoothOutputSchema
-#     self.agent.input_schema = GoldentoothInputSchema
-#     input = GoldentoothInputSchema(chat_message=user_input)
-#     return self.agent.run(input)
-#
-#   def execute_tool(self, tool_name: str, tool_params: BaseIOSchema) -> dict:
-#     """Lookup and invoke the tool."""
-#     tool_cls = ToolRegistry.get(tool_name)
-#     if not tool_cls:
-#       raise ValueError(f"Tool '{tool_name}' not found in registry.")
-#     tool = tool_cls(tool_cls.config_class())
-#     output = tool.run(params=tool_params)
-#     return output.model_dump()
-#
-#   def synthesize_response(self, tool_name: str, tool_input: dict, tool_output: dict) -> str:
-#     """Send tool output to the LLM for natural explanation."""
-#     self.agent.output_schema = FinalAnswerSchema
-#     result_summary = f"""Tool: {tool_name}
-#     Input: {tool_input}
-#     Output: {tool_output}
-#     """
-#     result_summary = dedent(result_summary).strip()
-#     input = GoldentoothInputSchema(chat_message=result_summary)
-#     response = self.agent.run(input)
-#     return response.chat_message
+  def handle_user_input(self, user_input: str):
+    """Full request-response cycle for a user message."""
+    # Phase 1: Intent resolution
+    parsed = self.resolve_intent(user_input)
+    if type(parsed) is not GoldentoothOutputSchema:
+      raise ValueError("Expected GoldentoothOutputSchema, got: " + str(type(parsed)))
+
+    # Phase 2: Tool invocation
+    if parsed.tool and parsed.tool_parameters:
+      tool_result = self.execute_tool(parsed.tool, parsed.tool_parameters)
+
+      # Phase 3: Result synthesis
+      final_message = self.synthesize_response(parsed.tool, parsed.tool_parameters, tool_result)
+      self.console.print(self.format_agent_text(final_message))
+    else:
+      self.console.print(self.format_agent_text(parsed.chat_message))
+
+  def resolve_intent(self, user_input: str) -> BaseIOSchema:
+    """Send the message to the agent and get back tool call (if any)."""
+    self.agent.output_schema = GoldentoothOutputSchema
+    self.agent.input_schema = GoldentoothInputSchema
+    input = GoldentoothInputSchema(chat_message=user_input)
+    return self.agent.run(input)
+
+  def execute_tool(self, tool_name: str, tool_params: BaseIOSchema) -> dict:
+    """Lookup and invoke the tool."""
+    tool_cls = ToolRegistry.get(tool_name)
+    if not tool_cls:
+      raise ValueError(f"Tool '{tool_name}' not found in registry.")
+    tool = tool_cls(tool_cls.config_class())
+    output = tool.run(params=tool_params)
+    return output.model_dump()
+
+  def synthesize_response(self, tool_name: str, tool_input: dict, tool_output: dict) -> str:
+    """Send tool output to the LLM for natural explanation."""
+    self.agent.output_schema = FinalAnswerSchema
+    result_summary = f"""Tool: {tool_name}
+    Input: {tool_input}
+    Output: {tool_output}
+    """
+    result_summary = dedent(result_summary).strip()
+    input = GoldentoothInputSchema(chat_message=result_summary)
+    response = self.agent.run(input)
+    return response.chat_message

@@ -1,6 +1,6 @@
 from . import (
-  agent, client, console, event, model,
-  paths, pipeline, schema, straightness, system_prompt, thunk,
+  agent, client, console, event, model, paths, pipeline,
+  schema, straightness, system_prompt, thunk, tool,
 )
 
 __all__ = [
@@ -15,4 +15,5 @@ __all__ = [
   "straightness",
   "system_prompt",
   "thunk",
+  "tool",
 ]

@@ -1,6 +1,9 @@
 from antidote import inject
 from goldentooth_agent.core.agent import AgentBase
+from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from goldentooth_agent.core.pipeline import Middleware, NextMiddleware, middleware
+from goldentooth_agent.core.thunk import Thunk
+from typing import Type, TypeVar
 from ..pipeline import Pipeline
 from ..schema import SchemaBase
 
@@ -57,3 +60,21 @@ def inject_greeting_th(role: str, greeting: str):
   from goldentooth_agent.core.schema import GreetingSchema
   message = GreetingSchema.from_greeting(greeting)
   return inject_message_th(role, message)
+
+TIn = TypeVar('TIn', bound=BaseIOSchema)
+TOut = TypeVar('TOut', bound=BaseIOSchema)
+
+def run_agent_th(agent: AgentBase, input_type: Type[TIn], output_type: Type[TOut]) -> Thunk[TIn, TOut]:
+  """Generator for thunk to print a message to the console."""
+  @inject
+  async def _thunk(input: TIn) -> TOut:
+    """Thunk to run a tool and return the appropriate result."""
+    if not isinstance(input, agent.input_schema):
+      raise TypeError(f"Input must be of type {agent.input_schema.__name__}, got {type(input).__name__}")
+    agent.input_schema = input_type
+    agent.output_schema = output_type
+    result = agent.run(input)
+    if not isinstance(result, agent.output_schema):
+      raise TypeError(f"Output must be of type {agent.output_schema.__name__}, got {type(result).__name__}")
+    return result
+  return Thunk(_thunk)

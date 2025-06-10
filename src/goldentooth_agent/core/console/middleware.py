@@ -19,7 +19,7 @@ def console_print_mw(message: str, style: str = "") -> Middleware:
 def console_print_th(message: str, style: str = "") -> Thunk[Console, None]:
   """Generator for thunk to print a message to the console."""
   @inject
-  async def _thunk(console: Console = inject[get_console()]) -> None:
+  async def _thunk(_nil, console: Console = inject[get_console()]) -> None:
     """Thunk to print a message to the console with optional styling."""
     console.print(f"[{style}]{message}[/{style}]" if style else message)
   return Thunk(_thunk)
@@ -37,7 +37,7 @@ def console_print_error_mw(message: str, style: str) -> Middleware:
 def console_print_error_th(message: str, style: str) -> Thunk[Console, None]:
   """Generator for thunk to print an error message to the console."""
   @inject
-  async def _thunk(console: Console = inject[get_error_console()]) -> None:
+  async def _thunk(_nil, console: Console = inject[get_error_console()]) -> None:
     """Thunk to print an error message to the console with optional styling."""
     console.print(f"[{style}]{message}[/{style}]" if style else message)
   return Thunk(_thunk)
@@ -47,7 +47,7 @@ class HasUserInput(Protocol):
   """Protocol for a context that has user input."""
   user_input: str
 
-def console_input_mw(prompt: str, style: str = "") -> Middleware[HasUserInput]:
+def console_input_mw(prompt: str = "You:", style: str = "bold blue") -> Middleware[HasUserInput]:
   """Generator for middleware to prompt the user for input and return it."""
   @middleware
   @inject
@@ -68,19 +68,21 @@ def exit_on_input_mw() -> Middleware[HasUserInput]:
     await next()
   return _middleware
 
-def console_input_th(prompt: str, style: str = "") -> Thunk[Console, str]:
+def console_input_th(prompt: str = "You:", style: str = "bold blue") -> Thunk[Console, str]:
   """Generator for thunk to prompt the user for input and return it."""
   @inject
-  async def _thunk(console: Console = inject[get_console()]) -> str:
+  async def _thunk(_nil, console: Console = inject[get_console()]) -> str:
     """Thunk to prompt the user for input."""
     return console.input(f"\n[{style}]{prompt}[/{style}] " if style else f"\n{prompt} ")
   return Thunk(_thunk)
 
 def exit_on_input_th() -> Thunk[str, str]:
   """Thunk to exit the application if the user inputs /exit or /quit."""
-  async def _thunk(user_input: str) -> str:
+  @inject
+  async def _thunk(user_input: str, console: Console = inject[get_console()]) -> str:
     """Thunk to exit the application."""
     if user_input.strip().lower() in ["/exit", "/quit"]:
+      console.print("Exiting the application. Goodbye!", style="bold red")
       typer.Exit()
     return user_input
   return Thunk(_thunk)

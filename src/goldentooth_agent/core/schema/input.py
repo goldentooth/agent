@@ -1,11 +1,8 @@
 from __future__ import annotations
 from antidote import inject
-from atomic_agents.lib.base.base_io_schema import BaseIOSchema
-from pydantic import Field, BaseModel
+from pydantic import Field
 from rich.console import Console
-from typing import Optional, Protocol, Type, runtime_checkable
 from ..console import get_console
-from ..pipeline import Middleware, NextMiddleware, middleware
 from ..thunk import Thunk
 from .base import SchemaBase
 
