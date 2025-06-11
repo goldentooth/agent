@@ -1,7 +1,6 @@
 from __future__ import annotations
-from typing import List, Dict, Type
+from typing import List, Dict
 from antidote import inject, injectable
-from atomic_agents.agents.base_agent import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseTool
 
 @injectable
@@ -13,7 +12,7 @@ class ToolRegistry:
     self.registry: Dict[str, BaseTool] = {}
 
   @inject.method
-  def register(self, tool: BaseTool, instructions: List[str]) -> None:
+  def register(self, tool: BaseTool) -> None:
     """Register a tool in the registry."""
     print(f"Registering tool: {tool.tool_name}")
     self.registry[tool.tool_name] = tool

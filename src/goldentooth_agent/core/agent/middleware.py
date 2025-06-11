@@ -70,11 +70,11 @@ def run_agent_th(agent: AgentBase, input_type: Type[TIn], output_type: Type[TOut
   async def _thunk(input: TIn) -> TOut:
     """Thunk to run a tool and return the appropriate result."""
     if not isinstance(input, agent.input_schema):
-      raise TypeError(f"Input must be of type {agent.input_schema.__name__}, got {type(input).__name__}")
+      raise TypeError(f"Input must be of type {input_type.__name__}, got {type(input).__name__}")
     agent.input_schema = input_type
     agent.output_schema = output_type
     result = agent.run(input)
     if not isinstance(result, agent.output_schema):
-      raise TypeError(f"Output must be of type {agent.output_schema.__name__}, got {type(result).__name__}")
+      raise TypeError(f"Output must be of type {output_type.__name__}, got {type(result).__name__}")
     return result
   return Thunk(_thunk)

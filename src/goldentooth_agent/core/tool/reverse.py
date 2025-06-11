@@ -1,8 +1,10 @@
-from pydantic import Field
-from typing import List
-from ..tool import ToolBase, ToolMetadata
+from __future__ import annotations
+from antidote import inject, injectable
 from atomic_agents.agents.base_agent import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig
+from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
+from pydantic import Field
+from .base import ToolBase
 
 class ReverseToolInputSchema(BaseIOSchema):
   """Schema for the input to the Reverse tool."""
@@ -16,33 +18,31 @@ class ReverseToolConfig(BaseToolConfig):
   """Configuration for the Reverse tool."""
   pass
 
-class ReverseToolMetadata(ToolMetadata):
-  """Metadata for the Reverse tool."""
-  name: str = "Reverse"
-  instructions: List[str] = [
-    "This tool reverses the input string.",
-    "You can use it to test string manipulation functionality.",
-    "Provide a string in the 'string' field to see it reversed."
-  ]
+@injectable
+class ReverseToolContextProvider(SystemPromptContextProviderBase):
+  """Context provider for the Reverse tool."""
 
+  @inject
+  def __init__(self):
+    super().__init__("Reverse")
+
+  def get_info(self) -> str:
+    return "Use the Reverse tool to return the input string reversed. This tool takes a string and returns it in reverse order, which can be useful for various text manipulation tasks."
+
+@injectable(factory_method='create')
 class ReverseTool(ToolBase):
   """Reverse tool that returns the reversed input string as output."""
-  config_class = ReverseToolConfig
-  metadata_class = ReverseToolMetadata
   input_schema = ReverseToolInputSchema
   output_schema = ReverseToolOutputSchema
 
+  @inject
   def __init__(self, config: ReverseToolConfig = ReverseToolConfig()):
     super().__init__(config)
 
+  @classmethod
+  def create(cls) -> ReverseTool:
+    """Create an instance of this tool."""
+    return cls()
+
   def run(self, params: ReverseToolInputSchema) -> ReverseToolOutputSchema: # type: ignore[attr-defined]
     return ReverseToolOutputSchema(result=''.join(params.string[::-1]))
-
-if __name__ == "__main__":
-  # Example usage
-  tool = ReverseTool()
-  input_data = ReverseToolInputSchema(string="Hello, World!")
-  output_data = tool.run(input_data)
-  print(output_data.result)  # Should print: !dlroW ,olleH
-  print(f"Tool name: {tool.metadata_class.name}")
-  print(f"Tool instructions: {tool.metadata_class.instructions}")
