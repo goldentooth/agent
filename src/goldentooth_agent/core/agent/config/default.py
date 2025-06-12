@@ -27,4 +27,5 @@ class DefaultAgentConfig(AgentConfigBase):
       memory=AgentMemory(),
       input_schema=BaseAgentInputSchema,
       output_schema=BaseAgentOutputSchema,
+      max_tokens=4096,
     )

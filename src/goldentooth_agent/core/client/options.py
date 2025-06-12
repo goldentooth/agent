@@ -6,7 +6,7 @@ from antidote import implements, inject, injectable, interface
 class ClientOptions:
   """Options for the client configuration."""
   provider: str = 'anthropic'
-  sync_mode: str = 'async'
+  sync_mode: str = 'sync'
 
   @inject.method
   def using_provider(self, name: str) -> bool:

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from antidote import inject, injectable
+from antidote import injectable
 from atomic_agents.agents.base_agent import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
@@ -22,7 +22,6 @@ class ReverseToolConfig(BaseToolConfig):
 class ReverseToolContextProvider(SystemPromptContextProviderBase):
   """Context provider for the Reverse tool."""
 
-  @inject
   def __init__(self):
     super().__init__("Reverse")
 
@@ -35,7 +34,6 @@ class ReverseTool(ToolBase):
   input_schema = ReverseToolInputSchema
   output_schema = ReverseToolOutputSchema
 
-  @inject
   def __init__(self, config: ReverseToolConfig = ReverseToolConfig()):
     super().__init__(config)
 

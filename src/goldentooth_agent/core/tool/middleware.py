@@ -2,6 +2,7 @@ from __future__ import annotations
 from antidote import inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseTool
+from typing import Any
 from goldentooth_agent.core.pipeline import Middleware, NextMiddleware, Pipeline
 from goldentooth_agent.core.thunk import Thunk
 from .registry import ToolRegistry
@@ -21,6 +22,7 @@ def run_tool_th(tool: BaseTool) -> Thunk[BaseIOSchema, BaseIOSchema]:
 
 def register_tool_mw(tool_class: type[BaseTool]) -> Middleware[ToolRegistry]:
   """Middleware to register a tool in the ToolRegistry."""
+  @inject
   async def _middleware(
     registry: ToolRegistry,
     next_middleware: NextMiddleware,
@@ -31,19 +33,27 @@ def register_tool_mw(tool_class: type[BaseTool]) -> Middleware[ToolRegistry]:
     await next_middleware()
   return Middleware(_middleware)
 
-def tool_registry_pl() -> Pipeline[ToolRegistry]:
+def tool_registry_pl(tools: list[type[ToolBase]]) -> Pipeline[ToolRegistry]:
   """Pipeline to create a ToolRegistry and register all tools."""
   pipeline = Pipeline()
+  for tool_class in tools:
+    pipeline.use(register_tool_mw(tool_class))
   return pipeline
 
-def tool_registry_th(tools: list[type[ToolBase]], registry: ToolRegistry = inject[ToolRegistry]) -> Thunk[object, None]:
-  """Thunk to create a ToolRegistry and register all tools."""
+def get_tool_registry_th() -> Thunk[Any, ToolRegistry]:
+  """Thunk to get the ToolRegistry instance."""
   @inject
-  async def _thunk(_nil) -> None:
+  async def _thunk(_nil, registry: ToolRegistry = inject.me()) -> ToolRegistry:
+    """Return the ToolRegistry instance."""
+    return registry
+  return Thunk(_thunk)
+
+def register_tools_th(tools: list[type[ToolBase]]) -> Thunk[ToolRegistry, ToolRegistry]:
+  """Thunk to create a ToolRegistry and register all tools."""
+  async def _thunk(registry: ToolRegistry) -> ToolRegistry:
     """Register all tools in the ToolRegistry."""
-    pipeline = tool_registry_pl()
     for tool_class in tools:
-      pipeline.use(register_tool_mw(tool_class))
-    await pipeline.run(registry)
-    return None
+      tool = tool_class.create()
+      registry.register(tool)
+    return registry
   return Thunk(_thunk)

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from antidote import injectable, inject
+from antidote import injectable
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
@@ -22,7 +22,6 @@ class EchoToolConfig(BaseToolConfig):
 class EchoToolContextProvider(SystemPromptContextProviderBase):
   """Context provider for the Echo tool."""
 
-  @inject
   def __init__(self):
     super().__init__("Echo")
 
@@ -35,7 +34,6 @@ class EchoTool(ToolBase):
   input_schema = EchoToolInputSchema
   output_schema = EchoToolOutputSchema
 
-  @inject
   def __init__(self, config: EchoToolConfig = EchoToolConfig()):
     super().__init__(config)
 
