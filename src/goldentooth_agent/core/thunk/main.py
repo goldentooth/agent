@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Awaitable, Callable, Generic, Optional, overload, Protocol, TypeVar
+from typing import Any, Awaitable, Callable, Generic, overload, Protocol, TypeVar
 from dataclasses import dataclass
 
 Ctx = TypeVar("Ctx", covariant=True)

@@ -4,7 +4,7 @@ import asyncio
 import typer
 from typing_extensions import Annotated
 from goldentooth_agent.core.straightness import StraightnessOptions
-from goldentooth_agent.core.agent.middleware import inject_greeting_th
+from goldentooth_agent.core.agent.middleware import get_agent_th, inject_greeting_th
 from goldentooth_agent.core.thunk import trampoline, compose_chain, final_thunk
 from goldentooth_agent.core.console import console_input_th, exit_on_input_th
 from goldentooth_agent.core.schema.input import wrap_input_th
@@ -21,6 +21,7 @@ def chat(
   options = world[StraightnessOptions]
   options.enabled = straight
   thunks = compose_chain(
+    get_agent_th(),
     inject_greeting_th("assistant", "Hello, world!"),
     console_input_th(),
     exit_on_input_th(),

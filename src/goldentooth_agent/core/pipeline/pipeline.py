@@ -1,6 +1,5 @@
 from __future__ import annotations
-from antidote import injectable
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, List, TypeVar
 from inspect import iscoroutinefunction
 from .middleware import Middleware, NextMiddleware
 from ..thunk import Thunk
@@ -10,9 +9,9 @@ T = TypeVar('T')
 class Pipeline(Generic[T]):
   """Pipeline for executing middleware in a context."""
 
-  def __init__(self) -> None:
+  def __init__(self, pipeline: List[Middleware[T]] = []) -> None:
     """Initialize the pipeline with a context type."""
-    self._middleware: List[Middleware[T]] = []
+    self._middleware: List[Middleware[T]] = pipeline
 
   def use(self, middleware: Middleware[T]) -> Pipeline[T]:
     """Add middleware to the pipeline."""

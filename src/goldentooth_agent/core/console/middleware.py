@@ -1,10 +1,18 @@
 from antidote import inject
 from rich.console import Console
 import typer
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 from goldentooth_agent.core.pipeline import Middleware, NextMiddleware, middleware
 from goldentooth_agent.core.thunk import Thunk
 from .console import get_console, get_error_console
+
+def get_console_th() -> Thunk[Any, Console]:
+  """Thunk to get a rich console instance for output."""
+  @inject
+  async def _thunk(_nil, console: Console = inject.me()) -> Console:
+    """Return the console instance."""
+    return console
+  return Thunk(_thunk)
 
 def console_print_mw(message: str, style: str = "") -> Middleware:
   """Generator for middleware to print a message to the console."""

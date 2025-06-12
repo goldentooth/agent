@@ -1,0 +1,6 @@
+title: 'Pi Bramble'
+info:
+  - "Goldentooth (the Pi Bramble) is a sandbox for experimenting with distributed systems, orchestration layers, and failure modes."
+  - "Its services have no purpose but to teach Nate how they behave under stress, failure, and reconfiguration."
+  - "The Goldentooth Pi Bramble could be considered a sort of Chaos Zoo, a system design playground, or a physical dev environment for recursive infrastructure."
+  - "It is a distributed system that is designed to be resilient, self-healing, and capable of handling failures gracefully."
