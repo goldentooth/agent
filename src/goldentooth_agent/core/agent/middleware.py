@@ -1,9 +1,15 @@
 from antidote import inject
 from goldentooth_agent.core.agent import AgentBase
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
+from goldentooth_agent.core.console import get_console
+from goldentooth_agent.core.log import get_logger
 from goldentooth_agent.core.pipeline import Middleware, NextMiddleware, middleware
+from goldentooth_agent.core.schema import InputSchema, OutputSchema
 from goldentooth_agent.core.thunk import Thunk
+from logging import Logger
 from typing import Any, Type, TypeVar
+from rich.console import Console
+from .context import AgentContext
 from ..pipeline import Pipeline
 from ..schema import SchemaBase
 
@@ -97,4 +103,36 @@ def run_agent_th(agent: AgentBase, input_type: Type[TIn], output_type: Type[TOut
     if not isinstance(result, agent.output_schema):
       raise TypeError(f"Output must be of type {agent.output_schema}, got {type(result).__name__}")
     return result
+  return Thunk(_thunk)
+
+def agent_step_th() -> Thunk[AgentContext, AgentContext]:
+  """Single step of the agent's loop: read, run, render, repeat."""
+  @inject
+  async def _thunk(
+    ctx: AgentContext,
+    console: Console = inject[get_console()],
+    logger: Logger = inject[get_logger(__name__)],
+  ) -> AgentContext:
+    ctx.agent.input_schema = InputSchema
+    ctx.agent.output_schema = OutputSchema
+    ctx.user_input = console.input("\n[bold blue]You:[/bold blue] ")
+    logger.debug(f"User input: {ctx.user_input}")
+    input_schema = InputSchema.from_input(ctx.user_input)
+    logger.debug(f"Input schema: {input_schema}")
+    output_schema: OutputSchema = ctx.agent.run(input_schema) # type: ignore
+    logger.debug(f"Output schema: {output_schema}")
+    ctx.agent_output = output_schema.output
+    logger.info(f"Agent output: {ctx.agent_output}")
+    console.print(f"[bold yellow]Goldentooth:[/bold yellow] {ctx.agent_output}")
+    return ctx
+  return Thunk(_thunk)
+
+def agent_chat_loop_th(initial_context: AgentContext) -> Thunk[None, None]:
+  """Creates a thunk that runs the chat loop."""
+  @inject
+  async def _thunk(_: None, logger: Logger = inject[get_logger(__name__)]) -> None:
+    ctx = initial_context
+    while True:
+      ctx = await agent_step_th()(ctx)
+      logger.debug(f"Current context: {ctx}")
   return Thunk(_thunk)
