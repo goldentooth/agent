@@ -1,5 +1,5 @@
 from . import (
-  agent, chat, client, console, event, model, paths, pipeline,
+  agent, chat, client, console, event, log, model, paths, pipeline,
   schema, straightness, system_prompt, thunk, tool,
 )
 
@@ -9,6 +9,7 @@ __all__ = [
   "client",
   "console",
   "event",
+  "log",
   "model",
   "paths",
   "pipeline",

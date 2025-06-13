@@ -3,11 +3,10 @@ from antidote import world
 import asyncio
 import typer
 from typing_extensions import Annotated
+from goldentooth_agent.core.agent import AgentContext, DefaultAgent, agent_chat_loop_th
 from goldentooth_agent.core.straightness import StraightnessOptions
-from goldentooth_agent.core.agent.middleware import get_agent_th, inject_greeting_th
 from goldentooth_agent.core.thunk import trampoline, compose_chain, final_thunk
-from goldentooth_agent.core.tool import RequestUserInputTool, get_tool_registry_th, register_tools_th
-from goldentooth_agent.core.chat import chat_loop_th
+from goldentooth_agent.core.tool import ToolRegistry
 
 app = typer.Typer()
 
@@ -20,12 +19,9 @@ def chat(
   """Start a chat session with the Goldentooth Agent."""
   options = world[StraightnessOptions]
   options.enabled = straight
-  thunks = compose_chain(
-    get_tool_registry_th(),
-    register_tools_th([RequestUserInputTool]),
-    get_agent_th(),
-    inject_greeting_th("assistant", "Hello, world!"),
-    chat_loop_th(),
-    final_thunk(),
+  ctx = AgentContext(
+    agent=DefaultAgent(),
+    tool_registry=ToolRegistry(),
   )
-  asyncio.run(trampoline("Hello, world!", thunks))
+  loop = agent_chat_loop_th(ctx)
+  asyncio.run(trampoline(None, compose_chain(loop, final_thunk())))
