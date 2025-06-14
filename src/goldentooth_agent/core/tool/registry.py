@@ -2,6 +2,8 @@ from __future__ import annotations
 from typing import List, Dict
 from antidote import inject, injectable
 from atomic_agents.lib.base.base_tool import BaseTool
+from atomic_agents.lib.base.base_io_schema import BaseIOSchema
+from goldentooth_agent.core.thunk import Thunk
 
 @injectable
 class ToolRegistry:
@@ -36,3 +38,21 @@ class ToolRegistry:
   def all(self) -> List[BaseTool]:
     """Get all registered tools."""
     return list(self.registry.values())
+
+  @inject.method
+  def get_thunk(self, tool_name: str) -> Thunk[type[BaseIOSchema], BaseIOSchema]:
+    """Get a thunk for a tool by its name."""
+    from .thunk import thunkify_tool
+    tool = self.get(tool_name)
+    return thunkify_tool(tool)
+
+@inject
+def register_tool(registry: ToolRegistry = inject.me()):
+  """Decorator to register a tool in the ToolRegistry."""
+  def decorator(tool_cls: type[BaseTool]):
+    """Decorator to register a tool class."""
+    from antidote import world
+    instance = world[tool_cls]
+    registry.register(instance)
+    return tool_cls
+  return decorator

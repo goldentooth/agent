@@ -1,10 +1,10 @@
 from __future__ import annotations
 from antidote import injectable
 from atomic_agents.agents.base_agent import BaseIOSchema
-from atomic_agents.lib.base.base_tool import BaseToolConfig
+from atomic_agents.lib.base.base_tool import BaseTool, BaseToolConfig
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
 from pydantic import Field
-from .base import ToolBase
+from .registry import register_tool
 
 class ReverseToolInputSchema(BaseIOSchema):
   """Schema for the input to the Reverse tool."""
@@ -28,8 +28,9 @@ class ReverseToolContextProvider(SystemPromptContextProviderBase):
   def get_info(self) -> str:
     return "Use the Reverse tool to return the input string reversed. This tool takes a string and returns it in reverse order, which can be useful for various text manipulation tasks."
 
+@register_tool()
 @injectable(factory_method='create')
-class ReverseTool(ToolBase):
+class ReverseTool(BaseTool):
   """Reverse tool that returns the reversed input string as output."""
   input_schema = ReverseToolInputSchema
   output_schema = ReverseToolOutputSchema
@@ -44,3 +45,12 @@ class ReverseTool(ToolBase):
 
   def run(self, params: ReverseToolInputSchema) -> ReverseToolOutputSchema: # type: ignore[attr-defined]
     return ReverseToolOutputSchema(result=''.join(params.string[::-1]))
+
+if __name__ == "__main__":
+  # Example usage
+  from antidote import world
+  tool = world[ReverseTool]
+  input_data = ReverseToolInputSchema(string="Hello, World!")
+  output_data = tool.run(input_data) # type: ignore[call-arg]
+  print(output_data.model_dump_json(indent=2))
+  print("ReverseTool created and run successfully.")

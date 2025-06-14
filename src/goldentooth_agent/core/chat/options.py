@@ -8,4 +8,3 @@ class ChatOptions:
 
   is_straight: bool = False
   """Whether to use straightness (don't mess around) or not."""
-
