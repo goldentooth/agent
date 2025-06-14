@@ -1,5 +1,5 @@
 from . import (
-  chat, console, event, log, path, thunk, tool
+  chat, console, event, log, path, system_prompt, thunk, tool
 )
 
 __all__ = [
@@ -8,6 +8,7 @@ __all__ = [
   "event",
   "log",
   "path",
+  "system_prompt",
   "thunk",
   "tool",
 ]

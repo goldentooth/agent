@@ -18,19 +18,9 @@ class EchoConfig(BaseToolConfig):
   """Configuration for the Echo tool."""
   pass
 
-@injectable
-class EchoContextProvider(SystemPromptContextProviderBase):
-  """Context provider for the Echo tool."""
-
-  def __init__(self):
-    super().__init__("Echo")
-
-  def get_info(self) -> str:
-    return "Use the Echo tool to return the input string as output. This tool simply echoes back the input string without any modifications."
-
 @register_tool()
 @injectable(factory_method='create')
-class EchoTool(BaseTool):
+class EchoTool(BaseTool, SystemPromptContextProviderBase):
   """Echo tool that returns the input string as output."""
   input_schema = EchoInput
   output_schema = EchoOutput
@@ -46,6 +36,12 @@ class EchoTool(BaseTool):
   def run(self, params: EchoInput) -> EchoOutput: # type: ignore[attr-defined]
     print(f"Running EchoTool with input: {params.string}")
     return EchoOutput(result=params.string)
+
+  def get_info(self) -> str:
+    return "\n".join([
+      "Use the Echo tool to return the input string as output.",
+      "This tool simply echoes back the input string without any modifications.",
+    ])
 
 if __name__ == "__main__":
   # Example usage

@@ -2,7 +2,6 @@ from __future__ import annotations
 from antidote import injectable, inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
-from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
 from pydantic import Field
 from rich.console import Console
 from typing import Optional
@@ -21,20 +20,6 @@ class ConsoleOutput(BaseIOSchema):
 class ConsoleConfig(BaseToolConfig):
   """Configuration for the Console tool."""
   pass
-
-@injectable
-class ConsoleContextProvider(SystemPromptContextProviderBase):
-  """Context provider for the console tool."""
-
-  def __init__(self):
-    super().__init__("Console")
-
-  def get_info(self) -> str:
-    return "\n".join([
-      "Use the Console tool to prompt the user for input.",
-      "This tool displays a prompt to the user and waits for their input.",
-      "You can specify the prompt text and the style (Python 'rich' package) to apply to the prompt.",
-    ])
 
 @register_tool()
 @injectable(factory_method='create')
@@ -57,6 +42,13 @@ class ConsoleTool(BaseTool):
     """Run the Console tool and return the user's input."""
     input = console.input(f"\n[{params.style}]{params.prompt}[/{params.style}] " if params.style else f"\n{params.prompt} ")
     return ConsoleOutput(input=input)
+
+  def get_info(self) -> str:
+    return "\n".join([
+      "Use the Console tool to prompt the user for input.",
+      "This tool displays a prompt to the user and waits for their input.",
+      "You can specify the prompt text and the style (Python 'rich' package) to apply to the prompt.",
+    ])
 
 if __name__ == "__main__":
     # Example usage

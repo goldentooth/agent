@@ -1,6 +1,6 @@
-from .context import HasTools
-from .echo import EchoTool, EchoInput, EchoOutput, EchoConfig, EchoContextProvider
-from .reverse import ReverseTool, ReverseInput, ReverseOutput, ReverseConfig, ReverseContextProvider
+from .context import HasTools, HasGetInfo
+from .echo import EchoTool, EchoInput, EchoOutput, EchoConfig
+from .reverse import ReverseTool, ReverseInput, ReverseOutput, ReverseConfig
 from .thunk import thunkify_tool
 
 __all__ = [
@@ -8,12 +8,11 @@ __all__ = [
   "EchoInput",
   "EchoOutput",
   "EchoConfig",
-  "EchoContextProvider",
+  "HasGetInfo",
   "HasTools",
   "ReverseTool",
   "ReverseInput",
   "ReverseOutput",
   "ReverseConfig",
-  "ReverseContextProvider",
   "thunkify_tool"
 ]

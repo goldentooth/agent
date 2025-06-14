@@ -18,19 +18,9 @@ class ReverseConfig(BaseToolConfig):
   """Configuration for the Reverse tool."""
   pass
 
-@injectable
-class ReverseContextProvider(SystemPromptContextProviderBase):
-  """Context provider for the Reverse tool."""
-
-  def __init__(self):
-    super().__init__("Reverse")
-
-  def get_info(self) -> str:
-    return "Use the Reverse tool to return the input string reversed. This tool takes a string and returns it in reverse order, which can be useful for various text manipulation tasks."
-
 @register_tool()
 @injectable(factory_method='create')
-class ReverseTool(BaseTool):
+class ReverseTool(BaseTool, SystemPromptContextProviderBase):
   """Reverse tool that returns the reversed input string as output."""
   input_schema = ReverseInput
   output_schema = ReverseOutput
@@ -45,6 +35,12 @@ class ReverseTool(BaseTool):
 
   def run(self, params: ReverseInput) -> ReverseOutput: # type: ignore[attr-defined]
     return ReverseOutput(result=''.join(params.string[::-1]))
+
+  def get_info(self) -> str:
+    return "\n".join([
+      "Use the Reverse tool to return the input string reversed.",
+      "This tool takes a string and returns it in reverse order, which can be useful for various text manipulation tasks.",
+    ])
 
 if __name__ == "__main__":
   # Example usage
