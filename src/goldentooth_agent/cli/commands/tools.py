@@ -1,20 +1,26 @@
 import typer
 from rich import print
+from rich.console import Console
+from antidote import world, inject
+from goldentooth_agent.core.console import get_console
+from goldentooth_agent.core.tool import ToolRegistry
 
 app = typer.Typer()
 
 @app.command("list")
-def list_tools():
+def list_tools() -> None:
   """List available tools."""
-  print("[bold cyan]Available tools:[/bold cyan]")
-  # TODO: Query DI registry
-  print("- log_sifter")
-  print("- chaos_injector")
-  print("- blog_writer")
-
-@app.command("run")
-def run_tool(name: str, args: str = typer.Option("", help="Optional args as string or JSON.")):
-  """Run a specific tool."""
-  print(f"[bold yellow]Running tool:[/bold yellow] {name}")
-  print(f"With args: {args}")
-  # TODO: Resolve tool from registry and run with args
+  @inject
+  def handle(
+    console: Console = inject[get_console()],
+    tool_registry: ToolRegistry = inject.me(),
+  ) -> None:
+    """Handle the listing of tools."""
+    tools = tool_registry.keys()
+    if not tools:
+      console.print("No tools registered.")
+    else:
+      console.print("[bold cyan]Available tools:[/bold cyan]")
+      for tool in tools:
+        console.print(f"- [bold green]{tool}[/bold green]")
+  handle()

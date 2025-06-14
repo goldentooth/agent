@@ -16,7 +16,6 @@ def get_agent_memory() -> AgentMemory:
   """Get the agent memory instance."""
   return AgentMemory()
 
-@lazy
 @inject
 def get_agent_config(
   client = inject[get_client()],
