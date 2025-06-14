@@ -1,8 +1,4 @@
-import anthropic
-import atomic_agents
 from antidote import lazy
-import httpcore
-import instructor
 import logging
 from logging import Logger
 import os
@@ -26,3 +22,13 @@ def get_logger(name: str) -> Logger:
   )
   logger = logging.getLogger(name)
   return logger
+
+if __name__ == "__main__":
+  # Example usage
+  from antidote import world
+  logger = world[get_logger(__name__)]
+  logger.debug("This is a debug message.")
+  logger.info("This is an info message.")
+  logger.warning("This is a warning message.")
+  logger.error("This is an error message.")
+  logger.critical("This is a critical message.")

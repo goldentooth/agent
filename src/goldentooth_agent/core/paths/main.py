@@ -1,4 +1,4 @@
-from antidote import injectable
+from antidote import injectable, inject
 from platformdirs import PlatformDirs
 from pathlib import Path
 
@@ -13,16 +13,22 @@ class UserPaths:
     """Initialize the UserPaths with application name and author."""
     self.dirs = PlatformDirs(appname, appauthor)
 
-  @property
+  @inject.method
   def config(self) -> Path:
     """Get the user configuration directory, creating it if it doesn't exist."""
     path = Path(self.dirs.user_config_dir)
     path.mkdir(parents=True, exist_ok=True)
     return path
 
-  @property
+  @inject.method
   def data(self) -> Path:
     """Get the user data directory, creating it if it doesn't exist."""
     path = Path(self.dirs.user_data_dir)
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+if __name__ == "__main__":
+  # Example usage
+  user_paths = UserPaths()
+  print("Config Path:", user_paths.config())
+  print("Data Path:", user_paths.data())
