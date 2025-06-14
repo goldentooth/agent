@@ -2,7 +2,7 @@ from atomic_agents.lib.components.system_prompt_generator import SystemPromptCon
 from typing import Callable
 
 class DynamicContextProvider(SystemPromptContextProviderBase):
-  """A context provider that can dynamically provide context based on the current state."""
+  """A context provider without an underlying component, used for dynamic information."""
 
   def __init__(self, title: str, fn: Callable[[], str]):
     """Initialize the dynamic context provider with a name."""
@@ -10,5 +10,5 @@ class DynamicContextProvider(SystemPromptContextProviderBase):
     self.fn = fn
 
   def get_info(self) -> str:
-    """Return a string representation of the dynamic context provider."""
+    """Return a string representation of the dynamic context provider's information."""
     return self.fn()
