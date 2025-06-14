@@ -90,19 +90,19 @@ class EventThunk(Generic[TIn, TOut]):
 
   @staticmethod
   def from_emitter(emitter: AsyncIOEventEmitter, event: str) -> EventThunk[None, Any]:
-      """Turn a pyee event into an EventThunk."""
-      from asyncio import Queue
-      from typing import Any, AsyncGenerator
-      async def _generator(_: None) -> AsyncGenerator[Any]:
-        """Generator that yields values from the event emitter."""
-        queue: Queue = Queue()
+    """Turn a pyee event into an EventThunk."""
+    from asyncio import Queue
+    from typing import Any, AsyncGenerator
+    async def _generator(_: None) -> AsyncGenerator[Any]:
+      """Generator that yields values from the event emitter."""
+      queue: Queue = Queue()
 
-        async def enqueue(value):
-          """Enqueue values emitted by the event."""
-          await queue.put(value)
+      async def enqueue(value):
+        """Enqueue values emitted by the event."""
+        await queue.put(value)
 
-        emitter.on(event, enqueue)
-        while True:
-          value = await queue.get()
-          yield value
-      return EventThunk(_generator)
+      emitter.on(event, enqueue)
+      while True:
+        value = await queue.get()
+        yield value
+    return EventThunk(_generator)
