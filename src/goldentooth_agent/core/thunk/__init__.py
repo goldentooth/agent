@@ -1,9 +1,32 @@
-from .main import Thunk, compose_chain, thunk, trampoline, final_thunk
+from .combinators import (
+  run_fold, compose, map, filter, flat_map, flat_map_ctx, guard, log_ctx, identity, if_else,
+)
+from .event_thunk import EventThunk
+from .rule_engine import RuleEngine
+from .rule import Rule
+from .stream_thunk import StreamThunk
+from .thunk import Thunk, compose_chain, thunk
+from .trampoline import ShouldExit, trampoline, trampoline_filter
 
 __all__ = [
-  "Thunk",
+  "compose",
   "compose_chain",
-  "final_thunk",
+  "EventThunk",
+  "filter",
+  "flat_map",
+  "flat_map_ctx",
+  "guard",
+  "identity",
+  "if_else",
+  "log_ctx",
+  "map",
+  "run_fold",
+  "Rule",
+  "RuleEngine",
+  "ShouldExit",
+  "StreamThunk",
+  "Thunk",
   "thunk",
   "trampoline",
+  "trampoline_filter",
 ]

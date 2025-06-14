@@ -5,7 +5,7 @@ from goldentooth_agent.core.console import get_console
 from goldentooth_agent.core.log import get_logger
 from goldentooth_agent.core.pipeline import Middleware, NextMiddleware, middleware
 from goldentooth_agent.core.schema import InputSchema, OutputSchema
-from goldentooth_agent.core.thunk import Thunk
+from goldentooth_agent.core.thunk import Thunk, compose_chain
 from logging import Logger
 from typing import Any, Type, TypeVar
 from rich.console import Console
@@ -90,7 +90,7 @@ def inject_greeting_th(role: str, greeting: str) -> Thunk[AgentBase, AgentBase]:
 TIn = TypeVar('TIn', bound=BaseIOSchema)
 TOut = TypeVar('TOut', bound=BaseIOSchema)
 
-def run_agent_th(agent: AgentBase, input_type: Type[TIn], output_type: Type[TOut]) -> Thunk[TIn, TOut]:
+def run_agent(agent: AgentBase, input_type: Type[TIn], output_type: Type[TOut]) -> Thunk[TIn, TOut]:
   """Generator for thunk to print a message to the console."""
   @inject
   async def _thunk(input: TIn) -> TOut:
@@ -117,6 +117,9 @@ def agent_step_th() -> Thunk[AgentContext, AgentContext]:
     ctx.agent.output_schema = OutputSchema
     ctx.user_input = console.input("\n[bold blue]You:[/bold blue] ")
     logger.debug(f"User input: {ctx.user_input}")
+    if ctx.should_quit:
+      logger.info("Quitting the agent loop.")
+      return ctx
     input_schema = InputSchema.from_input(ctx.user_input)
     logger.debug(f"Input schema: {input_schema}")
     output_schema: OutputSchema = ctx.agent.run(input_schema) # type: ignore
@@ -130,9 +133,37 @@ def agent_step_th() -> Thunk[AgentContext, AgentContext]:
 def agent_chat_loop_th(initial_context: AgentContext) -> Thunk[None, None]:
   """Creates a thunk that runs the chat loop."""
   @inject
-  async def _thunk(_: None, logger: Logger = inject[get_logger(__name__)]) -> None:
+  async def _thunk(
+    _: None,
+    logger: Logger = inject[get_logger(__name__)],
+    console: Console = inject[get_console()],
+  ) -> None:
     ctx = initial_context
     while True:
-      ctx = await agent_step_th()(ctx)
+      ctx = await compose_chain(
+        agent_step_th(),
+        check_slash_commands_th(),
+      )(ctx)
       logger.debug(f"Current context: {ctx}")
+      if ctx.should_quit:
+        logger.info("Exiting the agent chat loop.")
+        console.print("[bold red]Goodbye![/bold red]")
+        break
+  return Thunk(_thunk)
+
+SLASH_COMMANDS = {
+  "/exit": lambda ctx: setattr(ctx, "should_quit", True),
+  "/quit": lambda ctx: setattr(ctx, "should_quit", True),
+  "/clear": lambda ctx: setattr(ctx, "agent_output", ""),
+}
+
+def check_slash_commands_th() -> Thunk[AgentContext, AgentContext]:
+  """Generator to handle checking for slash commands in the user input."""
+  async def _thunk(ctx: AgentContext) -> AgentContext:
+    """Thunk to check for slash commands in the user input."""
+    if ctx.user_input:
+      command = ctx.user_input.strip().lower()
+      if command in SLASH_COMMANDS:
+        SLASH_COMMANDS[command](ctx)
+    return ctx
   return Thunk(_thunk)

@@ -20,13 +20,8 @@ def get_logger(name: str) -> Logger:
       RichHandler(
         markup=True,
         rich_tracebacks=True,
-        tracebacks_suppress=[
-          anthropic,
-          atomic_agents,
-          httpcore,
-          instructor,
-        ],
-      )
+        tracebacks_suppress=[],
+      ),
     ],
   )
   logger = logging.getLogger(name)

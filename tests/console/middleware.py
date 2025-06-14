@@ -6,7 +6,7 @@ from goldentooth_agent.core.pipeline import Middleware, NextMiddleware, middlewa
 from goldentooth_agent.core.thunk import Thunk
 from .console import get_console, get_error_console
 
-def get_console_th() -> Thunk[Any, Console]:
+def inject_console() -> Thunk[Any, Console]:
   """Thunk to get a rich console instance for output."""
   @inject
   async def _thunk(_nil, console: Console = inject.me()) -> Console:
@@ -24,7 +24,7 @@ def console_print_mw(message: str, style: str = "") -> Middleware:
     await next()
   return _middleware
 
-def console_print_th(message: str, style: str = "") -> Thunk[Console, None]:
+def console_print(message: str, style: str = "") -> Thunk[Console, None]:
   """Generator for thunk to print a message to the console."""
   @inject
   async def _thunk(_nil, console: Console = inject[get_console()]) -> None:

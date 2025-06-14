@@ -9,7 +9,7 @@ from .registry import ToolRegistry
 from .base import ToolBase
 
 def run_tool_th(tool: BaseTool) -> Thunk[BaseIOSchema, BaseIOSchema]:
-  """Generator for thunk to print a message to the console."""
+  """Generator for thunk to run a tool."""
   async def _thunk(input: BaseIOSchema) -> BaseIOSchema:
     """Thunk to run a tool and return the appropriate result."""
     if not isinstance(input, tool.input_schema):

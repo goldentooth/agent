@@ -10,3 +10,4 @@ class AgentContext:
   tool_registry: ToolRegistry
   user_input: Optional[str] = None
   agent_output: Optional[str] = None
+  should_quit: bool = False
