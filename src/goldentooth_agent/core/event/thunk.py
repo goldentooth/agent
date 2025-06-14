@@ -2,7 +2,7 @@ from antidote import inject, injectable
 from pyee.asyncio import AsyncIOEventEmitter
 from typing import Any, Awaitable
 from goldentooth_agent.core.thunk import Thunk
-from .emitter import get_event_emitter
+from .inject import get_event_emitter
 
 @injectable
 class ThunkEventEmitter:
@@ -33,3 +33,11 @@ class ThunkEventEmitter:
       ee.emit(event, ctx)
       return ctx
     return Thunk(_emit)
+
+if __name__ == "__main__":
+  from antidote import world
+  import asyncio
+
+  world[ThunkEventEmitter].on("test_event", Thunk.from_sync_callable(lambda x: print(f"Event received with args: {x}")))
+  asyncio.run(world[ThunkEventEmitter].emit("test_event")(("arg1", "arg2")))
+

@@ -6,20 +6,20 @@ from atomic_agents.lib.components.system_prompt_generator import SystemPromptCon
 from pydantic import Field
 from .registry import register_tool
 
-class EchoToolInputSchema(BaseIOSchema):
+class EchoInput(BaseIOSchema):
   """Schema for the input to the Echo tool."""
   string: str = Field(..., description="String to echo back. For example, 'Hello, World!'.")
 
-class EchoToolOutputSchema(BaseIOSchema):
+class EchoOutput(BaseIOSchema):
   """Schema for the output from the Echo tool."""
   result: str = Field(..., description="The echoed result. For example, 'Hello, World!'.")
 
-class EchoToolConfig(BaseToolConfig):
+class EchoConfig(BaseToolConfig):
   """Configuration for the Echo tool."""
   pass
 
 @injectable
-class EchoToolContextProvider(SystemPromptContextProviderBase):
+class EchoContextProvider(SystemPromptContextProviderBase):
   """Context provider for the Echo tool."""
 
   def __init__(self):
@@ -32,10 +32,10 @@ class EchoToolContextProvider(SystemPromptContextProviderBase):
 @injectable(factory_method='create')
 class EchoTool(BaseTool):
   """Echo tool that returns the input string as output."""
-  input_schema = EchoToolInputSchema
-  output_schema = EchoToolOutputSchema
+  input_schema = EchoInput
+  output_schema = EchoOutput
 
-  def __init__(self, config: EchoToolConfig = EchoToolConfig()):
+  def __init__(self, config: EchoConfig = EchoConfig()):
     super().__init__(config)
 
   @classmethod
@@ -43,15 +43,15 @@ class EchoTool(BaseTool):
     """Create an instance of this tool."""
     return cls()
 
-  def run(self, params: EchoToolInputSchema) -> EchoToolOutputSchema: # type: ignore[attr-defined]
+  def run(self, params: EchoInput) -> EchoOutput: # type: ignore[attr-defined]
     print(f"Running EchoTool with input: {params.string}")
-    return EchoToolOutputSchema(result=params.string)
+    return EchoOutput(result=params.string)
 
 if __name__ == "__main__":
   # Example usage
   from antidote import world
   tool = world[EchoTool]
-  input_data = EchoToolInputSchema(string="Hello, World!")
+  input_data = EchoInput(string="Hello, World!")
   output_data = tool.run(input_data) # type: ignore[call-arg]
   print(output_data.model_dump_json(indent=2))
   print("EchoTool created and run successfully.")

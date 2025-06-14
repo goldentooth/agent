@@ -5,7 +5,7 @@ from atomic_agents.lib.base.base_tool import BaseTool
 from typing import Any
 from goldentooth_agent.core.pipeline import Middleware, NextMiddleware, Pipeline
 from goldentooth_agent.core.thunk import Thunk
-from .registry import ToolRegistry
+from ...src.goldentooth_agent.core.tool.registry import ToolRegistry
 from .base import ToolBase
 
 def run_tool_th(tool: BaseTool) -> Thunk[BaseIOSchema, BaseIOSchema]:

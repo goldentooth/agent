@@ -16,7 +16,6 @@ class ToolRegistry:
   @inject.method
   def register(self, tool: BaseTool) -> None:
     """Register a tool in the registry."""
-    print(f"Registering tool: {tool.tool_name}")
     self.registry[tool.tool_name] = tool
 
   @inject.method
@@ -45,6 +44,14 @@ class ToolRegistry:
     from .thunk import thunkify_tool
     tool = self.get(tool_name)
     return thunkify_tool(tool)
+
+  @inject.method
+  def get_by_input_schema(self, schema: type[BaseIOSchema]) -> BaseTool:
+    """Get a tool by its input schema."""
+    for tool in self.all():
+      if issubclass(schema, tool.input_schema):
+        return tool
+    raise LookupError(f"No tool found for input schema: {schema}")
 
 @inject
 def register_tool(registry: ToolRegistry = inject.me()):

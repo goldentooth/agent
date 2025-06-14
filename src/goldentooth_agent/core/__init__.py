@@ -1,9 +1,10 @@
 from . import (
-  chat, event, log, path, thunk, tool
+  chat, console, event, log, path, thunk, tool
 )
 
 __all__ = [
   "chat",
+  "console",
   "event",
   "log",
   "path",

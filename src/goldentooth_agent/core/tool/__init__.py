@@ -1,17 +1,17 @@
-from .echo import EchoTool, EchoToolInputSchema, EchoToolOutputSchema, EchoToolConfig, EchoToolContextProvider
-from .reverse import ReverseTool, ReverseToolInputSchema, ReverseToolOutputSchema, ReverseToolConfig, ReverseToolContextProvider
+from .echo import EchoTool, EchoInput, EchoOutput, EchoConfig, EchoContextProvider
+from .reverse import ReverseTool, ReverseInput, ReverseOutput, ReverseConfig, ReverseContextProvider
 from .thunk import thunkify_tool
 
 __all__ = [
   "EchoTool",
-  "EchoToolInputSchema",
-  "EchoToolOutputSchema",
-  "EchoToolConfig",
-  "EchoToolContextProvider",
+  "EchoInput",
+  "EchoOutput",
+  "EchoConfig",
+  "EchoContextProvider",
   "ReverseTool",
-  "ReverseToolInputSchema",
-  "ReverseToolOutputSchema",
-  "ReverseToolConfig",
-  "ReverseToolContextProvider",
+  "ReverseInput",
+  "ReverseOutput",
+  "ReverseConfig",
+  "ReverseContextProvider",
   "thunkify_tool"
 ]

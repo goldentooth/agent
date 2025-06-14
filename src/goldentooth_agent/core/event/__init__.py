@@ -1,4 +1,4 @@
-from .emitter import get_event_emitter
+from .inject import get_event_emitter
 from .thunk import ThunkEventEmitter
 
 __all__ = [

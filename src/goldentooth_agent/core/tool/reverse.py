@@ -6,20 +6,20 @@ from atomic_agents.lib.components.system_prompt_generator import SystemPromptCon
 from pydantic import Field
 from .registry import register_tool
 
-class ReverseToolInputSchema(BaseIOSchema):
+class ReverseInput(BaseIOSchema):
   """Schema for the input to the Reverse tool."""
   string: str = Field(..., description="String to echo back. For example, 'Hello, World!'.")
 
-class ReverseToolOutputSchema(BaseIOSchema):
+class ReverseOutput(BaseIOSchema):
   """Schema for the output from the Reverse tool."""
   result: str = Field(..., description="The reversed result. For example, '!dlroW ,olleH'.")
 
-class ReverseToolConfig(BaseToolConfig):
+class ReverseConfig(BaseToolConfig):
   """Configuration for the Reverse tool."""
   pass
 
 @injectable
-class ReverseToolContextProvider(SystemPromptContextProviderBase):
+class ReverseContextProvider(SystemPromptContextProviderBase):
   """Context provider for the Reverse tool."""
 
   def __init__(self):
@@ -32,10 +32,10 @@ class ReverseToolContextProvider(SystemPromptContextProviderBase):
 @injectable(factory_method='create')
 class ReverseTool(BaseTool):
   """Reverse tool that returns the reversed input string as output."""
-  input_schema = ReverseToolInputSchema
-  output_schema = ReverseToolOutputSchema
+  input_schema = ReverseInput
+  output_schema = ReverseOutput
 
-  def __init__(self, config: ReverseToolConfig = ReverseToolConfig()):
+  def __init__(self, config: ReverseConfig = ReverseConfig()):
     super().__init__(config)
 
   @classmethod
@@ -43,14 +43,14 @@ class ReverseTool(BaseTool):
     """Create an instance of this tool."""
     return cls()
 
-  def run(self, params: ReverseToolInputSchema) -> ReverseToolOutputSchema: # type: ignore[attr-defined]
-    return ReverseToolOutputSchema(result=''.join(params.string[::-1]))
+  def run(self, params: ReverseInput) -> ReverseOutput: # type: ignore[attr-defined]
+    return ReverseOutput(result=''.join(params.string[::-1]))
 
 if __name__ == "__main__":
   # Example usage
   from antidote import world
   tool = world[ReverseTool]
-  input_data = ReverseToolInputSchema(string="Hello, World!")
+  input_data = ReverseInput(string="Hello, World!")
   output_data = tool.run(input_data) # type: ignore[call-arg]
   print(output_data.model_dump_json(indent=2))
   print("ReverseTool created and run successfully.")

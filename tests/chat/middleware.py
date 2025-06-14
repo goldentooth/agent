@@ -6,7 +6,7 @@ from goldentooth_agent.core.agent.middleware import get_agent_th, print_agent_th
 from goldentooth_agent.core.console import console_print
 from goldentooth_agent.core.schema import InputSchema, OutputSchema
 from goldentooth_agent.core.thunk import Thunk, trampoline, compose_chain
-from goldentooth_agent.core.tool.request_user_input import request_user_input_th, read_user_input_th
+from goldentooth_agent.core.console.tool import request_user_input_th, read_user_input_th
 
 def chat_loop_th() -> Thunk[AgentBase, None]:
   """Thunk to run a chat loop that continuously prompts the user for input."""

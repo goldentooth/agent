@@ -3,7 +3,7 @@ from antidote import inject, injectable
 from pathlib import Path
 from typing import List
 import yaml
-from goldentooth_agent.core.paths import UserPaths
+from goldentooth_agent.core.path import UserPaths
 
 @injectable(factory_method='create')
 class StaticContextProviderStore:
