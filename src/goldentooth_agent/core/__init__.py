@@ -1,5 +1,5 @@
 from . import (
-  agent, chat, client, console, context_provider,
+  agent, agent_config, chat, client, console, context_provider,
   dynamic_context_provider, event, log, model, path,
   static_context_provider, static_system_prompt,
   system_prompt, thunk, tool,
@@ -7,6 +7,7 @@ from . import (
 
 __all__ = [
   "agent",
+  "agent_config",
   "chat",
   "client",
   "console",
