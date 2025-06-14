@@ -25,7 +25,7 @@ class ReverseTool(BaseTool, SystemPromptContextProviderBase):
   input_schema = ReverseInput
   output_schema = ReverseOutput
 
-  def __init__(self, config: ReverseConfig = ReverseConfig()):
+  def __init__(self, config: ReverseConfig = ReverseConfig(title="tools.reverse", description="Reverses the input string.")):
     super().__init__(config)
 
   @classmethod

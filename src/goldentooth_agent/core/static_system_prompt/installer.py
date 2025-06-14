@@ -1,26 +1,25 @@
 from __future__ import annotations
 from antidote import inject, injectable
-import importlib.resources as resources
 from pathlib import Path
 import yaml
 from goldentooth_agent.data import system_prompts
-from .store import SystemPromptStore
+from .store import StaticSystemPromptStore
 
 @injectable(factory_method='create')
-class SystemPromptInstaller:
+class StaticSystemPromptInstaller:
   """Copies default embedded system prompts to the user data directory if missing."""
 
   def __init__(
     self,
     embedded_dir: Path = Path(system_prompts.__path__[0]),
-    store: SystemPromptStore = inject.me(),
+    store: StaticSystemPromptStore = inject.me(),
   ) -> None:
     """Initialize the installer with a store and the directory containing embedded prompts."""
     self.embedded_dir = embedded_dir
     self.store = store
 
   @classmethod
-  def create(cls) -> SystemPromptInstaller:
+  def create(cls) -> StaticSystemPromptInstaller:
     """Create a new SystemPromptInstaller instance."""
     return cls()
 
@@ -49,5 +48,5 @@ class SystemPromptInstaller:
     """Check if a prompt file exists by name."""
     return self.store.exists(name)
 
-system_prompt_installer = SystemPromptInstaller.create()
-system_prompt_installer.install()
+installer = StaticSystemPromptInstaller.create()
+installer.install()

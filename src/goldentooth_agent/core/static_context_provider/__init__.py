@@ -1,13 +1,11 @@
-from .current_date import CurrentDate
 from .installer import StaticContextProviderInstaller
-from .registry import ContextProviderRegistry
-from .static import StaticContextProvider
+from .main import StaticContextProvider
+from .registry import StaticContextProviderRegistry
 from .store import StaticContextProviderStore
 
 __all__ = [
-  "ContextProviderRegistry",
-  "CurrentDate",
   "StaticContextProvider",
   "StaticContextProviderInstaller",
+  "StaticContextProviderRegistry",
   "StaticContextProviderStore",
 ]

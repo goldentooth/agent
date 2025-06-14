@@ -1,3 +1,5 @@
+from goldentooth_agent.core.dynamic_context_provider import DynamicContextProvider
+from goldentooth_agent.core.system_prompt import HasSystemPromptGenerator, disable_context_provider, enable_context_provider
 from goldentooth_agent.core.thunk import Thunk, thunk
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseTool
@@ -16,11 +18,18 @@ def enable_tool(tool: BaseTool) -> Thunk[HasTools, HasTools]:
   async def _enable(ctx) -> HasTools:
     """Enable the tool in the context."""
     ctx.tools[tool.tool_name] = tool
+    return ctx
+  return _enable
+
+def enable_tool_context_provider(tool: BaseTool) -> Thunk[HasSystemPromptGenerator, HasSystemPromptGenerator]:
+  """Enable a tool's context provider in the system prompt generator."""
+  @thunk
+  async def _enable(ctx) -> HasSystemPromptGenerator:
+    """Enable the tool's context provider in the system prompt generator."""
     if isinstance(tool, HasGetInfo):
-      from goldentooth_agent.core.system_prompt import DynamicContextProvider, enable_context_provider
       dcp = DynamicContextProvider(title=tool.tool_name, fn=tool.get_info)
       ctx = await enable_context_provider(dcp)(ctx)
-    return ctx # type: ignore
+    return ctx
   return _enable
 
 def disable_tool(tool: BaseTool) -> Thunk[HasTools, HasTools]:
@@ -30,8 +39,14 @@ def disable_tool(tool: BaseTool) -> Thunk[HasTools, HasTools]:
     """Disable the tool in the context."""
     if tool.tool_name in ctx.tools:
       del ctx.tools[tool.tool_name]
-    if isinstance(tool, HasGetInfo):
-      from goldentooth_agent.core.system_prompt import disable_context_provider
-      ctx = await disable_context_provider(tool.tool_name)(ctx)
-    return ctx # type: ignore
+    return ctx
+  return _disable
+
+def disable_tool_context_provider(tool: BaseTool) -> Thunk[HasSystemPromptGenerator, HasSystemPromptGenerator]:
+  """Disable a tool's context provider in the system prompt generator."""
+  @thunk
+  async def _disable(ctx) -> HasSystemPromptGenerator:
+    """Disable the tool's context provider in the system prompt generator."""
+    ctx = await disable_context_provider(tool.tool_name)(ctx)
+    return ctx
   return _disable

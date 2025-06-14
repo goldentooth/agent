@@ -16,7 +16,7 @@ class StaticContextProviderStore:
   @classmethod
   def create(cls, paths: UserPaths = inject[UserPaths]) -> StaticContextProviderStore:
     """Create a new StaticContextProviderStore instance."""
-    result = cls(paths.data / 'context_providers')
+    result = cls(paths.data() / 'context_providers')
     return result
 
   def list(self) -> List[str]:

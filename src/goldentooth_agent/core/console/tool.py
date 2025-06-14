@@ -28,7 +28,7 @@ class ConsoleTool(BaseTool):
   input_schema = ConsoleInput
   output_schema = ConsoleOutput
 
-  def __init__(self, config: ConsoleConfig = ConsoleConfig()):
+  def __init__(self, config: ConsoleConfig = ConsoleConfig(title="tools.console", description="Prompts the user for input via the console.")):
     """Initialize the Console tool."""
     super().__init__(config)
 

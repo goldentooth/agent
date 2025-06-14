@@ -1,21 +1,20 @@
 from __future__ import annotations
 from antidote import inject, injectable
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator, SystemPromptContextProviderBase
+from goldentooth_agent.core.static_context_provider import StaticContextProviderRegistry
 from typing import Dict, List, Optional
-from ..paths import UserPaths
-from .context_provider import ContextProviderRegistry
-from .store import SystemPromptStore
+from .store import StaticSystemPromptStore
 
 DEFAULT_PROMPT_NAME = "default"
 
 @injectable(factory_method='create')
-class SystemPromptRegistry:
+class StaticSystemPromptRegistry:
   """Manages system prompts stored as YAML files."""
 
   def __init__(
     self,
-    store: SystemPromptStore = inject.me(),
-    context_provider_registry: ContextProviderRegistry = inject.me(),
+    store: StaticSystemPromptStore = inject.me(),
+    context_provider_registry: StaticContextProviderRegistry = inject.me(),
   ):
     """Initialize the registry with a filesystem store."""
     self.store = store
@@ -23,7 +22,7 @@ class SystemPromptRegistry:
     self._generators: Dict[str, SystemPromptGenerator] = {}
 
   @classmethod
-  def create(cls) -> SystemPromptRegistry:
+  def create(cls) -> StaticSystemPromptRegistry:
     """Create a new SystemPromptRegistry instance."""
     result = cls()
     return result

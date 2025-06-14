@@ -25,7 +25,7 @@ class EchoTool(BaseTool, SystemPromptContextProviderBase):
   input_schema = EchoInput
   output_schema = EchoOutput
 
-  def __init__(self, config: EchoConfig = EchoConfig()):
+  def __init__(self, config: EchoConfig = EchoConfig(title="tools.echo", description="Echo tool that returns the input string as output.")):
     super().__init__(config)
 
   @classmethod

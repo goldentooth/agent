@@ -6,7 +6,7 @@ import yaml
 from goldentooth_agent.core.path import UserPaths
 
 @injectable(factory_method='create')
-class SystemPromptStore:
+class StaticSystemPromptStore:
   """A simple filesystem store for managing system prompts as YAML files."""
 
   def __init__(self, directory: Path):
@@ -14,9 +14,9 @@ class SystemPromptStore:
     self.directory.mkdir(parents=True, exist_ok=True)
 
   @classmethod
-  def create(cls, paths: UserPaths = inject[UserPaths]) -> SystemPromptStore:
-    """Create a new SystemPromptStore instance."""
-    result = cls(paths.data / 'system_prompts')
+  def create(cls, paths: UserPaths = inject.me()) -> StaticSystemPromptStore:
+    """Create a new StaticSystemPromptStore instance."""
+    result = cls(paths.data() / 'system_prompts')
     return result
 
   def list(self) -> List[str]:
