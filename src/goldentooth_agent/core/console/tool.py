@@ -1,5 +1,6 @@
 from __future__ import annotations
 from antidote import injectable, inject
+from atomic_agents.agents.base_agent import BaseAgentInputSchema
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from pydantic import Field
@@ -16,6 +17,14 @@ class ConsoleInput(BaseIOSchema):
 class ConsoleOutput(BaseIOSchema):
   """Schema for the output from the Console tool."""
   input: str = Field(..., description="The user's input. For example, 'John Doe'.")
+
+  def as_agent_input(self) -> BaseAgentInputSchema:
+    """Convert this output to a BaseAgentInputSchema."""
+    return BaseAgentInputSchema(chat_message=self.input)
+
+class ConsoleQuitOutput(ConsoleOutput):
+  """Specialized output schema to indicate user wants to quit."""
+  pass
 
 class ConsoleConfig(BaseToolConfig):
   """Configuration for the Console tool."""
@@ -41,6 +50,8 @@ class ConsoleTool(BaseTool):
   def run(self, params: ConsoleInput, console: Console = inject[get_console()]) -> ConsoleOutput: # type: ignore[override]
     """Run the Console tool and return the user's input."""
     input = console.input(f"\n[{params.style}]{params.prompt}[/{params.style}] " if params.style else f"\n{params.prompt} ")
+    if input.strip().lower() in {"/exit", "/quit"}:
+      return ConsoleQuitOutput(input=input)
     return ConsoleOutput(input=input)
 
   def get_info(self) -> str:
@@ -51,9 +62,9 @@ class ConsoleTool(BaseTool):
     ])
 
 if __name__ == "__main__":
-    # Example usage
-    from antidote import world
-    console_tool = world[ConsoleTool]
-    console_input = ConsoleInput(prompt="What is your name?", style="bold blue")
-    console_output = console_tool.run(console_input) # type: ignore[call-arg]
-    print(f"You entered: {console_output.input}") # type: ignore[no-untyped-call]
+  # Example usage
+  from antidote import world
+  console_tool = world[ConsoleTool]
+  console_input = ConsoleInput(prompt="What is your name?", style="bold blue")
+  console_output = console_tool.run(console_input) # type: ignore[call-arg]
+  print(f"You entered: {console_output.input}") # type: ignore[no-untyped-call]

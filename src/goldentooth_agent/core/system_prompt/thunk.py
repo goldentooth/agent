@@ -1,22 +1,28 @@
-from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
-from goldentooth_agent.core.system_prompt import HasSystemPromptGenerator
-from goldentooth_agent.core.thunk import Thunk, thunk
+from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator, SystemPromptContextProviderBase
+from goldentooth_agent.core.context import Context, context_autothunk
+from goldentooth_agent.core.thunk import Thunk
+from typing import Annotated
+from .context import SYSTEM_PROMPT_GENERATOR_KEY
 
-def enable_context_provider(context_provider: SystemPromptContextProviderBase) -> Thunk[HasSystemPromptGenerator, HasSystemPromptGenerator]:
+def enable_context_provider(context_provider: SystemPromptContextProviderBase) -> Thunk[Context, Context]:
   """Enable a tool as a context provider."""
-  @thunk
-  async def _enable(ctx) -> HasSystemPromptGenerator:
+  @context_autothunk
+  async def _enable(
+    system_prompt_generator: Annotated[SystemPromptGenerator, SYSTEM_PROMPT_GENERATOR_KEY],
+  ) -> Annotated[SystemPromptGenerator, SYSTEM_PROMPT_GENERATOR_KEY]:
     """Enable the context provider."""
-    ctx.system_prompt_generator.context_providers[context_provider.title] = context_provider
-    return ctx
+    system_prompt_generator.context_providers[context_provider.title] = context_provider
+    return system_prompt_generator
   return _enable
 
-def disable_context_provider(name: str) -> Thunk[HasSystemPromptGenerator, HasSystemPromptGenerator]:
+def disable_context_provider(name: str) -> Thunk[Context, Context]:
   """Disable a context provider."""
-  @thunk
-  async def _disable(ctx) -> HasSystemPromptGenerator:
+  @context_autothunk
+  async def _disable(
+    system_prompt_generator: Annotated[SystemPromptGenerator, SYSTEM_PROMPT_GENERATOR_KEY],
+  ) -> Annotated[SystemPromptGenerator, SYSTEM_PROMPT_GENERATOR_KEY]:
     """Disable the context provider."""
-    if name in ctx.system_prompt_generator.context_providers:
-      del ctx.system_prompt_generator.context_providers[name]
-    return ctx
+    if name in system_prompt_generator.context_providers:
+      del system_prompt_generator.context_providers[name]
+    return system_prompt_generator
   return _disable

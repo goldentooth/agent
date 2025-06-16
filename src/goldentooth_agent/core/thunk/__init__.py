@@ -6,7 +6,6 @@ from .rule_engine import RuleEngine
 from .rule import Rule
 from .stream_thunk import StreamThunk
 from .thunk import Thunk, compose_chain, thunk
-from .trampoline import ShouldExit, trampoline, trampoline_filter
 
 __all__ = [
   "compose",
@@ -23,10 +22,7 @@ __all__ = [
   "run_fold",
   "Rule",
   "RuleEngine",
-  "ShouldExit",
   "StreamThunk",
   "Thunk",
   "thunk",
-  "trampoline",
-  "trampoline_filter",
 ]

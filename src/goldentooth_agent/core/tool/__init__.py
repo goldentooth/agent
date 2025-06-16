@@ -1,5 +1,5 @@
-from .context import HasTools, HasGetInfo
 from .echo import EchoTool, EchoInput, EchoOutput, EchoConfig
+from .protocol import HasGetInfo
 from .registry import ToolRegistry, register_tool
 from .reverse import ReverseTool, ReverseInput, ReverseOutput, ReverseConfig
 from .thunk import thunkify_tool
@@ -10,7 +10,6 @@ __all__ = [
   "EchoOutput",
   "EchoConfig",
   "HasGetInfo",
-  "HasTools",
   "ReverseTool",
   "ReverseInput",
   "ReverseOutput",

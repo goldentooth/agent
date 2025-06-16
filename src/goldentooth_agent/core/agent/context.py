@@ -1,16 +1,7 @@
 from atomic_agents.agents.base_agent import BaseAgent
-from typing import Protocol, runtime_checkable
+from atomic_agents.lib.base.base_io_schema import BaseIOSchema
+from goldentooth_agent.core.context import context_key
 
-@runtime_checkable
-class HasAgents(Protocol):
-  """Protocol for objects that have agents defined in them."""
-
-  agents: dict[str, BaseAgent]
-  """A dictionary of agent names to agent instances."""
-
-@runtime_checkable
-class HasAgent(Protocol):
-  """Protocol for objects that have a single agent defined in them."""
-
-  agent: BaseAgent
-  """The agent instance."""
+AGENT_INPUT_KEY = context_key("agent_input", BaseIOSchema)
+AGENT_OUTPUT_KEY = context_key("agent_output", BaseIOSchema)
+AGENT_KEY = context_key("agent", BaseAgent)

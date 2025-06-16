@@ -1,9 +1,10 @@
-from goldentooth_agent.core.dynamic_context_provider import DynamicContextProvider
-from goldentooth_agent.core.system_prompt import HasSystemPromptGenerator, disable_context_provider, enable_context_provider
-from goldentooth_agent.core.thunk import Thunk, thunk
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseTool
-from .context import HasTools, HasGetInfo
+from goldentooth_agent.core.context import Context
+from goldentooth_agent.core.dynamic_context_provider import DynamicContextProvider
+from goldentooth_agent.core.system_prompt import disable_context_provider, enable_context_provider
+from goldentooth_agent.core.thunk import Thunk, thunk
+from .protocol import HasGetInfo
 
 def thunkify_tool(tool: BaseTool) -> Thunk[type[BaseIOSchema], BaseIOSchema]:
   """Convert a tool into a thunk."""
@@ -12,41 +13,12 @@ def thunkify_tool(tool: BaseTool) -> Thunk[type[BaseIOSchema], BaseIOSchema]:
     return tool.run(params)
   return Thunk(_as_thunk)
 
-def enable_tool(tool: BaseTool) -> Thunk[HasTools, HasTools]:
-  """Enable a tool in the context."""
-  @thunk
-  async def _enable(ctx) -> HasTools:
-    """Enable the tool in the context."""
-    ctx.tools[tool.tool_name] = tool
-    return ctx
-  return _enable
-
-def enable_tool_context_provider(tool: BaseTool) -> Thunk[HasSystemPromptGenerator, HasSystemPromptGenerator]:
+def enable_tool_context_provider(tool: BaseTool) -> Thunk[Context, Context]:
   """Enable a tool's context provider in the system prompt generator."""
-  @thunk
-  async def _enable(ctx) -> HasSystemPromptGenerator:
-    """Enable the tool's context provider in the system prompt generator."""
-    if isinstance(tool, HasGetInfo):
-      dcp = DynamicContextProvider(title=tool.tool_name, fn=tool.get_info)
-      ctx = await enable_context_provider(dcp)(ctx)
-    return ctx
-  return _enable
+  fn = tool.get_info if isinstance(tool, HasGetInfo) else lambda: "This tool does not have a get_info method."
+  dcp = DynamicContextProvider(title=tool.tool_name, fn=fn)
+  return enable_context_provider(dcp)
 
-def disable_tool(tool: BaseTool) -> Thunk[HasTools, HasTools]:
-  """Disable a tool in the context."""
-  @thunk
-  async def _disable(ctx) -> HasTools:
-    """Disable the tool in the context."""
-    if tool.tool_name in ctx.tools:
-      del ctx.tools[tool.tool_name]
-    return ctx
-  return _disable
-
-def disable_tool_context_provider(tool: BaseTool) -> Thunk[HasSystemPromptGenerator, HasSystemPromptGenerator]:
+def disable_tool_context_provider(tool: BaseTool) -> Thunk[Context, Context]:
   """Disable a tool's context provider in the system prompt generator."""
-  @thunk
-  async def _disable(ctx) -> HasSystemPromptGenerator:
-    """Disable the tool's context provider in the system prompt generator."""
-    ctx = await disable_context_provider(tool.tool_name)(ctx)
-    return ctx
-  return _disable
+  return disable_context_provider(tool.tool_name)

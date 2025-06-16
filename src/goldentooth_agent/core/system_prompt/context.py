@@ -1,8 +1,4 @@
-from typing import Protocol, runtime_checkable
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator
+from goldentooth_agent.core.context import context_key
 
-@runtime_checkable
-class HasSystemPromptGenerator(Protocol):
-  """Protocol for objects that have a system prompt generator defined in them."""
-
-  system_prompt_generator: SystemPromptGenerator
+SYSTEM_PROMPT_GENERATOR_KEY = context_key("system_prompt_generator", SystemPromptGenerator)
