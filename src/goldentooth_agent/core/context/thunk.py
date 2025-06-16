@@ -1,27 +1,8 @@
-from functools import wraps
 from goldentooth_agent.core.thunk import Thunk, thunk
 import inspect
-from typing import Annotated, Any, Awaitable, Callable, get_args, get_origin
+from typing import Annotated, Any, Callable, get_args, get_origin
 from .key import ContextKey
 from .main import Context
-
-def context_thunk(
-  requires: list[ContextKey[Any]],
-  produces: dict[ContextKey[Any], Callable[[Any], Any]],
-) -> Callable[[Callable[..., Awaitable[Any]]], Thunk[Context, Context]]:
-  """Decorator to create a thunk that requires certain context keys and produces others."""
-  def _decorator(fn: Callable[..., Awaitable[Any]]) -> Thunk[Context, Context]:
-    """Decorator to create a thunk that requires certain context keys and produces others."""
-    @wraps(fn)
-    async def wrapped(ctx: Context) -> Context:
-      """Execute the thunk with the context, retrieving required keys and setting produced keys."""
-      values = [ctx.get(k) for k in requires]
-      result = await fn(*values)
-      for k, f in produces.items():
-        ctx.set(k, f(result))
-      return ctx
-    return Thunk(wrapped)
-  return _decorator
 
 def clear_keys(keys: list[ContextKey[Any]]) -> Callable[[Thunk[Context, Context]], Thunk[Context, Context]]:
   """Decorator to clear specified keys from the context after executing a thunk."""
