@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Any, AsyncIterator, Awaitable, Callable, Generic, overload, TypeVar
+from goldentooth_agent.core.util import maybe_await
+from typing import Any, AsyncIterator, Awaitable, Callable, Generic, overload, TypeVar, NoReturn
 
 TIn = TypeVar('TIn')
 TOut = TypeVar('TOut')
@@ -72,13 +73,59 @@ class Thunk(Generic[TIn, TOut]):
       return await inner(ctx)
     return Thunk(_flattened)
 
+  @overload
+  def tap(self, fn: Callable[[TOut], None]) -> Thunk[TIn, TOut]: ...
+  @overload
+  def tap(self, fn: Callable[[TOut], Awaitable[None]]) -> Thunk[TIn, TOut]: ...
+
+  def tap(self, fn: Callable) -> Thunk[TIn, TOut]:
+    """Run a side-effect function with the result of the thunk."""
+    async def _tapped(ctx: TIn) -> TOut:
+      """Call this thunk, then run the side-effect function with its result."""
+      result = await self(ctx)
+      await maybe_await(fn(result))
+      return result
+    return Thunk(_tapped)
+
+  @overload
+  def repeat(self: Thunk[TIn, TIn], times: int) -> Thunk[TIn, TIn]: ...
+  @overload
+  def repeat(self: Thunk[TIn, TOut], times: int) -> NoReturn: ...
+
+  def repeat(self, times: int):
+    """Repeat this thunk a specified number of times."""
+    from .combinators import repeat
+    return repeat(times, self) # type: ignore
+
+  @overload
+  def while_(self: Thunk[TIn, TIn], condition: Callable[[TIn], bool]) -> Thunk[TIn, TIn]: ...
+  @overload
+  def while_(self: Thunk[TIn, TOut], condition: Callable[[TIn], bool]) -> NoReturn: ...
+
+  def while_(self, condition: Callable[[TIn], bool]):
+    """Repeat this thunk while the condition is true."""
+    from .combinators import while_true
+    return while_true(condition, self) # type: ignore
+
+  def chain(self, next_thunk: Thunk[TOut, TNew]) -> Thunk[TIn, TNew]:
+    """Compose this thunk with another, where the output of this is the input to the other."""
+    async def _chained(ctx: TIn) -> TNew:
+      """Call this thunk, then pass its result to the next thunk."""
+      intermediate = await self(ctx)
+      return await next_thunk(intermediate)
+    return Thunk(_chained)
+
+  def label(self, name: str) -> Thunk[TIn, TOut]:
+    """Add a print/logging label."""
+    return self.tap(lambda _: print(f"[{name}]"))
+
   def __rshift__(self, other: Thunk[TOut, TNew]) -> Thunk[TIn, TNew]:
     """Compose this thunk with another, where the output of this is the input to the other."""
-    async def _thunk(ctx: TIn) -> TNew:
-      """Call self, then pass its result to the second thunk."""
-      result = await self(ctx)
-      return await other(result)
-    return Thunk(_thunk)
+    return self.chain(other)
+
+  def compose_chain(self, *thunks: Thunk[Any, Any]) -> Thunk[TIn, Any]:
+    """Compose multiple thunks after this one."""
+    return self.chain(compose_chain(*thunks))
 
   from .event_thunk import EventThunk
   def events(self) -> EventThunk[TIn, TOut]:

@@ -1,8 +1,10 @@
 from antidote import inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
+from goldentooth_agent.core.agent import AGENT_TEXT_KEY
 from goldentooth_agent.core.context import Context, context_autothunk, SHOULD_EXIT_KEY, clear_key
 from goldentooth_agent.core.thunk import Thunk
 from rich.console import Console
+from rich.text import Text
 from typing import Annotated
 from .context import USER_INPUT_KEY, CONSOLE_OUTPUT_KEY
 from .inject import get_console
@@ -44,14 +46,30 @@ def prepare_console_output() -> Thunk[Context, Context]:
     return input
   return _prepare_agent_input
 
+def print_newline() -> Thunk[Context, Context]:
+  """Create a thunk that prints a line to the console."""
+  @context_autothunk
+  @inject
+  async def _print_line(
+    console: Console = inject[get_console()],
+  ) -> None:
+    """Print a line to the console."""
+    console.print()
+  return _print_line
+
 def print_console_output() -> Thunk[Context, Context]:
   """Create a thunk that prints the console output."""
   @clear_key(CONSOLE_OUTPUT_KEY)
   @context_autothunk
+  @inject
   async def _print_console_output(
+    agent_text: Annotated[Text, AGENT_TEXT_KEY],
     output: Annotated[BaseIOSchema, CONSOLE_OUTPUT_KEY],
     console: Console = inject[get_console()],
   ) -> None:
     """Print the console output."""
-    console.print(output)
+    if hasattr(output, 'chat_message'):
+      console.print(agent_text, output.chat_message) # type: ignore
+    else:
+      console.print(output)
   return _print_console_output

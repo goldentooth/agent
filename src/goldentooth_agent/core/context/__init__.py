@@ -4,7 +4,7 @@ from .thunk import (
   context_autothunk, clear_keys, clear_key,
   move_context, copy_context, forget_context, require_context,
 )
-from .trampoline import trampoline, SHOULD_EXIT_KEY
+from .trampoline import trampoline, trampoline_chain, SHOULD_EXIT_KEY
 
 __all__ = [
   "Context",
@@ -18,5 +18,6 @@ __all__ = [
   "forget_context",
   "require_context",
   "trampoline",
+  "trampoline_chain",
   "SHOULD_EXIT_KEY",
 ]

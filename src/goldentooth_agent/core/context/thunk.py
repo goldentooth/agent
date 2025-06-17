@@ -1,3 +1,4 @@
+from antidote import inject
 from goldentooth_agent.core.thunk import Thunk, thunk
 import inspect
 from typing import Annotated, Any, Callable, get_args, get_origin
@@ -30,6 +31,15 @@ def clear_key(key: ContextKey[Any]) -> Callable[[Thunk[Context, Context]], Thunk
       return ctx
     return _wrapped
   return _clear_key
+
+def inject_context() -> Thunk[Context, Context]:
+  """Thunk to inject the current context into the thunk execution."""
+  @thunk
+  @inject
+  async def _inject_context(ctx: Context = inject.me()) -> Context:
+    """Inject the current context into the thunk execution."""
+    return ctx
+  return _inject_context
 
 def context_autothunk(fn: Callable[..., Any]) -> Thunk[Context, Context]:
   """Automatically create a thunk from a function by extracting context keys from its parameters and return type."""

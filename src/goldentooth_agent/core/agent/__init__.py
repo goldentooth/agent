@@ -1,9 +1,9 @@
-from .context import AGENT_INPUT_KEY, AGENT_OUTPUT_KEY, AGENT_KEY
+from .context import AGENT_INPUT_KEY, AGENT_OUTPUT_KEY, AGENT_KEY, AGENT_TEXT_KEY
 from .inject import get_agent
 from .schema import AgentInputConvertible, AgentOutputConvertible
 from .thunk import (
   thunkify_agent, enable_agent_context_provider, disable_agent_context_provider, prepare_agent_input,
-  run_agent,
+  run_agent, inject_agent, inject_agent_text
 )
 
 __all__ = [
@@ -11,6 +11,8 @@ __all__ = [
   "AgentOutputConvertible",
   "thunkify_agent",
   "get_agent",
+  "inject_agent",
+  "inject_agent_text",
   "prepare_agent_input",
   "run_agent",
   "enable_agent_context_provider",
@@ -18,4 +20,5 @@ __all__ = [
   "AGENT_INPUT_KEY",
   "AGENT_OUTPUT_KEY",
   "AGENT_KEY",
+  "AGENT_TEXT_KEY",
 ]
