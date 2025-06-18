@@ -5,9 +5,9 @@ from typing import Annotated, Any, Callable, get_args, get_origin
 from .key import ContextKey
 from .main import Context
 
-def clear_keys(keys: list[ContextKey[Any]]) -> Callable[[Thunk[Context, Context]], Thunk[Context, Context]]:
+def clear_context_keys(keys: list[ContextKey[Any]]) -> Callable[[Thunk[Context, Context]], Thunk[Context, Context]]:
   """Decorator to clear specified keys from the context after executing a thunk."""
-  def _clear_keys(th: Thunk[Context, Context]) -> Thunk[Context, Context]:
+  def _clear_context_keys(th: Thunk[Context, Context]) -> Thunk[Context, Context]:
     """Decorator to clear specified keys from the context after executing a thunk."""
     @thunk
     async def _wrapped(ctx: Context) -> Context:
@@ -17,11 +17,11 @@ def clear_keys(keys: list[ContextKey[Any]]) -> Callable[[Thunk[Context, Context]
         ctx.forget(key)
       return ctx
     return _wrapped
-  return _clear_keys
+  return _clear_context_keys
 
-def clear_key(key: ContextKey[Any]) -> Callable[[Thunk[Context, Context]], Thunk[Context, Context]]:
+def clear_context_key(key: ContextKey[Any]) -> Callable[[Thunk[Context, Context]], Thunk[Context, Context]]:
   """Decorator to clear a specific key from the context after executing a thunk."""
-  def _clear_key(th: Thunk[Context, Context]) -> Thunk[Context, Context]:
+  def _clear_context_key(th: Thunk[Context, Context]) -> Thunk[Context, Context]:
     """Decorator to clear a specific key from the context after executing a thunk."""
     @thunk
     async def _wrapped(ctx: Context) -> Context:
@@ -30,7 +30,7 @@ def clear_key(key: ContextKey[Any]) -> Callable[[Thunk[Context, Context]], Thunk
       ctx.forget(key)
       return ctx
     return _wrapped
-  return _clear_key
+  return _clear_context_key
 
 def inject_context() -> Thunk[Context, Context]:
   """Thunk to inject the current context into the thunk execution."""
@@ -43,6 +43,13 @@ def inject_context() -> Thunk[Context, Context]:
 
 def context_autothunk(fn: Callable[..., Any]) -> Thunk[Context, Context]:
   """Automatically create a thunk from a function by extracting context keys from its parameters and return type."""
+  # Handle annotations stringified by `from __future__ import annotations`
+  if isinstance(fn.__annotations__, dict):
+    fn.__annotations__ = {
+      k: eval(v, fn.__globals__) if isinstance(v, str) else v
+      for k, v in fn.__annotations__.items()
+    }
+
   sig = inspect.signature(fn)
   param_keys: list[ContextKey] = []
   param_names: list[str] = []
@@ -68,9 +75,15 @@ def context_autothunk(fn: Callable[..., Any]) -> Thunk[Context, Context]:
   async def _wrapped(ctx: Context) -> Context:
     """Execute the thunk with the context, retrieving parameters and setting return value."""
     values = [ctx.get(k) for k in param_keys]
+    print(f"Context keys before executing {fn.__name__}: {ctx.data}")
+    print(f"Values to pass to {fn.__name__}: {values}")
     result = await fn(*values)
     if return_key:
-      ctx.set(return_key, result)
+      if result is None:
+        ctx.forget(return_key)
+      else:
+        ctx.set(return_key, result)
+    print(f"Context keys after executing {fn.__name__}: {ctx.data}")
     return ctx
 
   return Thunk(_wrapped)
@@ -118,3 +131,10 @@ def require_context(*keys: ContextKey[Any]) -> Thunk[Context, Context]:
     ctx.require(*keys)
     return ctx
   return _require_context
+
+def has_context_key(key: ContextKey) -> Callable[[Context], bool]:
+  """Check if the context has a key set."""
+  def _has_context_key(ctx: Context) -> bool:
+    """Check if the context has a key set."""
+    return ctx.has(key)
+  return _has_context_key

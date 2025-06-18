@@ -1,6 +1,6 @@
 from . import (
-  agent, agent_config, client, console, context,
-  context_provider, dynamic_context_provider, event,
+  agent, agent_config, client, command, console, context,
+  context_provider, display, dynamic_context_provider, event, intake,
   log, path, schema, static_context_provider, static_system_prompt,
   system_prompt, thunk, tool, util,
 )
@@ -9,11 +9,14 @@ __all__ = [
   "agent",
   "agent_config",
   "client",
+  "command",
   "console",
   "context",
   "context_provider",
+  "display",
   "dynamic_context_provider",
   "event",
+  "intake",
   "log",
   "path",
   "schema",

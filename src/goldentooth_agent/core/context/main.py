@@ -1,6 +1,6 @@
 from antidote import injectable
 from typing import Any, Callable, Dict, TypeVar
-from .key import ContextKey
+from .key import ContextKey, context_key
 
 T = TypeVar('T')
 
@@ -10,10 +10,10 @@ class Context:
 
   def __init__(self, **initial):
     """Initialize the context with optional initial key-value pairs."""
-    self._data: Dict[str, Any] = dict(initial)
+    self.data: Dict[str, Any] = dict(initial)
 
   def get(self, key: ContextKey[T]) -> T:
-    val = self._data.get(key.name)
+    val = self.data.get(key.name)
     if val is None:
       raise KeyError(f"{key.name} not found in context")
     if not isinstance(val, key.type_T):
@@ -24,32 +24,32 @@ class Context:
     """Set a value in the context by key."""
     if not isinstance(value, key.type_T):
       raise TypeError(f"Value for {key.name} must be of type {key.type_T.__name__}, got {type(value).__name__}")
-    self._data[key.name] = value
+    self.data[key.name] = value
 
   def pop(self, key: ContextKey[T]) -> T:
     """Remove a key from the context and return its value."""
-    if key.name not in self._data:
+    if key.name not in self.data:
       raise KeyError(f"{key.name} not found in context")
-    val = self._data.pop(key.name)
+    val = self.data.pop(key.name)
     if not isinstance(val, key.type_T):
       raise TypeError(f"{key.name} wrong type; expected {key.type_T.__name__}, got {type(val).__name__}")
     return val
 
   def has(self, key: ContextKey[T]) -> bool:
     """Check if a key exists in the context."""
-    if key.name not in self._data:
+    if key.name not in self.data:
       return False
-    val = self._data[key.name]
+    val = self.data[key.name]
     return isinstance(val, key.type_T)
 
   def clear(self) -> None:
     """Clear all key-value pairs from the context."""
-    self._data.clear()
+    self.data.clear()
 
   def forget(self, key: ContextKey[T]) -> None:
     """Remove a key from the context without returning its value."""
-    if key.name in self._data:
-      del self._data[key.name]
+    if key.name in self.data:
+      del self.data[key.name]
 
   def require(self, *keys: ContextKey[Any]) -> None:
     """Ensure that all specified keys are present in the context."""

@@ -3,6 +3,7 @@ from typing import Awaitable, Callable
 from .key import context_key
 from .main import Context
 
+SHOULD_CONTINUE_KEY = context_key("should_continue", bool)
 SHOULD_EXIT_KEY = context_key("should_exit", bool)
 
 async def trampoline(ctx: Context, thunk: Thunk[Context, Context]) -> Context:
@@ -11,6 +12,8 @@ async def trampoline(ctx: Context, thunk: Thunk[Context, Context]) -> Context:
     ctx = await thunk(ctx)
     if ctx.get_or_default(SHOULD_EXIT_KEY, lambda: False):
       return ctx
+    if ctx.get_or_default(SHOULD_CONTINUE_KEY, lambda: False):
+      continue
 
 def exitable_chain(*steps: Thunk[Context, Context]) -> Thunk[Context, Context]:
   """Execute each thunk in sequence, checking for exit after each step."""
@@ -20,6 +23,8 @@ def exitable_chain(*steps: Thunk[Context, Context]) -> Thunk[Context, Context]:
       ctx = await step(ctx)
       if ctx.get_or_default(SHOULD_EXIT_KEY, lambda: False):
         break
+      if ctx.get_or_default(SHOULD_CONTINUE_KEY, lambda: False):
+        continue
     return ctx
   return _loop
 

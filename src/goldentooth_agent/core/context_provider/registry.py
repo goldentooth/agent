@@ -4,7 +4,7 @@ from atomic_agents.lib.components.system_prompt_generator import SystemPromptCon
 from typing import Dict
 
 @injectable(factory_method='create')
-class StaticContextProviderRegistry:
+class ContextProviderRegistry:
   """Registry for context providers used in chat sessions."""
 
   def __init__(self):
@@ -12,7 +12,7 @@ class StaticContextProviderRegistry:
     self.providers: Dict[str, SystemPromptContextProviderBase] = {}
 
   @classmethod
-  def create(cls) -> StaticContextProviderRegistry:
+  def create(cls) -> ContextProviderRegistry:
     """Create a new ContextProviderRegistry instance."""
     result = cls()
     return result

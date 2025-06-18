@@ -167,8 +167,6 @@ def compose_chain(*thunks: Thunk[Any, Any]) -> Thunk[Any, Any]: ...
 
 def compose_chain(*thunks):
   """Compose multiple thunks in a chain, where the output of each is the input to the next."""
-  if len(thunks) < 2:
-    raise ValueError("compose_chain requires at least two thunks.")
   async def _composed(ctx):
     """Run a series of thunks in sequence, passing the context through each."""
     value = await thunks[0](ctx)

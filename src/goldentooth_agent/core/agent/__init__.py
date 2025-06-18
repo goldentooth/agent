@@ -3,13 +3,14 @@ from .inject import get_agent
 from .schema import AgentInputConvertible, AgentOutputConvertible
 from .thunk import (
   thunkify_agent, enable_agent_context_provider, disable_agent_context_provider, prepare_agent_input,
-  run_agent, inject_agent, inject_agent_text
+  run_agent, inject_agent, inject_agent_text, agent_chain,
 )
 
 __all__ = [
   "AgentInputConvertible",
   "AgentOutputConvertible",
   "thunkify_agent",
+  "agent_chain",
   "get_agent",
   "inject_agent",
   "inject_agent_text",

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from antidote import inject, injectable
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator, SystemPromptContextProviderBase
-from goldentooth_agent.core.static_context_provider import StaticContextProviderRegistry
+from goldentooth_agent.core.context_provider import ContextProviderRegistry
 from typing import Dict, List, Optional
 from .store import StaticSystemPromptStore
 
@@ -14,7 +14,7 @@ class StaticSystemPromptRegistry:
   def __init__(
     self,
     store: StaticSystemPromptStore = inject.me(),
-    context_provider_registry: StaticContextProviderRegistry = inject.me(),
+    context_provider_registry: ContextProviderRegistry = inject.me(),
   ):
     """Initialize the registry with a filesystem store."""
     self.store = store
