@@ -1,7 +1,7 @@
 from . import (
   agent, agent_config, client, command, console, context,
   context_provider, display, dynamic_context_provider, event, intake,
-  log, path, schema, static_context_provider, static_system_prompt,
+  logging, path, schema, static_context_provider, static_system_prompt,
   system_prompt, thunk, tool, util,
 )
 
@@ -17,7 +17,7 @@ __all__ = [
   "dynamic_context_provider",
   "event",
   "intake",
-  "log",
+  "logging",
   "path",
   "schema",
   "static_context_provider",

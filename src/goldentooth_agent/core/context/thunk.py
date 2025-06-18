@@ -1,5 +1,5 @@
 from antidote import inject
-from goldentooth_agent.core.log import get_logger
+from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.thunk import Thunk, thunk
 import inspect
 from logging import Logger

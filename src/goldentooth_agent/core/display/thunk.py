@@ -3,7 +3,7 @@ from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from goldentooth_agent.core.console import get_console
 from goldentooth_agent.core.context import Context, context_autothunk, clear_context_key, has_context_key
 from goldentooth_agent.core.thunk import Thunk, compose_chain, if_else
-from goldentooth_agent.core.log import get_logger
+from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from rich.console import Console
 from typing import Annotated

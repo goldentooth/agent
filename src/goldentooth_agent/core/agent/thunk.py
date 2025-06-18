@@ -5,7 +5,7 @@ from goldentooth_agent.core.context import Context, context_autothunk, move_cont
 from goldentooth_agent.core.display import DISPLAY_KEY
 from goldentooth_agent.core.dynamic_context_provider import DynamicContextProvider
 from goldentooth_agent.core.intake import INTAKE_KEY
-from goldentooth_agent.core.log import get_logger
+from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.system_prompt import enable_context_provider, disable_context_provider
 from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain, if_else
 from logging import Logger

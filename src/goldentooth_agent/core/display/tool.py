@@ -4,7 +4,7 @@ from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from goldentooth_agent.core.console import get_console
 from goldentooth_agent.core.tool.registry import register_tool
-from goldentooth_agent.core.log import get_logger
+from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from pydantic import Field
 from rich.console import Console

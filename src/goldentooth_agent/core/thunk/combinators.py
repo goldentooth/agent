@@ -77,7 +77,7 @@ def guard(predicate: Callable[[TIn], bool]) -> Thunk[TIn, TIn]:
 
 def log_ctx(name: str, *, prefix: str = "", level: int = logging.DEBUG) -> Thunk[TIn, TIn]:
   """Create a thunk that logs the context to the console."""
-  from goldentooth_agent.core.log import get_logger
+  from goldentooth_agent.core.logging import get_logger
   from logging import Logger
   @inject
   async def _thunk(ctx: TIn, logger: Logger = inject[get_logger(name)]) -> TIn:

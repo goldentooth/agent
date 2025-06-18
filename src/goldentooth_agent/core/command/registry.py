@@ -1,6 +1,6 @@
 from __future__ import annotations
 from antidote import injectable, inject
-from goldentooth_agent.core.log import get_logger
+from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from typing import Callable, List
 

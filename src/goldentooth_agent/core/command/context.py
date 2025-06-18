@@ -1,7 +1,7 @@
 from antidote import inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from goldentooth_agent.core.context import context_key, SHOULD_EXIT_KEY
-from goldentooth_agent.core.log import get_logger
+from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from typer import Typer, Context as TyperContext
 from .inject import get_command_typer
