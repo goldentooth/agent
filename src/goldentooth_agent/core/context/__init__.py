@@ -1,3 +1,4 @@
+from __future__ import annotations
 from .key import ContextKey, context_key
 from .main import Context
 from .thunk import (

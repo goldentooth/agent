@@ -2,11 +2,14 @@ from __future__ import annotations
 from antidote import injectable, inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
+import click
+from goldentooth_agent.core.context import Context
 from goldentooth_agent.core.tool.registry import register_tool
 from pydantic import Field
-from rich.console import Console
-from typer import Typer
-from .inject import get_repl_app
+import shlex
+from typer import Typer, Context as TyperContext
+from typing import Any
+from .inject import get_command_typer
 
 class CommandInput(BaseIOSchema):
   """Schema for the input to the Command tool."""
@@ -14,6 +17,7 @@ class CommandInput(BaseIOSchema):
 
 class CommandOutput(BaseIOSchema):
   """Schema for the output from the Command tool."""
+  context: Any = Field(..., description="The context after running the command.")
 
 class CommandConfig(BaseToolConfig):
   """Configuration for the Command tool."""
@@ -39,9 +43,17 @@ class CommandTool(BaseTool):
     return cls()
 
   @inject
-  def run(self, params: CommandInput, repl_app: Typer = inject[get_repl_app()]) -> CommandOutput: # type: ignore[override]
+  def run(self, params: CommandInput, context: Context, app: Typer = inject[get_command_typer()]) -> CommandOutput: # type: ignore[override]
     """Run the Command tool and return the resulting input."""
-    return CommandOutput()
+    args = shlex.split(params.input)
+    @app.callback(invoke_without_command=True)
+    def callback(typer_context: TyperContext):
+      """Main command callback that sets up the environment."""
+      typer_context.obj = context
+
+    app(args, standalone_mode=False)
+    context = click.get_current_context().obj
+    return CommandOutput(context=context)
 
   def get_info(self) -> str:
     return "\n".join([

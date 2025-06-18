@@ -29,10 +29,9 @@ class CommandRegistry:
     for fn in self.commands:
       fn()
 
-def enroll_command(fn: Callable[[], None]) -> Callable[[], None]:
+@inject
+def enroll_command(fn: Callable[[], None], registry: CommandRegistry = inject.me()) -> Callable[[], None]:
   """Decorator to enroll a command in the command registry."""
-  @inject
-  def _enroll(registry: CommandRegistry = inject.me()) -> None:
-    """Enroll the command in the registry."""
-    registry.enroll(fn)
-  return _enroll
+  print(f"Enrolling command: {fn.__name__}")
+  registry.enroll(fn)
+  return fn

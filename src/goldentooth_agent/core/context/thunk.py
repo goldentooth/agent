@@ -50,12 +50,18 @@ def context_autothunk(fn: Callable[..., Any]) -> Thunk[Context, Context]:
       for k, v in fn.__annotations__.items()
     }
 
+  class FullContextSentinel: pass
+  FULL_CONTEXT = FullContextSentinel()
+
   sig = inspect.signature(fn)
-  param_keys: list[ContextKey] = []
+  param_keys: list[ContextKey[Any] | FullContextSentinel] = []
   param_names: list[str] = []
 
   for name, param in sig.parameters.items():
     annotation = param.annotation
+    if annotation is Context:
+      param_keys.append(FULL_CONTEXT)
+      param_names.append(name)
     if get_origin(annotation) is Annotated:
       _, *meta = get_args(annotation)
       for m in meta:
@@ -74,7 +80,15 @@ def context_autothunk(fn: Callable[..., Any]) -> Thunk[Context, Context]:
 
   async def _wrapped(ctx: Context) -> Context:
     """Execute the thunk with the context, retrieving parameters and setting return value."""
-    values = [ctx.get(k) for k in param_keys]
+
+    def get_value(k: ContextKey[Any] | FullContextSentinel) -> Any:
+      """Get the value from the context or return FULL_CONTEXT sentinel."""
+      if isinstance(k, FullContextSentinel):
+        return ctx
+      else:
+        return ctx.get(k)
+
+    values = [ get_value(k) for k in param_keys ]
     print(f"Context keys before executing {fn.__name__}: {ctx.data}")
     print(f"Values to pass to {fn.__name__}: {values}")
     result = await fn(*values)

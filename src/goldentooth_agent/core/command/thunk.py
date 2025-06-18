@@ -4,12 +4,44 @@ from goldentooth_agent.core.context import Context, context_autothunk, copy_cont
 from goldentooth_agent.core.display import DISPLAY_KEY
 from goldentooth_agent.core.intake import INTAKE_KEY
 from goldentooth_agent.core.log import get_logger
-from goldentooth_agent.core.thunk import Thunk, compose_chain, if_else
+from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain, if_else
 from goldentooth_agent.core.tool import thunkify_tool
 from logging import Logger
+from typer import Typer, Context as TyperContext
 from typing import Annotated, Optional
 from .context import COMMAND_INPUT_KEY, COMMAND_OUTPUT_KEY
+from .inject import get_command_typer
+from .registry import CommandRegistry
 from .tool import CommandInput, CommandOutput, CommandTool
+
+def setup_command_tool() -> Thunk[Context, Context]:
+  """Set up the command tool in the context."""
+  @thunk
+  @inject
+  async def _setup_command_tool(
+    ctx: Context,
+    app: Typer = inject[get_command_typer()],
+  ) -> Context:
+    """Set up the command tool in the context."""
+    return ctx
+  return _setup_command_tool
+
+def register_all_commands() -> Thunk[Context, Context]:
+  """Register all commands in the command tool."""
+  @thunk
+  @inject
+  async def _register_all_commands(
+    ctx: Context,
+    registry: CommandRegistry = inject.me(),
+    app: Typer = inject[get_command_typer()],
+  ) -> Context:
+    """Register all commands in the command tool."""
+    print("Registering all commands...")
+    app.registered_commands.clear()  # Clear existing commands
+    registry.register()
+    print("All commands registered successfully.")
+    return ctx
+  return _register_all_commands
 
 def prepare_command_input() -> Thunk[Context, Context]:
   """Check if the user input comprises a slash command."""
@@ -41,14 +73,17 @@ def run_command_tool() -> Thunk[Context, Context]:
   @inject
   async def _run_command_tool(
     command_input: Annotated[BaseIOSchema, COMMAND_INPUT_KEY],
+    context: Context,
     command_tool: CommandTool = inject.me(),
     logger: Logger = inject[get_logger(__name__)],
   ) -> Annotated[Optional[BaseIOSchema], COMMAND_OUTPUT_KEY]:
     """Run the command tool with the provided input."""
-    tool_thunk = thunkify_tool(command_tool)
     print("Running command tool with provided input...")
     try:
-      output = await tool_thunk(command_input)
+      if not isinstance(command_input, CommandInput):
+        logger.error("Command input is not of type CommandInput.")
+        return None
+      output = command_tool.run(command_input, context) # type: ignore[call-arg]
       print("Command tool executed successfully.")
       if isinstance(output, CommandOutput):
         print("Command tool returned a CommandOutput.")
