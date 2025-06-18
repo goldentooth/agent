@@ -1,6 +1,8 @@
 from antidote import inject
+from goldentooth_agent.core.log import get_logger
 from goldentooth_agent.core.thunk import Thunk, thunk
 import inspect
+from logging import Logger
 from typing import Annotated, Any, Callable, get_args, get_origin
 from .key import ContextKey
 from .main import Context
@@ -78,7 +80,8 @@ def context_autothunk(fn: Callable[..., Any]) -> Thunk[Context, Context]:
         return_key = m
         break
 
-  async def _wrapped(ctx: Context) -> Context:
+  @inject
+  async def _wrapped(ctx: Context, logger: Logger = inject[get_logger(__name__)],) -> Context:
     """Execute the thunk with the context, retrieving parameters and setting return value."""
 
     def get_value(k: ContextKey[Any] | FullContextSentinel) -> Any:
@@ -89,15 +92,15 @@ def context_autothunk(fn: Callable[..., Any]) -> Thunk[Context, Context]:
         return ctx.get(k)
 
     values = [ get_value(k) for k in param_keys ]
-    print(f"Context keys before executing {fn.__name__}: {ctx.data}")
-    print(f"Values to pass to {fn.__name__}: {values}")
+    logger.debug(f"Context keys before executing {fn.__name__}: {ctx.data}")
+    logger.debug(f"Values to pass to {fn.__name__}: {values}")
     result = await fn(*values)
     if return_key:
       if result is None:
         ctx.forget(return_key)
       else:
         ctx.set(return_key, result)
-    print(f"Context keys after executing {fn.__name__}: {ctx.data}")
+    logger.debug(f"Context keys after executing {fn.__name__}: {ctx.data}")
     return ctx
 
   return Thunk(_wrapped)

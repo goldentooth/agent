@@ -34,35 +34,38 @@ def register_all_commands() -> Thunk[Context, Context]:
     ctx: Context,
     registry: CommandRegistry = inject.me(),
     app: Typer = inject[get_command_typer()],
+    logger: Logger = inject[get_logger(__name__)]
   ) -> Context:
     """Register all commands in the command tool."""
-    print("Registering all commands...")
+    logger.debug("Registering all commands...")
     app.registered_commands.clear()  # Clear existing commands
     registry.register()
-    print("All commands registered successfully.")
+    logger.debug("All commands registered successfully.")
     return ctx
   return _register_all_commands
 
 def prepare_command_input() -> Thunk[Context, Context]:
   """Check if the user input comprises a slash command."""
   @context_autothunk
+  @inject
   async def _prepare_command_input(
     command_input: Annotated[BaseIOSchema, COMMAND_INPUT_KEY],
+    logger: Logger = inject[get_logger(__name__)],
   ) -> Annotated[Optional[BaseIOSchema], COMMAND_INPUT_KEY]:
     """Check if the user input contains a slash command."""
     from .schema import CommandInputConvertible
-    print("Checking for commands in user input...")
+    logger.debug("Checking for commands in user input...")
     if isinstance(command_input, CommandInputConvertible):
-      print("User input is convertible to a CommandInput, performing conversion...")
+      logger.debug("User input is convertible to a CommandInput, performing conversion...")
       command_input = command_input.as_command_input()
     if not isinstance(command_input, CommandInput):
-      print("User input is not a CommandInput, returning None.")
+      logger.debug("User input is not a CommandInput, returning None.")
       return None
     input = command_input.input
     if not input.startswith("/"):
-      print("No command found in user input.")
+      logger.debug("No command found in user input.")
       return None
-    print("Command found, extracting...")
+    logger.debug("Command found, extracting...")
     command_input.input = command_input.input[1:]
     return command_input
   return _prepare_command_input
@@ -78,15 +81,15 @@ def run_command_tool() -> Thunk[Context, Context]:
     logger: Logger = inject[get_logger(__name__)],
   ) -> Annotated[Optional[BaseIOSchema], COMMAND_OUTPUT_KEY]:
     """Run the command tool with the provided input."""
-    print("Running command tool with provided input...")
+    logger.debug("Running command tool with provided input...")
     try:
       if not isinstance(command_input, CommandInput):
         logger.error("Command input is not of type CommandInput.")
         return None
       output = command_tool.run(command_input, context) # type: ignore[call-arg]
-      print("Command tool executed successfully.")
+      logger.debug("Command tool executed successfully.")
       if isinstance(output, CommandOutput):
-        print("Command tool returned a CommandOutput.")
+        logger.debug("Command tool returned a CommandOutput.")
         return output
       else:
         logger.warning("Command tool did not return a CommandOutput.")

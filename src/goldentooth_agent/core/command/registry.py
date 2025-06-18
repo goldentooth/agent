@@ -1,5 +1,7 @@
 from __future__ import annotations
 from antidote import injectable, inject
+from goldentooth_agent.core.log import get_logger
+from logging import Logger
 from typing import Callable, List
 
 @injectable(factory_method='create')
@@ -30,8 +32,8 @@ class CommandRegistry:
       fn()
 
 @inject
-def enroll_command(fn: Callable[[], None], registry: CommandRegistry = inject.me()) -> Callable[[], None]:
+def enroll_command(fn: Callable[[], None], registry: CommandRegistry = inject.me(), logger: Logger = inject[get_logger(__name__)]) -> Callable[[], None]:
   """Decorator to enroll a command in the command registry."""
-  print(f"Enrolling command: {fn.__name__}")
+  logger.debug(f"Enrolling command: {fn.__name__}")
   registry.enroll(fn)
   return fn

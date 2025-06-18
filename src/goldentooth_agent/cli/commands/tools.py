@@ -18,9 +18,9 @@ def list_tools() -> None:
     """Handle the listing of tools."""
     tools = tool_registry.keys()
     if not tools:
-      console.print("No tools registered.")
+      console.print("[bold red]No tools registered.[/bold red]")
     else:
       console.print("[bold cyan]Available tools:[/bold cyan]")
       for tool in tools:
-        console.print(f"- [bold green]{tool}[/bold green]")
+        console.print(f"- {tool}")
   handle()

@@ -1,8 +1,10 @@
 from __future__ import annotations
-from antidote import injectable
+from antidote import inject, injectable
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
+from goldentooth_agent.core.log import get_logger
+from logging import Logger
 from pydantic import Field
 from .registry import register_tool
 
@@ -33,11 +35,13 @@ class EchoTool(BaseTool, SystemPromptContextProviderBase):
     """Create an instance of this tool."""
     return cls()
 
-  def run(self, params: EchoInput) -> EchoOutput: # type: ignore[attr-defined]
-    print(f"Running EchoTool with input: {params.string}")
+  @inject
+  def run(self, params: EchoInput, logger: Logger = inject[get_logger(__name__)]) -> EchoOutput: # type: ignore[attr-defined]
+    logger.debug(f"Running EchoTool with input: {params.string}")
     return EchoOutput(result=params.string)
 
   def get_info(self) -> str:
+    """Provide information about the Echo tool."""
     return "\n".join([
       "Use the Echo tool to return the input string as output.",
       "This tool simply echoes back the input string without any modifications.",

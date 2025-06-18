@@ -75,12 +75,12 @@ def run_agent() -> Thunk[Context, Context]:
   ) -> Annotated[Optional[BaseIOSchema], AGENT_OUTPUT_KEY]:
     """Run the agent with the provided input."""
     agent_thunk = thunkify_agent(agent)
-    print("Running agent with provided input...")
+    logger.debug(f"Running agent with provided input {input}")
     try:
       output = await agent_thunk(input)
-      print("Agent executed successfully.")
+      logger.debug("Agent executed successfully.")
       if isinstance(output, BaseIOSchema):
-        print("Agent returned a valid output.")
+        logger.debug("Agent returned a valid output {output}")
         return output
       else:
         logger.warning("Agent did not return a valid output.")

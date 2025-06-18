@@ -17,7 +17,6 @@ class CommandInput(BaseIOSchema):
 
 class CommandOutput(BaseIOSchema):
   """Schema for the output from the Command tool."""
-  context: Any = Field(..., description="The context after running the command.")
 
 class CommandConfig(BaseToolConfig):
   """Configuration for the Command tool."""
@@ -52,8 +51,7 @@ class CommandTool(BaseTool):
       typer_context.obj = context
 
     app(args, standalone_mode=False)
-    context = click.get_current_context().obj
-    return CommandOutput(context=context)
+    return CommandOutput()
 
   def get_info(self) -> str:
     return "\n".join([

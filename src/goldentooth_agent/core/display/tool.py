@@ -4,6 +4,8 @@ from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from goldentooth_agent.core.console import get_console
 from goldentooth_agent.core.tool.registry import register_tool
+from goldentooth_agent.core.log import get_logger
+from logging import Logger
 from pydantic import Field
 from rich.console import Console
 
@@ -35,8 +37,9 @@ class DisplayTool(BaseTool):
     return cls()
 
   @inject
-  def run(self, params: DisplayInput, console: Console = inject[get_console()]) -> DisplayOutput: # type: ignore[override]
+  def run(self, params: DisplayInput, console: Console = inject[get_console()], logger: Logger = inject[get_logger(__name__)]) -> DisplayOutput: # type: ignore[override]
     """Run the Display tool and return the user's input."""
+    logger.debug("Running Display tool with output: %s", params.output)
     console.print(params.output)
     return DisplayOutput()
 
