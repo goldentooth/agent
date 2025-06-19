@@ -8,9 +8,10 @@ from goldentooth_agent.core.thunk import Thunk, compose_chain, if_else
 from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from rich.console import Console
-from typing import Annotated
+from typing import Annotated, Optional
 from .context import DISPLAY_INPUT_KEY
 from .schema import DisplayInputConvertible, DisplayInputAdapter
+from .tool import DisplayInput
 
 def prepare_display_input() -> Thunk[Context, Context]:
   """Create a thunk that prepares text for display to the user."""
@@ -20,14 +21,18 @@ def prepare_display_input() -> Thunk[Context, Context]:
     input: Annotated[BaseIOSchema, DISPLAY_INPUT_KEY],
     agent_prefix: Annotated[str, AGENT_PREFIX_KEY],
     logger: Logger = inject[get_logger(__name__)],
-  ) -> Annotated[BaseIOSchema, DISPLAY_INPUT_KEY]:
+  ) -> Annotated[Optional[BaseIOSchema], DISPLAY_INPUT_KEY]:
     """Prepare the agent input by ensuring it is in the correct format."""
     logger.debug("Preparing display input...")
     if isinstance(input, BaseAgentOutputSchema):
       return DisplayInputAdapter(input, agent_prefix).as_display_input()
     elif isinstance(input, DisplayInputConvertible):
       return input.as_display_input()
-    return input
+    elif isinstance(input, DisplayInput):
+      return input
+    else:
+      logger.debug(f"Input is not convertible to DisplayInput: {input}")
+      return None
   return _prepare_display_input
 
 def display_newline() -> Thunk[Context, Context]:
@@ -55,10 +60,8 @@ def display_output() -> Thunk[Context, Context]:
   ) -> None:
     """Print the console output."""
     logger.debug("Displaying output to the console...")
-    if hasattr(display, 'output'):
-      console.print(display.output) # type: ignore
-    else:
-      console.print(display)
+    if isinstance(display, DisplayInput):
+      console.print(display.output)
   return _display_output
 
 def display_chain() -> Thunk[Context, Context]:

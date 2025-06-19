@@ -34,7 +34,7 @@ def chat(
       trampoline_chain(         # Run the chat session in a trampoline style.
         get_intake(),           # Get user input from the console.
         command_chain(),        # Check for commands and run them if available.
-        agent_chain(),          # Check for agent input and run the agent if available.
+        # agent_chain(),          # Check for agent input and run the agent if available.
         display_chain(),        # Display the output to the console.
       ),
     )

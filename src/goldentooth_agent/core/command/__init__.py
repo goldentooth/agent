@@ -1,4 +1,4 @@
-from .context import COMMAND_INPUT_KEY, COMMAND_OUTPUT_KEY, enroll_exit_command
+from .context import COMMAND_INPUT_KEY, COMMAND_OUTPUT_KEY
 from .inject import get_command_typer
 from .registry import CommandRegistry, enroll_command
 from .thunk import prepare_command_input, run_command_tool, command_chain, register_all_commands, setup_command_tool
@@ -18,6 +18,5 @@ __all__ = [
   "CommandInput",
   "CommandOutput",
   "CommandConfig",
-  "enroll_exit_command",
   "setup_command_tool",
 ]

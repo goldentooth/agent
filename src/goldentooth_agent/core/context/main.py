@@ -1,4 +1,6 @@
-from antidote import injectable
+from __future__ import annotations
+from antidote import inject, injectable
+from rich.table import Table
 from typing import Any, Callable, Dict, TypeVar
 from .key import ContextKey, context_key
 
@@ -62,6 +64,16 @@ class Context:
     if self.has(key):
       return self.get(key)
     return fallback()
+
+  @inject
+  def dump(self) -> Table:
+    """Dump the context to the console."""
+    table = Table(title=f"Context Dump")
+    table.add_column("Key")
+    table.add_column("Value", overflow="fold")
+    for k in self.data:
+      table.add_row(str(k), repr(self.data[k]))
+    return table
 
 if __name__ == "__main__":
   # Example usage

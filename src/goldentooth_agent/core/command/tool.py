@@ -42,13 +42,15 @@ class CommandTool(BaseTool):
   @inject
   def run(self, params: CommandInput, context: Context, app: Typer = inject[get_command_typer()]) -> CommandOutput: # type: ignore[override]
     """Run the Command tool and return the resulting input."""
-    args = shlex.split(params.input)
+
     @app.callback(invoke_without_command=True)
     def callback(typer_context: TyperContext):
       """Main command callback that sets up the environment."""
       typer_context.obj = context
 
+    args = shlex.split(params.input)
     app(args, standalone_mode=False)
+
     return CommandOutput()
 
   def get_info(self) -> str:

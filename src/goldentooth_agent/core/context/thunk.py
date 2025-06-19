@@ -177,19 +177,15 @@ def has_context_key(key: ContextKey) -> Callable[[Context], bool]:
     return ctx.has(key)
   return _has_context_key
 
-def dump_context(name: str) -> Thunk[Context, Context]:
+def dump_context() -> Thunk[Context, Context]:
   """Print all current keys/values in the context."""
-  from rich.table import Table
+  from goldentooth_agent.core.console import get_console
   from rich.console import Console
-  console = Console()
+  @inject
   @thunk(name="dump_context")
-  async def _dump(ctx: Context) -> Context:
+  def _dump(ctx: Context, console: Console = inject[get_console()]) -> Context:
     """Dump the context to the console."""
-    table = Table(title=f"Context Dump: {name}")
-    table.add_column("Key")
-    table.add_column("Value", overflow="fold")
-    for k in ctx.data:
-      table.add_row(str(k), repr(ctx.data[k]))
+    table = ctx.dump()
     console.print(table)
     return ctx
   return _dump
