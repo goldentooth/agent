@@ -27,4 +27,9 @@ class Rule(Generic[TIn]):
     """Convert the rule to a thunk that applies the rule."""
     async def _thunk(ctx: TIn) -> TIn:
       return await self.apply(ctx)
-    return Thunk(_thunk)
+    return Thunk(_thunk, name=self.name, metadata={
+      'condition': self.condition.__name__,
+      'action': self.action.name,
+      'priority': self.priority,
+      'description': self.description
+    })

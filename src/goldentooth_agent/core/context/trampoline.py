@@ -1,5 +1,4 @@
 from goldentooth_agent.core.thunk import Thunk, thunk
-from typing import Awaitable, Callable
 from .key import context_key
 from .main import Context
 

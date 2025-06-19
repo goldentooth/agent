@@ -5,9 +5,8 @@ from goldentooth_agent.core.display import DISPLAY_INPUT_KEY
 from goldentooth_agent.core.intake import INTAKE_KEY
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain, if_else
-from goldentooth_agent.core.tool import thunkify_tool
 from logging import Logger
-from typer import Typer, Context as TyperContext
+from typer import Typer
 from typing import Annotated, Optional
 from .context import COMMAND_INPUT_KEY, COMMAND_OUTPUT_KEY
 from .inject import get_command_typer

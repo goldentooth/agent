@@ -1,9 +1,7 @@
 from __future__ import annotations
-from antidote import inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.agents.base_agent import BaseAgentOutputSchema
-from goldentooth_agent.core.console import get_console
-from rich.console import Console, RenderableType, Group
+from rich.console import RenderableType, Group
 from typing import Any, Optional, Protocol, runtime_checkable
 from .tool import DisplayInput
 

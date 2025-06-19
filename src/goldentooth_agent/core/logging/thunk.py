@@ -2,7 +2,7 @@ from antidote import inject
 import logging
 from typing import Any, Callable, TypeVar
 from goldentooth_agent.core.context import Context
-from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain
+from goldentooth_agent.core.thunk import Thunk, compose_chain
 from logging import Logger
 from .inject import get_logger
 

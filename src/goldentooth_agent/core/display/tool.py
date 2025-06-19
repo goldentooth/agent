@@ -7,7 +7,7 @@ from goldentooth_agent.core.tool.registry import register_tool
 from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from pydantic import Field
-from rich.console import Console, RenderableType
+from rich.console import Console
 from typing import Any
 
 class DisplayInput(BaseIOSchema):

@@ -39,7 +39,7 @@ class ToolRegistry:
     return list(self.registry.values())
 
   @inject.method
-  def get_thunk(self, tool_name: str) -> Thunk[type[BaseIOSchema], BaseIOSchema]:
+  def get_thunk(self, tool_name: str) -> Thunk[ BaseIOSchema, BaseIOSchema]:
     """Get a thunk for a tool by its name."""
     from .thunk import thunkify_tool
     tool = self.get(tool_name)

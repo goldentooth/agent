@@ -2,13 +2,11 @@ from __future__ import annotations
 from antidote import injectable, inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
-import click
 from goldentooth_agent.core.context import Context
 from goldentooth_agent.core.tool.registry import register_tool
 from pydantic import Field
 import shlex
 from typer import Typer, Context as TyperContext
-from typing import Any
 from .inject import get_command_typer
 
 class CommandInput(BaseIOSchema):

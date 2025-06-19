@@ -30,5 +30,7 @@ class RuleEngine(Generic[TIn]):
     """Convert the rule engine to a thunk that evaluates the rules."""
     async def _thunk(ctx: TIn) -> TIn:
       return await self.evaluate(ctx)
-    return Thunk(_thunk)
-
+    return Thunk(_thunk, name="RuleEngine", metadata={
+      'rules': [rule.name for rule in self.rules],
+      'count': len(self.rules)
+    })

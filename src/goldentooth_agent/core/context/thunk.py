@@ -43,6 +43,21 @@ def inject_context() -> Thunk[Context, Context]:
     return ctx
   return _inject_context
 
+class ThunkSentinel:
+  """Sentinel to represent the full context in function parameters."""
+  def __init__(self, name: str) -> None:
+    """Initialize the sentinel with a name."""
+    self.name = name
+  def __repr__(self) -> str:
+    """Return a string representation of the sentinel."""
+    return f"<ThunkSentinel name={self.name}>"
+
+class FullContextSentinel(ThunkSentinel):
+  """Sentinel to represent the full context in function parameters."""
+  def __init__(self) -> None:
+    """Initialize the sentinel with a default name."""
+    super().__init__("FULL_CONTEXT")
+
 def context_autothunk(*, name: str) -> Callable[[Callable[..., Any]], Thunk[Context, Context]]:
   """Decorator to automatically create a thunk from a function by extracting context keys from its parameters and return type."""
   fn_name = name
@@ -55,19 +70,6 @@ def context_autothunk(*, name: str) -> Callable[[Callable[..., Any]], Thunk[Cont
         for k, v in fn.__annotations__.items()
       }
 
-    class ThunkSentinel:
-      """Sentinel to represent the full context in function parameters."""
-      def __init__(self, name: str) -> None:
-        """Initialize the sentinel with a name."""
-        self.name = name
-      def __repr__(self) -> str:
-        """Return a string representation of the sentinel."""
-        return f"<ThunkSentinel name={self.name}>"
-    class FullContextSentinel(ThunkSentinel):
-      """Sentinel to represent the full context in function parameters."""
-      def __init__(self) -> None:
-        """Initialize the sentinel with a default name."""
-        super().__init__("FULL_CONTEXT")
     FULL_CONTEXT = FullContextSentinel()
 
     sig = inspect.signature(fn)
@@ -174,3 +176,20 @@ def has_context_key(key: ContextKey) -> Callable[[Context], bool]:
     """Check if the context has a key set."""
     return ctx.has(key)
   return _has_context_key
+
+def dump_context(name: str) -> Thunk[Context, Context]:
+  """Print all current keys/values in the context."""
+  from rich.table import Table
+  from rich.console import Console
+  console = Console()
+  @thunk(name="dump_context")
+  async def _dump(ctx: Context) -> Context:
+    """Dump the context to the console."""
+    table = Table(title=f"Context Dump: {name}")
+    table.add_column("Key")
+    table.add_column("Value", overflow="fold")
+    for k in ctx.data:
+      table.add_row(str(k), repr(ctx.data[k]))
+    console.print(table)
+    return ctx
+  return _dump

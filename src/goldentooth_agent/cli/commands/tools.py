@@ -1,7 +1,6 @@
 import typer
-from rich import print
 from rich.console import Console
-from antidote import world, inject
+from antidote import inject
 from goldentooth_agent.core.console import get_console
 from goldentooth_agent.core.tool import ToolRegistry
 

@@ -1,5 +1,5 @@
 import inspect
-from typing import Callable, Any, Awaitable
+from typing import Callable
 
 async def maybe_await(func: Callable, *args, **kwargs):
   """Call a function and await its result if it's a coroutine."""
