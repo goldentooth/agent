@@ -1,5 +1,10 @@
 from __future__ import annotations
-from typing import Protocol, runtime_checkable
+from antidote import inject
+from atomic_agents.lib.base.base_io_schema import BaseIOSchema
+from atomic_agents.agents.base_agent import BaseAgentOutputSchema
+from goldentooth_agent.core.console import get_console
+from rich.console import Console, RenderableType, Group
+from typing import Any, Optional, Protocol, runtime_checkable
 from .tool import DisplayInput
 
 @runtime_checkable
@@ -7,3 +12,18 @@ class DisplayInputConvertible(Protocol):
   """Protocol for objects that can be converted to a DisplayInput."""
 
   def as_display_input(self) -> DisplayInput: ...
+
+class DisplayInputAdapter(DisplayInputConvertible):
+  def __init__(self, schema: BaseIOSchema, prefix: Optional[Any] = None) -> None:
+    self.prefix = prefix
+    self.schema = schema
+
+  def as_display_input(self) -> DisplayInput:
+    """Convert the schema to a DisplayInput."""
+    renderables: list[RenderableType] = []
+    if self.prefix:
+      renderables.append(self.prefix)
+    if isinstance(self.schema, BaseAgentOutputSchema):
+      renderables.append(self.schema.chat_message)
+    output = Group(*renderables)
+    return DisplayInput(output=output)

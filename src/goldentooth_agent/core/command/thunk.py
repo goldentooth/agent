@@ -1,7 +1,7 @@
 from antidote import inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from goldentooth_agent.core.context import Context, context_autothunk, copy_context, has_context_key
-from goldentooth_agent.core.display import DISPLAY_KEY
+from goldentooth_agent.core.display import DISPLAY_INPUT_KEY
 from goldentooth_agent.core.intake import INTAKE_KEY
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain, if_else
@@ -16,7 +16,7 @@ from .tool import CommandInput, CommandOutput, CommandTool
 
 def setup_command_tool() -> Thunk[Context, Context]:
   """Set up the command tool in the context."""
-  @thunk
+  @thunk(name="setup_command_tool")
   @inject
   async def _setup_command_tool(
     ctx: Context,
@@ -28,7 +28,7 @@ def setup_command_tool() -> Thunk[Context, Context]:
 
 def register_all_commands() -> Thunk[Context, Context]:
   """Register all commands in the command tool."""
-  @thunk
+  @thunk(name="register_all_commands")
   @inject
   async def _register_all_commands(
     ctx: Context,
@@ -46,7 +46,7 @@ def register_all_commands() -> Thunk[Context, Context]:
 
 def prepare_command_input() -> Thunk[Context, Context]:
   """Check if the user input comprises a slash command."""
-  @context_autothunk
+  @context_autothunk(name="prepare_command_input")
   @inject
   async def _prepare_command_input(
     command_input: Annotated[BaseIOSchema, COMMAND_INPUT_KEY],
@@ -72,7 +72,7 @@ def prepare_command_input() -> Thunk[Context, Context]:
 
 def run_command_tool() -> Thunk[Context, Context]:
   """Route slash-prefixed input to the REPL command handler."""
-  @context_autothunk
+  @context_autothunk(name="run_command_tool")
   @inject
   async def _run_command_tool(
     command_input: Annotated[BaseIOSchema, COMMAND_INPUT_KEY],
@@ -110,7 +110,7 @@ def command_chain() -> Thunk[Context, Context]:
         run_command_tool(),
         if_else(
           has_context_key(COMMAND_INPUT_KEY),
-          copy_context(COMMAND_OUTPUT_KEY, DISPLAY_KEY),
+          copy_context(COMMAND_OUTPUT_KEY, DISPLAY_INPUT_KEY),
         ),
       ),
     ),

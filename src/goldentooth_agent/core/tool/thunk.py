@@ -8,7 +8,7 @@ from .protocol import HasGetInfo
 
 def thunkify_tool(tool: BaseTool) -> Thunk[BaseIOSchema, BaseIOSchema]:
   """Convert a tool into a thunk."""
-  @thunk
+  @thunk(name=f"thunkify_tool({repr(tool)})")
   async def _thunkify_tool(params: BaseIOSchema) -> BaseIOSchema:
     """Run the tool with the given parameters."""
     return tool.run(params) # type: ignore[call-arg]

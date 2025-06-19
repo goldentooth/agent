@@ -6,7 +6,7 @@ from .context import SYSTEM_PROMPT_GENERATOR_KEY
 
 def enable_context_provider(context_provider: SystemPromptContextProviderBase) -> Thunk[Context, Context]:
   """Enable a tool as a context provider."""
-  @context_autothunk
+  @context_autothunk(name=f"enable_context_provider({context_provider.title})")
   async def _enable(
     system_prompt_generator: Annotated[SystemPromptGenerator, SYSTEM_PROMPT_GENERATOR_KEY],
   ) -> Annotated[SystemPromptGenerator, SYSTEM_PROMPT_GENERATOR_KEY]:
@@ -17,7 +17,7 @@ def enable_context_provider(context_provider: SystemPromptContextProviderBase) -
 
 def disable_context_provider(name: str) -> Thunk[Context, Context]:
   """Disable a context provider."""
-  @context_autothunk
+  @context_autothunk(name=f"disable_context_provider({name})")
   async def _disable(
     system_prompt_generator: Annotated[SystemPromptGenerator, SYSTEM_PROMPT_GENERATOR_KEY],
   ) -> Annotated[SystemPromptGenerator, SYSTEM_PROMPT_GENERATOR_KEY]:

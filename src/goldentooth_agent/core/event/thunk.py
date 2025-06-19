@@ -32,12 +32,12 @@ class ThunkEventEmitter:
       """Thunk to emit an event with the current context."""
       ee.emit(event, ctx)
       return ctx
-    return Thunk(_emit)
+    return Thunk(_emit, name=f"emit_event({event})")
 
 if __name__ == "__main__":
   from antidote import world
   import asyncio
 
-  world[ThunkEventEmitter].on("test_event", Thunk.from_sync_callable(lambda x: print(f"Event received with args: {x}")))
+  world[ThunkEventEmitter].on("test_event", Thunk(lambda x: print(f"Event received with args: {x}"), name="test_handler"))
   asyncio.run(world[ThunkEventEmitter].emit("test_event")(("arg1", "arg2")))
 

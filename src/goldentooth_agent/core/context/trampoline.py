@@ -1,4 +1,4 @@
-from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain
+from goldentooth_agent.core.thunk import Thunk, thunk
 from typing import Awaitable, Callable
 from .key import context_key
 from .main import Context
@@ -17,7 +17,7 @@ async def trampoline(ctx: Context, thunk: Thunk[Context, Context]) -> Context:
 
 def exitable_chain(*steps: Thunk[Context, Context]) -> Thunk[Context, Context]:
   """Execute each thunk in sequence, checking for exit after each step."""
-  @thunk
+  @thunk(name=f"exitable_chain({', '.join(step.name for step in steps)})")
   async def _loop(ctx: Context) -> Context:
     for step in steps:
       ctx = await step(ctx)
@@ -31,7 +31,7 @@ def exitable_chain(*steps: Thunk[Context, Context]) -> Thunk[Context, Context]:
 def trampoline_chain(*steps: Thunk[Context, Context]) -> Thunk[Context, Context]:
   """Repeat the chain in trampoline style until exit is requested."""
   chain = exitable_chain(*steps)
-  @thunk
+  @thunk(name=f"trampoline_chain({', '.join(step.name for step in steps)})")
   async def _loop(ctx: Context) -> Context:
     return await trampoline(ctx, chain)
   return _loop

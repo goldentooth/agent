@@ -9,7 +9,7 @@ import yaml
 
 def debug_schema() -> Thunk[BaseIOSchema, BaseIOSchema]:
   """Debug the schema by printing it in a rich format."""
-  @thunk
+  @thunk(name="debug_schema")
   @inject
   async def _debug(schema: BaseIOSchema, console: Console = inject[get_error_console()]) -> BaseIOSchema:
     """Print the schema in a debug format."""

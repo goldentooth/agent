@@ -2,7 +2,7 @@ from antidote import inject
 from atomic_agents.agents.base_agent import BaseAgent
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from goldentooth_agent.core.context import Context, context_autothunk, move_context, copy_context, has_context_key
-from goldentooth_agent.core.display import DISPLAY_KEY
+from goldentooth_agent.core.display import DISPLAY_INPUT_KEY
 from goldentooth_agent.core.dynamic_context_provider import DynamicContextProvider
 from goldentooth_agent.core.intake import INTAKE_KEY
 from goldentooth_agent.core.logging import get_logger
@@ -11,13 +11,13 @@ from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain, if_else
 from logging import Logger
 from rich.text import Text
 from typing import Annotated, Callable, Optional
-from .context import AGENT_INPUT_KEY, AGENT_OUTPUT_KEY, AGENT_KEY, AGENT_TEXT_KEY
+from .context import AGENT_INPUT_KEY, AGENT_OUTPUT_KEY, AGENT_KEY, AGENT_PREFIX_KEY
 from .inject import get_agent
 from .schema import AgentInputConvertible
 
 def thunkify_agent(agent: BaseAgent) -> Thunk[BaseIOSchema, BaseIOSchema]:
   """Convert an agent into a thunk."""
-  @thunk
+  @thunk(name=f"thunkify_agent({repr(agent)})")
   async def _thunkify_agent(params: BaseIOSchema) -> BaseIOSchema:
     """Run the agent with the given parameters."""
     return agent.run(params)
@@ -34,7 +34,7 @@ def disable_agent_context_provider(agent_name: str) -> Thunk[Context, Context]:
 
 def inject_agent() -> Thunk[Context, Context]:
   """Inject a agent into the context."""
-  @context_autothunk
+  @context_autothunk(name="inject_agent")
   @inject
   async def _inject_agent(
     agent: BaseAgent = inject[get_agent()],
@@ -43,18 +43,18 @@ def inject_agent() -> Thunk[Context, Context]:
     return agent
   return _inject_agent
 
-def inject_agent_text() -> Thunk[Context, Context]:
+def inject_agent_prefix() -> Thunk[Context, Context]:
   """Inject the agent's text representation into the context."""
-  @context_autothunk
+  @context_autothunk(name="inject_agent_text")
   @inject
-  async def _inject_agent_text() -> Annotated[Text, AGENT_TEXT_KEY]:
+  async def _inject_agent_text() -> Annotated[Text, AGENT_PREFIX_KEY]:
     """Inject the agent's text representation into the context."""
-    return Text.assemble(("Goldentooth: ", "bold yellow"))
+    return Text.assemble(("Goldentooth: ", "bold yellow"), end="")
   return _inject_agent_text
 
 def prepare_agent_input() -> Thunk[Context, Context]:
   """Create a thunk that prepares the agent input."""
-  @context_autothunk
+  @context_autothunk(name="prepare_agent_input")
   async def _prepare_agent_input(
     input: Annotated[BaseIOSchema, AGENT_INPUT_KEY],
   ) -> Annotated[BaseIOSchema, AGENT_INPUT_KEY]:
@@ -66,7 +66,7 @@ def prepare_agent_input() -> Thunk[Context, Context]:
 
 def run_agent() -> Thunk[Context, Context]:
   """Create a thunk that runs an agent with the provided input."""
-  @context_autothunk
+  @context_autothunk(name="run_agent")
   @inject
   async def _run_agent(
     input: Annotated[BaseIOSchema, AGENT_INPUT_KEY],
@@ -80,7 +80,7 @@ def run_agent() -> Thunk[Context, Context]:
       output = await agent_thunk(input)
       logger.debug("Agent executed successfully.")
       if isinstance(output, BaseIOSchema):
-        logger.debug("Agent returned a valid output {output}")
+        logger.debug(f"Agent returned a valid output {output}")
         return output
       else:
         logger.warning("Agent did not return a valid output.")
@@ -101,7 +101,7 @@ def agent_chain() -> Thunk[Context, Context]:
         run_agent(),
         if_else(
           has_context_key(AGENT_INPUT_KEY),
-          move_context(AGENT_OUTPUT_KEY, DISPLAY_KEY),
+          move_context(AGENT_OUTPUT_KEY, DISPLAY_INPUT_KEY),
         ),
       ),
     ),

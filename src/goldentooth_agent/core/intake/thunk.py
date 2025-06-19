@@ -8,7 +8,7 @@ from .tool import IntakeTool, IntakeInput, IntakeOutput
 
 def get_intake() -> Thunk[Context, Context]:
   """Get a thunk that retrieves user input from the console."""
-  @context_autothunk
+  @context_autothunk(name="get_intake")
   @inject
   async def _get_intake(
     intake_tool: IntakeTool = inject.me(),

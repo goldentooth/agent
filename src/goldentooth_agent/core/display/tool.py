@@ -7,11 +7,12 @@ from goldentooth_agent.core.tool.registry import register_tool
 from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from pydantic import Field
-from rich.console import Console
+from rich.console import Console, RenderableType
+from typing import Any
 
 class DisplayInput(BaseIOSchema):
   """Schema for the input to the Display tool."""
-  output: str = Field(..., description="The output to display to the user. For example, 'Hello, World!'.")
+  output: Any = Field(..., description="The output to display to the user. For example, 'Hello, World!'.")
 
 class DisplayOutput(BaseIOSchema):
   """Schema for the output from the Display tool."""

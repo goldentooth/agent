@@ -6,4 +6,4 @@ from rich.text import Text
 AGENT_INPUT_KEY = context_key("agent_input", BaseIOSchema)
 AGENT_OUTPUT_KEY = context_key("agent_output", BaseIOSchema)
 AGENT_KEY = context_key("agent", BaseAgent)
-AGENT_TEXT_KEY = context_key("agent_text", Text)
+AGENT_PREFIX_KEY = context_key("agent_prefix", Text)
