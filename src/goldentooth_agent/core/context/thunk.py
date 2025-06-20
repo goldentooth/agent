@@ -181,9 +181,9 @@ def dump_context() -> Thunk[Context, Context]:
   """Print all current keys/values in the context."""
   from goldentooth_agent.core.console import get_console
   from rich.console import Console
-  @inject
   @thunk(name="dump_context")
-  def _dump(ctx: Context, console: Console = inject[get_console()]) -> Context:
+  @inject
+  async def _dump(ctx: Context, console: Console = inject[get_console()]) -> Context:
     """Dump the context to the console."""
     table = ctx.dump()
     console.print(table)
