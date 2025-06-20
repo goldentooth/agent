@@ -177,6 +177,27 @@ def has_context_key(key: ContextKey) -> Callable[[Context], bool]:
     return ctx.has(key)
   return _has_context_key
 
+@inject
+def has_context_key_value(
+  key: ContextKey[Any],
+  value: Any,
+  default: Any = None,
+  logger: Logger = inject[get_logger(__name__)],
+) -> Callable[[Context], bool]:
+  """Thunk to check if the context has a key with a specific value."""
+  def _has_context_key_value(ctx: Context) -> bool:
+    """Check if the context has a key with a specific value."""
+    logger.debug(f"Checking if context has key {key.name} with value {value} (default: {default})")
+    if ctx.has(key):
+      current_value = ctx.get_or_default(key, lambda: default)
+      result = current_value == value
+      logger.debug(f"Context key {key.name} has value {current_value}, expected {value}: {result}")
+      return result
+    else:
+      logger.debug(f"Context key {key.name} is not set, returning default: {default}")
+      return default == value
+  return _has_context_key_value
+
 def dump_context() -> Thunk[Context, Context]:
   """Print all current keys/values in the context."""
   from goldentooth_agent.core.console import get_console

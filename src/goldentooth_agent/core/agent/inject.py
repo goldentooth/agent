@@ -4,6 +4,6 @@ from goldentooth_agent.core.agent_config import get_agent_config
 
 @inject
 @lazy
-def get_agent(config: BaseAgentConfig = get_agent_config()) -> BaseAgent:
+def get_default_agent(config: BaseAgentConfig = get_agent_config()) -> BaseAgent:
   """Create an instance of AgentBase with the default configuration."""
   return BaseAgent(config=config)

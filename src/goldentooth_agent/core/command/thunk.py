@@ -1,8 +1,9 @@
 from antidote import inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
+from goldentooth_agent.core.agent import set_should_skip_agent_key
+from goldentooth_agent.core.command.context import COMMAND_INPUT_KEY, COMMAND_OUTPUT_KEY
 from goldentooth_agent.core.context import Context, context_autothunk, copy_context, has_context_key, clear_context_key
 from goldentooth_agent.core.display import DISPLAY_INPUT_KEY
-from goldentooth_agent.core.intake import INTAKE_KEY
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain, if_else
 from logging import Logger
@@ -101,6 +102,7 @@ def run_command_tool() -> Thunk[Context, Context]:
 
 def command_chain() -> Thunk[Context, Context]:
   """Create a thunk that composes the command chain."""
+  from goldentooth_agent.core.intake import INTAKE_KEY
   return compose_chain(
     copy_context(INTAKE_KEY, COMMAND_INPUT_KEY),
     prepare_command_input(),
@@ -110,7 +112,10 @@ def command_chain() -> Thunk[Context, Context]:
         run_command_tool(),
         if_else(
           has_context_key(COMMAND_OUTPUT_KEY),
-          copy_context(COMMAND_OUTPUT_KEY, DISPLAY_INPUT_KEY),
+          compose_chain(
+            copy_context(COMMAND_OUTPUT_KEY, DISPLAY_INPUT_KEY),
+            set_should_skip_agent_key(True),  # Set the skip flag to True if a command was executed
+          )
         ),
       ),
     ),

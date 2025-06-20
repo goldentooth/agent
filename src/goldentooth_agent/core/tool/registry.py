@@ -5,13 +5,18 @@ from atomic_agents.lib.base.base_tool import BaseTool
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from goldentooth_agent.core.thunk import Thunk
 
-@injectable
+@injectable(factory_method='create')
 class ToolRegistry:
   """Registry for managing tools."""
 
   def __init__(self):
     """Initialize the tool registry."""
     self.registry: Dict[str, BaseTool] = {}
+
+  @classmethod
+  def create(cls) -> ToolRegistry:
+    """Create a new ToolRegistry instance."""
+    return cls()
 
   @inject.method
   def register(self, tool: BaseTool) -> None:

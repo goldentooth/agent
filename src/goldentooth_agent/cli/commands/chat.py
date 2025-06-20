@@ -20,7 +20,7 @@ def chat(
     ctx: Context = inject.me(),
   ) -> None:
     """Handle the chat session."""
-    from goldentooth_agent.core.agent import agent_chain, inject_agent, inject_agent_prefix
+    from goldentooth_agent.core.agent import agent_chain, inject_default_agent, inject_agent_prefix
     from goldentooth_agent.core.command import command_chain, register_all_commands, setup_command_tool
     from goldentooth_agent.core.context import trampoline_chain
     from goldentooth_agent.core.display import display_chain
@@ -29,7 +29,7 @@ def chat(
     chain = compose_chain(
       setup_command_tool(),     # Set up the command tool in the context.
       register_all_commands(),  # Register all commands.
-      inject_agent(),           # Inject the agent into the context.
+      inject_default_agent(),   # Inject the agent into the context.
       inject_agent_prefix(),    # Inject the agent's output prefix.
       trampoline_chain(         # Run the chat session in a trampoline style.
         get_intake(),           # Get user input from the console.

@@ -3,8 +3,6 @@ from antidote import injectable, inject
 from atomic_agents.agents.base_agent import BaseAgentInputSchema
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
-from goldentooth_agent.core.command import CommandInput
-from goldentooth_agent.core.console import get_console
 from goldentooth_agent.core.tool.registry import register_tool
 from pydantic import Field
 from rich.console import Console
@@ -15,6 +13,7 @@ class IntakeInput(BaseIOSchema):
   prompt: str = Field(..., description="The prompt to display to the user. For example, 'Please enter your name:'.")
   style: Optional[str] = Field(..., description="The (optional) style to apply to the prompt. For example, 'bold blue', 'italic green', etc.")
 
+from goldentooth_agent.core.command import CommandInput
 class IntakeOutput(BaseIOSchema):
   """Schema for the output from the Intake tool."""
   string: str = Field(..., description="The user's input. For example, 'John Doe'.")
@@ -25,7 +24,7 @@ class IntakeOutput(BaseIOSchema):
 
   def as_command_input(self) -> CommandInput:
     """Convert this output to a CommandInput."""
-    from goldentooth_agent.core.command.tool import CommandInput
+    from goldentooth_agent.core.command import CommandInput
     return CommandInput(input=self.string)
 
 class IntakeConfig(BaseToolConfig):
@@ -48,6 +47,7 @@ class IntakeTool(BaseTool):
     """Create an instance of this tool."""
     return cls()
 
+  from goldentooth_agent.core.console import get_console
   @inject
   def run(self, params: IntakeInput, console: Console = inject[get_console()]) -> IntakeOutput: # type: ignore[override]
     """Run the Console tool and return the user's input."""
