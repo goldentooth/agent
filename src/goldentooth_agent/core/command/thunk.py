@@ -1,6 +1,6 @@
 from antidote import inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
-from goldentooth_agent.core.context import Context, context_autothunk, copy_context, has_context_key
+from goldentooth_agent.core.context import Context, context_autothunk, copy_context, has_context_key, clear_context_key
 from goldentooth_agent.core.display import DISPLAY_INPUT_KEY
 from goldentooth_agent.core.intake import INTAKE_KEY
 from goldentooth_agent.core.logging import get_logger
@@ -71,6 +71,7 @@ def prepare_command_input() -> Thunk[Context, Context]:
 
 def run_command_tool() -> Thunk[Context, Context]:
   """Route slash-prefixed input to the REPL command handler."""
+  @clear_context_key(COMMAND_INPUT_KEY)
   @context_autothunk(name="run_command_tool")
   @inject
   async def _run_command_tool(
@@ -108,7 +109,7 @@ def command_chain() -> Thunk[Context, Context]:
       compose_chain(
         run_command_tool(),
         if_else(
-          has_context_key(COMMAND_INPUT_KEY),
+          has_context_key(COMMAND_OUTPUT_KEY),
           copy_context(COMMAND_OUTPUT_KEY, DISPLAY_INPUT_KEY),
         ),
       ),
