@@ -1,6 +1,8 @@
-from antidote import lazy
+from antidote import inject, lazy
 import asyncio
+from concurrent.futures import Future
 import threading
+from typing import Any
 
 class BackgroundEventLoop:
   """A class to manage an asyncio event loop in a background thread."""
@@ -24,3 +26,8 @@ class BackgroundEventLoop:
 def get_background_loop() -> BackgroundEventLoop:
   """Get the background event loop instance."""
   return BackgroundEventLoop()
+
+@inject
+def run_in_background(coroutine, background_loop: BackgroundEventLoop = inject[get_background_loop()]):
+  """Run a coroutine in the background event loop."""
+  return background_loop.submit(coroutine).result()

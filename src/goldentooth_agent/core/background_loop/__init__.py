@@ -1,6 +1,7 @@
-from .inject import get_background_loop, BackgroundEventLoop
+from .inject import get_background_loop, BackgroundEventLoop, run_in_background
 
 __all__ = [
-  "get_background_loop",
   "BackgroundEventLoop",
+  "get_background_loop",
+  "run_in_background",
 ]
