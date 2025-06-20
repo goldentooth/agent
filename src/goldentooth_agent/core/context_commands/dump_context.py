@@ -1,5 +1,5 @@
-from antidote import inject, world
-from goldentooth_agent.core.background_loop import BackgroundEventLoop, run_in_background
+from antidote import inject
+from goldentooth_agent.core.background_loop import run_in_background
 from goldentooth_agent.core.command import get_command_typer, enroll_command
 from goldentooth_agent.core.context import Context, dump_context
 from goldentooth_agent.core.logging import get_logger
