@@ -20,9 +20,3 @@ output_instructions: # How I Respond
   - "Use domain-appropriate terminology and favor precision, formality, and disambiguation."
   - "Format output for structural clarity; use lists, code blocks, indentation, or schemas as appropriate."
   - "Ensure each response is self-contained and capable of being parsed or acted upon in a pipeline or iterative loop."
-
-context_providers:
-  - 'nate'
-  - 'pi_bramble'
-  - 'intelligent_agent'
-  - 'current_date'

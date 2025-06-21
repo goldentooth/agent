@@ -1,6 +1,6 @@
 from __future__ import annotations
 from antidote import inject, injectable
-from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator, SystemPromptContextProviderBase
+from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator
 from goldentooth_agent.core.context_provider import ContextProviderRegistry
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.path import UserPaths
@@ -115,21 +115,10 @@ class StaticSystemPromptStore:
     background = data.get("background", [])
     steps = data.get("steps", [])
     output_instructions = data.get("output_instructions", [])
-    context_provider_ids = data.get("context_providers", [])
-    for context_provider_id in context_provider_ids:
-      if not context_provider_registry.has(context_provider_id):
-        raise ValueError(f"Context provider '{context_provider_id}' does not exist.")
-
-    providers: dict[str, SystemPromptContextProviderBase] = {
-      ident: context_provider_registry.get(ident)
-      for ident in context_provider_ids
-    }
-
     return SystemPromptGenerator(
       background=background,
       steps=steps,
       output_instructions=output_instructions,
-      context_providers=providers,
     )
 
 @inject
