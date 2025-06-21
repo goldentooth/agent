@@ -3,7 +3,6 @@ from antidote import inject
 import asyncio
 from goldentooth_agent.core.context import Context
 import typer
-from typing_extensions import Annotated
 
 app = typer.Typer()
 
