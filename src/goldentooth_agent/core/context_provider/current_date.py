@@ -2,8 +2,10 @@ from __future__ import annotations
 from antidote import injectable
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
 from datetime import datetime
+from .registry import register_context_provider
 
 @injectable(factory_method='create')
+@register_context_provider(name="current_date")
 class CurrentDate(SystemPromptContextProviderBase):
   """Context provider that provides information about the current date."""
 

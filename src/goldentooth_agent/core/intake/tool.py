@@ -4,6 +4,8 @@ from atomic_agents.agents.base_agent import BaseAgentInputSchema
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from goldentooth_agent.core.tool.registry import register_tool
+from goldentooth_agent.core.logging import get_logger
+from logging import Logger
 from pydantic import Field
 from rich.console import Console
 from typing import Optional
@@ -49,8 +51,14 @@ class IntakeTool(BaseTool):
 
   from goldentooth_agent.core.console import get_console
   @inject
-  def run(self, params: IntakeInput, console: Console = inject[get_console()]) -> IntakeOutput: # type: ignore[override]
+  def run( # type: ignore[override]
+    self,
+    params: IntakeInput,
+    console: Console = inject[get_console()],
+    logger: Logger = inject[get_logger(__name__)]
+  ) -> IntakeOutput:
     """Run the Console tool and return the user's input."""
+    logger.debug(f"Running IntakeTool with params: {params}")
     string = console.input(f"\n[{params.style}]{params.prompt}[/{params.style}] " if params.style else f"\n{params.prompt} ")
     return IntakeOutput(string=string)
 

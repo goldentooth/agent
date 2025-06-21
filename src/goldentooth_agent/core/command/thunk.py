@@ -110,12 +110,10 @@ def command_chain() -> Thunk[Context, Context]:
       has_context_key(COMMAND_INPUT_KEY),
       compose_chain(
         run_command_tool(),
+        set_should_skip_agent_key(True),  # Set the skip flag to True if a command was executed
         if_else(
           has_context_key(COMMAND_OUTPUT_KEY),
-          compose_chain(
-            copy_context(COMMAND_OUTPUT_KEY, DISPLAY_INPUT_KEY),
-            set_should_skip_agent_key(True),  # Set the skip flag to True if a command was executed
-          )
+          copy_context(COMMAND_OUTPUT_KEY, DISPLAY_INPUT_KEY),
         ),
       ),
     ),

@@ -18,25 +18,29 @@ from .schema import AgentInputConvertible
 def thunkify_agent(agent: BaseAgent) -> Thunk[BaseIOSchema, BaseIOSchema]:
   """Convert an agent into a thunk."""
   @thunk(name=f"thunkify_agent({repr(agent)})")
-  async def _thunkify_agent(params: BaseIOSchema) -> BaseIOSchema:
+  @inject
+  async def _thunkify_agent(params: BaseIOSchema, logger: Logger = inject[get_logger(__name__)]) -> BaseIOSchema:
     """Run the agent with the given parameters."""
+    logger.debug(f"Running agent {agent} with parameters: {params}")
     return agent.run(params)
   return _thunkify_agent
 
-@inject
-def set_should_skip_agent_key(value: bool = True, logger: Logger = inject[get_logger(__name__)]) -> Thunk[Context, Context]:
-  """Set the should_exit flag in the context."""
-  @thunk(name="set_should_exit")
-  async def _set_should_exit(ctx: Context) -> Context:
-    logger.debug(f"Setting should_continue to {value}")
+def set_should_skip_agent_key(value: bool = True) -> Thunk[Context, Context]:
+  """Set the should_skip_agent flag in the context."""
+  @thunk(name="set_should_skip_agent")
+  @inject
+  async def _set_should_exit(ctx: Context, logger: Logger = inject[get_logger(__name__)]) -> Context:
+    logger.debug(f"Setting should_skip_agent to {value}")
     ctx.set(SHOULD_SKIP_AGENT_KEY, value)
     return ctx
   return _set_should_exit
 
 def should_skip_agent() -> Callable[[Context], bool]:
   """Check if the agent should be skipped."""
-  def _should_skip_agent(ctx: Context) -> bool:
+  @inject
+  def _should_skip_agent(ctx: Context, logger: Logger = inject[get_logger(__name__)]) -> bool:
     """Check if the agent should be skipped."""
+    logger.debug("Checking if agent should be skipped.")
     return ctx.get_or_default(SHOULD_SKIP_AGENT_KEY, lambda: False)
   return _should_skip_agent
 
@@ -55,8 +59,10 @@ def inject_default_agent() -> Thunk[Context, Context]:
   @inject
   async def _inject_agent(
     agent: BaseAgent = inject[get_default_agent()],
+    logger: Logger = inject[get_logger(__name__)],
   ) -> Annotated[BaseAgent, AGENT_KEY]:
     """Inject the agent into the context."""
+    logger.debug(f"Injecting default agent: {agent}")
     return agent
   return _inject_agent
 
@@ -64,18 +70,22 @@ def inject_agent_prefix() -> Thunk[Context, Context]:
   """Inject the agent's text representation into the context."""
   @context_autothunk(name="inject_agent_text")
   @inject
-  async def _inject_agent_text() -> Annotated[Text, AGENT_PREFIX_KEY]:
+  async def _inject_agent_text(logger: Logger = inject[get_logger(__name__)]) -> Annotated[Text, AGENT_PREFIX_KEY]:
     """Inject the agent's text representation into the context."""
+    logger.debug("Injecting agent text representation into the context.")
     return Text.assemble(("Goldentooth: ", "bold yellow"), end="")
   return _inject_agent_text
 
 def prepare_agent_input() -> Thunk[Context, Context]:
   """Create a thunk that prepares the agent input."""
   @context_autothunk(name="prepare_agent_input")
+  @inject
   async def _prepare_agent_input(
     input: Annotated[BaseIOSchema, AGENT_INPUT_KEY],
+    logger: Logger = inject[get_logger(__name__)],
   ) -> Annotated[BaseIOSchema, AGENT_INPUT_KEY]:
     """Prepare the agent input by ensuring it is in the correct format."""
+    logger.debug(f"Preparing agent input: {input}")
     if isinstance(input, AgentInputConvertible):
       return input.as_agent_input()
     return input
@@ -135,7 +145,8 @@ def dump_agent_registry(registry = inject[AgentRegistry]) -> Thunk[Context, Cont
   from goldentooth_agent.core.console import get_console
   from antidote import world
   @thunk(name="dump_agent_registry")
-  async def _dump(ctx: Context) -> Context:
+  @inject
+  async def _dump(ctx: Context, logger: Logger = inject[get_logger(__name__)]) -> Context:
     """Dump the agent registry to the console."""
     table = registry.dump()
     world[get_console()].print(table)

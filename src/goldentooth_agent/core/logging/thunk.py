@@ -37,6 +37,7 @@ def change_log_level(
   @inject
   async def _change_log_level(_, logger: Logger = inject[get_logger(logger_name)]) -> Any:
     """Change the log level of the specified logger."""
+    logger.debug(f"Changing log level for {logger_name} to {logging.getLevelName(level)}")
     logger.setLevel(level)
     logger.debug(f"Log level for {logger_name} changed to {logging.getLevelName(level)}")
     return _

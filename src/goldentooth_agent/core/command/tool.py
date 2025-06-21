@@ -39,7 +39,7 @@ class CommandTool(BaseTool):
     """Create an instance of this tool."""
     return cls()
 
-  @inject
+  @inject.method
   def run(self, params: CommandInput, context: Context, app: Typer = inject[get_command_typer()]) -> CommandOutput: # type: ignore[override]
     """Run the Command tool and return the resulting input."""
 
@@ -53,6 +53,7 @@ class CommandTool(BaseTool):
 
     return CommandOutput()
 
+  @inject.method
   def get_info(self) -> str:
     return "\n".join([
       "Use the Command tool to execute commands provided by the user.",

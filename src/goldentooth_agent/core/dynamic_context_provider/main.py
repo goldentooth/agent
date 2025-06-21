@@ -1,3 +1,4 @@
+from __future__ import annotations
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
 from typing import Callable
 
@@ -12,3 +13,14 @@ class DynamicContextProvider(SystemPromptContextProviderBase):
   def get_info(self) -> str:
     """Return a string representation of the dynamic context provider's information."""
     return self.fn()
+
+  @classmethod
+  def from_dict(cls, data: dict) -> DynamicContextProvider:
+    """Create a DynamicContextProvider from a dictionary."""
+    title: str = data['title']
+    if not title:
+      raise ValueError("DynamicContextProvider must have a 'title' field.")
+    info: list[str] = data['info']
+    if not info:
+      raise ValueError("DynamicContextProvider must have an 'info' field.")
+    return cls(title, lambda: "\n".join(info))

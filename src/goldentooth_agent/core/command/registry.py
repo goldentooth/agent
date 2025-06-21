@@ -8,8 +8,9 @@ from typing import Callable, List
 class CommandRegistry:
   """Registry for commands."""
 
-  def __init__(self):
+  def __init__(self, logger: Logger = inject[get_logger(__name__)]) -> None:
     """Initialize the registry with an empty dictionary."""
+    logger.debug("Initializing CommandRegistry")
     self.commands: List[Callable[[], None]] = []
 
   @classmethod
@@ -18,16 +19,22 @@ class CommandRegistry:
     result = cls()
     return result
 
-  def enroll(self, callable: Callable[[], None]):
+  @inject.method
+  def enroll(self, callable: Callable[[], None], logger: Logger = inject[get_logger(__name__)]) -> None:
     """Enroll a comand."""
+    logger.debug(f"Enrolling command: {callable.__name__}")
     self.commands.append(callable)
 
-  def clear(self):
+  @inject.method
+  def clear(self, logger: Logger = inject[get_logger(__name__)]):
     """Clear all registered command registrars."""
+    logger.debug(f"Clearing {len(self.commands)} commands")
     self.commands.clear()
 
-  def register(self):
+  @inject.method
+  def register(self, logger: Logger = inject[get_logger(__name__)]):
     """Register all enrolled commands."""
+    logger.debug(f"Registering {len(self.commands)} commands")
     for fn in self.commands:
       fn()
 

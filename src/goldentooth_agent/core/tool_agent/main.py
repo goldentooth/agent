@@ -1,6 +1,9 @@
+from antidote import inject
 from atomic_agents.agents.base_agent import BaseAgent, BaseAgentConfig, AgentMemory
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseTool
+from goldentooth_agent.core.logging import get_logger
+from logging import Logger
 from pydantic import BaseModel
 from typing import Optional, AsyncGenerator
 from .no_op_instructor import NoOpInstructor
@@ -8,8 +11,10 @@ from .no_op_instructor import NoOpInstructor
 class ToolAgent(BaseAgent):
   """Agent that wraps a tool and provides a simple interface for interaction."""
 
-  def __init__(self, tool: BaseTool):
+  @inject
+  def __init__(self, tool: BaseTool, logger: Logger = inject[get_logger(__name__)]):
     """Initialize the ToolAgent with a given tool."""
+    logger.debug(f"Initializing ToolAgent with tool: {tool.tool_name}")
     agent_config = BaseAgentConfig(
       client=NoOpInstructor(),
       model=tool.tool_name,
@@ -25,12 +30,16 @@ class ToolAgent(BaseAgent):
     super().__init__(agent_config)
     self.tool = tool
 
-  def get_response(self, response_model=None) -> type[BaseModel]:
+  @inject
+  def get_response(self, response_model=None, logger: Logger = inject[get_logger(__name__)]) -> type[BaseModel]:
     """Get the response from the tool agent."""
+    logger.debug(f"Getting response from ToolAgent with tool: {self.tool.tool_name}")
     return self.tool.run(self.current_user_input)  # type: ignore
 
-  def run(self, user_input: Optional[BaseIOSchema] = None) -> BaseIOSchema:
+  @inject
+  def run(self, user_input: Optional[BaseIOSchema] = None, logger: Logger = inject[get_logger(__name__)]) -> BaseIOSchema:
     """Run the tool agent with the provided user input."""
+    logger.debug(f"Running ToolAgent with tool: {self.tool.tool_name} and user input: {user_input}")
     if user_input:
       self.memory.initialize_turn()
       self.current_user_input = user_input
@@ -39,8 +48,14 @@ class ToolAgent(BaseAgent):
       raise TypeError(f"Expected input of type {self.input_schema}, got {type(user_input)}")
     return self.tool.run(user_input) # type: ignore[call-arg]
 
-  async def run_async(self, user_input: Optional[BaseIOSchema] = None) -> AsyncGenerator[BaseIOSchema, None]:
+  @inject
+  async def run_async(
+    self,
+    user_input: Optional[BaseIOSchema] = None,
+    logger: Logger = inject[get_logger(__name__)],
+  ) -> AsyncGenerator[BaseIOSchema, None]:
     """Run the tool agent asynchronously with the provided user input."""
+    logger.debug(f"Running ToolAgent asynchronously with tool: {self.tool.tool_name} and user input: {user_input}")
     if user_input:
       self.memory.initialize_turn()
       self.current_user_input = user_input
@@ -51,15 +66,16 @@ class ToolAgent(BaseAgent):
 
 if __name__ == "__main__":
   from antidote import world
-  from goldentooth_agent.core.tool import EchoTool, EchoInput, ReverseTool, ReverseInput
+  from atomic_agents.agents.base_agent import BaseAgentInputSchema
+  from goldentooth_agent.core.tool import EchoTool, ReverseTool
   from rich.console import Console
 
   tool = world[EchoTool]
   agent = ToolAgent(tool)
-  response = agent.run(EchoInput(string="Hello, world!"))
+  response = agent.run(BaseAgentInputSchema(chat_message="Hello, world!"))
   Console().print(response)
 
   tool = world[ReverseTool]
   agent = ToolAgent(tool)
-  response = agent.run(ReverseInput(string="Hello, world!"))
+  response = agent.run(BaseAgentInputSchema(chat_message="Hello, world!"))
   Console().print(response)

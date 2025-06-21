@@ -1,7 +1,9 @@
 from antidote import inject, injectable
+from goldentooth_agent.core.thunk import Thunk
+from goldentooth_agent.core.logging import get_logger
+from logging import Logger
 from pyee.asyncio import AsyncIOEventEmitter
 from typing import Any, Awaitable
-from goldentooth_agent.core.thunk import Thunk
 from .inject import get_event_emitter
 
 @injectable
@@ -14,10 +16,12 @@ class ThunkEventEmitter:
     event: str,
     thunk: Thunk[Any, None],
     ee: AsyncIOEventEmitter = inject[get_event_emitter()],
+    logger: Logger = inject[get_logger(__name__)],
   ) -> None:
     """Register a thunk as a handler for an event."""
     async def handler(*args, **kwargs):
       """Handler that executes the thunk with the provided arguments."""
+      logger.debug(f"Event '{event}' triggered with args: {args}, kwargs: {kwargs}")
       await thunk((args, kwargs))
     ee.on(event, handler)
 
@@ -26,10 +30,12 @@ class ThunkEventEmitter:
   def emit(
     event: str,
     ee: AsyncIOEventEmitter = inject[get_event_emitter()],
+    logger: Logger = inject[get_logger(__name__)],
   ) -> Thunk[Any, Awaitable[None]]:
     """Return a thunk that emits an event with the current context."""
     async def _emit(ctx):
       """Thunk to emit an event with the current context."""
+      logger.debug(f"Emitting event '{event}' with context: {ctx}")
       ee.emit(event, ctx)
       return ctx
     return Thunk(_emit, name=f"emit_event({event})")

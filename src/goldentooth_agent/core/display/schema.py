@@ -12,7 +12,10 @@ class DisplayInputConvertible(Protocol):
   def as_display_input(self) -> DisplayInput: ...
 
 class DisplayInputAdapter(DisplayInputConvertible):
+  """Adapter class to convert a BaseIOSchema to a DisplayInput."""
+
   def __init__(self, schema: BaseIOSchema, prefix: Optional[Any] = None) -> None:
+    """Initialize the adapter with a schema and an optional prefix."""
     self.prefix = prefix
     self.schema = schema
 

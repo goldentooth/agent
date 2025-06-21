@@ -1,5 +1,5 @@
-from .inject import get_agent_config
+from .inject import get_default_agent_config
 
 __all__ = [
-  "get_agent_config",
+  "get_default_agent_config",
 ]
