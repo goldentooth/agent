@@ -104,13 +104,15 @@ def command_chain() -> Thunk[Context, Context]:
   """Create a thunk that composes the command chain."""
   from goldentooth_agent.core.intake import INTAKE_KEY
   return compose_chain(
+    setup_command_tool(),
+    register_all_commands(),
     copy_context(INTAKE_KEY, COMMAND_INPUT_KEY),
     prepare_command_input(),
     if_else(
       has_context_key(COMMAND_INPUT_KEY),
       compose_chain(
         run_command_tool(),
-        set_should_skip_agent_key(True),  # Set the skip flag to True if a command was executed
+        set_should_skip_agent_key(True),
         if_else(
           has_context_key(COMMAND_OUTPUT_KEY),
           copy_context(COMMAND_OUTPUT_KEY, DISPLAY_INPUT_KEY),

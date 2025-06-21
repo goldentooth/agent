@@ -122,17 +122,18 @@ def agent_chain() -> Thunk[Context, Context]:
   from goldentooth_agent.core.intake import INTAKE_KEY
   return if_else(
     should_skip_agent(),
-    set_should_skip_agent_key(False),  # Reset the skip flag if it was set
+    set_should_skip_agent_key(False),
     compose_chain(
       copy_context(INTAKE_KEY, AGENT_INPUT_KEY),
       inject_default_agent(),
+      inject_agent_prefix(),
       prepare_agent_input(),
       if_else(
         has_context_key(AGENT_INPUT_KEY),
         compose_chain(
           run_agent(),
           if_else(
-            has_context_key(AGENT_INPUT_KEY),
+            has_context_key(AGENT_OUTPUT_KEY),
             move_context(AGENT_OUTPUT_KEY, DISPLAY_INPUT_KEY),
           ),
         ),

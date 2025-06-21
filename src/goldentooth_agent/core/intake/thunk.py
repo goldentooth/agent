@@ -2,7 +2,7 @@ from antidote import inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from goldentooth_agent.core.context import Context, context_autothunk
 from goldentooth_agent.core.logging import get_logger
-from goldentooth_agent.core.thunk import Thunk
+from goldentooth_agent.core.thunk import Thunk, compose_chain
 from logging import Logger
 from typing import Annotated
 from .context import INTAKE_KEY
@@ -21,3 +21,9 @@ def get_intake() -> Thunk[Context, Context]:
     intake_tool.output_schema = IntakeOutput
     return intake_tool.run(input_schema) # type: ignore
   return _get_intake
+
+def intake_chain() -> Thunk[Context, Context]:
+  """Create a chain that retrieves user input from the console."""
+  return compose_chain(
+    get_intake(),
+  )
