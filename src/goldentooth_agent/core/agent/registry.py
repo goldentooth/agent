@@ -11,7 +11,8 @@ from .inject import get_default_agent
 class AgentRegistry:
   """Registry for agents."""
 
-  def __init__(self, default: BaseAgent, logger: Logger = inject[get_logger(__name__)]) -> None:
+  @inject
+  def __init__(self, default: BaseAgent = inject[get_default_agent()], logger: Logger = inject[get_logger(__name__)]) -> None:
     """Initialize the registry with an empty dictionary."""
     logger.debug("Initializing AgentRegistry")
     self.agents: Dict[str, BaseAgent] = {}
@@ -20,8 +21,7 @@ class AgentRegistry:
   @classmethod
   def create(cls) -> AgentRegistry:
     """Create a new AgentRegistry instance."""
-    default = world[get_default_agent()]
-    result = cls(default)
+    result = cls()
     return result
 
   @inject.method

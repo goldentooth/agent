@@ -2,6 +2,7 @@ from antidote import inject
 from atomic_agents.agents.base_agent import BaseAgent, BaseAgentConfig, AgentMemory
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseTool
+from goldentooth_agent.core.agent import AgentRegistry
 from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from pydantic import BaseModel
@@ -49,7 +50,7 @@ class ToolAgent(BaseAgent):
     return self.tool.run(user_input) # type: ignore[call-arg]
 
   @inject
-  async def run_async(
+  async def run_async( # type: ignore[override]
     self,
     user_input: Optional[BaseIOSchema] = None,
     logger: Logger = inject[get_logger(__name__)],
@@ -63,6 +64,18 @@ class ToolAgent(BaseAgent):
     response = self.tool.run(user_input)  # type: ignore[call-arg]
     yield response
     self.memory.add_message("assistant", response)
+
+@inject
+def register_tool_agent(*, name: str):
+  """Register a tool agent with the given name."""
+  def _decorator(tool_cls: type[BaseTool]) -> type[BaseTool]:
+    """Decorator to register a tool agent."""
+    from antidote import world
+    tool = tool_cls.create() # type: ignore[call-arg]
+    tool_agent = ToolAgent(tool)
+    world[AgentRegistry].register(name, tool_agent)
+    return tool_cls
+  return _decorator
 
 if __name__ == "__main__":
   from antidote import world

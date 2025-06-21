@@ -4,14 +4,15 @@ from atomic_agents.agents.base_agent import BaseAgentInputSchema, BaseAgentOutpu
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
 from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.tool_agent import register_tool_agent
 from logging import Logger
-from pydantic import Field
 from .registry import register_tool
 
 class EchoConfig(BaseToolConfig):
   """Configuration for the Echo tool."""
   pass
 
+# @register_tool_agent(name="tools.echo")
 @register_tool()
 @injectable(factory_method='create')
 class EchoTool(BaseTool, SystemPromptContextProviderBase):
