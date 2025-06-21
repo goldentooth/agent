@@ -1,7 +1,7 @@
 from __future__ import annotations
 from antidote import inject, injectable
 from goldentooth_agent.core.context_provider import ContextProviderRegistry
-from goldentooth_agent.core.dynamic_context_provider import DynamicContextProvider
+from goldentooth_agent.core.runtime_context_provider import RuntimeContextProvider
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.path import UserPaths
 from logging import Logger
@@ -97,10 +97,10 @@ class StaticContextProviderStore:
     return (self.directory / f"{name}.yaml").exists()
 
   @inject.method
-  def _build(self, data: dict, logger: Logger = inject[get_logger(__name__)]) -> DynamicContextProvider:
-    """Build a DynamicContextProvider from the given data."""
-    logger.debug(f"Building DynamicContextProvider from data: {data}")
-    return DynamicContextProvider.from_dict(data)
+  def _build(self, data: dict, logger: Logger = inject[get_logger(__name__)]) -> RuntimeContextProvider:
+    """Build a RuntimeContextProvider from the given data."""
+    logger.debug(f"Building RuntimeContextProvider from data: {data}")
+    return RuntimeContextProvider.from_dict(data)
 
   @inject.method
   def dump(self, logger: Logger = inject[get_logger(__name__)]) -> Table:

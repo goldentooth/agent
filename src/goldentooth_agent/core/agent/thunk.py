@@ -3,7 +3,7 @@ from atomic_agents.agents.base_agent import BaseAgent
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from goldentooth_agent.core.context import Context, context_autothunk, move_context, copy_context, has_context_key
 from goldentooth_agent.core.display import DISPLAY_INPUT_KEY
-from goldentooth_agent.core.dynamic_context_provider import DynamicContextProvider
+from goldentooth_agent.core.runtime_context_provider import RuntimeContextProvider
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.system_prompt import enable_context_provider, disable_context_provider
 from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain, if_else
@@ -46,7 +46,7 @@ def should_skip_agent() -> Callable[[Context], bool]:
 
 def enable_agent_context_provider(agent_name: str, agent_fn: Callable[[], str]) -> Thunk[Context, Context]:
   """Enable a agent's context provider in the system prompt generator."""
-  dcp = DynamicContextProvider(title=agent_name, fn=agent_fn)
+  dcp = RuntimeContextProvider(title=agent_name, fn=agent_fn)
   return enable_context_provider(dcp)
 
 def disable_agent_context_provider(agent_name: str) -> Thunk[Context, Context]:
