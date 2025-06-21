@@ -12,7 +12,7 @@ class EchoConfig(BaseToolConfig):
   """Configuration for the Echo tool."""
   pass
 
-# @register_tool_agent(name="tools.echo")
+@register_tool_agent(name="tools.echo")
 @register_tool()
 @injectable(factory_method='create')
 class EchoTool(BaseTool, SystemPromptContextProviderBase):

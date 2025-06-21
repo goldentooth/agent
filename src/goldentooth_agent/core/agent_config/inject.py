@@ -19,7 +19,6 @@ def get_agent_memory() -> AgentMemory:
   return AgentMemory()
 
 @lazy
-@inject
 def get_default_agent_config(
   client: Instructor = inject[get_client()],
   memory: AgentMemory = inject[get_agent_memory()],

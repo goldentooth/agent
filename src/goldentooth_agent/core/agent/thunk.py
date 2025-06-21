@@ -125,6 +125,7 @@ def agent_chain() -> Thunk[Context, Context]:
     set_should_skip_agent_key(False),  # Reset the skip flag if it was set
     compose_chain(
       copy_context(INTAKE_KEY, AGENT_INPUT_KEY),
+      inject_default_agent(),
       prepare_agent_input(),
       if_else(
         has_context_key(AGENT_INPUT_KEY),

@@ -3,7 +3,9 @@ from antidote import injectable, inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from goldentooth_agent.core.context import Context
+from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.tool.registry import register_tool
+from logging import Logger
 from pydantic import Field
 import shlex
 from typer import Typer, Context as TyperContext
@@ -30,8 +32,10 @@ class CommandTool(BaseTool):
   def __init__(
     self,
     config: CommandConfig = CommandConfig(title="tools.command", description="Executes a command provided by the user."),
+    logger: Logger = inject[get_logger(__name__)],
   ):
     """Initialize the Display tool."""
+    logger.debug("Initializing CommandTool")
     super().__init__(config)
 
   @classmethod
@@ -40,8 +44,15 @@ class CommandTool(BaseTool):
     return cls()
 
   @inject.method
-  def run(self, params: CommandInput, context: Context, app: Typer = inject[get_command_typer()]) -> CommandOutput: # type: ignore[override]
+  def run( # type: ignore[override]
+    self,
+    params: CommandInput,
+    context: Context,
+    app: Typer = inject[get_command_typer()],
+    logger: Logger = inject[get_logger(__name__)]
+  ) -> CommandOutput:
     """Run the Command tool and return the resulting input."""
+    logger.debug(f"Running CommandTool with input: {params.input}")
 
     @app.callback(invoke_without_command=True)
     def callback(typer_context: TyperContext):

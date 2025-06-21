@@ -1,22 +1,20 @@
 from __future__ import annotations
-from antidote import injectable, inject, world
+from antidote import injectable, inject
 from atomic_agents.agents.base_agent import BaseAgent
 from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from rich.table import Table
 from typing import Dict
-from .inject import get_default_agent
 
 @injectable(factory_method='create')
 class AgentRegistry:
   """Registry for agents."""
 
   @inject
-  def __init__(self, default: BaseAgent = inject[get_default_agent()], logger: Logger = inject[get_logger(__name__)]) -> None:
+  def __init__(self, logger: Logger = inject[get_logger(__name__)]) -> None:
     """Initialize the registry with an empty dictionary."""
     logger.debug("Initializing AgentRegistry")
     self.agents: Dict[str, BaseAgent] = {}
-    self.set_default(default)
 
   @classmethod
   def create(cls) -> AgentRegistry:
@@ -25,7 +23,7 @@ class AgentRegistry:
     return result
 
   @inject.method
-  def register(self, name: str, agent: BaseAgent, logger: Logger = inject[get_logger(__name__)]) -> None:
+  def set(self, name: str, agent: BaseAgent, logger: Logger = inject[get_logger(__name__)]) -> None:
     """Register an agent with a given name."""
     logger.debug(f"Registering agent '{name}'")
     if name in self.agents:
@@ -41,8 +39,9 @@ class AgentRegistry:
     return self.agents[name]
 
   @inject.method
-  def has(self, name: str) -> bool:
+  def has(self, name: str, logger: Logger = inject[get_logger(__name__)]) -> bool:
     """Check if an agent is registered by its name."""
+    logger.debug(f"Checking if agent '{name}' is registered")
     return name in self.agents
 
   @inject.method
@@ -85,6 +84,6 @@ def register_agent(*, name: str, registry: AgentRegistry = inject.me()):
     """Decorator to register an agent class."""
     from antidote import world
     instance = world[agent_cls]
-    registry.register(name, instance)
+    registry.set(name, instance)
     return agent_cls
   return _decorator

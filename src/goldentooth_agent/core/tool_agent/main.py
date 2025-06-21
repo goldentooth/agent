@@ -73,7 +73,7 @@ def register_tool_agent(*, name: str):
     from antidote import world
     tool = tool_cls.create() # type: ignore[call-arg]
     tool_agent = ToolAgent(tool)
-    world[AgentRegistry].register(name, tool_agent)
+    world[AgentRegistry].set(name, tool_agent)
     return tool_cls
   return _decorator
 
