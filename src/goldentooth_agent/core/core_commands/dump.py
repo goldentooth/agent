@@ -42,15 +42,13 @@ def get_dumpables() -> dict[str, Dumpable]:
   """Get all dumpable objects."""
   from antidote import world
   from goldentooth_agent.core.agent import AgentRegistry
-  from goldentooth_agent.core.context_provider import ContextProviderRegistry
-  from goldentooth_agent.core.system_prompt import SystemPromptRegistry
-  from goldentooth_agent.core.static_context_provider import StaticContextProviderStore
-  from goldentooth_agent.core.system_prompt import YamlSystemPromptStore
+  from goldentooth_agent.core.context_provider import ContextProviderRegistry, YamlContextProviderStore
+  from goldentooth_agent.core.system_prompt import SystemPromptRegistry, YamlSystemPromptStore
   result: dict[str, Dumpable] = {}
   result["agent_registry"] = world[AgentRegistry]
   result["context_provider_registry"] = world[ContextProviderRegistry]
+  result["context_provider_store"] = world[YamlContextProviderStore]
   result["system_prompt_registry"] = world[SystemPromptRegistry]
-  result["static_context_provider_store"] = world[StaticContextProviderStore]
   result["system_prompt_store"] = world[YamlSystemPromptStore]
   return result
 
