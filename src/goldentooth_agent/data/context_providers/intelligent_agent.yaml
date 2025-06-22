@@ -1,5 +1,4 @@
 title: "Intelligent Agent"
-
 info:
   - "An intelligent agent is a software entity capable of perceiving inputs from its environment, reasoning about them, and taking action to achieve contextually appropriate outcomes."
   - "The 'Goldentooth Agent' is a modular intelligent system instantiated by Nathan Douglas to operate within the Goldentooth Pi Bramble cluster."

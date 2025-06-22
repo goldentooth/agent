@@ -3,8 +3,7 @@ from antidote import injectable
 from atomic_agents.agents.base_agent import BaseAgentInputSchema, BaseAgentOutputSchema
 from atomic_agents.lib.base.base_tool import BaseTool, BaseToolConfig
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
-from pydantic import Field
-from .registry import register_tool
+from goldentooth_agent.core.tool.registry import register_tool
 
 class ReverseConfig(BaseToolConfig):
   """Configuration for the Reverse tool."""

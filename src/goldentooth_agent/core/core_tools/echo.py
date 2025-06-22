@@ -5,8 +5,8 @@ from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.tool_agent import register_tool_agent
+from goldentooth_agent.core.tool import register_tool
 from logging import Logger
-from .registry import register_tool
 
 class EchoConfig(BaseToolConfig):
   """Configuration for the Echo tool."""

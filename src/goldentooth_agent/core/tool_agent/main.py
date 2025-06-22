@@ -80,7 +80,7 @@ def register_tool_agent(*, name: str):
 if __name__ == "__main__":
   from antidote import world
   from atomic_agents.agents.base_agent import BaseAgentInputSchema
-  from goldentooth_agent.core.tool import EchoTool, ReverseTool
+  from goldentooth_agent.core.core_tools import EchoTool, ReverseTool
   from rich.console import Console
 
   tool = world[EchoTool]

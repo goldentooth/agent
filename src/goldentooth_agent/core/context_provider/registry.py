@@ -40,6 +40,12 @@ class ContextProviderRegistry:
     return self.providers[name]
 
   @inject.method
+  def get_many(self, names: list[str], logger: Logger = inject[get_logger(__name__)]) -> Dict[str, SystemPromptContextProviderBase]:
+    """Retrieve multiple context providers by their names."""
+    logger.debug(f"Retrieving context providers: {names}")
+    return {name: self.providers[name] for name in names if name in self.providers}
+
+  @inject.method
   def has(self, name: str, logger: Logger = inject[get_logger(__name__)]) -> bool:
     """Check if a context provider with the given name exists."""
     logger.debug(f"Checking if context provider exists: {name}")

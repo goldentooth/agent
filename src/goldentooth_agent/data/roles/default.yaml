@@ -1,0 +1,8 @@
+name: 'default'
+context_providers:
+  - 'intelligent_agent'
+  - 'nate'
+  - 'pi_bramble'
+tools:
+  - 'echo'
+  - 'reverse'
