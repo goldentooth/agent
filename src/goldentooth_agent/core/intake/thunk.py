@@ -16,6 +16,8 @@ def get_intake() -> Thunk[Context, Context]:
     intake_tool: IntakeTool = inject.me(),
     logger: Logger = inject[get_logger(__name__)],
   ) -> Annotated[BaseIOSchema, INTAKE_KEY]:
+    """Run the intake tool to get user input."""
+    logger.debug("Running IntakeTool to get user input...")
     input_schema = IntakeInput(prompt="You:", style="bold blue")
     intake_tool.input_schema = IntakeInput
     intake_tool.output_schema = IntakeOutput
