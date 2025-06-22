@@ -19,12 +19,13 @@ def prepare_display_input() -> Thunk[Context, Context]:
   @inject
   async def _prepare_display_input(
     input: Annotated[BaseIOSchema, DISPLAY_INPUT_KEY],
-    agent_prefix: Annotated[str, AGENT_PREFIX_KEY],
+    context: Context,
     logger: Logger = inject[get_logger(__name__)],
   ) -> Annotated[Optional[BaseIOSchema], DISPLAY_INPUT_KEY]:
     """Prepare the agent input by ensuring it is in the correct format."""
     logger.debug("Preparing display input...")
     if isinstance(input, BaseAgentOutputSchema):
+      agent_prefix = context.get(AGENT_PREFIX_KEY)
       return DisplayInputAdapter(input, agent_prefix).as_display_input()
     elif isinstance(input, DisplayInputConvertible):
       return input.as_display_input()

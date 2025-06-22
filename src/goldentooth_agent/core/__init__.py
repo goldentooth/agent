@@ -2,7 +2,7 @@ from . import (
   agent, agent_config, background_loop, client, command, console, context,
   context_provider, core_commands, core_tools, display, runtime_context_provider,
   event, intake, logging, path, persona, role, schema, static_context_provider,
-  static_system_prompt, system_prompt, thunk, tool, tool_agent, util,
+  system_prompt, thunk, tool, tool_agent, util, yaml_store,
 )
 
 __all__ = [
@@ -26,10 +26,10 @@ __all__ = [
   "role",
   "schema",
   "static_context_provider",
-  "static_system_prompt",
   "system_prompt",
   "thunk",
   "tool",
   "tool_agent",
   "util",
+  "yaml_store",
 ]
