@@ -1,8 +1,8 @@
 from . import (
   agent, agent_config, background_loop, client, command, console, context,
-  context_provider, core_commands, core_tools, display,
-  event, intake, logging, named_registry, path, persona, role, schema,
-  system_prompt, thunk, tool, tool_agent, util, yaml_store,
+  context_provider, core_commands, core_tools, display, event, intake,
+  logging, named_registry, path, persona, persona_selector, role, role_selector,
+  schema, system_prompt, thunk, tool, tool_agent, util, yaml_store,
 )
 
 __all__ = [
@@ -23,7 +23,9 @@ __all__ = [
   "named_registry",
   "path",
   "persona",
+  "persona_selector",
   "role",
+  "role_selector",
   "schema",
   "system_prompt",
   "thunk",

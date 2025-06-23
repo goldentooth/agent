@@ -7,7 +7,7 @@ from logging import Logger
 from rich.console import Console
 import typer
 from typer import Typer, Context as TyperContext
-from typing import Annotated, Protocol
+from typing import Annotated, Optional, Protocol
 
 @enroll_command
 @inject
@@ -21,13 +21,18 @@ def enroll_dump_command(
   @app.command("dump", help="Dump some thing that is dumpable.")
   def _command(
     typer_context: TyperContext,
-    thing: Annotated[str, typer.Argument(help="Name of the thing to dump, e.g. 'context'")],
+    thing: Annotated[Optional[str], typer.Argument(help="Name of the thing to dump, e.g. 'context'")] = None,
   ) -> None:
     """Dump the context."""
     logger.debug("Executing dump-context command...")
     context: Context = typer_context.obj
     values = get_dumpables()
     values["context"] = context
+    if thing is None:
+      console.print("Available dumpables:")
+      for name in values.keys():
+        console.print(f"- [bold cyan]{name}[/bold cyan]")
+      return
     dumpable = dumpable_from_string(thing, values)
     console.print(dumpable.dump())
 
@@ -45,7 +50,9 @@ def get_dumpables() -> dict[str, Dumpable]:
   from goldentooth_agent.core.command import CommandRegistry
   from goldentooth_agent.core.context_provider import ContextProviderRegistry, YamlContextProviderStore
   from goldentooth_agent.core.persona import PersonaRegistry, YamlPersonaStore
+  from goldentooth_agent.core.persona_selector import PersonaSelectorStrategyRegistry
   from goldentooth_agent.core.role import RoleRegistry, YamlRoleStore
+  from goldentooth_agent.core.role_selector import RoleSelectorStrategyRegistry
   from goldentooth_agent.core.system_prompt import SystemPromptRegistry, YamlSystemPromptStore
   from goldentooth_agent.core.tool import ToolRegistry
   result: dict[str, Dumpable] = {}
@@ -54,8 +61,10 @@ def get_dumpables() -> dict[str, Dumpable]:
   result["context_provider_registry"] = world[ContextProviderRegistry]
   result["context_provider_store"] = world[YamlContextProviderStore]
   result["persona_registry"] = world[PersonaRegistry]
+  result["persona_selector_strategy_registry"] = world[PersonaSelectorStrategyRegistry]
   result["persona_store"] = world[YamlPersonaStore]
   result["role_registry"] = world[RoleRegistry]
+  result["role_selector_strategy_registry"] = world[RoleSelectorStrategyRegistry]
   result["role_store"] = world[YamlRoleStore]
   result["system_prompt_registry"] = world[SystemPromptRegistry]
   result["system_prompt_store"] = world[YamlSystemPromptStore]
