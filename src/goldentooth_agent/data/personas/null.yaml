@@ -1,3 +1,4 @@
-name: "Null"
-system_prompt: "default"
-context_provider: []
+name: 'Null'
+system_prompt: 'default'
+context_provider: null
+tools: []
