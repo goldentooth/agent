@@ -3,13 +3,15 @@ from antidote import injectable
 from atomic_agents.agents.base_agent import BaseAgentInputSchema, BaseAgentOutputSchema
 from atomic_agents.lib.base.base_tool import BaseTool, BaseToolConfig
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
-from goldentooth_agent.core.tool.registry import register_tool
+from goldentooth_agent.core.tool import register_tool
+from goldentooth_agent.core.tool_agent import register_tool_agent
 
 class ReverseConfig(BaseToolConfig):
   """Configuration for the Reverse tool."""
   pass
 
-@register_tool()
+@register_tool_agent
+@register_tool
 @injectable(factory_method='create')
 class ReverseTool(BaseTool, SystemPromptContextProviderBase):
   """Reverse tool that returns the reversed input string as output."""

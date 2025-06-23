@@ -1,6 +1,6 @@
-from .main import NamedRegistry, register_named
+from .main import NamedRegistry, make_register_fn
 
 __all__ = [
   "NamedRegistry",
-  "register_named",
+  "make_register_fn",
 ]

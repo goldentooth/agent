@@ -3,7 +3,8 @@ from antidote import injectable, inject
 from atomic_agents.agents.base_agent import BaseAgentInputSchema
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
-from goldentooth_agent.core.tool.registry import register_tool
+from goldentooth_agent.core.tool import register_tool
+from goldentooth_agent.core.tool_agent import register_tool_agent
 from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from pydantic import Field
@@ -33,7 +34,8 @@ class IntakeConfig(BaseToolConfig):
   """Configuration for the Console tool."""
   pass
 
-@register_tool()
+@register_tool_agent
+@register_tool
 @injectable(factory_method='create')
 class IntakeTool(BaseTool):
   """Console tool that prompts the user for input and returns their response."""

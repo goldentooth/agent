@@ -44,12 +44,14 @@ def get_dumpables() -> dict[str, Dumpable]:
   from goldentooth_agent.core.agent import AgentRegistry
   from goldentooth_agent.core.context_provider import ContextProviderRegistry, YamlContextProviderStore
   from goldentooth_agent.core.system_prompt import SystemPromptRegistry, YamlSystemPromptStore
+  from goldentooth_agent.core.tool import ToolRegistry
   result: dict[str, Dumpable] = {}
   result["agent_registry"] = world[AgentRegistry]
   result["context_provider_registry"] = world[ContextProviderRegistry]
   result["context_provider_store"] = world[YamlContextProviderStore]
   result["system_prompt_registry"] = world[SystemPromptRegistry]
   result["system_prompt_store"] = world[YamlSystemPromptStore]
+  result["tool_registry"] = world[ToolRegistry]
   return result
 
 def dumpable_from_string(thing: str, values: dict[str, Dumpable]) -> Dumpable:

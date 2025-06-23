@@ -4,9 +4,10 @@ from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseTool
 from goldentooth_agent.core.agent import AgentRegistry
 from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.named_registry import make_register_fn
 from logging import Logger
 from pydantic import BaseModel
-from typing import Optional, AsyncGenerator
+from typing import Optional, AsyncGenerator, Callable
 from .no_op_instructor import NoOpInstructor
 
 class ToolAgent(BaseAgent):
@@ -65,17 +66,18 @@ class ToolAgent(BaseAgent):
     yield response
     self.memory.add_message("assistant", response)
 
-@inject
-def register_tool_agent(*, name: str):
-  """Register a tool agent with the given name."""
-  def _decorator(tool_cls: type[BaseTool]) -> type[BaseTool]:
-    """Decorator to register a tool agent."""
-    from antidote import world
-    tool = tool_cls.create() # type: ignore[call-arg]
-    tool_agent = ToolAgent(tool)
-    world[AgentRegistry].set(name, tool_agent)
-    return tool_cls
-  return _decorator
+def register_tool_agent(cls: type[BaseTool]) -> type[BaseTool]:
+  """Decorator to register a tool as an agent in the AgentRegistry."""
+  from antidote import world
+  registry = world[AgentRegistry]
+  if not issubclass(cls, BaseTool):
+    raise TypeError(...)
+  if not hasattr(cls, "create"):
+    raise ValueError(...)
+  tool = cls.create() # type: ignore[call-arg]
+  agent = ToolAgent(tool)
+  registry.set(tool.tool_name, agent)
+  return cls
 
 if __name__ == "__main__":
   from antidote import world

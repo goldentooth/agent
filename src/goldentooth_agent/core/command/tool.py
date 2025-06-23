@@ -22,7 +22,7 @@ class CommandConfig(BaseToolConfig):
   """Configuration for the Command tool."""
   pass
 
-@register_tool()
+@register_tool
 @injectable(factory_method='create')
 class CommandTool(BaseTool):
   """Command tool that executes a command provided by the user."""

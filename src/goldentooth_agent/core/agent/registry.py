@@ -1,70 +1,29 @@
 from __future__ import annotations
-from antidote import injectable, inject
+from antidote import inject, injectable
 from atomic_agents.agents.base_agent import BaseAgent
+from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.named_registry import NamedRegistry, make_register_fn
+from goldentooth_agent.core.thunk import Thunk
 from logging import Logger
 from rich.table import Table
-from typing import Dict
 
-@injectable(factory_method='create')
-class AgentRegistry:
-  """Registry for agents."""
+@injectable()
+class AgentRegistry(NamedRegistry[BaseAgent]):
+  """Registry for managing agents."""
 
-  @inject
-  def __init__(self, logger: Logger = inject[get_logger(__name__)]) -> None:
-    """Initialize the registry with an empty dictionary."""
-    logger.debug("Initializing AgentRegistry")
-    self.agents: Dict[str, BaseAgent] = {}
+  def get_thunk(self, agent_name: str) -> Thunk[BaseIOSchema, BaseIOSchema]:
+    """Get a thunk for the specified agent name."""
+    from .thunk import thunkify_agent
+    agent = self.get(agent_name)
+    return thunkify_agent(agent)
 
-  @classmethod
-  def create(cls) -> AgentRegistry:
-    """Create a new AgentRegistry instance."""
-    result = cls()
-    return result
-
-  @inject.method
-  def set(self, name: str, agent: BaseAgent, logger: Logger = inject[get_logger(__name__)]) -> None:
-    """Register an agent with a given name."""
-    logger.debug(f"Registering agent '{name}'")
-    if name in self.agents:
-      raise ValueError(f"Agent '{name}' is already registered.")
-    self.agents[name] = agent
-
-  @inject.method
-  def get(self, name: str, logger: Logger = inject[get_logger(__name__)]) -> BaseAgent:
-    """Retrieve an agent by its name."""
-    logger.debug(f"Retrieving agent '{name}'")
-    if name not in self.agents:
-      raise KeyError(f"Agent '{name}' is not registered.")
-    return self.agents[name]
-
-  @inject.method
-  def has(self, name: str, logger: Logger = inject[get_logger(__name__)]) -> bool:
-    """Check if an agent is registered by its name."""
-    logger.debug(f"Checking if agent '{name}' is registered")
-    return name in self.agents
-
-  @inject.method
-  def remove(self, name: str, logger: Logger = inject[get_logger(__name__)]) -> None:
-    """Remove an agent by its name."""
-    logger.debug(f"Removing agent '{name}'")
-    if name not in self.agents:
-      raise KeyError(f"Agent '{name}' is not registered.")
-    del self.agents[name]
-
-  @inject.method
-  def get_default(self, logger: Logger = inject[get_logger(__name__)]) -> BaseAgent:
-    """Retrieve the default agent."""
-    logger.debug("Retrieving default agent")
-    return self.get('default')
-
-  @inject.method
-  def set_default(self, agent: BaseAgent, logger: Logger = inject[get_logger(__name__)]) -> None:
-    """Set the default agent."""
-    logger.debug("Setting default agent")
-    if 'default' in self.agents:
-      raise ValueError("Default agent is already set.")
-    self.agents['default'] = agent
+  def get_by_input_schema(self, schema: type[BaseIOSchema]) -> BaseAgent:
+    """Get an agent by its input schema."""
+    for agent in self.all():
+      if issubclass(schema, agent.input_schema):
+        return agent
+    raise LookupError(f"No agent found for input schema: {schema}")
 
   @inject.method
   def dump(self, logger: Logger = inject[get_logger(__name__)]) -> Table:
@@ -73,17 +32,8 @@ class AgentRegistry:
     table = Table(title=f"Context Dump")
     table.add_column("Name")
     table.add_column("Agent", overflow="fold")
-    for k in self.agents:
-      table.add_row(str(k), repr(self.agents[k]))
+    for k, v in self.items():
+      table.add_row(str(k), repr(v))
     return table
 
-@inject
-def register_agent(*, name: str, registry: AgentRegistry = inject.me()):
-  """Decorator to register an agent in the AgentRegistry."""
-  def _decorator(agent_cls: type[BaseAgent]):
-    """Decorator to register an agent class."""
-    from antidote import world
-    instance = world[agent_cls]
-    registry.set(name, instance)
-    return agent_cls
-  return _decorator
+register_agent = make_register_fn(AgentRegistry)

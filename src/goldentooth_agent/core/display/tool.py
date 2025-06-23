@@ -3,7 +3,8 @@ from antidote import injectable, inject
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
 from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from goldentooth_agent.core.console import get_console
-from goldentooth_agent.core.tool.registry import register_tool
+from goldentooth_agent.core.tool import register_tool
+from goldentooth_agent.core.tool_agent import register_tool_agent
 from goldentooth_agent.core.logging import get_logger
 from logging import Logger
 from pydantic import Field
@@ -21,7 +22,8 @@ class DisplayConfig(BaseToolConfig):
   """Configuration for the Display tool."""
   pass
 
-@register_tool()
+@register_tool_agent
+@register_tool
 @injectable(factory_method='create')
 class DisplayTool(BaseTool):
   """Console tool that displays content to the user."""

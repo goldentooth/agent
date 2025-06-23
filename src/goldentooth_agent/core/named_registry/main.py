@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import Callable, Generic, Dict, TypeVar
 from antidote import inject
-from logging import Logger
 from goldentooth_agent.core.logging import get_logger
+from logging import Logger
+from typing import Any, Callable, Generic, Dict, Optional, Protocol, TypeVar, runtime_checkable
 
 T = TypeVar("T")
 
@@ -16,9 +16,9 @@ class NamedRegistry(Generic[T]):
     self.logger = logger
     logger.debug(f"Initializing {self.__class__.__name__}")
 
-  def register(self, name: str, obj: T) -> None:
+  def set(self, name: str, obj: T) -> None:
     """Register an object with a given name."""
-    self.logger.debug(f"Registering {name} -> {obj}")
+    self.logger.debug(f"Setting {name} -> {obj}")
     self._registry[name] = obj
 
   def get(self, name: str) -> T:
@@ -28,9 +28,9 @@ class NamedRegistry(Generic[T]):
       raise KeyError(f"'{name}' is not registered.")
     return self._registry[name]
 
-  def unregister(self, name: str) -> None:
-    """Unregister an object by its name."""
-    self.logger.debug(f"Unregistering '{name}'")
+  def remove(self, name: str) -> None:
+    """Remove an object by its name."""
+    self.logger.debug(f"Removing '{name}'")
     self._registry.pop(name, None)
 
   def has(self, name: str) -> bool:
@@ -58,12 +58,53 @@ class NamedRegistry(Generic[T]):
     self.logger.debug(f"Clearing all entries in {self.__class__.__name__}")
     self._registry.clear()
 
-def register_named(name: str, registry: NamedRegistry[T]) -> Callable[[type[T]], type[T]]:
-  """Decorator to register a class instance in a named registry."""
-  def _decorator(cls: type[T]) -> type[T]:
-    """Decorator function to register a class instance."""
+Tc = TypeVar("Tc", covariant=True)
+
+@runtime_checkable
+class Creatable(Protocol[Tc]):
+  """Protocol for a class that can be instantiated."""
+
+  @classmethod
+  def create(cls) -> Tc:
+    """Create an instance of the class."""
+    ...
+
+class RegisterCallable(Protocol[T]):
+  """Protocol for a callable that registers an object with a name."""
+
+  def __call__(self, cls: type[T], *, obj: Optional[T] = None, name: Optional[str] = None) -> type[T]:
+    """Register an object with the given name in the specified registry."""
+    ...
+
+def make_register_fn(
+  registry_cls: type[NamedRegistry[T]],
+  *,
+  get_instance_fn: Optional[Callable[[], T]] = None,
+  default_name_fn: Optional[Callable[[T], str]] = None,
+) -> RegisterCallable[T]:
+  """Create a registration function for the given type."""
+  def _decorate(
+    cls: type[T],
+    *,
+    obj: Optional[T] = None,
+    name: Optional[str] = None,
+    get_instance_fn: Optional[Callable[[], T]] = get_instance_fn,
+    default_name_fn: Optional[Callable[[T], str]] = default_name_fn,
+  ) -> type[T]:
+    """Register an object with the given name in the specified registry."""
     from antidote import world
-    instance = world[cls]
-    registry.register(name, instance)
+    registry = world[registry_cls]
+    if get_instance_fn:
+      final_obj = get_instance_fn()
+    elif cls and isinstance(cls, Creatable):
+      final_obj = cls.create()
+    elif obj is not None:
+      final_obj = obj
+    else:
+      raise ValueError("An object must be provided or creatable.")
+    final_name = name or (default_name_fn(final_obj) if default_name_fn else None)
+    if not final_name:
+      raise ValueError("A name must be provided or derivable.")
+    registry.set(final_name, final_obj)
     return cls
-  return _decorator
+  return _decorate
