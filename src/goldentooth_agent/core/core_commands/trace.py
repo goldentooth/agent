@@ -20,14 +20,14 @@ _active_tracer = None
 def enroll_trace_command(app: Typer = inject[get_command_typer()], logger: Logger = inject[get_logger(__name__)]) -> None:
   """Enroll the trace command."""
   logger.debug("Enrolling trace command...")
-  @app.command("trace", help="Start or stop hunter tracing.")
+  @app.command("trace", help="Start or stop Hunter tracing.")
   def _command(
     typer_context: TyperContext,
     expr: Annotated[List[str], typer.Argument(
       help="Query expression to trace, or 'stop' to disable",
     )],
   ) -> None:
-    """Start tracing with hunter using a Q(...) expression. Use 'stop' to disable."""
+    """Start tracing with Hunter using a Q(...) expression. Use 'stop' to disable."""
     context: Context = typer_context.obj
     global _active_tracer
 
