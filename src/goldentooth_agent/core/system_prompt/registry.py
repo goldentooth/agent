@@ -6,74 +6,16 @@ from logging import Logger
 from rich.pretty import Pretty
 from rich.table import Table
 from typing import Dict, List, Optional
+from antidote import injectable
+from atomic_agents.lib.base.base_io_schema import BaseIOSchema
+from atomic_agents.lib.base.base_tool import BaseTool
+from goldentooth_agent.core.named_registry import NamedRegistry, make_register_fn
+from goldentooth_agent.core.thunk import Thunk
+from rich.table import Table
 
-DEFAULT_PROMPT_NAME = "default"
-
-@injectable(factory_method='create')
-class SystemPromptRegistry:
-  """Manages system prompts stored as YAML files."""
-
-  @inject
-  def __init__(self, logger: Logger = inject[get_logger(__name__)]) -> None:
-    """Initialize the registry."""
-    logger.debug("Initializing SystemPromptRegistry")
-    self.generators: Dict[str, SystemPromptGenerator] = {}
-
-  @classmethod
-  def create(cls) -> SystemPromptRegistry:
-    """Create a new SystemPromptRegistry instance."""
-    result = cls()
-    return result
-
-  @inject.method
-  def register(
-    self,
-    name: str,
-    generator: SystemPromptGenerator,
-    logger: Logger = inject[get_logger(__name__)]
-  ) -> None:
-    """Register a prompt generator under a given name (in-memory only)."""
-    logger.debug(f"Registering system prompt generator '{name}'")
-    self.generators[name] = generator
-
-  @inject.method
-  def unregister(self, name: str, logger: Logger = inject[get_logger(__name__)]) -> None:
-    """Unregister a prompt generator by name (in-memory only)."""
-    logger.debug(f"Unregistering system prompt generator '{name}'")
-    self.generators.pop(name, None)
-
-  @inject.method
-  def get(self, name: str, logger: Logger = inject[get_logger(__name__)]) -> Optional[SystemPromptGenerator]:
-    """Retrieve a registered prompt generator by name."""
-    logger.debug(f"Retrieving system prompt generator '{name}'")
-    return self.generators.get(name)
-
-  @inject.method
-  def get_default(self, logger: Logger = inject[get_logger(__name__)]) -> SystemPromptGenerator:
-    """Get the default system prompt generator."""
-    logger.debug(f"Retrieving default system prompt generator '{DEFAULT_PROMPT_NAME}'")
-    result = self.generators.get(DEFAULT_PROMPT_NAME)
-    if not result:
-      raise ValueError(f"Default prompt '{DEFAULT_PROMPT_NAME}' is not registered.")
-    return result
-
-  @inject.method
-  def list(self, logger: Logger = inject[get_logger(__name__)]) -> List[str]:
-    """List all registered prompt names."""
-    logger.debug("Listing all registered system prompts")
-    return sorted(self.generators.keys())
-
-  @inject.method
-  def has(self, name: str, logger: Logger = inject[get_logger(__name__)]) -> bool:
-    """Check if a prompt with the given name is registered."""
-    logger.debug(f"Checking if system prompt generator '{name}' is registered")
-    return name in self.generators
-
-  @inject.method
-  def clear(self, logger: Logger = inject[get_logger(__name__)]) -> None:
-    """Clear all registered prompts from memory."""
-    logger.debug("Clearing all registered system prompts")
-    self.generators.clear()
+@injectable()
+class SystemPromptRegistry(NamedRegistry[SystemPromptGenerator]):
+  """Registry for managing system prompts."""
 
   @inject.method
   def dump(self, logger: Logger = inject[get_logger(__name__)]) -> Table:
@@ -82,7 +24,7 @@ class SystemPromptRegistry:
     table = Table(title="Registered System Prompts")
     table.add_column("Name", justify="left", style="cyan", no_wrap=True)
     table.add_column("Data", justify="left", style="magenta")
-    for name, generator in self.generators.items():
+    for name, generator in self.items():
       generator_dict = {
         "background": generator.background if generator.background else None,
         "steps": generator.steps if generator.steps else None,

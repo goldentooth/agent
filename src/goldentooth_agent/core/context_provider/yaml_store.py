@@ -59,7 +59,7 @@ class YamlContextProviderStore(YamlStore[SystemPromptContextProviderBase]):
     for name in self.list():
       logger.debug(f"Loading context provider '{name}'")
       cp = self.load(name)
-      registry.register(name, cp)
+      registry.set(name, cp)
 
   @inject.method
   def dump(self, logger: Logger = inject[get_logger(__name__)]) -> Table:

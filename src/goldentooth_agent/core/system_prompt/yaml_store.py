@@ -60,7 +60,7 @@ class YamlSystemPromptStore(YamlStore[SystemPromptGenerator]):
     for name in self.list():
       logger.debug(f"Loading system prompt '{name}'")
       spg = self.load(name)
-      registry.register(name, spg)
+      registry.set(name, spg)
 
   @inject.method
   def dump(self, logger: Logger = inject[get_logger(__name__)]) -> Table:
