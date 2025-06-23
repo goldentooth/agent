@@ -55,13 +55,3 @@ class Role:
       if tool_id in system_prompt_generator.context_providers:
         logger.debug(f"Removing tool '{tool_id}' from system prompt generator")
         del system_prompt_generator.context_providers[tool_id]
-
-  @classmethod
-  def from_dict(cls, data: dict) -> Role:
-    """Create a Role from a dictionary."""
-    name = data.get("name")
-    context_provider_ids = data.get("context_providers", [])
-    tool_ids = data.get("tools", [])
-    if not name:
-      raise ValueError("Role must have a 'name' field.")
-    return cls(name=name, context_provider_ids=context_provider_ids, tool_ids=tool_ids)

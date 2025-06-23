@@ -44,6 +44,7 @@ def get_dumpables() -> dict[str, Dumpable]:
   from goldentooth_agent.core.agent import AgentRegistry
   from goldentooth_agent.core.command import CommandRegistry
   from goldentooth_agent.core.context_provider import ContextProviderRegistry, YamlContextProviderStore
+  from goldentooth_agent.core.role import RoleRegistry, YamlRoleStore
   from goldentooth_agent.core.system_prompt import SystemPromptRegistry, YamlSystemPromptStore
   from goldentooth_agent.core.tool import ToolRegistry
   result: dict[str, Dumpable] = {}
@@ -51,6 +52,8 @@ def get_dumpables() -> dict[str, Dumpable]:
   result["command_registry"] = world[CommandRegistry]
   result["context_provider_registry"] = world[ContextProviderRegistry]
   result["context_provider_store"] = world[YamlContextProviderStore]
+  result["role_registry"] = world[RoleRegistry]
+  result["role_store"] = world[YamlRoleStore]
   result["system_prompt_registry"] = world[SystemPromptRegistry]
   result["system_prompt_store"] = world[YamlSystemPromptStore]
   result["tool_registry"] = world[ToolRegistry]

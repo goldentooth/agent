@@ -10,5 +10,5 @@ def get_default_agent(
 ) -> BaseAgent:
   """Create an instance of AgentBase with the default configuration."""
   result = BaseAgent(config=config)
-  registry.set_default(result)
+  registry.set('default', result)
   return result

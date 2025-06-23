@@ -2,15 +2,10 @@ from __future__ import annotations
 from antidote import inject, injectable
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator
 from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.named_registry import NamedRegistry
 from logging import Logger
 from rich.pretty import Pretty
 from rich.table import Table
-from typing import Dict, List, Optional
-from antidote import injectable
-from atomic_agents.lib.base.base_io_schema import BaseIOSchema
-from atomic_agents.lib.base.base_tool import BaseTool
-from goldentooth_agent.core.named_registry import NamedRegistry, make_register_fn
-from goldentooth_agent.core.thunk import Thunk
 from rich.table import Table
 
 @injectable()
