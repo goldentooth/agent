@@ -56,7 +56,7 @@ def inject_default_agent() -> Thunk[Context, Context]:
   """Inject a agent into the context."""
   @context_autothunk(name="inject_agent")
   @inject
-  async def _inject_agent(
+  async def _inject_default_agent(
     agent_registry: AgentRegistry = inject.me(),
     logger: Logger = inject[get_logger(__name__)],
   ) -> Annotated[BaseAgent, AGENT_KEY]:
@@ -64,7 +64,7 @@ def inject_default_agent() -> Thunk[Context, Context]:
     agent = agent_registry.get('default')
     logger.debug(f"Injecting default agent: {agent}")
     return agent
-  return _inject_agent
+  return _inject_default_agent
 
 def inject_agent_prefix() -> Thunk[Context, Context]:
   """Inject the agent's text representation into the context."""
