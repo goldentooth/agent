@@ -10,6 +10,6 @@ class AgentInputConvertible(Protocol):
 
 @runtime_checkable
 class AgentOutputConvertible(Protocol):
-  """Protocol for objects that can be converted to a BaseAgentInputSchema."""
+  """Protocol for objects that can be converted to a BaseAgentOutputSchema."""
 
   def as_agent_output(self) -> BaseAgentOutputSchema: ...
