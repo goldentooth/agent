@@ -22,6 +22,7 @@ class YamlScenarioAdapter(YamlStoreAdapter[Scenario]):
       hidden=data.get("hidden", False),
       info=data.get("info", []),
       tags=data.get("tags", []),
+      hints=data.get("hints", {}),
     )
 
   @classmethod
@@ -32,6 +33,7 @@ class YamlScenarioAdapter(YamlStoreAdapter[Scenario]):
       "hidden": obj.hidden,
       "info": obj.info,
       "tags": obj.tags,
+      "hints": obj.hints,
     }
 
 @injectable(factory_method='create')

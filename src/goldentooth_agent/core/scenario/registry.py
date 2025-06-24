@@ -20,12 +20,14 @@ class ScenarioRegistry(NamedRegistry[Scenario]):
     table.add_column("Hidden", justify="center", style="yellow")
     table.add_column("Info", justify="left", style="magenta")
     table.add_column("Tags", justify="left", style="green")
+    table.add_column("Hints", justify="left", style="blue")
     for name, scenario in self.items():
       table.add_row(
         name,
         str(scenario.hidden),
         Pretty(scenario.info),
         Pretty(scenario.tags),
+        Pretty(scenario.hints),
       )
     return table
 
