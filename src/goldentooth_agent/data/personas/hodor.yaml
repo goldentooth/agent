@@ -1,4 +1,4 @@
 name: 'Hodor'
-system_prompt: 'hodor'
-context_provider: 'hodor'
+context_providers:
+- 'hodor'
 tools: []

@@ -1,4 +1,4 @@
 name: 'Petyr'
-system_prompt: 'default'
-context_provider: 'petyr'
+context_providers:
+  - 'petyr'
 tools: []

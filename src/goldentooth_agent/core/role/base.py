@@ -3,6 +3,7 @@ from antidote import inject
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator, SystemPromptContextProviderBase
 from goldentooth_agent.core.context_provider import ContextProviderRegistry
 from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.system_prompt import SystemPromptRegistry
 from goldentooth_agent.core.tool import ToolRegistry
 from logging import Logger
 
@@ -10,23 +11,32 @@ class Role:
   """Base class for all roles in the GoldenTooth Agent system."""
 
   @inject
-  def __init__(self, name: str, context_provider_ids: list[str], tool_ids: list[str], logger: Logger = inject[get_logger(__name__)]) -> None:
+  def __init__(
+    self,
+    name: str,
+    system_prompt_id: str,
+    context_provider_ids: list[str],
+    tool_ids: list[str],
+    logger: Logger = inject[get_logger(__name__)],
+  ) -> None:
     """Initialize the role with context providers and tools."""
     logger.debug(f"Initializing Role: {name} with context providers {context_provider_ids} and tools {tool_ids}")
     self.name = name
+    self.system_prompt_id = system_prompt_id
     self.context_provider_ids = context_provider_ids
     self.tool_ids = tool_ids
 
   @inject
-  def visit_generator(
+  def get_system_prompt(
     self,
-    system_prompt_generator: SystemPromptGenerator = inject.me(),
+    system_prompt_registry: SystemPromptRegistry = inject.me(),
     context_provider_registry: ContextProviderRegistry = inject.me(),
     tool_registry: ToolRegistry = inject.me(),
     logger: Logger = inject[get_logger(__name__)],
-  ) -> None:
-    """Modify the system prompt generator to include this role's context providers and tools."""
-    logger.debug(f"Visiting generator for Role: {self.name}")
+  ) -> SystemPromptGenerator:
+    """Retrieve the system prompt for this persona."""
+    logger.debug(f"Retrieving system prompt for Persona: {self.name}")
+    system_prompt_generator = system_prompt_registry.get(self.system_prompt_id)
     for cp_id in self.context_provider_ids:
       logger.debug(f"Adding context provider '{cp_id}' to system prompt generator")
       context_provider = context_provider_registry.get(cp_id)
@@ -36,22 +46,4 @@ class Role:
       tool = tool_registry.get(tool_id)
       if isinstance(tool, SystemPromptContextProviderBase):
         system_prompt_generator.context_providers[tool_id] = tool
-
-  @inject
-  def unvisit_generator(
-    self,
-    system_prompt_generator: SystemPromptGenerator = inject.me(),
-    logger: Logger = inject[get_logger(__name__)],
-  ) -> None:
-    """Remove this role's context providers and tools from the system prompt generator."""
-    logger.debug(f"Unvisiting generator for Role: {self.name}")
-    for cp_id in self.context_provider_ids:
-      logger.debug(f"Removing context provider '{cp_id}' from system prompt generator")
-      if cp_id in system_prompt_generator.context_providers:
-        logger.debug(f"Removing context provider '{cp_id}' from system prompt generator")
-        del system_prompt_generator.context_providers[cp_id]
-    for tool_id in self.tool_ids:
-      logger.debug(f"Removing tool '{tool_id}' from system prompt generator")
-      if tool_id in system_prompt_generator.context_providers:
-        logger.debug(f"Removing tool '{tool_id}' from system prompt generator")
-        del system_prompt_generator.context_providers[tool_id]
+    return system_prompt_generator

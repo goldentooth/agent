@@ -23,7 +23,7 @@ class PersonaRegistry(NamedRegistry[Persona]):
     for name, persona in self.items():
       persona_dict = {
         "name": persona.name,
-        "context_provider": persona.context_provider_id,
+        "context_provider": persona.context_provider_ids,
         "tools": persona.tool_ids,
       }
       table.add_row(name, Pretty(persona_dict))

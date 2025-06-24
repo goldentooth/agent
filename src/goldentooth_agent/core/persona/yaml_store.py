@@ -19,8 +19,7 @@ class YamlPersonaAdapter(YamlStoreAdapter[Persona]):
     """Create a Persona instance from a dictionary."""
     return Persona(
       name=data.get("name", ""),
-      system_prompt_id=data.get("system_prompt", ""),
-      context_provider_id=data.get("context_provider", ""),
+      context_provider_ids=data.get("context_providers", []),
       tool_ids=data.get("tools", []),
     )
 
@@ -29,8 +28,7 @@ class YamlPersonaAdapter(YamlStoreAdapter[Persona]):
     """Convert a Persona instance to a dictionary."""
     return {
       "name": obj.name,
-      "system_prompt": obj.system_prompt_id,
-      "context_provider": obj.context_provider_id,
+      "context_providers": obj.context_provider_ids,
       "tools": obj.tool_ids,
     }
 

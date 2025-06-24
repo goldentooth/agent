@@ -1,4 +1,4 @@
 name: 'Tyrion'
-system_prompt: 'default'
-context_provider: 'tyrion'
+context_providers:
+- 'tyrion'
 tools: []

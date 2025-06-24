@@ -1,6 +1,15 @@
 from __future__ import annotations
-from goldentooth_agent.core.yaml_store import YamlStoreAdapter
+from antidote import inject, injectable
+from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.path import UserPaths
+from goldentooth_agent.core.yaml_store import YamlStore, YamlStoreAdapter, YamlStoreInstaller
+from goldentooth_agent.data import roles as roles_source
+from logging import Logger
+from pathlib import Path
+from rich.syntax import Syntax
+from rich.table import Table
 from .base import Role
+from .registry import RoleRegistry
 
 class YamlRoleAdapter(YamlStoreAdapter[Role]):
   """Adapter for Role to handle YAML serialization and deserialization."""
@@ -10,6 +19,7 @@ class YamlRoleAdapter(YamlStoreAdapter[Role]):
     """Create a Role instance from a dictionary."""
     return Role(
       name=data.get("name", ""),
+      system_prompt_id=data.get("system_prompt", ""),
       context_provider_ids=data.get("context_providers", []),
       tool_ids=data.get("tools", []),
     )
@@ -19,19 +29,10 @@ class YamlRoleAdapter(YamlStoreAdapter[Role]):
     """Convert a Role instance to a dictionary."""
     return {
       "name": obj.name,
+      "system_prompt": obj.system_prompt_id,
       "context_providers": obj.context_provider_ids,
       "tools": obj.tool_ids,
     }
-
-from antidote import inject, injectable
-from goldentooth_agent.core.yaml_store import YamlStore
-from goldentooth_agent.core.logging import get_logger
-from goldentooth_agent.core.path import UserPaths
-from logging import Logger
-from pathlib import Path
-from rich.syntax import Syntax
-from rich.table import Table
-from .registry import RoleRegistry
 
 @injectable(factory_method='create')
 class YamlRoleStore(YamlStore[Role]):
@@ -84,9 +85,6 @@ def discover_yaml_roles(
   store.discover()
 
 discover_yaml_roles()
-
-from goldentooth_agent.data import roles as roles_source
-from goldentooth_agent.core.yaml_store import YamlStoreInstaller
 
 @injectable
 class YamlRoleInstaller(YamlStoreInstaller[Role]):
