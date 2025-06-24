@@ -55,6 +55,8 @@ def get_dumpables() -> dict[str, Dumpable]:
   from goldentooth_agent.core.persona_selector import PersonaSelectorStrategyRegistry
   from goldentooth_agent.core.role import RoleRegistry, YamlRoleStore
   from goldentooth_agent.core.role_selector import RoleSelectorStrategyRegistry
+  from goldentooth_agent.core.scenario import ScenarioRegistry, YamlScenarioStore
+  from goldentooth_agent.core.scenario_selector import ScenarioSelectorStrategyRegistry
   from goldentooth_agent.core.system_prompt import SystemPromptRegistry, YamlSystemPromptStore
   from goldentooth_agent.core.tool import ToolRegistry
   result: dict[str, Dumpable] = {}
@@ -70,6 +72,9 @@ def get_dumpables() -> dict[str, Dumpable]:
   result["role_registry"] = world[RoleRegistry]
   result["role_selector_strategy_registry"] = world[RoleSelectorStrategyRegistry]
   result["role_store"] = world[YamlRoleStore]
+  result["scenario_registry"] = world[ScenarioRegistry]
+  result["scenario_store"] = world[YamlScenarioStore]
+  result["scenario_selector_strategy_registry"] = world[ScenarioSelectorStrategyRegistry]
   result["system_prompt_registry"] = world[SystemPromptRegistry]
   result["system_prompt_store"] = world[YamlSystemPromptStore]
   result["tool_registry"] = world[ToolRegistry]

@@ -32,4 +32,3 @@ class PersonaSelector:
   def select_persona(self, context: Context) -> Persona:
     """Select a persona based on the current context."""
     return self.get_strategy().select_persona(context)
-
