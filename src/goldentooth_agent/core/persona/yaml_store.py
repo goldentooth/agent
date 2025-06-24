@@ -20,7 +20,6 @@ class YamlPersonaAdapter(YamlStoreAdapter[Persona]):
     return Persona(
       name=data.get("name", ""),
       context_provider_ids=data.get("context_providers", []),
-      tool_ids=data.get("tools", []),
     )
 
   @classmethod
@@ -29,7 +28,6 @@ class YamlPersonaAdapter(YamlStoreAdapter[Persona]):
     return {
       "name": obj.name,
       "context_providers": obj.context_provider_ids,
-      "tools": obj.tool_ids,
     }
 
 @injectable(factory_method='create')

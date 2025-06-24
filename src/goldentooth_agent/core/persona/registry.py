@@ -24,7 +24,6 @@ class PersonaRegistry(NamedRegistry[Persona]):
       persona_dict = {
         "name": persona.name,
         "context_providers": persona.context_provider_ids,
-        "tools": persona.tool_ids,
       }
       table.add_row(name, Pretty(persona_dict))
     return table

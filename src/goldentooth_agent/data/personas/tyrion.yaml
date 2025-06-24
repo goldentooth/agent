@@ -1,4 +1,3 @@
 name: 'Tyrion'
 context_providers:
-- 'tyrion'
-tools: []
+  - 'tyrion'

@@ -1,4 +1,3 @@
 name: 'Hodor'
 context_providers:
-- 'hodor'
-tools: []
+  - 'hodor'
