@@ -3,7 +3,6 @@ from antidote import inject
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator, SystemPromptContextProviderBase
 from goldentooth_agent.core.context_provider import ContextProviderRegistry
 from goldentooth_agent.core.logging import get_logger
-from goldentooth_agent.core.system_prompt import SystemPromptRegistry
 from goldentooth_agent.core.tool import ToolRegistry
 from logging import Logger
 
@@ -27,7 +26,7 @@ class Persona:
   @inject
   def visit_generator(
     self,
-    system_prompt_generator: SystemPromptGenerator = inject.me(),
+    system_prompt_generator: SystemPromptGenerator,
     context_provider_registry: ContextProviderRegistry = inject.me(),
     tool_registry: ToolRegistry = inject.me(),
     logger: Logger = inject[get_logger(__name__)],
@@ -47,7 +46,7 @@ class Persona:
   @inject
   def unvisit_generator(
     self,
-    system_prompt_generator: SystemPromptGenerator = inject.me(),
+    system_prompt_generator: SystemPromptGenerator,
     logger: Logger = inject[get_logger(__name__)],
   ) -> None:
     """Remove this role's context providers and tools from the system prompt generator."""
