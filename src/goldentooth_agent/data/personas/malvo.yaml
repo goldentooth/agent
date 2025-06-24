@@ -1,0 +1,3 @@
+name: 'Malvo Trevine'
+context_providers:
+  - 'malvo'
