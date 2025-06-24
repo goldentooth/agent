@@ -13,3 +13,4 @@ class Scenario:
     self.name = name
     self.hidden = hidden
     self.info = info
+    self.tags = tags
