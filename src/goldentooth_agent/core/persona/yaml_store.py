@@ -1,6 +1,15 @@
 from __future__ import annotations
-from goldentooth_agent.core.yaml_store import YamlStoreAdapter
+from antidote import inject, injectable
+from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.path import UserPaths
+from goldentooth_agent.core.yaml_store import YamlStore, YamlStoreAdapter, YamlStoreInstaller
+from goldentooth_agent.data import roles as roles_source
+from logging import Logger
+from pathlib import Path
+from rich.syntax import Syntax
+from rich.table import Table
 from .base import Persona
+from .registry import PersonaRegistry
 
 class YamlPersonaAdapter(YamlStoreAdapter[Persona]):
   """Adapter for Persona to handle YAML serialization and deserialization."""
@@ -24,16 +33,6 @@ class YamlPersonaAdapter(YamlStoreAdapter[Persona]):
       "context_provider": obj.context_provider_id,
       "tools": obj.tool_ids,
     }
-
-from antidote import inject, injectable
-from goldentooth_agent.core.yaml_store import YamlStore
-from goldentooth_agent.core.logging import get_logger
-from goldentooth_agent.core.path import UserPaths
-from logging import Logger
-from pathlib import Path
-from rich.syntax import Syntax
-from rich.table import Table
-from .registry import PersonaRegistry
 
 @injectable(factory_method='create')
 class YamlPersonaStore(YamlStore[Persona]):
@@ -86,9 +85,6 @@ def discover_yaml_personas(
   store.discover()
 
 discover_yaml_personas()
-
-from goldentooth_agent.data import roles as roles_source
-from goldentooth_agent.core.yaml_store import YamlStoreInstaller
 
 @injectable
 class YamlPersonaInstaller(YamlStoreInstaller[Persona]):

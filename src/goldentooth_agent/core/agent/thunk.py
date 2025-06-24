@@ -11,7 +11,6 @@ from logging import Logger
 from rich.text import Text
 from typing import Annotated, Callable, Optional
 from .context import AGENT_INPUT_KEY, AGENT_OUTPUT_KEY, AGENT_KEY, AGENT_PREFIX_KEY, SHOULD_SKIP_AGENT_KEY
-from .inject import get_default_agent
 from .registry import AgentRegistry
 from .schema import AgentInputConvertible
 
@@ -58,10 +57,11 @@ def inject_default_agent() -> Thunk[Context, Context]:
   @context_autothunk(name="inject_agent")
   @inject
   async def _inject_agent(
-    agent: BaseAgent = inject[get_default_agent()],
+    agent_registry: AgentRegistry = inject.me(),
     logger: Logger = inject[get_logger(__name__)],
   ) -> Annotated[BaseAgent, AGENT_KEY]:
     """Inject the agent into the context."""
+    agent = agent_registry.get('default')
     logger.debug(f"Injecting default agent: {agent}")
     return agent
   return _inject_agent
@@ -140,17 +140,3 @@ def agent_chain() -> Thunk[Context, Context]:
       ),
     ),
   )
-
-@inject
-def dump_agent_registry(registry = inject[AgentRegistry]) -> Thunk[Context, Context]:
-  """Print all current keys/values in the agent registry."""
-  from goldentooth_agent.core.console import get_console
-  from antidote import world
-  @thunk(name="dump_agent_registry")
-  @inject
-  async def _dump(ctx: Context, logger: Logger = inject[get_logger(__name__)]) -> Context:
-    """Dump the agent registry to the console."""
-    table = registry.dump()
-    world[get_console()].print(table)
-    return ctx
-  return _dump

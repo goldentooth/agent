@@ -3,7 +3,6 @@ import builtins
 import goldentooth_agent
 from goldentooth_agent.core.command import enroll_command, get_command_typer
 from goldentooth_agent.core.context import Context
-from goldentooth_agent.core.background_loop import run_in_background
 from goldentooth_agent.core.logging import get_logger
 import hunter
 import hunter.predicates

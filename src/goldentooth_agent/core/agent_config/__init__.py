@@ -1,5 +1,6 @@
-from .inject import get_default_agent_config
+from .registry import AgentConfigRegistry, register_agent_config
 
 __all__ = [
-  "get_default_agent_config",
+  "AgentConfigRegistry",
+  "register_agent_config",
 ]

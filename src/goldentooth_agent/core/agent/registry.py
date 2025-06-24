@@ -2,6 +2,7 @@ from __future__ import annotations
 from antidote import inject, injectable
 from atomic_agents.agents.base_agent import BaseAgent
 from atomic_agents.lib.base.base_io_schema import BaseIOSchema
+from goldentooth_agent.core.agent_config import AgentConfigRegistry
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.named_registry import NamedRegistry, make_register_fn
 from goldentooth_agent.core.thunk import Thunk
@@ -27,9 +28,9 @@ class AgentRegistry(NamedRegistry[BaseAgent]):
 
   @inject.method
   def dump(self, logger: Logger = inject[get_logger(__name__)]) -> Table:
-    """Dump the context to the console."""
-    logger.debug("Dumping agent registry context")
-    table = Table(title=f"Context Dump")
+    """Dump the registry to the console."""
+    logger.debug("Dumping agent registry")
+    table = Table(title=f"Agent Registry Dump")
     table.add_column("Name")
     table.add_column("Agent", overflow="fold")
     for k, v in self.items():
@@ -37,3 +38,11 @@ class AgentRegistry(NamedRegistry[BaseAgent]):
     return table
 
 register_agent = make_register_fn(AgentRegistry)
+
+@inject
+def register_default_agent(agent_config_registry: AgentConfigRegistry = inject.me()) -> None:
+  """Create an instance of BaseAgent with the default configuration."""
+  config = agent_config_registry.get('default')
+  register_agent(name='default', obj=BaseAgent(config=config))
+
+register_default_agent()

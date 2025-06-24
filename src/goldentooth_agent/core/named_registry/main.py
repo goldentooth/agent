@@ -72,7 +72,7 @@ class Creatable(Protocol[Tc]):
 class RegisterCallable(Protocol[T]):
   """Protocol for a callable that registers an object with a name."""
 
-  def __call__(self, cls: type[T], *, obj: Optional[T] = None, name: Optional[str] = None) -> type[T]:
+  def __call__(self, cls: Optional[type[T]] = None, *, obj: Optional[T] = None, name: Optional[str] = None) -> type[T]:
     """Register an object with the given name in the specified registry."""
     ...
 
@@ -84,7 +84,7 @@ def make_register_fn(
 ) -> RegisterCallable[T]:
   """Create a registration function for the given type."""
   def _decorate(
-    cls: type[T],
+    cls: Optional[type[T]] = None,
     *,
     obj: Optional[T] = None,
     name: Optional[str] = None,
@@ -106,5 +106,7 @@ def make_register_fn(
     if not final_name:
       raise ValueError("A name must be provided or derivable.")
     registry.set(final_name, final_obj)
-    return cls
+    if cls is not None:
+      return cls
+    return type(final_obj) # type: ignore[return-value]
   return _decorate

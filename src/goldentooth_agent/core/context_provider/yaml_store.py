@@ -1,6 +1,15 @@
 from __future__ import annotations
+from antidote import inject, injectable
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptContextProviderBase
-from goldentooth_agent.core.yaml_store import YamlStoreAdapter
+from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.path import UserPaths
+from goldentooth_agent.core.yaml_store import YamlStoreAdapter, YamlStore, YamlStoreInstaller
+from goldentooth_agent.data import context_providers as context_providers_source
+from logging import Logger
+from pathlib import Path
+from rich.syntax import Syntax
+from rich.table import Table
+from .registry import ContextProviderRegistry
 from .simple import SimpleContextProvider
 
 class YamlContextProviderAdapter(YamlStoreAdapter[SystemPromptContextProviderBase]):
@@ -21,16 +30,6 @@ class YamlContextProviderAdapter(YamlStoreAdapter[SystemPromptContextProviderBas
       "title": obj.title,
       "info": obj.get_info().splitlines(),
     }
-
-from antidote import inject, injectable
-from goldentooth_agent.core.yaml_store import YamlStore
-from goldentooth_agent.core.logging import get_logger
-from goldentooth_agent.core.path import UserPaths
-from logging import Logger
-from pathlib import Path
-from rich.syntax import Syntax
-from rich.table import Table
-from .registry import ContextProviderRegistry
 
 @injectable(factory_method='create')
 class YamlContextProviderStore(YamlStore[SystemPromptContextProviderBase]):
@@ -84,8 +83,6 @@ def discover_yaml_context_providers(
 
 discover_yaml_context_providers()
 
-from goldentooth_agent.data import context_providers as context_providers_source
-from goldentooth_agent.core.yaml_store import YamlStoreInstaller
 
 @injectable
 class YamlContextProviderInstaller(YamlStoreInstaller[SystemPromptContextProviderBase]):

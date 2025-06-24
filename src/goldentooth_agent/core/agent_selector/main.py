@@ -20,10 +20,7 @@ class AgentSelector:
     return cls()
 
   @inject.method
-  def get_strategy(
-    self,
-    strategy_registry: AgentSelectorStrategyRegistry = inject.me(),
-  ) -> AgentSelectorStrategy:
+  def get_strategy(self, strategy_registry: AgentSelectorStrategyRegistry = inject.me()) -> AgentSelectorStrategy:
     """Get the currently set strategy."""
     if self.strategy_id is None:
       raise ValueError("Strategy ID must be set before getting the strategy.")

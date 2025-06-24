@@ -9,7 +9,9 @@ from .tool import DisplayInput
 class DisplayInputConvertible(Protocol):
   """Protocol for objects that can be converted to a DisplayInput."""
 
-  def as_display_input(self) -> DisplayInput: ...
+  def as_display_input(self) -> DisplayInput:
+    """Convert the object to a DisplayInput."""
+    ...
 
 class DisplayInputAdapter(DisplayInputConvertible):
   """Adapter class to convert a BaseIOSchema to a DisplayInput."""
