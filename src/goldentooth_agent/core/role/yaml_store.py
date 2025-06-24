@@ -90,7 +90,7 @@ discover_yaml_roles()
 class YamlRoleInstaller(YamlStoreInstaller[Role]):
   """Installer for roles that copies embedded YAML files to the user data directory."""
 
-  def __init__(self, destination: YamlRoleStore = inject.me()):
+  def __init__(self, destination: YamlRoleStore = inject.me()) -> None:
     """Initialize the installer with the store."""
     source = YamlRoleStore(Path(roles_source.__path__[0]))
     super().__init__(source, destination, YamlRoleAdapter)
@@ -104,7 +104,7 @@ def install_yaml_roles(
   """Install YAML roles from the embedded directory to the user data directory."""
   logger.debug("Installing YAML roles...")
   if installer.install(True):
-    logger.debug("YAML roles installed successfully.")
     store.discover()
+  logger.debug("YAML roles installed successfully.")
 
 install_yaml_roles()

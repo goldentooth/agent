@@ -3,7 +3,7 @@ from antidote import inject, injectable
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.path import UserPaths
 from goldentooth_agent.core.yaml_store import YamlStore, YamlStoreAdapter, YamlStoreInstaller
-from goldentooth_agent.data import roles as roles_source
+from goldentooth_agent.data import personas as personas_source
 from logging import Logger
 from pathlib import Path
 from rich.syntax import Syntax
@@ -88,7 +88,7 @@ class YamlPersonaInstaller(YamlStoreInstaller[Persona]):
 
   def __init__(self, destination: YamlPersonaStore = inject.me()):
     """Initialize the installer with the store."""
-    source = YamlPersonaStore(Path(roles_source.__path__[0]))
+    source = YamlPersonaStore(Path(personas_source.__path__[0]))
     super().__init__(source, destination, YamlPersonaAdapter)
 
 @inject

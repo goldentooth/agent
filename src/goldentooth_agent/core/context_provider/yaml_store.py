@@ -102,7 +102,7 @@ def install_yaml_context_providers(
   """Install YAML context providers from the embedded directory to the user data directory."""
   logger.debug("Installing YAML context providers...")
   if installer.install(True):
-    logger.debug("YAML context providers installed successfully.")
     store.discover()
+  logger.debug("YAML context providers installed successfully.")
 
 install_yaml_context_providers()
