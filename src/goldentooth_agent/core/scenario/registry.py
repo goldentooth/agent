@@ -1,11 +1,9 @@
 from __future__ import annotations
 from antidote import inject, injectable
 from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.named_registry import NamedRegistry, make_register_fn
 from logging import Logger
 from rich.pretty import Pretty
-from rich.table import Table
-from antidote import injectable
-from goldentooth_agent.core.named_registry import NamedRegistry, make_register_fn
 from rich.table import Table
 from .base import Scenario
 

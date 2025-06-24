@@ -1,8 +1,8 @@
 from atomic_agents.agents.base_agent import BaseAgent
 from goldentooth_agent.core.context import Context
+from typing import Protocol, runtime_checkable
 
-from typing import Protocol
-
+@runtime_checkable
 class AgentSelectorStrategy(Protocol):
   """Protocol for agent selection strategies."""
   name: str

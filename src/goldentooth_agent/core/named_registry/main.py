@@ -2,7 +2,7 @@ from __future__ import annotations
 from antidote import inject
 from goldentooth_agent.core.logging import get_logger
 from logging import Logger
-from typing import Any, Callable, Generic, Dict, Optional, Protocol, TypeVar, runtime_checkable
+from typing import Callable, Generic, Dict, Optional, Protocol, TypeVar, runtime_checkable
 
 T = TypeVar("T")
 
@@ -25,7 +25,7 @@ class NamedRegistry(Generic[T]):
     """Retrieve an object by its name."""
     self.logger.debug(f"Retrieving object '{name}'")
     if name not in self._registry:
-      raise KeyError(f"'{name}' is not registered.")
+      raise KeyError(f"'{name}' is not registered; available names: {list(self._registry.keys())}")
     return self._registry[name]
 
   def remove(self, name: str) -> None:
@@ -69,6 +69,7 @@ class Creatable(Protocol[Tc]):
     """Create an instance of the class."""
     ...
 
+@runtime_checkable
 class RegisterCallable(Protocol[T]):
   """Protocol for a callable that registers an object with a name."""
 

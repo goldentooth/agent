@@ -7,7 +7,7 @@ from logging import Logger
 from rich.console import Console
 import typer
 from typer import Typer, Context as TyperContext
-from typing import Annotated, Optional, Protocol
+from typing import Annotated, Optional, Protocol, runtime_checkable
 
 @enroll_command
 @inject
@@ -36,6 +36,7 @@ def enroll_dump_command(
     dumpable = dumpable_from_string(thing, values)
     console.print(dumpable.dump())
 
+@runtime_checkable
 class Dumpable(Protocol):
   """An object that can be dumped to a table."""
   from rich.table import Table

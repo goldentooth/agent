@@ -21,16 +21,23 @@ def chat():
   @inject
   def handle(ctx: Context = inject.me()) -> None:
     """Handle the chat session."""
+    from goldentooth_agent.core.thunk import compose_chain
+    from goldentooth_agent.core.scenario_selector import select_scenario_chain
     from goldentooth_agent.core.context import trampoline_chain
     from goldentooth_agent.core.intake import intake_chain
     from goldentooth_agent.core.command import command_chain
     from goldentooth_agent.core.agent import agent_chain
     from goldentooth_agent.core.display import display_chain
-    chain = trampoline_chain(   # Run the chat session in a trampoline style.
-      intake_chain(),           # Get user input from the console.
-      command_chain(),          # Check for commands and run them if available.
-      agent_chain(),            # Check for agent input and run the agent if available.
-      display_chain(),          # Display the output to the console.
-    )
+    chain = compose_chain(        # Set up the context for the chat session.
+        select_scenario_chain(),  # Select a scenario based on the current context.
+      ) \
+      .chain(
+        trampoline_chain(         # Run the chat session in a trampoline style.
+          intake_chain(),         # Get user input from the console.
+          command_chain(),        # Check for commands and run them if available.
+          agent_chain(),          # Check for agent input and run the agent if available.
+          display_chain(),        # Display the output to the console.
+        )
+      )
     asyncio.run(chain(ctx))
   handle()
