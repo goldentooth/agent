@@ -91,6 +91,21 @@ def prepare_agent_input() -> Thunk[Context, Context]:
     return input
   return _prepare_agent_input
 
+def prepare_agent() -> Thunk[Context, Context]:
+  """Create a thunk that prepares the agent for execution."""
+  @context_autothunk(name="prepare_agent")
+  @inject
+  async def _prepare_agent(
+    agent: Annotated[BaseAgent, AGENT_KEY],
+    logger: Logger = inject[get_logger(__name__)],
+  ) -> Annotated[BaseAgent, AGENT_KEY]:
+    """Prepare the agent for execution."""
+    logger.debug(f"Preparing agent: {agent}")
+    if not isinstance(agent, BaseAgent):
+      raise TypeError(f"Expected BaseAgent, got {type(agent)}")
+    return agent
+  return _prepare_agent
+
 def run_agent() -> Thunk[Context, Context]:
   """Create a thunk that runs an agent with the provided input."""
   @context_autothunk(name="run_agent")
@@ -131,6 +146,7 @@ def agent_chain() -> Thunk[Context, Context]:
       if_else(
         has_context_key(AGENT_INPUT_KEY),
         compose_chain(
+          prepare_agent(),
           run_agent(),
           if_else(
             has_context_key(AGENT_OUTPUT_KEY),

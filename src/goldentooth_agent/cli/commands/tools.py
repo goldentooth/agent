@@ -15,11 +15,11 @@ def list_tools() -> None:
     tool_registry: ToolRegistry = inject.me(),
   ) -> None:
     """Handle the listing of tools."""
-    tools = tool_registry.keys()
+    tools = tool_registry.items()
     if not tools:
       console.print("[bold red]No tools registered.[/bold red]")
     else:
       console.print("[bold cyan]Available tools:[/bold cyan]")
-      for tool in tools:
-        console.print(f"- {tool}")
+      for tool_name, tool in tools:
+        console.print(f"- [bold cyan]{tool_name.split('.')[-1]}[/bold cyan]: {tool.tool_description}")
   handle()
