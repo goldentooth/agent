@@ -12,9 +12,11 @@ class AgentConfigClient(Enum):
   @cached_property
   def client(self) -> Instructor:
     """Return the Instructor client based on the enum value."""
-    if self == AgentConfigClient.ANTHROPIC:
-      return instructor.from_anthropic(anthropic.Anthropic())
-    raise NotImplementedError(f"No client handler for: {self}")
+    match self:
+      case AgentConfigClient.ANTHROPIC:
+        return instructor.from_anthropic(anthropic.Anthropic())
+      case _:
+        raise NotImplementedError(f"No client handler for: {self}")
 
   def __str__(self):
     """Return the string representation of the enum value."""
