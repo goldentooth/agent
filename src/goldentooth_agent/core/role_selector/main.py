@@ -1,10 +1,10 @@
 from __future__ import annotations
 from antidote import inject, injectable
 from goldentooth_agent.core.context import Context
-from goldentooth_agent.core.role import Role
+from goldentooth_agent.core.role import Role, RoleRegistry
 from typing import Optional
 from .strategy import RoleSelectorStrategy
-from .strategy_registry import RoleSelectorStrategyRegistry
+from .strategy_registry import RoleSelectorStrategyRegistry, register_role_selector_strategy
 
 @injectable(factory_method="create")
 class RoleSelector:
@@ -33,3 +33,14 @@ class RoleSelector:
     """Select a role based on the current context."""
     return self.get_strategy().select_role(context)
 
+class DefaultRoleSelectorStrategy(RoleSelectorStrategy):
+  """Default strategy for selecting roles."""
+  name = "default"
+  description = "Default strategy for selecting roles based on the current context."
+
+  @inject
+  def select_role(self, context: Context, role_registry: RoleRegistry = inject.me()) -> Role: # type: ignore
+    """Select a role based on the current context."""
+    return role_registry.get('default')
+
+register_role_selector_strategy(obj=DefaultRoleSelectorStrategy())

@@ -30,7 +30,6 @@ class ScenarioSelector:
     """Select a scenario based on the current context."""
     return self.get_strategy().select_scenario(context)
 
-
 class DefaultScenarioSelectorStrategy(ScenarioSelectorStrategy):
   """Default strategy for selecting scenarios."""
   name = "default"

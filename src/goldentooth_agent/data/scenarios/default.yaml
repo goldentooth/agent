@@ -2,6 +2,4 @@ name: 'default'
 hidden: true
 info: []
 tags: []
-hints:
-  persona: 'umbrell'
-  role: 'default'
+players: []
