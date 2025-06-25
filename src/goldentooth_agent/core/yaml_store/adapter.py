@@ -12,6 +12,6 @@ class YamlStoreAdapter(Protocol[T]):
     ...
 
   @classmethod
-  def to_dict(cls, obj: T) -> dict:
+  def to_dict(cls, id: str, obj: T) -> dict:
     """Convert the instance to a dictionary representation."""
     ...

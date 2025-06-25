@@ -9,7 +9,7 @@ from .strategy_registry import register_player_selector_strategy
 
 class DefaultPlayerSelectorStrategy(PlayerSelectorStrategy):
   """Default strategy for selecting players."""
-  name = "default"
+  id = "default"
   description = "Default strategy for selecting players based on the current context."
 
   @inject.method

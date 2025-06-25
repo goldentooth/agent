@@ -11,13 +11,17 @@ class Persona:
   @inject
   def __init__(
     self,
+    id: str,
     name: str,
+    color: str,
     context_provider_ids: list[str],
     logger: Logger = inject[get_logger(__name__)],
   ) -> None:
     """Initialize the persona with context providers."""
     logger.debug(f"Initializing Persona: {name} with context providers {context_provider_ids}")
+    self.id = id
     self.name = name
+    self.color = color
     self.context_provider_ids = context_provider_ids
 
   @inject

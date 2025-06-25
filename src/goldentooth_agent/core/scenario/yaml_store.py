@@ -18,22 +18,22 @@ class YamlScenarioAdapter(YamlStoreAdapter[Scenario]):
   def from_dict(cls, data: dict) -> Scenario:
     """Create a Scenario instance from a dictionary."""
     return Scenario(
-      name=data.get("name", ""),
-      hidden=data.get("hidden", False),
-      info=data.get("info", []),
-      tags=data.get("tags", []),
-      hints=data.get("hints", {}),
+      id=data["id"],
+      name=data["name"],
+      hidden=data["hidden"],
+      info=data["info"],
+      role_ids=data["roles"],
     )
 
   @classmethod
-  def to_dict(cls, obj: Scenario) -> dict:
+  def to_dict(cls, id: str, obj: Scenario) -> dict:
     """Convert a Scenario instance to a dictionary."""
     return {
+      "id": id,
       "name": obj.name,
       "hidden": obj.hidden,
       "info": obj.info,
-      "tags": obj.tags,
-      "hints": obj.hints,
+      "roles": obj.role_ids,
     }
 
 @injectable(factory_method='create')
@@ -60,21 +60,21 @@ class YamlScenarioStore(YamlStore[Scenario]):
   ) -> None:
     """Discover all YAML files in the store directory and load them."""
     logger.debug(f"Discovering scenarios in {self.directory}")
-    for name in self.list():
-      logger.debug(f"Loading scenario '{name}'")
-      scenario = self.load(name)
-      registry.set(name, scenario)
+    for id in self.list():
+      logger.debug(f"Loading scenario '{id}'")
+      scenario = self.load(id)
+      registry.set(id, scenario)
 
   @inject.method
   def dump(self, logger: Logger = inject[get_logger(__name__)]) -> Table:
     """Dump all scenarios in the store to a table."""
     logger.debug("Dumping all scenarios to table")
     table = Table(title="Store Scenarios")
-    table.add_column("Name", justify="left", style="cyan")
+    table.add_column("ID", justify="left", style="cyan")
     table.add_column("Contents", justify="left", style="magenta")
-    for name in self.list():
-      contents = Syntax.from_path(str(self.directory / f"{name}.yaml"))
-      table.add_row(name, contents)
+    for id in self.list():
+      contents = Syntax.from_path(str(self.directory / f"{id}.yaml"))
+      table.add_row(id, contents)
     return table
 
 @inject

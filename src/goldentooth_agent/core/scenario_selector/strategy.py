@@ -5,7 +5,7 @@ from typing import Protocol, runtime_checkable
 @runtime_checkable
 class ScenarioSelectorStrategy(Protocol):
   """Protocol for scenario selection strategies."""
-  name: str
+  id: str
   description: str
 
   def select_scenario(self, context: Context) -> Scenario:

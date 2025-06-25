@@ -16,31 +16,31 @@ class NamedRegistry(Generic[T]):
     self.logger = logger
     logger.debug(f"Initializing {self.__class__.__name__}")
 
-  def set(self, name: str, obj: T) -> None:
-    """Register an object with a given name."""
-    self.logger.debug(f"Setting {name} -> {obj}")
-    self._registry[name] = obj
+  def set(self, id: str, obj: T) -> None:
+    """Register an object with a given ID."""
+    self.logger.debug(f"Setting {id} -> {obj}")
+    self._registry[id] = obj
 
-  def get(self, name: str) -> T:
-    """Retrieve an object by its name."""
-    self.logger.debug(f"Retrieving object '{name}'")
-    if name not in self._registry:
-      raise KeyError(f"'{name}' is not registered; available names: {list(self._registry.keys())}")
-    return self._registry[name]
+  def get(self, id: str) -> T:
+    """Retrieve an object by its ID."""
+    self.logger.debug(f"Retrieving object '{id}'")
+    if id not in self._registry:
+      raise KeyError(f"'{id}' is not registered; available IDs: {list(self._registry.keys())}")
+    return self._registry[id]
 
-  def remove(self, name: str) -> None:
-    """Remove an object by its name."""
-    self.logger.debug(f"Removing '{name}'")
-    self._registry.pop(name, None)
+  def remove(self, id: str) -> None:
+    """Remove an object by its ID."""
+    self.logger.debug(f"Removing '{id}'")
+    self._registry.pop(id, None)
 
-  def has(self, name: str) -> bool:
-    """Check if an object with the given name is registered."""
-    self.logger.debug(f"Checking if '{name}' is registered")
-    return name in self._registry
+  def has(self, id: str) -> bool:
+    """Check if an object with the given ID is registered."""
+    self.logger.debug(f"Checking if '{id}' is registered")
+    return id in self._registry
 
   def list(self) -> list[str]:
-    """List all registered names in the registry."""
-    self.logger.debug(f"Listing all registered names in {self.__class__.__name__}")
+    """List all registered IDs in the registry."""
+    self.logger.debug(f"Listing all registered IDs in {self.__class__.__name__}")
     return sorted(self._registry.keys())
 
   def all(self) -> list[T]:
@@ -73,26 +73,26 @@ class Creatable(Protocol[Tc]):
 class RegisterCallable(Protocol[T]):
   """Protocol for a callable that registers an object with a name."""
 
-  def __call__(self, cls: Optional[type[T]] = None, *, obj: Optional[T] = None, name: Optional[str] = None) -> type[T]:
-    """Register an object with the given name in the specified registry."""
+  def __call__(self, cls: Optional[type[T]] = None, *, obj: Optional[T] = None, id: Optional[str] = None) -> type[T]:
+    """Register an object with the given ID in the specified registry."""
     ...
 
 def make_register_fn(
   registry_cls: type[NamedRegistry[T]],
   *,
   get_instance_fn: Optional[Callable[[], T]] = None,
-  default_name_fn: Optional[Callable[[T], str]] = None,
+  default_id_fn: Optional[Callable[[T], str]] = None,
 ) -> RegisterCallable[T]:
   """Create a registration function for the given type."""
   def _decorate(
     cls: Optional[type[T]] = None,
     *,
     obj: Optional[T] = None,
-    name: Optional[str] = None,
+    id: Optional[str] = None,
     get_instance_fn: Optional[Callable[[], T]] = get_instance_fn,
-    default_name_fn: Optional[Callable[[T], str]] = default_name_fn,
+    default_id_fn: Optional[Callable[[T], str]] = default_id_fn,
   ) -> type[T]:
-    """Register an object with the given name in the specified registry."""
+    """Register an object with the given ID in the specified registry."""
     from antidote import world
     registry = world[registry_cls]
     if get_instance_fn:
@@ -103,10 +103,10 @@ def make_register_fn(
       final_obj = obj
     else:
       raise ValueError("An object must be provided or creatable.")
-    final_name = name or (default_name_fn(final_obj) if default_name_fn else None)
-    if not final_name:
-      raise ValueError("A name must be provided or derivable.")
-    registry.set(final_name, final_obj)
+    final_id = id or (default_id_fn(final_obj) if default_id_fn else None)
+    if not final_id:
+      raise ValueError("An ID must be provided or derivable.")
+    registry.set(final_id, final_obj)
     if cls is not None:
       return cls
     return type(final_obj) # type: ignore[return-value]

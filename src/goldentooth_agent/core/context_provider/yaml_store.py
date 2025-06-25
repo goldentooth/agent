@@ -24,9 +24,10 @@ class YamlContextProviderAdapter(YamlStoreAdapter[SystemPromptContextProviderBas
     )
 
   @classmethod
-  def to_dict(cls, obj: SystemPromptContextProviderBase) -> dict:
+  def to_dict(cls, id: str, obj: SystemPromptContextProviderBase) -> dict:
     """Convert a SimpleContextProvider instance to a dictionary."""
     return {
+      "id": id,
       "title": obj.title,
       "info": obj.get_info().splitlines(),
     }

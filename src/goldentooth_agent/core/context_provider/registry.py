@@ -22,4 +22,4 @@ class ContextProviderRegistry(NamedRegistry[SystemPromptContextProviderBase]):
       table.add_row(name, provider.get_info())
     return table
 
-register_context_provider = make_register_fn(ContextProviderRegistry, default_name_fn=lambda x: camel_to_snake(x.__class__.__name__))
+register_context_provider = make_register_fn(ContextProviderRegistry, default_id_fn=lambda x: camel_to_snake(x.__class__.__name__))

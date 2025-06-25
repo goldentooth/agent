@@ -7,7 +7,7 @@ from .strategy_registry import register_role_selector_strategy
 
 class DefaultRoleSelectorStrategy(RoleSelectorStrategy):
   """Default strategy for selecting roles."""
-  name = "default"
+  id = "default"
   description = "Default strategy for selecting roles based on the current context."
 
   @inject

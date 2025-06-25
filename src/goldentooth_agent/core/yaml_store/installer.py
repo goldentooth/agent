@@ -16,8 +16,8 @@ class YamlStoreInstaller(Generic[T]):
   def install(self, overwrite: bool = False) -> bool:
     """Install all YAML files from the embedded directory into the store."""
     changed = False
-    for obj in self.source.list():
-      if overwrite or not self.destination.exists(obj):
-        self.destination.save(obj, self.source.load(obj))
+    for id in self.source.list():
+      if overwrite or not self.destination.exists(id):
+        self.destination.save(id, self.source.load(id))
         changed = True
     return changed

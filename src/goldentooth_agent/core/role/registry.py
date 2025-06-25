@@ -22,6 +22,7 @@ class RoleRegistry(NamedRegistry[Role]):
     table.add_column("Data", justify="left", style="magenta")
     for name, role in self.items():
       role_dict = {
+        "id": role.id,
         "name": role.name,
         "context_providers": role.context_provider_ids,
         "tools": role.tool_ids,

@@ -13,6 +13,7 @@ class Role:
   @inject
   def __init__(
     self,
+    id: str,
     name: str,
     system_prompt_id: str,
     context_provider_ids: list[str],
@@ -20,7 +21,8 @@ class Role:
     logger: Logger = inject[get_logger(__name__)],
   ) -> None:
     """Initialize the role with context providers and tools."""
-    logger.debug(f"Initializing Role: {name} with context providers {context_provider_ids} and tools {tool_ids}")
+    logger.debug(f"Initializing Role: {id} with name {name}, system prompt ID {system_prompt_id}, context providers {context_provider_ids}, and tools {tool_ids}")
+    self.id = id
     self.name = name
     self.system_prompt_id = system_prompt_id
     self.context_provider_ids = context_provider_ids

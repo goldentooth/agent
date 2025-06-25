@@ -18,17 +18,17 @@ class AgentSelectorStrategyRegistry(NamedRegistry[AgentSelectorStrategy]):
     """Dump all registered agent selector strategies to a table."""
     logger.debug("Dumping all registered agent selector strategies to a table")
     table = Table(title="Registered Agent Selector Strategies")
-    table.add_column("Name", justify="left", style="cyan", no_wrap=True)
+    table.add_column("ID", justify="left", style="cyan", no_wrap=True)
     table.add_column("Description", justify="left", style="magenta")
-    for name, strategy in self.items():
+    for id, strategy in self.items():
       strategy_dict = {
-        "name": strategy.name,
+        "id": strategy.id,
         "description": strategy.description,
       }
-      table.add_row(name, Pretty(strategy_dict))
+      table.add_row(id, Pretty(strategy_dict))
     return table
 
 register_agent_selector_strategy = make_register_fn(
   AgentSelectorStrategyRegistry,
-  default_name_fn=lambda strategy: strategy.name,
+  default_id_fn=lambda strategy: strategy.id,
 )

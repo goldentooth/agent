@@ -18,23 +18,23 @@ class YamlStore(Generic[T]):
     """List all available object names in the store."""
     return [p.stem for p in self.directory.glob("*.yaml")]
 
-  def load(self, name: str) -> T:
-    """Load an object by its name from the YAML store."""
-    path = self.directory / f"{name}.yaml"
+  def load(self, id: str) -> T:
+    """Load an object by its ID from the YAML store."""
+    path = self.directory / f"{id}.yaml"
     data = yaml.safe_load(path.read_text())
     return self.adapter.from_dict(data)
 
-  def save(self, name: str, obj: T) -> None:
-    """Save an object to the YAML store with the given name."""
-    path = self.directory / f"{name}.yaml"
-    data = self.adapter.to_dict(obj)
+  def save(self, id: str, obj: T) -> None:
+    """Save an object to the YAML store with the given ID."""
+    path = self.directory / f"{id}.yaml"
+    data = self.adapter.to_dict(id, obj)
     path.write_text(yaml.safe_dump(data))
 
-  def delete(self, name: str) -> None:
-    """Delete an object by its name from the YAML store."""
-    path = self.directory / f"{name}.yaml"
+  def delete(self, id: str) -> None:
+    """Delete an object by its ID from the YAML store."""
+    path = self.directory / f"{id}.yaml"
     path.unlink(missing_ok=True)
 
-  def exists(self, name: str) -> bool:
-    """Check if an object exists in the YAML store by its name."""
-    return (self.directory / f"{name}.yaml").exists()
+  def exists(self, id: str) -> bool:
+    """Check if an object exists in the YAML store by its ID."""
+    return (self.directory / f"{id}.yaml").exists()

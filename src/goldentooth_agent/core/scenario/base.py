@@ -1,6 +1,7 @@
 from __future__ import annotations
 from antidote import inject
 from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.player import Player
 from logging import Logger
 
 class Scenario:
@@ -9,17 +10,17 @@ class Scenario:
   @inject
   def __init__(
     self,
+    id: str,
     name: str,
     hidden: bool,
     info: list[str],
-    tags: list[str],
-    hints: list[str],
+    role_ids: list[str],
     logger: Logger = inject[get_logger(__name__)],
   ) -> None:
     """Initialize the scenario with context providers."""
-    logger.debug(f"Initializing Scenario: {name}")
+    logger.debug(f"Initializing Scenario: {id}")
+    self.id = id
     self.name = name
     self.hidden = hidden
     self.info = info
-    self.tags = tags
-    self.hints = hints
+    self.role_ids = role_ids

@@ -7,7 +7,7 @@ from .strategy_registry import register_scenario_selector_strategy
 
 class DefaultScenarioSelectorStrategy(ScenarioSelectorStrategy):
   """Default strategy for selecting scenarios."""
-  name = "default"
+  id = "default"
   description = "Default strategy for selecting scenarios based on the current context."
 
   @inject.method

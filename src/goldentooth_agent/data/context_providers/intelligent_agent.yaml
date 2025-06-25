@@ -1,3 +1,4 @@
+id: 'intelligent_agent'
 title: "Intelligent Agent"
 info:
   - "An intelligent agent is a software entity capable of perceiving inputs from its environment, reasoning about them, and taking action to achieve contextually appropriate outcomes."

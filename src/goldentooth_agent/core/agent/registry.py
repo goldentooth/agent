@@ -26,6 +26,17 @@ class AgentRegistry(NamedRegistry[BaseAgent]):
         return agent
     raise LookupError(f"No agent found for input schema: {schema}")
 
+  @inject
+  def get(self, id: str, agent_config_registry: AgentConfigRegistry = inject.me()) -> BaseAgent: # override
+    """Get an agent by its ID."""
+    try:
+      return super().get(id)
+    except KeyError:
+      agent = BaseAgent(config=agent_config_registry.get(id))
+      self.set(id, agent)
+      return agent
+
+
   @inject.method
   def dump(self, logger: Logger = inject[get_logger(__name__)]) -> Table:
     """Dump the registry to the console."""
@@ -38,11 +49,3 @@ class AgentRegistry(NamedRegistry[BaseAgent]):
     return table
 
 register_agent = make_register_fn(AgentRegistry)
-
-@inject
-def register_default_agent(agent_config_registry: AgentConfigRegistry = inject.me()) -> None:
-  """Create an instance of BaseAgent with the default configuration."""
-  config = agent_config_registry.get('default')
-  register_agent(name='default', obj=BaseAgent(config=config))
-
-register_default_agent()

@@ -29,4 +29,4 @@ class ToolRegistry(NamedRegistry[BaseTool]):
       table.add_row(str(k), v.get_info() if hasattr(v, 'get_info') else repr(v)) # type: ignore[no-any-return]
     return table
 
-register_tool = make_register_fn(ToolRegistry, default_name_fn=lambda tool: tool.tool_name)
+register_tool = make_register_fn(ToolRegistry, default_id_fn=lambda tool: tool.tool_name)

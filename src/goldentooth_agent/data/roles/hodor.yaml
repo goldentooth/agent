@@ -1,4 +1,5 @@
-name: 'hodor'
+id: 'hodor'
+name: 'Hodor'
 system_prompt: 'hodor'
 context_providers: []
 tools: []

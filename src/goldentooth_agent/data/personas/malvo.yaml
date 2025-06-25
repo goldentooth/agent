@@ -1,3 +1,5 @@
+id: 'malvo'
 name: 'Mr. Malvo Trevine'
+color: 'gray'
 context_providers:
   - 'malvo'

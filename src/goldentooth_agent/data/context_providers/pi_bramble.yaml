@@ -1,3 +1,4 @@
+id: 'pi_bramble'
 title: 'Pi Bramble'
 info:
   - "The Goldentooth Pi Bramble is a distributed computing cluster composed of networked Raspberry Pi 4B nodes, designed and maintained by Nathan Douglas."

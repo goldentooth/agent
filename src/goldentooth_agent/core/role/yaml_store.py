@@ -17,17 +17,20 @@ class YamlRoleAdapter(YamlStoreAdapter[Role]):
   @classmethod
   def from_dict(cls, data: dict) -> Role:
     """Create a Role instance from a dictionary."""
+    print(data)
     return Role(
-      name=data.get("name", ""),
-      system_prompt_id=data.get("system_prompt", ""),
-      context_provider_ids=data.get("context_providers", []),
-      tool_ids=data.get("tools", []),
+      id=data["id"],
+      name=data["name"],
+      system_prompt_id=data["system_prompt"],
+      context_provider_ids=data["context_providers"],
+      tool_ids=data["tools"],
     )
 
   @classmethod
-  def to_dict(cls, obj: Role) -> dict:
+  def to_dict(cls, id: str, obj: Role) -> dict:
     """Convert a Role instance to a dictionary."""
     return {
+      "id": id,
       "name": obj.name,
       "system_prompt": obj.system_prompt_id,
       "context_providers": obj.context_provider_ids,
@@ -58,21 +61,21 @@ class YamlRoleStore(YamlStore[Role]):
   ) -> None:
     """Discover all YAML files in the store directory and load them."""
     logger.debug(f"Discovering roles in {self.directory}")
-    for name in self.list():
-      logger.debug(f"Loading role '{name}'")
-      role = self.load(name)
-      registry.set(name, role)
+    for id in self.list():
+      logger.debug(f"Loading role '{id}'")
+      role = self.load(id)
+      registry.set(id, role)
 
   @inject.method
   def dump(self, logger: Logger = inject[get_logger(__name__)]) -> Table:
     """Dump all roles in the store to a table."""
     logger.debug("Dumping all roles to table")
     table = Table(title="Store Roles")
-    table.add_column("Name", justify="left", style="cyan")
+    table.add_column("ID", justify="left", style="cyan")
     table.add_column("Contents", justify="left", style="magenta")
-    for name in self.list():
-      contents = Syntax.from_path(str(self.directory / f"{name}.yaml"))
-      table.add_row(name, contents)
+    for id in self.list():
+      contents = Syntax.from_path(str(self.directory / f"{id}.yaml"))
+      table.add_row(id, contents)
     return table
 
 @inject

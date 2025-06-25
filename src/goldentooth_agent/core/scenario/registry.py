@@ -16,18 +16,16 @@ class ScenarioRegistry(NamedRegistry[Scenario]):
     """Dump all registered scenarios to a table."""
     logger.debug("Dumping all registered scenarios to a table")
     table = Table(title="Registered Scenarios")
-    table.add_column("Name", justify="left", style="cyan", no_wrap=True)
+    table.add_column("ID", justify="left", style="cyan", no_wrap=True)
     table.add_column("Hidden", justify="center", style="yellow")
     table.add_column("Info", justify="left", style="magenta")
-    table.add_column("Tags", justify="left", style="green")
-    table.add_column("Hints", justify="left", style="blue")
-    for name, scenario in self.items():
+    table.add_column("Roles", justify="left", style="green")
+    for id, scenario in self.items():
       table.add_row(
-        name,
+        id,
         str(scenario.hidden),
         Pretty(scenario.info),
-        Pretty(scenario.tags),
-        Pretty(scenario.hints),
+        Pretty(scenario.role_ids),
       )
     return table
 

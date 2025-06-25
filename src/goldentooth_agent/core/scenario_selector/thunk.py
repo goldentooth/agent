@@ -25,7 +25,7 @@ def inject_scenario_selector_strategy() -> Thunk[Context, Context]:
       logger.debug("Using existing scenario selector strategy from context")
       return context.get(SCENARIO_SELECTOR_STRATEGY_KEY)
     default_strategy = scenario_selector_registry.get('default')
-    logger.debug("Using default scenario selector strategy: %s", default_strategy.name)
+    logger.debug("Using default scenario selector strategy: %s", default_strategy.id)
     return default_strategy
   return _inject_scenario_selector_strategy
 
@@ -44,10 +44,10 @@ def inject_scenario() -> Thunk[Context, Context]:
     if context.has(SCENARIO_KEY):
       logger.debug("Using existing scenario from context")
       return context.get(SCENARIO_KEY)
-    scenario_selector.strategy_id = scenario_selector_strategy.name
+    scenario_selector.strategy_id = scenario_selector_strategy.id
     logger.debug("Selecting scenario using strategy: %s", scenario_selector.strategy_id)
     scenario = scenario_selector.select_scenario(context)
-    logger.debug("Selected scenario: %s", scenario.name)
+    logger.debug("Selected scenario: %s", scenario.id)
     return scenario
   return _inject_scenario
 

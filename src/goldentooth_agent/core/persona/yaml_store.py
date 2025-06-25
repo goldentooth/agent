@@ -18,15 +18,19 @@ class YamlPersonaAdapter(YamlStoreAdapter[Persona]):
   def from_dict(cls, data: dict) -> Persona:
     """Create a Persona instance from a dictionary."""
     return Persona(
-      name=data.get("name", ""),
-      context_provider_ids=data.get("context_providers", []),
+      id=data.get("id", ""),
+      name=data["name"],
+      color=data["color"],
+      context_provider_ids=data["context_providers"],
     )
 
   @classmethod
-  def to_dict(cls, obj: Persona) -> dict:
+  def to_dict(cls, id: str, obj: Persona) -> dict:
     """Convert a Persona instance to a dictionary."""
     return {
+      "id": id,
       "name": obj.name,
+      "color": obj.color,
       "context_providers": obj.context_provider_ids,
     }
 

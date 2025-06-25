@@ -25,7 +25,7 @@ def inject_role_selector_strategy() -> Thunk[Context, Context]:
       logger.debug("Using existing role selector strategy from context")
       return context.get(ROLE_SELECTOR_STRATEGY_KEY)
     default_strategy = role_selector_registry.get('default')
-    logger.debug("Using default role selector strategy: %s", default_strategy.name)
+    logger.debug("Using default role selector strategy: %s", default_strategy.id)
     return default_strategy
   return _inject_role_selector_strategy
 
@@ -44,10 +44,10 @@ def inject_role() -> Thunk[Context, Context]:
     if context.has(ROLE_KEY):
       logger.debug("Using existing role from context")
       return context.get(ROLE_KEY)
-    role_selector.strategy_id = role_selector_strategy.name
+    role_selector.strategy_id = role_selector_strategy.id
     logger.debug("Selecting role using strategy: %s", role_selector.strategy_id)
     role = role_selector.select_role(context)
-    logger.debug("Selected role: %s", role.name)
+    logger.debug("Selected role: %s", role.id)
     return role
   return _inject_role
 

@@ -18,17 +18,17 @@ class PlayerSelectorStrategyRegistry(NamedRegistry[PlayerSelectorStrategy]):
     """Dump all registered player selector strategies to a table."""
     logger.debug("Dumping all registered player selector strategies to a table")
     table = Table(title="Registered Player Selector Strategies")
-    table.add_column("Name", justify="left", style="cyan", no_wrap=True)
+    table.add_column("ID", justify="left", style="cyan", no_wrap=True)
     table.add_column("Description", justify="left", style="magenta")
-    for name, strategy in self.items():
+    for id, strategy in self.items():
       strategy_dict = {
-        "name": strategy.name,
+        "id": strategy.id,
         "description": strategy.description,
       }
-      table.add_row(name, Pretty(strategy_dict))
+      table.add_row(id, Pretty(strategy_dict))
     return table
 
 register_player_selector_strategy = make_register_fn(
-  PersonaSelectorStrategyRegistry,
-  default_name_fn=lambda strategy: strategy.name,
+  PlayerSelectorStrategyRegistry,
+  default_id_fn=lambda strategy: strategy.id,
 )

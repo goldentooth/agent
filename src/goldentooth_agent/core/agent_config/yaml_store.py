@@ -33,10 +33,11 @@ class YamlAgentConfigAdapter(YamlStoreAdapter[BaseAgentConfig]):
     )
 
   @classmethod
-  def to_dict(cls, obj: BaseAgentConfig) -> dict:
+  def to_dict(cls, id: str, obj: BaseAgentConfig) -> dict:
     """Convert a Player instance to a dictionary."""
     provider = obj.client.provider.value
     return {
+      "id": id,
       "client": provider,
       "memory": None,
       "model": obj.model,

@@ -1,4 +1,6 @@
 from __future__ import annotations
+from asyncio import Queue
+from pyee.asyncio import AsyncIOEventEmitter
 from typing import Any, AsyncIterator, Awaitable, Callable, Generic, TypeVar, TYPE_CHECKING
 
 TIn = TypeVar('TIn')
@@ -93,11 +95,6 @@ class EventThunk(Generic[TIn, TOut]):
       """Collect all items emitted by the thunk into a list."""
       return [item async for item in self(ctx)]
     return Thunk(_fn, name=f"{self.name}.collect")
-
-  from asyncio import Queue
-  from collections import deque
-  from pyee.asyncio import AsyncIOEventEmitter
-  from typing import Any, AsyncIterator
 
   @staticmethod
   def from_emitter(emitter: AsyncIOEventEmitter, event: str) -> EventThunk[None, Any]:

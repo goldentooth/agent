@@ -7,7 +7,7 @@ from .strategy_registry import register_persona_selector_strategy
 
 class DefaultPersonaSelectorStrategy(PersonaSelectorStrategy):
   """Default strategy for selecting personas."""
-  name = "default"
+  id = "default"
   description = "Default strategy for selecting personas based on the current context."
 
   @inject

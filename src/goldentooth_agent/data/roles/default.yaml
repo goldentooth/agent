@@ -1,4 +1,5 @@
-name: 'default'
+id: 'default'
+name: 'Default'
 system_prompt: 'default'
 context_providers:
   - 'intelligent_agent'

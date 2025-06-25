@@ -5,7 +5,7 @@ from typing import Protocol, runtime_checkable
 @runtime_checkable
 class RoleSelectorStrategy(Protocol):
   """Protocol for role selection strategies."""
-  name: str
+  id: str
   description: str
 
   def select_role(self, context: Context) -> Role:

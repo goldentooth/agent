@@ -5,7 +5,7 @@ from typing import Protocol, runtime_checkable
 @runtime_checkable
 class PersonaSelectorStrategy(Protocol):
   """Protocol for persona selection strategies."""
-  name: str
+  id: str
   description: str
 
   def select_persona(self, context: Context) -> Persona:

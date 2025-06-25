@@ -10,7 +10,7 @@ from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain, if_else
 from logging import Logger
 from rich.text import Text
 from typing import Annotated, Callable, Optional
-from .context import AGENT_INPUT_KEY, AGENT_OUTPUT_KEY, AGENT_KEY, AGENT_PREFIX_KEY, SHOULD_SKIP_AGENT_KEY
+from .context import AGENT_KEY, AGENT_INPUT_KEY, AGENT_OUTPUT_KEY, AGENT_PREFIX_KEY, SHOULD_SKIP_AGENT_KEY
 from .registry import AgentRegistry
 from .schema import AgentInputConvertible
 
@@ -52,20 +52,6 @@ def disable_agent_context_provider(agent_name: str) -> Thunk[Context, Context]:
   """Disable a agent's context provider in the context."""
   return disable_context_provider(agent_name)
 
-def inject_default_agent() -> Thunk[Context, Context]:
-  """Inject a agent into the context."""
-  @context_autothunk(name="inject_agent")
-  @inject
-  async def _inject_default_agent(
-    agent_registry: AgentRegistry = inject.me(),
-    logger: Logger = inject[get_logger(__name__)],
-  ) -> Annotated[BaseAgent, AGENT_KEY]:
-    """Inject the agent into the context."""
-    agent = agent_registry.get('default')
-    logger.debug(f"Injecting default agent: {agent}")
-    return agent
-  return _inject_default_agent
-
 def inject_agent_prefix() -> Thunk[Context, Context]:
   """Inject the agent's text representation into the context."""
   @context_autothunk(name="inject_agent_text")
@@ -90,21 +76,6 @@ def prepare_agent_input() -> Thunk[Context, Context]:
       return input.as_agent_input()
     return input
   return _prepare_agent_input
-
-def prepare_agent() -> Thunk[Context, Context]:
-  """Create a thunk that prepares the agent for execution."""
-  @context_autothunk(name="prepare_agent")
-  @inject
-  async def _prepare_agent(
-    agent: Annotated[BaseAgent, AGENT_KEY],
-    logger: Logger = inject[get_logger(__name__)],
-  ) -> Annotated[BaseAgent, AGENT_KEY]:
-    """Prepare the agent for execution."""
-    logger.debug(f"Preparing agent: {agent}")
-    if not isinstance(agent, BaseAgent):
-      raise TypeError(f"Expected BaseAgent, got {type(agent)}")
-    return agent
-  return _prepare_agent
 
 def run_agent() -> Thunk[Context, Context]:
   """Create a thunk that runs an agent with the provided input."""
@@ -140,13 +111,11 @@ def agent_chain() -> Thunk[Context, Context]:
     set_should_skip_agent_key(False),
     compose_chain(
       copy_context(INTAKE_KEY, AGENT_INPUT_KEY),
-      inject_default_agent(),
       inject_agent_prefix(),
       prepare_agent_input(),
       if_else(
         has_context_key(AGENT_INPUT_KEY),
         compose_chain(
-          prepare_agent(),
           run_agent(),
           if_else(
             has_context_key(AGENT_OUTPUT_KEY),

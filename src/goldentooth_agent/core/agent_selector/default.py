@@ -10,7 +10,7 @@ from .strategy_registry import register_agent_selector_strategy
 class DefaultAgentSelectorStrategy(AgentSelectorStrategy):
   """Default agent selector strategy that selects the default agent."""
 
-  name = "default"
+  id = "default"
   description = "Selects the default agent."
 
   @classmethod

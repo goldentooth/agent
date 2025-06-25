@@ -1,6 +1,15 @@
 from __future__ import annotations
+from antidote import inject, injectable
 from atomic_agents.lib.components.system_prompt_generator import SystemPromptGenerator
-from goldentooth_agent.core.yaml_store import YamlStoreAdapter
+from goldentooth_agent.core.logging import get_logger
+from goldentooth_agent.core.path import UserPaths
+from goldentooth_agent.core.yaml_store import YamlStoreAdapter, YamlStore, YamlStoreInstaller
+from goldentooth_agent.data import system_prompts as system_prompts_source
+from logging import Logger
+from pathlib import Path
+from rich.syntax import Syntax
+from rich.table import Table
+from .registry import SystemPromptRegistry
 
 class YamlSystemPromptAdapter(YamlStoreAdapter[SystemPromptGenerator]):
   """Adapter for SystemPromptGenerator to handle YAML serialization and deserialization."""
@@ -15,23 +24,14 @@ class YamlSystemPromptAdapter(YamlStoreAdapter[SystemPromptGenerator]):
     )
 
   @classmethod
-  def to_dict(cls, obj: SystemPromptGenerator) -> dict:
+  def to_dict(cls, id: str, obj: SystemPromptGenerator) -> dict:
     """Convert a SystemPromptGenerator instance to a dictionary."""
     return {
+      "id": id,
       "background": obj.background,
       "steps": obj.steps,
       "output_instructions": obj.output_instructions,
     }
-
-from antidote import inject, injectable
-from goldentooth_agent.core.yaml_store import YamlStore
-from goldentooth_agent.core.logging import get_logger
-from goldentooth_agent.core.path import UserPaths
-from logging import Logger
-from pathlib import Path
-from rich.syntax import Syntax
-from rich.table import Table
-from .registry import SystemPromptRegistry
 
 @injectable(factory_method='create')
 class YamlSystemPromptStore(YamlStore[SystemPromptGenerator]):
@@ -84,9 +84,6 @@ def discover_yaml_system_prompts(
   store.discover()
 
 discover_yaml_system_prompts()
-
-from goldentooth_agent.data import system_prompts as system_prompts_source
-from goldentooth_agent.core.yaml_store import YamlStoreInstaller
 
 @injectable
 class YamlSystemPromptInstaller(YamlStoreInstaller[SystemPromptGenerator]):

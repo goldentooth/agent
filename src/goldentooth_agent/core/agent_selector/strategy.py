@@ -5,7 +5,7 @@ from typing import Protocol, runtime_checkable
 @runtime_checkable
 class AgentSelectorStrategy(Protocol):
   """Protocol for agent selection strategies."""
-  name: str
+  id: str
   description: str
 
   def select_agent(self, context: Context) -> BaseAgent:

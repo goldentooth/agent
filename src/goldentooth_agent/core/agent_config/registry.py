@@ -15,7 +15,7 @@ class AgentConfigRegistry(NamedRegistry[BaseAgentConfig]):
     """Dump the context to the console."""
     logger.debug("Dumping agent config registry")
     table = Table(title=f"Agent Config Registry Dump")
-    table.add_column("Name")
+    table.add_column("ID", justify="left", style="cyan")
     table.add_column("Agent Config", overflow="fold")
     for k, v in self.items():
       table.add_row(str(k), repr(v))
