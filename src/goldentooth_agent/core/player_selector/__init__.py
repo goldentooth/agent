@@ -1,5 +1,6 @@
 from .context import PLAYER_SELECTOR_STRATEGY_KEY
-from .main import PlayerSelector, DefaultPlayerSelectorStrategy
+from .default import DefaultPlayerSelectorStrategy
+from .main import PlayerSelector
 from .strategy import PlayerSelectorStrategy
 from .strategy_registry import PlayerSelectorStrategyRegistry, register_player_selector_strategy
 

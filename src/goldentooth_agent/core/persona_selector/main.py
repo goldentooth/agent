@@ -1,10 +1,10 @@
 from __future__ import annotations
 from antidote import inject, injectable
 from goldentooth_agent.core.context import Context
-from goldentooth_agent.core.persona import Persona, PersonaRegistry
+from goldentooth_agent.core.persona import Persona
 from typing import Optional
 from .strategy import PersonaSelectorStrategy
-from .strategy_registry import PersonaSelectorStrategyRegistry, register_persona_selector_strategy
+from .strategy_registry import PersonaSelectorStrategyRegistry
 
 @injectable(factory_method="create")
 class PersonaSelector:
@@ -32,15 +32,3 @@ class PersonaSelector:
   def select_persona(self, context: Context) -> Persona:
     """Select a persona based on the current context."""
     return self.get_strategy().select_persona(context)
-
-class DefaultPersonaSelectorStrategy(PersonaSelectorStrategy):
-  """Default strategy for selecting personas."""
-  name = "default"
-  description = "Default strategy for selecting personas based on the current context."
-
-  @inject
-  def select_persona(self, context: Context, persona_registry: PersonaRegistry = inject.me()) -> Persona: # type: ignore
-    """Select a persona based on the current context."""
-    return persona_registry.get('default')
-
-register_persona_selector_strategy(obj=DefaultPersonaSelectorStrategy())
