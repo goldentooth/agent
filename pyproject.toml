@@ -30,6 +30,18 @@ include = [
   ] },
 ]
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+pytest-cov = "^6.2.1"
+typer = {extras = ["all"], version = "^0.16.0"}
+poethepoet = "^0.35.0"
+
+[tool.poe.tasks]
+test = "pytest"
+test-cov = "pytest --cov=goldentooth_agent"
+test-sanity = "pytest tests/test_sanity.py -v"
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
