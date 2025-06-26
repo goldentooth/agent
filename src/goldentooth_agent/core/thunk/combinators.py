@@ -18,17 +18,17 @@ TC = TypeVar("TC")
 
 async def run_fold(ctx: TIn, steps: list[Thunk[TIn, TIn]]) -> TIn:
     """Execute a list of thunks sequentially, threading the context through each step.
-    
+
     This is a fold/reduce operation where each thunk receives the output of the
     previous thunk as its input. Useful for building sequential processing pipelines.
-    
+
     Args:
         ctx: The initial context value
         steps: List of thunks to execute in order
-        
+
     Returns:
         The final context value after all steps have been executed
-        
+
     Example:
         increment = Thunk(lambda x: x + 1, name="inc")
         double = Thunk(lambda x: x * 2, name="double")
@@ -71,7 +71,9 @@ def map(fn: Callable[[TB], TC]) -> Callable[[Thunk[TA, TB]], Thunk[TA, TC]]:
             result = await inner(ctx)
             return fn(result)
 
-        return Thunk(_thunk, name=f"{inner.name}.map({getattr(fn, '__name__', '<lambda>')})")
+        return Thunk(
+            _thunk, name=f"{inner.name}.map({getattr(fn, '__name__', '<lambda>')})"
+        )
 
     return wrapper
 
@@ -89,7 +91,9 @@ def flat_map(
             result = await inner(ctx)
             return await fn(result)(ctx)
 
-        return Thunk(_thunk, name=f"{inner.name}.flat_map({getattr(fn, '__name__', 'function')})")
+        return Thunk(
+            _thunk, name=f"{inner.name}.flat_map({getattr(fn, '__name__', 'function')})"
+        )
 
     return wrapper
 
@@ -107,7 +111,10 @@ def flat_map_ctx(
             result = await inner(ctx)
             return await fn(result, ctx)(ctx)
 
-        return Thunk(_thunk, name=f"{inner.name}.flat_map_ctx({getattr(fn, '__name__', 'function')})")
+        return Thunk(
+            _thunk,
+            name=f"{inner.name}.flat_map_ctx({getattr(fn, '__name__', 'function')})",
+        )
 
     return wrapper
 
@@ -128,10 +135,10 @@ def log_ctx(
     name: str, *, prefix: str = "", level: int = logging.DEBUG
 ) -> Thunk[TIn, TIn]:
     """Create a thunk that logs the context value and returns it unchanged.
-    
+
     Useful for debugging thunk pipelines by observing intermediate values
     without affecting the data flow.
-    
+
     Args:
         name: Name for the thunk (used in pipeline visualization)
         prefix: Optional prefix to add before the logged context
@@ -200,7 +207,9 @@ def tap(
             await fn(result)
             return result
 
-        return Thunk(_thunk, name=f"{inner.name}.tap({getattr(fn, '__name__', 'function')})")
+        return Thunk(
+            _thunk, name=f"{inner.name}.tap({getattr(fn, '__name__', 'function')})"
+        )
 
     return wrapper
 
@@ -232,24 +241,27 @@ def recover(
                 result = await handler(e, ctx)
                 return result
 
-        return Thunk(_thunk, name=f"{inner.name}.recover({getattr(handler, '__name__', 'handler')})")
+        return Thunk(
+            _thunk,
+            name=f"{inner.name}.recover({getattr(handler, '__name__', 'handler')})",
+        )
 
     return wrapper
 
 
 def memoize(fn: Callable[[TIn], Awaitable[TOut]]) -> Thunk[TIn, TOut]:
     """Create a thunk that caches function results based on input context.
-    
+
     Uses a simple in-memory dictionary cache with context values as keys.
     Cache is bound to this specific memoized instance and persists for its lifetime.
-    
+
     WARNING: The cache grows unbounded and may cause memory leaks for long-running
     processes with many unique inputs. Consider using a more sophisticated cache
     with size limits or TTL for production use.
-    
+
     Args:
         fn: The async function to memoize
-        
+
     Returns:
         A thunk that caches results keyed by context value
     """

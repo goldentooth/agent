@@ -646,7 +646,7 @@ class TestRepeatMethod:
         """Test basic repeat functionality."""
         thunk_obj = Thunk(sync_increment, name="increment")
         repeated_thunk = thunk_obj.repeat(3)
-        
+
         assert repeated_thunk.name == "repeat(3, increment)"
         result = await repeated_thunk(5)
         assert result == 8  # 5 + 1 + 1 + 1 = 8
@@ -656,7 +656,7 @@ class TestRepeatMethod:
         """Test repeat with zero iterations."""
         thunk_obj = Thunk(sync_increment, name="increment")
         repeated_thunk = thunk_obj.repeat(0)
-        
+
         result = await repeated_thunk(5)
         assert result == 5  # Should not execute body
 
@@ -665,7 +665,7 @@ class TestRepeatMethod:
         """Test repeat with one iteration."""
         thunk_obj = Thunk(sync_double, name="double")
         repeated_thunk = thunk_obj.repeat(1)
-        
+
         result = await repeated_thunk(5)
         assert result == 10  # 5 * 2 = 10
 
@@ -674,7 +674,7 @@ class TestRepeatMethod:
         """Test repeat with async thunk."""
         thunk_obj = Thunk(async_increment, name="async_increment")
         repeated_thunk = thunk_obj.repeat(2)
-        
+
         result = await repeated_thunk(5)
         assert result == 7  # 5 + 1 + 1 = 7
 
@@ -683,7 +683,7 @@ class TestRepeatMethod:
         """Test repeat with many iterations."""
         thunk_obj = Thunk(sync_increment, name="increment")
         repeated_thunk = thunk_obj.repeat(10)
-        
+
         result = await repeated_thunk(0)
         assert result == 10  # 0 + 1*10 = 10
 
@@ -692,7 +692,7 @@ class TestRepeatMethod:
         """Test repeat when thunk raises exception."""
         thunk_obj = Thunk(sync_exception_raiser, name="error")
         repeated_thunk = thunk_obj.repeat(3)
-        
+
         with pytest.raises(ValueError, match="Error with 5"):
             await repeated_thunk(5)
 
@@ -703,7 +703,7 @@ class TestRepeatMethod:
         thunk_obj = Thunk(sync_increment, name="increment")
         repeated_thunk = thunk_obj.repeat(3)
         assert isinstance(repeated_thunk, Thunk)
-        
+
         # The type checker should prevent this at compile time,
         # but at runtime it will still create a thunk
         string_thunk = Thunk(lambda x: str(x), name="to_string")
@@ -736,7 +736,7 @@ class TestWhileMethod:
         """Test basic while functionality."""
         thunk_obj = Thunk(sync_increment, name="increment")
         while_thunk = thunk_obj.while_(self.less_than_10)
-        
+
         assert while_thunk.name == "while_true(less_than_10, increment)"
         result = await while_thunk(5)
         assert result == 10  # Should increment until >= 10
@@ -746,7 +746,7 @@ class TestWhileMethod:
         """Test while when condition is initially false."""
         thunk_obj = Thunk(sync_increment, name="increment")
         while_thunk = thunk_obj.while_(self.less_than_10)
-        
+
         result = await while_thunk(15)
         assert result == 15  # Should not execute body
 
@@ -755,7 +755,7 @@ class TestWhileMethod:
         """Test while with single iteration."""
         thunk_obj = Thunk(sync_increment, name="increment")
         while_thunk = thunk_obj.while_(self.less_than_10)
-        
+
         result = await while_thunk(9)
         assert result == 10  # 9 + 1 = 10, then 10 < 10 is false
 
@@ -764,7 +764,7 @@ class TestWhileMethod:
         """Test while with async thunk."""
         thunk_obj = Thunk(async_increment, name="async_increment")
         while_thunk = thunk_obj.while_(self.less_than_10)
-        
+
         result = await while_thunk(8)
         assert result == 10  # 8 + 1 + 1 = 10
 
@@ -773,7 +773,7 @@ class TestWhileMethod:
         """Test while when condition is false from start."""
         thunk_obj = Thunk(sync_increment, name="increment")
         while_thunk = thunk_obj.while_(self.always_false)
-        
+
         result = await while_thunk(5)
         assert result == 5  # Should not change
 
@@ -782,7 +782,7 @@ class TestWhileMethod:
         """Test while with decrementing thunk."""
         thunk_obj = Thunk(sync_decrement, name="decrement")
         while_thunk = thunk_obj.while_(self.greater_than_zero)
-        
+
         result = await while_thunk(3)
         assert result == 0  # 3 -> 2 -> 1 -> 0
 
@@ -791,19 +791,20 @@ class TestWhileMethod:
         """Test while when thunk raises exception."""
         thunk_obj = Thunk(sync_exception_raiser, name="error")
         while_thunk = thunk_obj.while_(self.less_than_10)
-        
+
         with pytest.raises(ValueError, match="Error with 5"):
             await while_thunk(5)
 
     @pytest.mark.asyncio
     async def test_while_condition_with_exception(self):
         """Test while when condition function raises exception."""
+
         def bad_condition(x):
             raise RuntimeError("Condition error")
-        
+
         thunk_obj = Thunk(sync_increment, name="increment")
         while_thunk = thunk_obj.while_(bad_condition)
-        
+
         with pytest.raises(RuntimeError, match="Condition error"):
             await while_thunk(5)
 
@@ -814,7 +815,7 @@ class TestWhileMethod:
         thunk_obj = Thunk(sync_increment, name="increment")
         while_thunk = thunk_obj.while_(self.less_than_10)
         assert isinstance(while_thunk, Thunk)
-        
+
         # The type checker should prevent this at compile time,
         # but at runtime it will still create a thunk
         string_thunk = Thunk(lambda x: str(x), name="to_string")
@@ -825,16 +826,17 @@ class TestWhileMethod:
     @pytest.mark.asyncio
     async def test_while_complex_condition(self):
         """Test while with complex condition logic."""
+
         def complex_condition(x: int) -> bool:
             return x < 20 and x % 3 != 0
-        
+
         # Custom increment that adds 2
         def add_two(x: int) -> int:
             return x + 2
-        
+
         thunk_obj = Thunk(add_two, name="add_two")
         while_thunk = thunk_obj.while_(complex_condition)
-        
+
         result = await while_thunk(1)
         # 1 -> 3 (3 < 20 and 3 % 3 == 0, so condition is False)
         # Stop at 3 because 3 % 3 == 0
@@ -848,13 +850,13 @@ class TestNewMethodIntegration:
     async def test_repeat_then_while(self):
         """Test composing repeat and while methods."""
         thunk_obj = Thunk(sync_increment, name="increment")
-        
+
         # Create a while loop that repeatedly runs "repeat increment 3 times"
         composed = thunk_obj.repeat(3).while_(lambda x: x < 15)
-        
+
         result = await composed(5)
         # 5 -> 8 (repeat 3x), 8 < 15 continue
-        # 8 -> 11 (repeat 3x), 11 < 15 continue  
+        # 8 -> 11 (repeat 3x), 11 < 15 continue
         # 11 -> 14 (repeat 3x), 14 < 15 continue
         # 14 -> 17 (repeat 3x), 17 >= 15 stop
         assert result == 17
@@ -863,10 +865,10 @@ class TestNewMethodIntegration:
     async def test_while_then_repeat(self):
         """Test composing while and repeat methods."""
         thunk_obj = Thunk(sync_increment, name="increment")
-        
+
         # Create a repeat that runs "while increment < 10" two times
         composed = thunk_obj.while_(lambda x: x < 10).repeat(2)
-        
+
         result = await composed(8)
         # First repeat: 8 -> 10 (while < 10), 10 >= 10 stop
         # Second repeat: 10 -> 10 (while < 10 is false from start)
@@ -877,10 +879,10 @@ class TestNewMethodIntegration:
     async def test_new_methods_with_map(self):
         """Test new methods with map."""
         thunk_obj = Thunk(sync_increment, name="increment")
-        
+
         # Repeat 3 times, then map to double
         composed = thunk_obj.repeat(3).map(lambda x: x * 2)
-        
+
         result = await composed(5)
         # 5 + 1 + 1 + 1 = 8, then 8 * 2 = 16
         assert result == 16
@@ -889,29 +891,29 @@ class TestNewMethodIntegration:
     async def test_new_methods_with_filter(self):
         """Test new methods with filter."""
         thunk_obj = Thunk(sync_increment, name="increment")
-        
+
         # While < 12, then filter for even numbers
         composed = thunk_obj.while_(lambda x: x < 12).filter(lambda x: x % 2 == 0)
-        
+
         result_even = await composed(10)  # 10 + 1 + 1 = 12 (even)
         assert result_even == 12
-        
-        result_odd = await composed(9)   # 9 + 1 + 1 + 1 = 12 (even)
+
+        result_odd = await composed(9)  # 9 + 1 + 1 + 1 = 12 (even)
         assert result_odd == 12
 
     @pytest.mark.asyncio
     async def test_new_methods_with_tap(self):
         """Test new methods with tap for side effects."""
         side_effects = []
-        
+
         def log_value(x):
             side_effects.append(x)
-        
+
         thunk_obj = Thunk(sync_increment, name="increment")
-        
+
         # Repeat 2 times, then tap to log
         composed = thunk_obj.repeat(2).tap(log_value)
-        
+
         result = await composed(5)
         # 5 + 1 + 1 = 7
         assert result == 7
@@ -922,10 +924,10 @@ class TestNewMethodIntegration:
         """Test new methods with chain operator."""
         increment_thunk = Thunk(sync_increment, name="increment")
         double_thunk = Thunk(sync_double, name="double")
-        
+
         # Repeat increment 2 times, then chain with double
         composed = increment_thunk.repeat(2) >> double_thunk
-        
+
         result = await composed(5)
         # 5 + 1 + 1 = 7, then 7 * 2 = 14
         assert result == 14

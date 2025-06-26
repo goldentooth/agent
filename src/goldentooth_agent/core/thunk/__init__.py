@@ -1,3 +1,4 @@
+from .event_thunk import EventThunk
 from .main import Thunk, thunk, compose_chain
 from .combinators import (
     while_true,
@@ -23,6 +24,7 @@ from .combinators import (
 
 __all__ = [
     "Thunk",
+    "EventThunk",
     "thunk",
     "compose_chain",
     "while_true",
