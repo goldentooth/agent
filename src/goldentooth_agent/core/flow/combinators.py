@@ -518,15 +518,16 @@ def range_flow(start: int, stop: int, step: int = 1) -> Flow[None, int]:
     return Flow(_flow, name=f"range({start}, {stop}, {step})")
 
 
-def repeat_flow(value: Input, times: int | None = None) -> Flow[None, Input]:
+def repeat_flow(value: A, times: int | None = None) -> Flow[None, A]:
     """Create a flow that repeats a value a specified number of times (or infinitely)."""
     
-    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[Input]:
+    async def _flow(stream: AsyncIterator[None]) -> AsyncIterator[A]:
         """Repeat value specified number of times."""
         if times is None:
             while True:
                 yield value
         else:
+            # Type checker knows times is int here due to the else branch
             for _ in range(times):
                 yield value
     
@@ -534,10 +535,10 @@ def repeat_flow(value: Input, times: int | None = None) -> Flow[None, Input]:
     return Flow(_flow, name=f"repeat({value}, {times_str})")
 
 
-def empty_flow() -> Flow[None, Input]:
+def empty_flow() -> Flow[None, A]:
     """Create a flow that produces no items."""
     
-    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[Input]:
+    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[A]:
         """Produce no items."""
         return
         yield  # unreachable
