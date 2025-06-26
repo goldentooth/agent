@@ -2,7 +2,6 @@ from __future__ import annotations
 from antidote import injectable, inject
 from click import Group
 from goldentooth_agent.core.logging import get_logger
-
 from rich.table import Table
 import typer
 from typer import Typer

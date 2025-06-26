@@ -2,7 +2,6 @@ from antidote import inject
 from goldentooth_agent.core.command import get_command_typer, enroll_command
 from goldentooth_agent.core.context import SHOULD_EXIT_KEY
 from goldentooth_agent.core.logging import get_logger
-
 from typer import Typer, Context as TyperContext
 
 

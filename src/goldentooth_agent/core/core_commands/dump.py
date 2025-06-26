@@ -3,7 +3,6 @@ from goldentooth_agent.core.command import get_command_typer, enroll_command
 from goldentooth_agent.core.console import get_console
 from goldentooth_agent.core.context import Context
 from goldentooth_agent.core.logging import get_logger
-
 from rich.console import Console
 import typer
 from typer import Typer, Context as TyperContext

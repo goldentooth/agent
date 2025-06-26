@@ -11,7 +11,6 @@ from goldentooth_agent.core.yaml_store import (
     YamlStoreInstaller,
 )
 from goldentooth_agent.data import context_providers as context_providers_source
-
 from pathlib import Path
 from rich.syntax import Syntax
 from rich.table import Table

@@ -12,7 +12,6 @@ from goldentooth_agent.core.context import (
 from goldentooth_agent.core.display import DISPLAY_INPUT_KEY
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.thunk import Thunk, thunk, compose_chain, if_else
-
 from typer import Typer
 from typing import Annotated, Optional
 from .context import COMMAND_INPUT_KEY, COMMAND_OUTPUT_KEY

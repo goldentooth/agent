@@ -1,7 +1,6 @@
 from __future__ import annotations
 from antidote import inject, injectable
 from goldentooth_agent.core.logging import get_logger
-
 from rich.pretty import Pretty
 from rich.table import Table
 from antidote import injectable

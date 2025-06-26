@@ -1,9 +1,7 @@
 from __future__ import annotations
 from antidote import inject, injectable, lazy
 import asyncio
-from concurrent.futures import Future
 from goldentooth_agent.core.logging import get_logger
-
 import threading
 from typing import Any
 

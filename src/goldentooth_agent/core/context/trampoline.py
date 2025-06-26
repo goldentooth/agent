@@ -1,7 +1,6 @@
 from antidote import inject
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.thunk import Thunk, thunk
-
 from .key import context_key
 from .main import Context
 

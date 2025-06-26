@@ -5,7 +5,6 @@ from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from goldentooth_agent.core.context import Context
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.tool.registry import register_tool
-
 from pydantic import Field
 import shlex
 from typer import Typer, Context as TyperContext

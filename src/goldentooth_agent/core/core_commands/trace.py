@@ -6,7 +6,6 @@ from goldentooth_agent.core.context import Context
 from goldentooth_agent.core.logging import get_logger
 import hunter
 import hunter.predicates
-
 import typer
 from typer import Typer, Context as TyperContext
 from typing import Annotated, List
