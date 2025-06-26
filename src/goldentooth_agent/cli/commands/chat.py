@@ -1,6 +1,5 @@
 from __future__ import annotations
 from antidote import inject
-import asyncio
 import typer
 
 app = typer.Typer()

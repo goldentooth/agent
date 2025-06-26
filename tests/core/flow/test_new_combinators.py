@@ -2,7 +2,6 @@
 
 import asyncio
 import pytest
-from unittest.mock import Mock
 from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow.combinators import (
     pairwise_stream,
@@ -190,7 +189,7 @@ class TestSampleStream:
 
         input_stream = fast_stream()
         result_stream = sample_flow(input_stream)
-        
+
         # Collect for a very short time with timeout
         values = []
         try:
@@ -214,7 +213,7 @@ class TestSampleStream:
         input_stream = async_empty()
         result_stream = sample_flow(input_stream)
         values = []
-        
+
         # Give it a moment to potentially sample
         try:
             async with asyncio.timeout(0.05):
@@ -232,6 +231,7 @@ class TestCombineLatestStream:
     @pytest.mark.asyncio
     async def test_combine_latest_basic(self):
         """Test basic combine_latest functionality."""
+
         async def stream_b():
             for i in ["a", "b", "c"]:
                 yield i
@@ -241,10 +241,10 @@ class TestCombineLatestStream:
 
         input_stream = async_range(3)
         result_stream = combine_flow(input_stream)
-        
+
         # This is complex due to timing, so we'll test the structure
         values = [item async for item in result_stream]
-        
+
         # Should have tuples of (int, str)
         if values:  # May be empty due to timing
             for value in values:
@@ -258,6 +258,7 @@ class TestGroupByStream:
     @pytest.mark.asyncio
     async def test_group_by_basic(self):
         """Test basic group_by functionality."""
+
         def parity_key(x: int) -> str:
             return "even" if x % 2 == 0 else "odd"
 
@@ -266,7 +267,7 @@ class TestGroupByStream:
 
         input_stream = async_range(4)  # [0, 1, 2, 3]
         result_stream = group_flow(input_stream)
-        
+
         # Collect all groups
         groups = {}
         async for key, items in result_stream:
@@ -343,6 +344,7 @@ class TestExpandStream:
     @pytest.mark.asyncio
     async def test_expand_basic(self):
         """Test basic expand functionality."""
+
         async def expand_fn(x: int):
             if x < 10:
                 yield x + 10
@@ -364,6 +366,7 @@ class TestExpandStream:
     @pytest.mark.asyncio
     async def test_expand_max_depth(self):
         """Test expand with depth limit."""
+
         async def expand_fn(x: int):
             if x < 100:
                 yield x * 2
@@ -457,7 +460,7 @@ class TestTraceStream:
         values = [item async for item in result_stream]
 
         assert values == [0, 1]
-        
+
         # Should have traced start, items, and end
         assert ("stream_start", None) in trace_calls
         assert ("item", 0) in trace_calls
@@ -487,7 +490,7 @@ class TestTraceStream:
                 values.append(item)
 
         assert values == [1]
-        
+
         # Should have traced error
         error_calls = [call for call in trace_calls if call[0] == "error"]
         assert len(error_calls) == 1
@@ -513,7 +516,7 @@ class TestMetricsStream:
         values = [item async for item in result_stream]
 
         assert values == [0, 1, 2]
-        
+
         # Should have metrics for start, items, completion, and total
         assert "stream.started" in metrics
         assert metrics.count("stream.item") == 3
@@ -566,7 +569,7 @@ class TestInspectStream:
 
         assert values == [0, 1]
         assert len(inspections) == 2
-        
+
         # Check context structure
         item0, context0 = inspections[0]
         assert item0 == 0
@@ -590,7 +593,7 @@ class TestChainFlows:
         """Test basic chain_flows functionality."""
         increment_flow = Flow.from_sync_fn(increment)
         double_flow = Flow.from_sync_fn(double)
-        
+
         chain_flow = chain_flows(increment_flow, double_flow)
         assert "chain_flows" in chain_flow.name
 
@@ -624,7 +627,7 @@ class TestBranchFlows:
         """Test basic branch_flows functionality."""
         increment_flow = Flow.from_sync_fn(increment)
         double_flow = Flow.from_sync_fn(double)
-        
+
         branch_flow = branch_flows(is_even, increment_flow, double_flow)
         assert "branch(is_even" in branch_flow.name
 
@@ -646,7 +649,7 @@ class TestMergeFlows:
         """Test basic merge_flows functionality."""
         increment_flow = Flow.from_sync_fn(increment)
         double_flow = Flow.from_sync_fn(double)
-        
+
         merge_flow = merge_flows(increment_flow, double_flow)
         assert "merge_flows" in merge_flow.name
 
@@ -682,11 +685,8 @@ class TestIntegrationPatterns:
         """Test pairwise combined with start_with."""
         # Pipeline: start_with -> pairwise
         from goldentooth_agent.core.flow.combinators import compose
-        
-        pipeline = compose(
-            start_with_stream(-1), 
-            pairwise_stream()
-        )
+
+        pipeline = compose(start_with_stream(-1), pairwise_stream())
 
         input_stream = async_range(3)  # [0, 1, 2]
         result_stream = pipeline(input_stream)
@@ -705,11 +705,8 @@ class TestIntegrationPatterns:
             cleanup_called.append(True)
 
         from goldentooth_agent.core.flow.combinators import compose
-        
-        pipeline = compose(
-            finalize_stream(cleanup),
-            materialize_stream()
-        )
+
+        pipeline = compose(finalize_stream(cleanup), materialize_stream())
 
         input_stream = async_range(2)
         result_stream = pipeline(input_stream)

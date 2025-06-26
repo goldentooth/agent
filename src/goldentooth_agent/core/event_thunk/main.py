@@ -128,7 +128,7 @@ class EventThunk(Generic[TIn, TOut]):
     def from_emitter(emitter: AsyncIOEventEmitter, event: str) -> EventThunk[None, Any]:
         """Turn a pyee event into an EventThunk."""
         from asyncio import Queue
-        from typing import Any, AsyncGenerator
+        from typing import AsyncGenerator
 
         async def _generator(_: None) -> AsyncGenerator[Any, None]:
             """Generator that yields values from the event emitter."""

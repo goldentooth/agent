@@ -816,7 +816,9 @@ class TestRaceStream:
 
         result_stream = race_flow(single_item())
 
-        with pytest.raises(RuntimeError, match="All flows failed"):
+        from goldentooth_agent.core.flow.exceptions import FlowExecutionError
+
+        with pytest.raises(FlowExecutionError, match="All flows failed"):
             async for item in result_stream:
                 pass
 
@@ -1177,7 +1179,9 @@ class TestNewCoreCombinators:
         result_stream = guard_positive(input_stream)
 
         values = []
-        with pytest.raises(ValueError, match="Must be positive: 0"):
+        from goldentooth_agent.core.flow.exceptions import FlowValidationError
+
+        with pytest.raises(FlowValidationError, match="Must be positive: 0"):
             async for item in result_stream:
                 values.append(item)
 
@@ -1193,7 +1197,9 @@ class TestNewCoreCombinators:
         result_stream = guard_even(input_stream)
 
         values = []
-        with pytest.raises(ValueError, match="Numbers must be even: 1"):
+        from goldentooth_agent.core.flow.exceptions import FlowValidationError
+
+        with pytest.raises(FlowValidationError, match="Numbers must be even: 1"):
             async for item in result_stream:
                 values.append(item)
 
@@ -1235,7 +1241,7 @@ class TestNewCoreCombinators:
     async def test_memoize_stream_basic(self):
         """Test basic memoize_stream functionality."""
         memo = memoize_stream()
-        assert memo.name == "memoize(str)"
+        assert memo.name == "memoize(str, 1000)"
 
         # Create stream with duplicate values
         async def dup_stream():
@@ -1257,7 +1263,7 @@ class TestNewCoreCombinators:
             return f"key_{x % 2}"  # Group by even/odd
 
         memo = memoize_stream(custom_key)
-        assert memo.name == "memoize(custom_key)"
+        assert memo.name == "memoize(custom_key, 1000)"
 
         async def test_stream():
             for val in [1, 3, 2, 4, 5]:
@@ -1779,7 +1785,7 @@ class TestAdvancedCombinators:
     async def test_distinct_stream_basic(self):
         """Test basic distinct_stream functionality."""
         distinct_flow = distinct_stream()
-        assert distinct_flow.name == "distinct(str)"
+        assert distinct_flow.name == "distinct(str, 10000)"
 
         async def dup_stream():
             for val in [1, 2, 1, 3, 2, 4, 1]:
@@ -1798,7 +1804,7 @@ class TestAdvancedCombinators:
             return str(x % 3)  # Group by modulo 3
 
         distinct_flow = distinct_stream(mod_key)
-        assert distinct_flow.name == "distinct(mod_key)"
+        assert distinct_flow.name == "distinct(mod_key, 10000)"
 
         async def test_stream():
             for val in [0, 1, 2, 3, 4, 5]:

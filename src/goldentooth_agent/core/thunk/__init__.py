@@ -1,5 +1,4 @@
 from .combinators import (
-    while_true,
     run_fold,
     compose,
     filter,

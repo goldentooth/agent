@@ -17,6 +17,7 @@ from typing import (
 )
 
 from .main import Flow
+from .exceptions import FlowValidationError, FlowExecutionError, FlowTimeoutError
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
@@ -25,6 +26,21 @@ Newput = TypeVar("Newput")
 A = TypeVar("A")
 B = TypeVar("B")
 C = TypeVar("C")
+
+
+# Utility functions for common patterns
+def _get_function_name(fn: Callable) -> str:
+    """Extract function name for flow naming."""
+    return getattr(fn, "__name__", "function")
+
+
+def _create_single_item_stream(item: Input) -> AsyncIterator[Input]:
+    """Create an async iterator that yields a single item."""
+
+    async def _stream():
+        yield item
+
+    return _stream()
 
 
 async def run_fold(
@@ -76,7 +92,7 @@ def filter_stream(predicate: Callable[[Input], bool]) -> Flow[Input, Input]:
             if predicate(item):
                 yield item
 
-    return Flow(_flow, name=f"filter({predicate.__name__})")
+    return Flow(_flow, name=f"filter({_get_function_name(predicate)})")
 
 
 def map_stream(fn: Callable[[Input], Output]) -> Flow[Input, Output]:
@@ -87,7 +103,7 @@ def map_stream(fn: Callable[[Input], Output]) -> Flow[Input, Output]:
         async for item in stream:
             yield fn(item)
 
-    return Flow(_flow, name=f"map({fn.__name__})")
+    return Flow(_flow, name=f"map({_get_function_name(fn)})")
 
 
 def flat_map_stream(
@@ -383,53 +399,55 @@ def race_stream(flows: list[Flow[Input, Output]]) -> Flow[Input, Output]:
     produce a result wins. If all flows fail, the last exception is raised.
     """
 
+    async def _create_flow_task(flow: Flow[Input, Output], item: Input) -> Output:
+        """Create a task that runs a single flow with a single item."""
+        result_stream = flow(_create_single_item_stream(item))
+        async for result in result_stream:
+            return result
+        raise FlowExecutionError(f"Flow {flow.name} produced no output")
+
+    async def _cancel_pending_tasks(tasks: list[asyncio.Task]) -> None:
+        """Cancel all pending tasks safely."""
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+
+    async def _get_first_successful_result(tasks: list[asyncio.Task]) -> Output:
+        """Get the first successful result from completed tasks."""
+        done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+
+        # Cancel remaining tasks
+        await _cancel_pending_tasks(pending)
+
+        # Get first successful result
+        for task in done:
+            try:
+                return await task
+            except Exception:
+                continue
+
+        raise FlowExecutionError("All flows failed")
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
         """Race multiple flows for each item."""
         if not flows:
-            # Empty list of flows - pass through nothing
             return
 
         async for item in stream:
-            # Create tasks for each flow
-            async def run_flow(flow: Flow[Input, Output]) -> Output:
-                async def single_item_stream():
-                    yield item
-
-                result_stream = flow(single_item_stream())
-                async for result in result_stream:
-                    return result
-                raise RuntimeError(f"Flow {flow.name} produced no output")
-
-            tasks = [asyncio.create_task(run_flow(flow)) for flow in flows]
+            tasks = [
+                asyncio.create_task(_create_flow_task(flow, item)) for flow in flows
+            ]
 
             try:
-                # Wait for the first successful result
-                done, pending = await asyncio.wait(
-                    tasks, return_when=asyncio.FIRST_COMPLETED
-                )
-
-                # Cancel remaining tasks
-                for task in pending:
-                    task.cancel()
-
-                # Get the first successful result
-                for task in done:
-                    try:
-                        result = await task
-                        yield result
-                        break
-                    except Exception:
-                        continue
-                else:
-                    # All completed tasks failed
-                    raise RuntimeError("All flows failed")
-
-            except Exception as e:
-                # Cancel all tasks if something goes wrong
-                for task in tasks:
-                    if not task.done():
-                        task.cancel()
-                raise e
+                result = await _get_first_successful_result(tasks)
+                yield result
+            except Exception:
+                await _cancel_pending_tasks(tasks)
+                raise
 
     flow_names = [flow.name for flow in flows]
     return Flow(_flow, name=f"race({', '.join(flow_names)})")
@@ -604,7 +622,7 @@ def guard_stream(
         """Validate all stream items with the guard predicate."""
         async for item in stream:
             if not predicate(item):
-                raise ValueError(f"{error_msg}: {item}")
+                raise FlowValidationError(f"{error_msg}: {item}")
             yield item
 
     return Flow(_flow, name=f"guard({predicate.__name__})")
@@ -635,7 +653,9 @@ def then_stream(
     return Flow(_flow, name=f"then({getattr(side_effect, '__name__', 'function')})")
 
 
-def memoize_stream(key_fn: Callable[[Input], str] = str) -> Flow[Input, Input]:
+def memoize_stream(
+    key_fn: Callable[[Input], str] = str, max_size: int = 1000
+) -> Flow[Input, Input]:
     """Create a flow that memoizes stream processing based on input keys.
 
     Items with the same key (as determined by key_fn) are only processed once.
@@ -643,26 +663,35 @@ def memoize_stream(key_fn: Callable[[Input], str] = str) -> Flow[Input, Input]:
 
     Args:
         key_fn: Function to generate cache keys from input items
+        max_size: Maximum cache size (default 1000, prevents memory leaks)
 
     Returns:
         A flow that caches items based on keys
-
-    Warning: Cache grows unbounded and may cause memory leaks for long-running
-    processes. Consider size limits for production use.
     """
-    cache: dict[str, Input] = {}
+    from collections import OrderedDict
+
+    cache: OrderedDict[str, Input] = OrderedDict()
 
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
-        """Memoize stream items based on key function."""
+        """Memoize stream items with LRU eviction."""
+        nonlocal cache
         async for item in stream:
             key = key_fn(item)
             if key in cache:
+                # Move to end (mark as recently used)
+                cache.move_to_end(key)
                 yield cache[key]
             else:
+                # Add new item
                 cache[key] = item
+                # Evict oldest if over limit
+                if len(cache) > max_size:
+                    cache.popitem(last=False)
                 yield item
 
-    return Flow(_flow, name=f"memoize({getattr(key_fn, '__name__', 'function')})")
+    return Flow(
+        _flow, name=f"memoize({getattr(key_fn, '__name__', 'function')}, {max_size})"
+    )
 
 
 def while_condition_stream(
@@ -766,7 +795,7 @@ def timeout_stream(seconds: float) -> Flow[Input, Input]:
                 # Use asyncio.wait_for to enforce timeout
                 yield await asyncio.wait_for(_identity_async(item), timeout=seconds)
             except asyncio.TimeoutError:
-                raise TimeoutError(
+                raise FlowTimeoutError(
                     f"Processing timed out after {seconds} seconds for item: {item}"
                 )
 
@@ -810,7 +839,7 @@ def circuit_breaker_stream(
 
             # If circuit is open, reject all items
             if circuit_open:
-                raise RuntimeError(
+                raise FlowExecutionError(
                     f"Circuit breaker is open. Reset in {reset_timeout - (current_time - last_failure_time):.1f}s"
                 )
 
@@ -1043,28 +1072,49 @@ def merge_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
     return Flow(_flow, name=f"merge({', '.join(flow_names)})")
 
 
-def distinct_stream(key_fn: Callable[[Input], str] = str) -> Flow[Input, Input]:
+def distinct_stream(
+    key_fn: Callable[[Input], str] = str, max_keys: int = 10000
+) -> Flow[Input, Input]:
     """Create a flow that filters out duplicate items based on a key function.
 
     Only the first occurrence of each unique key is yielded.
 
     Args:
         key_fn: Function to generate keys for uniqueness checking
+        max_keys: Maximum number of keys to remember (default 10000, prevents memory leaks)
 
     Returns:
         A flow that yields only unique items
+
+    Note: After max_keys is reached, the behavior becomes less strict and may
+    allow some duplicates to pass through.
     """
+    from collections import deque
+
     seen_keys: set[str] = set()
+    key_order: deque[str] = deque(maxlen=max_keys)
 
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
-        """Filter out duplicate items based on key function."""
+        """Filter out duplicate items with bounded memory."""
+        nonlocal seen_keys, key_order
         async for item in stream:
             key = key_fn(item)
             if key not in seen_keys:
                 seen_keys.add(key)
+                key_order.append(key)
+
+                # If we've exceeded max_keys, remove the oldest key
+                if len(seen_keys) > max_keys:
+                    # The deque automatically removes old items, but we need to clean up the set
+                    if len(key_order) == max_keys:  # Deque is full
+                        # Remove keys that are no longer in the recent window
+                        seen_keys = set(key_order)
+
                 yield item
 
-    return Flow(_flow, name=f"distinct({getattr(key_fn, '__name__', 'function')})")
+    return Flow(
+        _flow, name=f"distinct({getattr(key_fn, '__name__', 'function')}, {max_keys})"
+    )
 
 
 def chunk_stream(size: int) -> Flow[Input, list[Input]]:
@@ -1128,19 +1178,19 @@ def window_stream(size: int, step: int = 1) -> Flow[Input, list[Input]]:
 
 def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
     """Create a flow that emits consecutive pairs of items as tuples [previous, current].
-    
+
     The first item is skipped since there's no previous item to pair with.
     Very useful for change detection and delta calculations.
-    
+
     Returns:
         A flow that yields tuples of consecutive pairs
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[tuple[Input, Input]]:
         """Emit consecutive pairs of items."""
         previous = None
         first_item = True
-        
+
         async for item in stream:
             if first_item:
                 previous = item
@@ -1148,70 +1198,70 @@ def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
             else:
                 yield (previous, item)
                 previous = item
-    
+
     return Flow(_flow, name="pairwise")
 
 
 def start_with_stream(*items: Input) -> Flow[Input, Input]:
     """Create a flow that prepends specified items to the beginning of the stream.
-    
+
     Very useful for providing default values, initialization, or ensuring
     non-empty streams.
-    
+
     Args:
         *items: Items to prepend to the stream
-        
+
     Returns:
         A flow that starts with the specified items, then continues with stream items
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Prepend items to the stream."""
         # First emit the start items
         for item in items:
             yield item
-        
+
         # Then emit all items from the stream
         async for item in stream:
             yield item
-    
+
     return Flow(_flow, name=f"start_with({len(items)} items)")
 
 
 def sample_stream(interval: float) -> Flow[Input, Input]:
     """Create a flow that samples the stream at regular intervals.
-    
+
     Emits the most recent item at each interval. If no new items have arrived
     since the last sample, nothing is emitted. Essential for rate limiting
     and real-time applications.
-    
+
     Args:
         interval: Sampling interval in seconds
-        
+
     Returns:
         A flow that samples items at regular intervals
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Sample stream at regular intervals."""
         latest_item = None
         has_new_item = False
-        
+
         async def item_collector():
             """Collect items from the stream."""
             nonlocal latest_item, has_new_item
             async for item in stream:
                 latest_item = item
                 has_new_item = True
-        
+
         # Start the collector task
         collector_task = asyncio.create_task(item_collector())
-        
+
         try:
             while not collector_task.done():
                 # Wait for the interval
                 await asyncio.sleep(interval)
-                
+
                 # Emit the latest item if we have a new one
                 if has_new_item and latest_item is not None:
                     yield latest_item
@@ -1224,24 +1274,24 @@ def sample_stream(interval: float) -> Flow[Input, Input]:
                     await collector_task
                 except asyncio.CancelledError:
                     pass
-    
+
     return Flow(_flow, name=f"sample({interval})")
 
 
 def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]]:
     """Create a flow that combines latest values from two streams.
-    
+
     Whenever either stream emits, combines the latest value from both streams.
     Different from zip_stream which pairs items 1:1 - this maintains the latest
     state from both streams.
-    
+
     Args:
         other_stream: The stream to combine with
-        
+
     Returns:
         A flow that yields tuples of latest values from both streams
     """
-    
+
     async def _flow(stream: AsyncIterator[A]) -> AsyncIterator[tuple[A, B]]:
         """Combine latest values from both streams."""
         latest_a = None
@@ -1249,7 +1299,7 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
         has_a = False
         has_b = False
         result_queue = asyncio.Queue()
-        
+
         async def collect_a():
             """Collect items from stream A."""
             nonlocal latest_a, has_a
@@ -1264,9 +1314,9 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
                 pass
             finally:
                 await result_queue.put(StopAsyncIteration)
-        
+
         async def collect_b():
-            """Collect items from stream B.""" 
+            """Collect items from stream B."""
             nonlocal latest_b, has_b
             try:
                 async for item in other_stream:
@@ -1279,11 +1329,11 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
                 pass
             finally:
                 await result_queue.put(StopAsyncIteration)
-        
+
         # Start both collectors
         task_a = asyncio.create_task(collect_a())
         task_b = asyncio.create_task(collect_b())
-        
+
         try:
             stop_count = 0
             while stop_count < 2:
@@ -1301,55 +1351,59 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
                         await task
                     except asyncio.CancelledError:
                         pass
-    
+
     return Flow(_flow, name="combine_latest")
 
 
-def group_by_stream(key_fn: Callable[[Input], str]) -> Flow[Input, tuple[str, list[Input]]]:
+def group_by_stream(
+    key_fn: Callable[[Input], str],
+) -> Flow[Input, tuple[str, list[Input]]]:
     """Create a flow that groups items by key into lists.
-    
+
     Returns tuples of (key, items_list) where items_list contains all items
     with that key. This is a simpler implementation that collects all items
     before emitting groups.
-    
+
     Args:
         key_fn: Function to generate keys for grouping
-        
+
     Returns:
         A flow that yields (key, items_list) tuples
     """
-    
-    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[tuple[str, list[Input]]]:
+
+    async def _flow(
+        stream: AsyncIterator[Input],
+    ) -> AsyncIterator[tuple[str, list[Input]]]:
         """Group items by key."""
         groups: dict[str, list[Input]] = {}
-        
+
         # Collect all items into groups
         async for item in stream:
             key = key_fn(item)
             if key not in groups:
                 groups[key] = []
             groups[key].append(item)
-        
+
         # Emit all groups
         for key, items in groups.items():
             yield (key, items)
-    
+
     return Flow(_flow, name=f"group_by({getattr(key_fn, '__name__', 'function')})")
 
 
 def finalize_stream(cleanup: Callable[[], Awaitable[None]]) -> Flow[Input, Input]:
     """Create a flow that executes cleanup logic when stream completes.
-    
+
     The cleanup function is called regardless of whether the stream completes
     successfully, with an error, or is cancelled. Critical for resource management.
-    
+
     Args:
         cleanup: Async function to call on stream completion
-        
+
     Returns:
         A flow that executes cleanup on completion
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Process stream with guaranteed cleanup."""
         try:
@@ -1357,28 +1411,28 @@ def finalize_stream(cleanup: Callable[[], Awaitable[None]]) -> Flow[Input, Input
                 yield item
         finally:
             await cleanup()
-    
+
     return Flow(_flow, name=f"finalize({getattr(cleanup, '__name__', 'function')})")
 
 
 def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
     """Create a flow that buffers items until a trigger flow emits.
-    
+
     More flexible than time-based batching - allows event-driven batching
     based on external signals.
-    
+
     Args:
         trigger_flow: Flow that triggers buffer emission
-        
+
     Returns:
         A flow that yields buffered items when triggered
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[list[Input]]:
         """Buffer items until trigger emits."""
         buffer = []
         result_queue = asyncio.Queue()
-        
+
         async def collect_items():
             """Collect items into buffer."""
             nonlocal buffer
@@ -1387,7 +1441,7 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
                     buffer.append(item)
             except Exception:
                 pass
-        
+
         async def wait_for_triggers():
             """Wait for trigger events."""
             nonlocal buffer
@@ -1395,7 +1449,7 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
                 # Create empty stream for trigger
                 async def empty_trigger():
                     yield None
-                
+
                 trigger_stream = trigger_flow(empty_trigger())
                 async for _ in trigger_stream:
                     if buffer:
@@ -1405,11 +1459,11 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
                 pass
             finally:
                 await result_queue.put(StopAsyncIteration)
-        
+
         # Start both tasks
         collect_task = asyncio.create_task(collect_items())
         trigger_task = asyncio.create_task(wait_for_triggers())
-        
+
         try:
             while True:
                 result = await result_queue.get()
@@ -1425,11 +1479,11 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
                         await task
                     except asyncio.CancelledError:
                         pass
-            
+
             # Emit final buffer if not empty
             if buffer:
                 yield buffer
-    
+
     return Flow(_flow, name=f"buffer({trigger_flow.name})")
 
 
@@ -1437,81 +1491,87 @@ def expand_stream(
     fn: Callable[[Input], AsyncIterator[Input]], max_depth: int | None = None
 ) -> Flow[Input, Input]:
     """Create a flow that recursively expands each item using a function.
-    
+
     Applies the function to each item to generate more items, then applies
     the function to those items, continuing breadth-first until no more
     items are generated or max_depth is reached.
-    
+
     Args:
         fn: Function that expands each item into more items
         max_depth: Maximum recursion depth (None for unlimited)
-        
+
     Returns:
         A flow that recursively expands items
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Recursively expand items."""
         current_level = []
-        
+
         # Collect initial items
         async for item in stream:
             current_level.append(item)
             yield item  # Emit original items
-        
+
         depth = 0
         while current_level and (max_depth is None or depth < max_depth):
             next_level = []
-            
+
             # Expand current level items
             for item in current_level:
                 async for expanded_item in fn(item):
                     yield expanded_item
                     next_level.append(expanded_item)
-            
+
             current_level = next_level
             depth += 1
-    
+
     max_depth_str = str(max_depth) if max_depth is not None else "∞"
-    return Flow(_flow, name=f"expand({getattr(fn, '__name__', 'function')}, {max_depth_str})")
+    return Flow(
+        _flow, name=f"expand({getattr(fn, '__name__', 'function')}, {max_depth_str})"
+    )
 
 
 def share_stream() -> Flow[Input, Input]:
     """Create a flow that shares a single stream subscription among multiple consumers.
-    
+
     Note: This is a simplified implementation that just passes through the stream.
     In a full implementation, this would enable multiple consumers to share the
     same stream subscription (hot observable pattern).
-    
+
     Returns:
         A flow that can be shared among multiple consumers
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Pass stream through (simplified sharing)."""
         async for item in stream:
             yield item
-    
+
     return Flow(_flow, name="share")
 
 
 class StreamNotification:
     """Represents a stream notification (item, error, or completion)."""
+
     pass
+
 
 class OnNext(StreamNotification):
     def __init__(self, value: Any):
         self.value = value
-    
+
     def __repr__(self):
         return f"OnNext({self.value})"
+
 
 class OnError(StreamNotification):
     def __init__(self, error: Exception):
         self.error = error
-    
+
     def __repr__(self):
         return f"OnError({self.error})"
+
 
 class OnComplete(StreamNotification):
     def __repr__(self):
@@ -1520,15 +1580,15 @@ class OnComplete(StreamNotification):
 
 def materialize_stream() -> Flow[Input, StreamNotification]:
     """Create a flow that converts items and errors into notification objects.
-    
+
     Converts the stream into a meta-stream where each emission is a notification
     about what happened (OnNext, OnError, OnComplete). Allows treating errors
     as values for complex error handling patterns.
-    
+
     Returns:
         A flow that yields StreamNotification objects
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[StreamNotification]:
         """Convert stream items and events to notifications."""
         try:
@@ -1538,23 +1598,23 @@ def materialize_stream() -> Flow[Input, StreamNotification]:
             yield OnError(e)
         finally:
             yield OnComplete()
-    
+
     return Flow(_flow, name="materialize")
 
 
 def trace_stream(tracer: Callable[[str, Input], None]) -> Flow[Input, Input]:
     """Create a flow that provides detailed tracing of stream processing.
-    
+
     Calls the tracer function for each item with event type and item data.
     Useful for debugging and monitoring stream behavior.
-    
+
     Args:
         tracer: Function that receives (event_type, item) for tracing
-        
+
     Returns:
         A flow that traces processing and passes items through
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Trace stream processing."""
         tracer("stream_start", None)
@@ -1567,28 +1627,28 @@ def trace_stream(tracer: Callable[[str, Input], None]) -> Flow[Input, Input]:
             raise
         finally:
             tracer("stream_end", None)
-    
+
     return Flow(_flow, name=f"trace({getattr(tracer, '__name__', 'function')})")
 
 
 def metrics_stream(counter: Callable[[str], None]) -> Flow[Input, Input]:
     """Create a flow that emits metrics for stream processing.
-    
+
     Calls the counter function with metric names as items are processed.
     Useful for monitoring and observability.
-    
+
     Args:
         counter: Function that receives metric names
-        
+
     Returns:
         A flow that emits metrics and passes items through
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Emit metrics for stream processing."""
         counter("stream.started")
         item_count = 0
-        
+
         try:
             async for item in stream:
                 counter("stream.item")
@@ -1600,28 +1660,28 @@ def metrics_stream(counter: Callable[[str], None]) -> Flow[Input, Input]:
         finally:
             counter("stream.completed")
             counter(f"stream.total_items.{item_count}")
-    
+
     return Flow(_flow, name=f"metrics({getattr(counter, '__name__', 'function')})")
 
 
 def inspect_stream(inspector: Callable[[Input, dict], None]) -> Flow[Input, Input]:
     """Create a flow that inspects stream items with context metadata.
-    
+
     Calls the inspector function with each item and a context dictionary
     containing processing metadata. Useful for debugging and analysis.
-    
+
     Args:
         inspector: Function that receives (item, context_dict)
-        
+
     Returns:
         A flow that inspects items and passes them through
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Inspect stream items with context."""
         item_count = 0
         start_time = asyncio.get_event_loop().time()
-        
+
         async for item in stream:
             context = {
                 "item_index": item_count,
@@ -1631,41 +1691,42 @@ def inspect_stream(inspector: Callable[[Input, dict], None]) -> Flow[Input, Inpu
             inspector(item, context)
             yield item
             item_count += 1
-    
+
     return Flow(_flow, name=f"inspect({getattr(inspector, '__name__', 'function')})")
 
 
 def chain_flows(*flows: Flow[Input, Input]) -> Flow[Input, Input]:
     """Create a flow that chains multiple flows sequentially.
-    
+
     Applies each flow in sequence to the same input stream.
     Different from compose which pipes output to input - this applies
     all flows to the original stream and chains their outputs.
-    
+
     Args:
         *flows: Flows to chain sequentially
-        
+
     Returns:
         A flow that applies all flows to the input and chains outputs
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Chain multiple flows sequentially."""
         # Convert stream to list to replay for each flow
         items = []
         async for item in stream:
             items.append(item)
-        
+
         # Apply each flow to the original items
         for flow in flows:
+
             async def replay_stream():
                 for item in items:
                     yield item
-            
+
             flow_stream = flow(replay_stream())
             async for result in flow_stream:
                 yield result
-    
+
     flow_names = [flow.name for flow in flows]
     return Flow(_flow, name=f"chain_flows({', '.join(flow_names)})")
 
@@ -1676,53 +1737,53 @@ def branch_flows(
     false_flow: Flow[Input, Output],
 ) -> Flow[Input, Output]:
     """Create a flow that branches processing based on a predicate.
-    
+
     Items that match the predicate are processed by true_flow,
     items that don't match are processed by false_flow.
     Results are merged in the order they complete.
-    
+
     Args:
         predicate: Function that determines which flow to use
         true_flow: Flow for items where predicate returns True
         false_flow: Flow for items where predicate returns False
-        
+
     Returns:
         A flow that branches processing based on predicate
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
         """Branch processing based on predicate."""
         true_items = []
         false_items = []
-        
+
         # Separate items based on predicate
         async for item in stream:
             if predicate(item):
                 true_items.append(item)
             else:
                 false_items.append(item)
-        
+
         # Process both branches
         async def process_true():
             async def true_stream():
                 for item in true_items:
                     yield item
-            
+
             async for result in true_flow(true_stream()):
                 yield result
-        
+
         async def process_false():
             async def false_stream():
                 for item in false_items:
                     yield item
-            
+
             async for result in false_flow(false_stream()):
                 yield result
-        
+
         # Merge results from both branches
         async for result in merge_async_generators(process_true(), process_false()):
             yield result
-    
+
     return Flow(
         _flow,
         name=f"branch({predicate.__name__}, {true_flow.name}, {false_flow.name})",
@@ -1731,50 +1792,50 @@ def branch_flows(
 
 def merge_flows(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
     """Create a flow that merges multiple flows into one.
-    
+
     All flows receive the same input stream and their outputs are merged
     as they arrive. Different from parallel_stream which collects results -
     this merges them in arrival order.
-    
+
     Args:
         *flows: Flows to merge
-        
+
     Returns:
         A flow that merges outputs from all flows
     """
-    
+
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
         """Merge outputs from multiple flows."""
         if not flows:
             return
-        
+
         # Convert stream to list to replay for each flow
         items = []
         async for item in stream:
             items.append(item)
-        
+
         # Create tasks for each flow
         async def run_flow(flow: Flow[Input, Output]):
             async def replay_stream():
                 for item in items:
                     yield item
-            
+
             async for result in flow(replay_stream()):
                 yield result
-        
+
         generators = [run_flow(flow) for flow in flows]
         async for result in merge_async_generators(*generators):
             yield result
-    
+
     flow_names = [flow.name for flow in flows]
     return Flow(_flow, name=f"merge_flows({', '.join(flow_names)})")
 
 
-# Utility function for merging async generators  
+# Utility function for merging async generators
 async def merge_async_generators(*async_generators):
     """Merge outputs from multiple async generators."""
     queues = [asyncio.Queue() for _ in async_generators]
-    
+
     async def collect_from_generator(generator, queue):
         """Collect items from a generator into a queue."""
         try:
@@ -1784,16 +1845,16 @@ async def merge_async_generators(*async_generators):
             pass
         finally:
             await queue.put(StopAsyncIteration)
-    
+
     # Start collector tasks
     tasks = []
     for generator, queue in zip(async_generators, queues):
         task = asyncio.create_task(collect_from_generator(generator, queue))
         tasks.append(task)
-    
+
     try:
         active_queues = set(range(len(queues)))
-        
+
         while active_queues:
             # Wait for any queue to have an item
             queue_tasks = []
@@ -1801,12 +1862,14 @@ async def merge_async_generators(*async_generators):
                 queue_task = asyncio.create_task(queues[i].get())
                 queue_task._queue_index = i
                 queue_tasks.append(queue_task)
-            
+
             if not queue_tasks:
                 break
-                
-            done, pending = await asyncio.wait(queue_tasks, return_when=asyncio.FIRST_COMPLETED)
-            
+
+            done, pending = await asyncio.wait(
+                queue_tasks, return_when=asyncio.FIRST_COMPLETED
+            )
+
             # Cancel pending tasks
             for task in pending:
                 task.cancel()
@@ -1814,17 +1877,17 @@ async def merge_async_generators(*async_generators):
                     await task
                 except asyncio.CancelledError:
                     pass
-            
+
             # Process completed tasks
             for task in done:
                 result = await task
                 queue_index = task._queue_index
-                
+
                 if result is StopAsyncIteration:
                     active_queues.discard(queue_index)
                 else:
                     yield result
-                    
+
     finally:
         # Clean up all tasks
         for task in tasks:

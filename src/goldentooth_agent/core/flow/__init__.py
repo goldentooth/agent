@@ -1,4 +1,11 @@
 from .main import Flow
+from .exceptions import (
+    FlowError,
+    FlowValidationError,
+    FlowExecutionError,
+    FlowTimeoutError,
+    FlowConfigurationError,
+)
 from .combinators import (
     run_fold,
     compose,
@@ -69,6 +76,12 @@ from .combinators import (
 
 __all__ = [
     "Flow",
+    # Exception classes
+    "FlowError",
+    "FlowValidationError",
+    "FlowExecutionError",
+    "FlowTimeoutError",
+    "FlowConfigurationError",
     # Core combinators
     "run_fold",
     "compose",
@@ -120,7 +133,7 @@ __all__ = [
     "window_stream",
     # New combinators batch 2
     "pairwise_stream",
-    "start_with_stream", 
+    "start_with_stream",
     "sample_stream",
     "combine_latest_stream",
     "group_by_stream",

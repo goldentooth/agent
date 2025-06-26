@@ -1,7 +1,6 @@
 from __future__ import annotations
 from antidote import inject
 import asyncio
-import loguru
 from loguru import logger
 from typing import Awaitable, Callable, TypeVar
 import logging
