@@ -13,6 +13,7 @@ TIn = TypeVar("TIn")
 TOut = TypeVar("TOut")
 TNew = TypeVar("TNew")
 
+
 class StreamThunk(Generic[TIn, TOut]):
     """A thunk that processes an asynchronous stream of values."""
 
