@@ -189,7 +189,7 @@ class TestRegisterCallableProtocol:
     def test_protocol_structure(self):
         """Test that RegisterCallable protocol has correct structure."""
         # This is mainly a structural test to ensure the protocol is defined correctly
-        assert hasattr(RegisterCallable, '__call__')
+        assert hasattr(RegisterCallable, "__call__")
 
 
 class TestMakeRegisterFn:
@@ -199,7 +199,7 @@ class TestMakeRegisterFn:
         """Set up test fixtures."""
         self.registry = NamedRegistry[RegistryItem]()
 
-    @patch('antidote.world')
+    @patch("antidote.world")
     def test_register_with_class_and_id(self, mock_world):
         """Test registering a class with explicit ID."""
         mock_world.__getitem__.return_value = self.registry
@@ -209,8 +209,7 @@ class TestMakeRegisterFn:
         get_instance_fn = lambda: test_obj
 
         register_fn = make_register_fn(
-            NamedRegistry[RegistryItem],
-            get_instance_fn=get_instance_fn
+            NamedRegistry[RegistryItem], get_instance_fn=get_instance_fn
         )
 
         # Register with class and ID
@@ -222,7 +221,7 @@ class TestMakeRegisterFn:
         registered_obj = self.registry.get("test_id")
         assert registered_obj is test_obj
 
-    @patch('antidote.world')
+    @patch("antidote.world")
     def test_register_with_object_and_id(self, mock_world):
         """Test registering an object with explicit ID."""
         mock_world.__getitem__.return_value = self.registry
@@ -236,7 +235,7 @@ class TestMakeRegisterFn:
         assert self.registry.has("test_id")
         assert self.registry.get("test_id") is test_obj
 
-    @patch('antidote.world')
+    @patch("antidote.world")
     def test_register_with_creatable_class(self, mock_world):
         """Test registering a Creatable class."""
         registry = NamedRegistry[CreatableRegistryItem]()
@@ -252,7 +251,7 @@ class TestMakeRegisterFn:
         assert isinstance(registered_obj, CreatableRegistryItem)
         assert registered_obj.value == "created_instance"
 
-    @patch('antidote.world')
+    @patch("antidote.world")
     def test_register_with_get_instance_fn(self, mock_world):
         """Test registering with custom get_instance_fn."""
         mock_world.__getitem__.return_value = self.registry
@@ -261,8 +260,7 @@ class TestMakeRegisterFn:
         get_instance_fn = lambda: custom_obj
 
         register_fn = make_register_fn(
-            NamedRegistry[RegistryItem],
-            get_instance_fn=get_instance_fn
+            NamedRegistry[RegistryItem], get_instance_fn=get_instance_fn
         )
 
         result = register_fn(RegistryItem, id="custom_id")
@@ -271,7 +269,7 @@ class TestMakeRegisterFn:
         assert self.registry.has("custom_id")
         assert self.registry.get("custom_id") is custom_obj
 
-    @patch('antidote.world')
+    @patch("antidote.world")
     def test_register_with_default_id_fn(self, mock_world):
         """Test registering with custom default_id_fn."""
         mock_world.__getitem__.return_value = self.registry
@@ -280,8 +278,7 @@ class TestMakeRegisterFn:
             return f"auto_{obj.value}"
 
         register_fn = make_register_fn(
-            NamedRegistry[RegistryItem],
-            default_id_fn=default_id_fn
+            NamedRegistry[RegistryItem], default_id_fn=default_id_fn
         )
 
         test_obj = RegistryItem("unique")
@@ -291,7 +288,7 @@ class TestMakeRegisterFn:
         assert self.registry.has("auto_unique")
         assert self.registry.get("auto_unique") is test_obj
 
-    @patch('antidote.world')
+    @patch("antidote.world")
     def test_register_raises_error_without_object_or_creatable(self, mock_world):
         """Test that registration raises error without object or Creatable class."""
         mock_world.__getitem__.return_value = self.registry
@@ -301,7 +298,7 @@ class TestMakeRegisterFn:
         with pytest.raises(ValueError, match="An object must be provided or creatable"):
             register_fn(id="test_id")
 
-    @patch('antidote.world')
+    @patch("antidote.world")
     def test_register_raises_error_without_id(self, mock_world):
         """Test that registration raises error without ID."""
         mock_world.__getitem__.return_value = self.registry
@@ -312,7 +309,7 @@ class TestMakeRegisterFn:
         with pytest.raises(ValueError, match="An ID must be provided or derivable"):
             register_fn(obj=test_obj)
 
-    @patch('antidote.world')
+    @patch("antidote.world")
     def test_register_can_derive_id_from_default_id_fn(self, mock_world):
         """Test that registration can derive ID from default_id_fn."""
         mock_world.__getitem__.return_value = self.registry
@@ -321,8 +318,7 @@ class TestMakeRegisterFn:
             return f"derived_{obj.value}"
 
         register_fn = make_register_fn(
-            NamedRegistry[RegistryItem],
-            default_id_fn=default_id_fn
+            NamedRegistry[RegistryItem], default_id_fn=default_id_fn
         )
 
         test_obj = RegistryItem("test_value")
@@ -336,7 +332,7 @@ class TestMakeRegisterFn:
 class TestIntegration:
     """Integration tests for the complete named registry system."""
 
-    @patch('antidote.world')
+    @patch("antidote.world")
     def test_full_registration_workflow(self, mock_world):
         """Test a complete registration and retrieval workflow."""
         registry = NamedRegistry[RegistryItem]()
@@ -344,8 +340,7 @@ class TestIntegration:
 
         # Create register function
         register = make_register_fn(
-            NamedRegistry[RegistryItem],
-            default_id_fn=lambda obj: f"obj_{obj.value}"
+            NamedRegistry[RegistryItem], default_id_fn=lambda obj: f"obj_{obj.value}"
         )
 
         # Register some objects
@@ -369,4 +364,3 @@ class TestIntegration:
         assert len(items) == 2
         assert ("obj_first", obj1) in items
         assert ("custom_second", obj2) in items
-

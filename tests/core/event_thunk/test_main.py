@@ -674,6 +674,7 @@ class TestThunkEventsMethod:
     @pytest.mark.asyncio
     async def test_thunk_events_with_async_thunk(self):
         """Test converting async Thunk to EventThunk."""
+
         async def async_multiply(x):
             await asyncio.sleep(0.01)
             return x * 3
