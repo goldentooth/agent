@@ -2,12 +2,14 @@ from goldentooth_agent.core.context import Context
 from goldentooth_agent.core.scenario import Scenario
 from typing import Protocol, runtime_checkable
 
+
 @runtime_checkable
 class ScenarioSelectorStrategy(Protocol):
-  """Protocol for scenario selection strategies."""
-  id: str
-  description: str
+    """Protocol for scenario selection strategies."""
 
-  def select_scenario(self, context: Context) -> Scenario:
-    """Select a scenario based on the current context."""
-    ...
+    id: str
+    description: str
+
+    def select_scenario(self, context: Context) -> Scenario:
+        """Select a scenario based on the current context."""
+        ...

@@ -5,19 +5,21 @@ import instructor
 from instructor import Instructor
 from functools import cached_property
 
+
 class AgentConfigClient(Enum):
-  """Enum for different client types."""
-  ANTHROPIC = "anthropic"
+    """Enum for different client types."""
 
-  @cached_property
-  def client(self) -> Instructor:
-    """Return the Instructor client based on the enum value."""
-    match self:
-      case AgentConfigClient.ANTHROPIC:
-        return instructor.from_anthropic(anthropic.Anthropic())
-      case _:
-        raise NotImplementedError(f"No client handler for: {self}")
+    ANTHROPIC = "anthropic"
 
-  def __str__(self):
-    """Return the string representation of the enum value."""
-    return self.value
+    @cached_property
+    def client(self) -> Instructor:
+        """Return the Instructor client based on the enum value."""
+        match self:
+            case AgentConfigClient.ANTHROPIC:
+                return instructor.from_anthropic(anthropic.Anthropic())
+            case _:
+                raise NotImplementedError(f"No client handler for: {self}")
+
+    def __str__(self):
+        """Return the string representation of the enum value."""
+        return self.value

@@ -6,29 +6,30 @@ from typing import Optional
 from .strategy import RoleSelectorStrategy
 from .strategy_registry import RoleSelectorStrategyRegistry
 
+
 @injectable(factory_method="create")
 class RoleSelector:
-  """Class to select a role based on the current context."""
+    """Class to select a role based on the current context."""
 
-  def __init__(self, strategy_id: Optional[str] = None) -> None:
-    """Initialize the RoleSelector."""
-    self.strategy_id = strategy_id
+    def __init__(self, strategy_id: Optional[str] = None) -> None:
+        """Initialize the RoleSelector."""
+        self.strategy_id = strategy_id
 
-  @classmethod
-  def create(cls) -> RoleSelector:
-    """Factory method to create an instance of RoleSelector."""
-    return cls()
+    @classmethod
+    def create(cls) -> RoleSelector:
+        """Factory method to create an instance of RoleSelector."""
+        return cls()
 
-  @inject.method
-  def get_strategy(
-    self,
-    strategy_registry: RoleSelectorStrategyRegistry = inject.me(),
-  ) -> RoleSelectorStrategy:
-    """Get the currently set strategy."""
-    if self.strategy_id is None:
-      raise ValueError("Strategy ID must be set before getting the strategy.")
-    return strategy_registry.get(self.strategy_id)
+    @inject.method
+    def get_strategy(
+        self,
+        strategy_registry: RoleSelectorStrategyRegistry = inject.me(),
+    ) -> RoleSelectorStrategy:
+        """Get the currently set strategy."""
+        if self.strategy_id is None:
+            raise ValueError("Strategy ID must be set before getting the strategy.")
+        return strategy_registry.get(self.strategy_id)
 
-  def select_role(self, context: Context) -> Role:
-    """Select a role based on the current context."""
-    return self.get_strategy().select_role(context)
+    def select_role(self, context: Context) -> Role:
+        """Select a role based on the current context."""
+        return self.get_strategy().select_role(context)

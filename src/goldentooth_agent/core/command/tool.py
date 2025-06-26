@@ -5,75 +5,89 @@ from atomic_agents.lib.base.base_tool import BaseToolConfig, BaseTool
 from goldentooth_agent.core.context import Context
 from goldentooth_agent.core.logging import get_logger
 from goldentooth_agent.core.tool.registry import register_tool
-from logging import Logger
+
 from pydantic import Field
 import shlex
 from typer import Typer, Context as TyperContext
 from .inject import get_command_typer
 
+
 class CommandInput(BaseIOSchema):
-  """Schema for the input to the Command tool."""
-  input: str = Field(..., description="The command as provided by the user.")
+    """Schema for the input to the Command tool."""
+
+    input: str = Field(..., description="The command as provided by the user.")
+
 
 class CommandOutput(BaseIOSchema):
-  """Schema for the output from the Command tool."""
+    """Schema for the output from the Command tool."""
+
 
 class CommandConfig(BaseToolConfig):
-  """Configuration for the Command tool."""
-  pass
+    """Configuration for the Command tool."""
+
+    pass
+
 
 @register_tool
-@injectable(factory_method='create')
+@injectable(factory_method="create")
 class CommandTool(BaseTool):
-  """Command tool that executes a command provided by the user."""
-  input_schema = CommandInput
-  output_schema = CommandOutput
+    """Command tool that executes a command provided by the user."""
 
-  def __init__(
-    self,
-    config: CommandConfig = CommandConfig(title="tools.command", description="Executes a command provided by the user."),
-    logger: Logger = inject[get_logger(__name__)],
-  ):
-    """Initialize the Display tool."""
-    logger.debug("Initializing CommandTool")
-    super().__init__(config)
+    input_schema = CommandInput
+    output_schema = CommandOutput
 
-  @classmethod
-  def create(cls) -> CommandTool:
-    """Create an instance of this tool."""
-    return cls()
+    def __init__(
+        self,
+        config: CommandConfig = CommandConfig(
+            title="tools.command",
+            description="Executes a command provided by the user.",
+        ),
+        logger=inject[get_logger(__name__)],
+    ):
+        """Initialize the Display tool."""
+        logger.debug("Initializing CommandTool")
+        super().__init__(config)
 
-  @inject.method
-  def run( # type: ignore[override]
-    self,
-    params: CommandInput,
-    context: Context,
-    app: Typer = inject[get_command_typer()],
-    logger: Logger = inject[get_logger(__name__)]
-  ) -> CommandOutput:
-    """Run the Command tool and return the resulting input."""
-    logger.debug(f"Running CommandTool with input: {params.input}")
+    @classmethod
+    def create(cls) -> CommandTool:
+        """Create an instance of this tool."""
+        return cls()
 
-    @app.callback(invoke_without_command=True)
-    def callback(typer_context: TyperContext):
-      """Main command callback that sets up the environment."""
-      typer_context.obj = context
+    @inject.method
+    def run(  # type: ignore[override]
+        self,
+        params: CommandInput,
+        context: Context,
+        app: Typer = inject[get_command_typer()],
+        logger=inject[get_logger(__name__)],
+    ) -> CommandOutput:
+        """Run the Command tool and return the resulting input."""
+        logger.debug(f"Running CommandTool with input: {params.input}")
 
-    args = shlex.split(params.input)
-    app(args, standalone_mode=False)
+        @app.callback(invoke_without_command=True)
+        def callback(typer_context: TyperContext):
+            """Main command callback that sets up the environment."""
+            typer_context.obj = context
 
-    return CommandOutput()
+        args = shlex.split(params.input)
+        app(args, standalone_mode=False)
 
-  @inject.method
-  def get_info(self) -> str:
-    return "\n".join([
-      "Use the Command tool to execute commands provided by the user.",
-    ])
+        return CommandOutput()
+
+    @inject.method
+    def get_info(self) -> str:
+        return "\n".join(
+            [
+                "Use the Command tool to execute commands provided by the user.",
+            ]
+        )
+
 
 if __name__ == "__main__":
-  # Example usage
-  from antidote import world
-  command_tool = world[CommandTool]
-  command_input = CommandInput(input="/hello")
-  command_output = command_tool.run(command_input) # type: ignore[call-arg]
-  print(f"Your command returned: {command_output}") # type: ignore[no-untyped-call]
+    # Example usage
+    from antidote import world
+
+    command_tool = world[CommandTool]
+    command_input = CommandInput(input="/hello")
+    command_output = command_tool.run(command_input)  # type: ignore[call-arg]
+    print(f"Your command returned: {command_output}")  # type: ignore[no-untyped-call]

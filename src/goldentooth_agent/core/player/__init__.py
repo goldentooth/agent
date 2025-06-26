@@ -4,9 +4,9 @@ from .label import PlayerLabel
 from .registry import PlayerRegistry, register_player
 
 __all__ = [
-  "Player",
-  "PlayerLabel",
-  "PlayerRegistry",
-  "USER_LABEL_KEY",
-  "register_player",
+    "Player",
+    "PlayerLabel",
+    "PlayerRegistry",
+    "USER_LABEL_KEY",
+    "register_player",
 ]

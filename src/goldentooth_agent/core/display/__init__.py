@@ -15,4 +15,3 @@ __all__ = [
     "display_output",
     "display_newline",
 ]
-
