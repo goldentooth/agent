@@ -1,7 +1,7 @@
 from antidote import injectable, inject
 from platformdirs import PlatformDirs
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict
 import logging
 
 APP_AUTHOR = "ndouglas"
@@ -139,7 +139,7 @@ class Paths:
         return file_path
 
     @property
-    def app_info(self) -> dict[str, str]:
+    def app_info(self) -> Dict[str, str]:
         """Get application information.
 
         Returns:

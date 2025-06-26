@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Callable, TypeVar, Any
+from typing import Callable, TypeVar, Any, AsyncIterator
 from antidote import inject
 
 from ..flow import Flow, map_stream, filter_stream, flat_map_stream

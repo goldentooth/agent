@@ -420,7 +420,7 @@ class FlowConfigValidator:
         Returns:
             List of validation error messages. Empty list if valid.
         """
-        errors = []
+        errors: list[str] = []
 
         if not self.config_schema:
             return errors

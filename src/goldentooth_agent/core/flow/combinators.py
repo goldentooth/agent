@@ -14,6 +14,8 @@ from typing import (
     Callable,
     TypeVar,
     Any,
+    Optional,
+    List,
 )
 
 from .main import Flow
@@ -26,6 +28,9 @@ Newput = TypeVar("Newput")
 A = TypeVar("A")
 B = TypeVar("B")
 C = TypeVar("C")
+
+# Sentinel object for stream termination
+_STREAM_END = object()
 
 
 # Utility functions for common patterns
@@ -166,7 +171,7 @@ def identity_stream() -> Flow[Input, Input]:
 def if_then_stream(
     predicate: Callable[[Input], bool],
     if_flow: Flow[Input, Output],
-    else_flow: Flow[Input, Output] | None = None,
+    else_flow: Optional[Flow[Input, Output]] = None,
 ) -> Flow[Input, Output]:
     """Create a flow that conditionally processes items based on a predicate.
 
@@ -361,7 +366,7 @@ def retry_stream(n: int, flow: Flow[Input, Output]) -> Flow[Input, Output]:
 def switch_stream(
     selector: Callable[[Input], str],
     cases: dict[str, Flow[Input, Output]],
-    default: Flow[Input, Output] | None = None,
+    default: Optional[Flow[Input, Output]] = None,
 ) -> Flow[Input, Output]:
     """Create a flow that routes items to different flows based on a selector function."""
 
@@ -454,8 +459,8 @@ def race_stream(flows: list[Flow[Input, Output]]) -> Flow[Input, Output]:
 
 
 def parallel_stream(
-    flows: list[Flow[Input, Output]],
-) -> Flow[Input, list[Output | None]]:
+    flows: List[Flow[Input, Output]],
+) -> Flow[Input, List[Optional[Output]]]:
     """Create a flow that runs multiple flows in parallel for each item and collects all results.
 
     For each input item, all flows are executed simultaneously, and all successful
@@ -469,7 +474,7 @@ def parallel_stream(
         """Run multiple flows in parallel for each item."""
         async for item in stream:
             # Create tasks for each flow
-            async def run_flow(flow: Flow[Input, Output]) -> Output | None:
+            async def run_flow(flow: Flow[Input, Output]) -> Optional[Output]:
                 try:
 
                     async def single_item_stream():
@@ -503,7 +508,7 @@ def parallel_stream_successful(
         """Run multiple flows in parallel for each item, keeping only successful results."""
         async for item in stream:
             # Create tasks for each flow
-            async def run_flow(flow: Flow[Input, Output]) -> Output | None:
+            async def run_flow(flow: Flow[Input, Output]) -> Optional[Output]:
                 try:
 
                     async def single_item_stream():
@@ -538,7 +543,7 @@ def range_flow(start: int, stop: int, step: int = 1) -> Flow[None, int]:
     return Flow(_flow, name=f"range({start}, {stop}, {step})")
 
 
-def repeat_flow(value: A, times: int | None = None) -> Flow[None, A]:
+def repeat_flow(value: A, times: Optional[int] = None) -> Flow[None, A]:
     """Create a flow that repeats a value a specified number of times (or infinitely)."""
 
     async def _flow(stream: AsyncIterator[None]) -> AsyncIterator[A]:
@@ -555,10 +560,10 @@ def repeat_flow(value: A, times: int | None = None) -> Flow[None, A]:
     return Flow(_flow, name=f"repeat({value}, {times_str})")
 
 
-def empty_flow() -> Flow[None, A]:
+def empty_flow() -> Flow[None, Any]:
     """Create a flow that produces no items."""
 
-    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[A]:
+    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[Any]:
         """Produce no items."""
         return
         yield  # unreachable
@@ -859,7 +864,7 @@ def circuit_breaker_stream(
 
 
 def catch_and_continue_stream(
-    handler: Callable[[Exception, Input], Output | None] = lambda e, x: None
+    handler: Callable[[Exception, Input], Optional[Output]] = lambda e, x: None
 ) -> Flow[Input, Output]:
     """Create a flow that catches exceptions and continues processing with fallback values.
 
@@ -1298,7 +1303,7 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
         latest_b = None
         has_a = False
         has_b = False
-        result_queue = asyncio.Queue()
+        result_queue: asyncio.Queue[tuple[A, B]] = asyncio.Queue()
 
         async def collect_a():
             """Collect items from stream A."""
@@ -1313,7 +1318,7 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
             except Exception:
                 pass
             finally:
-                await result_queue.put(StopAsyncIteration)
+                await result_queue.put(_STREAM_END)
 
         async def collect_b():
             """Collect items from stream B."""
@@ -1328,7 +1333,7 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
             except Exception:
                 pass
             finally:
-                await result_queue.put(StopAsyncIteration)
+                await result_queue.put(_STREAM_END)
 
         # Start both collectors
         task_a = asyncio.create_task(collect_a())
@@ -1338,7 +1343,7 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
             stop_count = 0
             while stop_count < 2:
                 result = await result_queue.get()
-                if result is StopAsyncIteration:
+                if result is _STREAM_END:
                     stop_count += 1
                 else:
                     yield result
@@ -1430,8 +1435,8 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
 
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[list[Input]]:
         """Buffer items until trigger emits."""
-        buffer = []
-        result_queue = asyncio.Queue()
+        buffer: list[Input] = []
+        result_queue: asyncio.Queue[list[Input]] = asyncio.Queue()
 
         async def collect_items():
             """Collect items into buffer."""
@@ -1458,7 +1463,7 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
             except Exception:
                 pass
             finally:
-                await result_queue.put(StopAsyncIteration)
+                await result_queue.put(_STREAM_END)
 
         # Start both tasks
         collect_task = asyncio.create_task(collect_items())
@@ -1467,7 +1472,7 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
         try:
             while True:
                 result = await result_queue.get()
-                if result is StopAsyncIteration:
+                if result is _STREAM_END:
                     break
                 yield result
         finally:
@@ -1488,7 +1493,7 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
 
 
 def expand_stream(
-    fn: Callable[[Input], AsyncIterator[Input]], max_depth: int | None = None
+    fn: Callable[[Input], AsyncIterator[Input]], max_depth: Optional[int] = None
 ) -> Flow[Input, Input]:
     """Create a flow that recursively expands each item using a function.
 
@@ -1844,7 +1849,7 @@ async def merge_async_generators(*async_generators):
         except Exception:
             pass
         finally:
-            await queue.put(StopAsyncIteration)
+            await queue.put(_STREAM_END)
 
     # Start collector tasks
     tasks = []
@@ -1883,7 +1888,7 @@ async def merge_async_generators(*async_generators):
                 result = await task
                 queue_index = task._queue_index
 
-                if result is StopAsyncIteration:
+                if result is _STREAM_END:
                     active_queues.discard(queue_index)
                 else:
                     yield result

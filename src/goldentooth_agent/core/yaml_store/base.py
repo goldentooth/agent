@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Type
 from pathlib import Path
 import yaml
 from .adapter import YamlStoreAdapter
@@ -9,7 +9,7 @@ T = TypeVar("T")  # Type being serialized/deserialized
 class YamlStore(Generic[T]):
     """A generic base class for managing YAML files in a directory."""
 
-    def __init__(self, directory: Path, adapter: type[YamlStoreAdapter[T]]):
+    def __init__(self, directory: Path, adapter: Type[YamlStoreAdapter[T]]):
         """Initialize the store with a directory path and the type of objects it will manage."""
         self.directory = directory
         self.directory.mkdir(parents=True, exist_ok=True)

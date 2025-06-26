@@ -86,15 +86,10 @@ class BackgroundEventLoop:
         return self._running and self.loop.is_running() and self.thread.is_alive()
 
 
-@lazy
-def get_background_loop() -> BackgroundEventLoop:
-    """Get the background event loop instance."""
-    return BackgroundEventLoop()
-
-
 @inject
 def run_in_background(
-    coroutine, background_loop: BackgroundEventLoop = inject[get_background_loop()]
-) -> Any:
+    coroutine: Coroutine[Any, Any, T],
+    background_loop: BackgroundEventLoop = inject[BackgroundEventLoop],
+) -> T:
     """Run a coroutine in the background event loop."""
     return background_loop.submit(coroutine).result()

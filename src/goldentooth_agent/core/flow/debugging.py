@@ -183,7 +183,7 @@ class FlowDebugger:
 _flow_debugger = FlowDebugger()
 
 
-class FlowExecutionError(FlowError):
+class FlowExecutionErrorWithContext(FlowError):
     """Enhanced flow execution error with debugging context."""
 
     def __init__(
@@ -278,7 +278,7 @@ def debug_stream(
 
             except Exception as e:
                 # Enhance exception with debugging context
-                enhanced_error = FlowExecutionError(
+                enhanced_error = FlowExecutionErrorWithContext(
                     f"Error in debug stream: {str(e)}",
                     flow_name=flow_name,
                     execution_context=context,
@@ -321,7 +321,7 @@ def traced_flow(flow: Flow[Input, Output]) -> Flow[Input, Output]:
             except Exception as e:
                 # Enhance exception with debugging context
                 if not isinstance(e, FlowExecutionError):
-                    enhanced_error = FlowExecutionError(
+                    enhanced_error = FlowExecutionErrorWithContext(
                         f"Error in flow '{flow_name}': {str(e)}",
                         flow_name=flow_name,
                         execution_context=context,

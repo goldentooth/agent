@@ -7,6 +7,7 @@ from typing import (
     Generic,
     Any,
     Union,
+    Optional,
 )
 import asyncio
 
@@ -186,7 +187,7 @@ class Flow(Generic[Input, Output]):
 
     @staticmethod
     def from_value_fn(
-        fn: Callable[[Input], Awaitable[Output]] = None,
+        fn: Optional[Callable[[Input], Awaitable[Output]]] = None,
     ) -> Union[Flow[Input, Output], Callable]:
         """Create a flow from an async function that takes an input and returns an output.
 
@@ -210,7 +211,7 @@ class Flow(Generic[Input, Output]):
 
     @staticmethod
     def from_sync_fn(
-        fn: Callable[[Input], Output] = None,
+        fn: Optional[Callable[[Input], Output]] = None,
     ) -> Union[Flow[Input, Output], Callable]:
         """Create a flow from a synchronous function that takes an input and returns an output.
 
@@ -234,7 +235,7 @@ class Flow(Generic[Input, Output]):
 
     @staticmethod
     def from_event_fn(
-        fn: Callable[[Input], AsyncIterator[Output]] = None,
+        fn: Optional[Callable[[Input], AsyncIterator[Output]]] = None,
     ) -> Union[Flow[Input, Output], Callable]:
         """Create a flow from an async function that returns an async iterator.
 

@@ -9,7 +9,6 @@ from unittest.mock import Mock, patch
 
 from goldentooth_agent.core.background_loop import (
     BackgroundEventLoop,
-    get_background_loop,
     run_in_background,
 )
 
@@ -131,26 +130,6 @@ class TestBackgroundEventLoop:
             thread.join(timeout=3.0)
 
         assert sorted(results) == list(range(10))
-
-
-class TestGetBackgroundLoop:
-    """Test suite for get_background_loop function."""
-
-    def test_returns_background_event_loop(self):
-        """get_background_loop should return a BackgroundEventLoop instance."""
-        # get_background_loop returns a lazy object that will create BackgroundEventLoop
-        result = get_background_loop()
-        # The result is a LazyCall object from antidote
-        assert str(type(result).__name__) == "LazyCall"
-
-    def test_lazy_initialization(self):
-        """get_background_loop should use lazy initialization."""
-        # The @lazy decorator ensures the same object is returned
-        result1 = get_background_loop()
-        result2 = get_background_loop()
-
-        # Should return the same lazy wrapper object
-        assert result1 is result2
 
 
 class TestRunInBackground:

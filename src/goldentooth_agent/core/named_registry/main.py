@@ -8,6 +8,9 @@ from typing import (
     Protocol,
     TypeVar,
     runtime_checkable,
+    List,
+    Tuple,
+    Type,
 )
 
 T = TypeVar("T")
@@ -40,15 +43,15 @@ class NamedRegistry(Generic[T]):
         """Check if an object with the given ID is registered."""
         return id in self._registry
 
-    def list(self) -> list[str]:
+    def list(self) -> List[str]:
         """List all registered IDs in the registry."""
         return sorted(self._registry.keys())
 
-    def all(self) -> list[T]:
+    def all(self) -> List[T]:
         """Get all registered objects."""
         return list(self._registry.values())
 
-    def items(self) -> list[tuple[str, T]]:
+    def items(self) -> List[Tuple[str, T]]:
         """Get all registered objects as (name, object) pairs."""
         return list(self._registry.items())
 
@@ -76,17 +79,17 @@ class RegisterCallable(Protocol[T]):
 
     def __call__(
         self,
-        cls: Optional[type[T]] = None,
+        cls: Optional[Type[T]] = None,
         *,
         obj: Optional[T] = None,
         id: Optional[str] = None,
-    ) -> type[T]:
+    ) -> Type[T]:
         """Register an object with the given ID in the specified registry."""
         ...
 
 
 def make_register_fn(
-    registry_cls: type[NamedRegistry[T]],
+    registry_cls: Type[NamedRegistry[T]],
     *,
     get_instance_fn: Optional[Callable[[], T]] = None,
     default_id_fn: Optional[Callable[[T], str]] = None,
@@ -94,13 +97,13 @@ def make_register_fn(
     """Create a registration function for the given type."""
 
     def _decorate(
-        cls: Optional[type[T]] = None,
+        cls: Optional[Type[T]] = None,
         *,
         obj: Optional[T] = None,
         id: Optional[str] = None,
         get_instance_fn: Optional[Callable[[], T]] = get_instance_fn,
         default_id_fn: Optional[Callable[[T], str]] = default_id_fn,
-    ) -> type[T]:
+    ) -> Type[T]:
         """Register an object with the given ID in the specified registry."""
         from antidote import world
 

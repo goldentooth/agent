@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Type
 from .adapter import YamlStoreAdapter
 from .base import YamlStore
 
@@ -12,7 +12,7 @@ class YamlStoreInstaller(Generic[T]):
         self,
         source: YamlStore[T],
         destination: YamlStore[T],
-        adapter: type[YamlStoreAdapter[T]],
+        adapter: Type[YamlStoreAdapter[T]],
     ):
         """Initialize the installer with a source store, a destination store, and an adapter."""
         self.source = source

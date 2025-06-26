@@ -1,10 +1,10 @@
 from __future__ import annotations
-from typing import TypeVar, Callable, Awaitable, Any
+from typing import TypeVar, Callable, Awaitable, Any, AsyncIterator, Coroutine, Optional
 from antidote import inject
 import asyncio
 
 from ..flow import Flow, map_stream, flat_map_stream
-from .inject import get_background_loop, BackgroundEventLoop
+from .main import BackgroundEventLoop
 
 
 T = TypeVar("T")
@@ -13,8 +13,8 @@ R = TypeVar("R")
 
 @inject
 def async_flow(
-    coroutine_fn: Callable[[T], Awaitable[R]],
-    background_loop: BackgroundEventLoop = inject[get_background_loop()],
+    coroutine_fn: Callable[[T], Coroutine[Any, Any, R]],
+    background_loop: BackgroundEventLoop = inject[BackgroundEventLoop],
 ) -> Flow[T, R]:
     """
     Create a Flow that runs async operations in the background loop.
@@ -47,7 +47,7 @@ def async_flow(
 @inject
 def schedule_flow(
     delay_seconds: float,
-    background_loop: BackgroundEventLoop = inject[get_background_loop()],
+    background_loop: BackgroundEventLoop = inject[BackgroundEventLoop],
 ) -> Flow[T, T]:
     """
     Create a Flow that delays items using the background loop.
@@ -74,9 +74,9 @@ def schedule_flow(
 
 @inject
 def timeout_async_flow(
-    coroutine_fn: Callable[[T], Awaitable[R]],
+    coroutine_fn: Callable[[T], Coroutine[Any, Any, R]],
     timeout_seconds: float,
-    default_value: R | None = None,
+    default_value: Optional[R] = None,
 ) -> Flow[T, R]:
     """
     Create a Flow that runs async operations with a timeout.
@@ -95,13 +95,13 @@ def timeout_async_flow(
         results = urls >> timeout_async_flow(fetch_data, 5.0, default_value={})
     """
 
-    async def with_timeout(item: T) -> R | None:
+    async def with_timeout(item: T) -> Optional[R]:
         try:
             return await asyncio.wait_for(coroutine_fn(item), timeout_seconds)
         except asyncio.TimeoutError:
             return default_value
 
-    def filter_none(item: R | None) -> AsyncIterator[R]:
+    def filter_none(item: Optional[R]) -> AsyncIterator[R]:
         async def _filter():
             if item is not None:
                 yield item
