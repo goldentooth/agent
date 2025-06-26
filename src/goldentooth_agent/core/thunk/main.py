@@ -30,6 +30,7 @@ class Thunk(Generic[TIn, TOut]):
         if not inspect.iscoroutinefunction(fn):
             # If the function is not a coroutine, wrap it to ensure it can be awaited
             original_fn = fn  # Store reference to original function before reassignment
+
             async def _wrapper(ctx: TIn) -> TOut:
                 """Wrap the function to ensure it can be awaited."""
                 return original_fn(ctx)  # type: ignore

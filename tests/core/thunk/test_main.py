@@ -158,7 +158,7 @@ class TestThunk:
         """Test the map method with an async thunk."""
         thunk_obj = Thunk(async_increment, name="increment")
         mapped_thunk = thunk_obj.map(lambda x: x * 10)
-        
+
         assert mapped_thunk.name == "increment.map(<lambda>)"
         result = await mapped_thunk(5)
         assert result == 60  # (5 + 1) * 10
@@ -166,12 +166,13 @@ class TestThunk:
     @pytest.mark.asyncio
     async def test_map_with_named_function(self):
         """Test the map method with a named function."""
+
         def double(x):
             return x * 2
-            
+
         thunk_obj = Thunk(async_increment, name="increment")
         mapped_thunk = thunk_obj.map(double)
-        
+
         assert mapped_thunk.name == "increment.map(double)"
         result = await mapped_thunk(5)
         assert result == 12  # (5 + 1) * 2
@@ -181,7 +182,7 @@ class TestThunk:
         """Test the filter method when predicate passes."""
         thunk_obj = Thunk(async_increment, name="increment")
         filtered_thunk = thunk_obj.filter(is_positive)
-        
+
         assert filtered_thunk.name == "increment.filter(is_positive)"
         result = await filtered_thunk(5)
         assert result == 6  # 5 + 1 = 6, which is positive
@@ -189,26 +190,29 @@ class TestThunk:
     @pytest.mark.asyncio
     async def test_filter_fails_predicate(self):
         """Test the filter method when predicate fails."""
+
         async def subtract_ten(x):
             return x - 10
-            
+
         thunk_obj = Thunk(subtract_ten, name="subtract_ten")
         filtered_thunk = thunk_obj.filter(is_positive)
-        
+
         result = await filtered_thunk(5)
         assert result is None  # 5 - 10 = -5, which is not positive
 
     @pytest.mark.asyncio
     async def test_flat_map(self):
         """Test the flat_map method."""
+
         def create_increment_thunk(x: int) -> Thunk:
             async def add_x(ctx):
                 return ctx + x
+
             return Thunk(add_x, name=f"add_{x}")
 
         thunk_obj = Thunk(async_increment, name="increment")
         flat_mapped_thunk = thunk_obj.flat_map(create_increment_thunk)
-        
+
         assert flat_mapped_thunk.name == "increment.flat_map(create_increment_thunk)"
         result = await flat_mapped_thunk(5)
         assert result == 11  # 5 + 1 = 6, then 5 + 6 = 11
@@ -219,7 +223,7 @@ class TestThunk:
         first_thunk = Thunk(async_increment, name="first")
         second_thunk = Thunk(async_double, name="second")
         then_thunk = first_thunk.then(second_thunk)
-        
+
         assert then_thunk.name == "first.then(second)"
         result = await then_thunk(5)
         assert result == 10  # first_thunk result is discarded, second_thunk(5) = 10
@@ -228,13 +232,13 @@ class TestThunk:
     async def test_flatten(self):
         """Test the flatten method."""
         inner_thunk = Thunk(async_double, name="inner")
-        
+
         async def create_inner(x):
             return inner_thunk
-            
+
         outer_thunk = Thunk(create_inner, name="outer")
         flattened_thunk = outer_thunk.flatten()
-        
+
         assert flattened_thunk.name == "outer.flatten"
         result = await flattened_thunk(5)
         assert result == 10  # inner_thunk(5) = 10
@@ -244,7 +248,7 @@ class TestThunk:
         """Test the tap method with synchronous side effect."""
         thunk_obj = Thunk(sync_increment, name="increment")
         tapped_thunk = thunk_obj.tap(side_effect_sync)
-        
+
         assert tapped_thunk.name == "increment.tap(side_effect_sync)"
         result = await tapped_thunk(5)
         assert result == 6  # Original result is preserved
@@ -255,7 +259,7 @@ class TestThunk:
         """Test the tap method with asynchronous side effect."""
         thunk_obj = Thunk(sync_increment, name="increment")
         tapped_thunk = thunk_obj.tap(side_effect_async)
-        
+
         assert tapped_thunk.name == "increment.tap(side_effect_async)"
         result = await tapped_thunk(5)
         assert result == 6  # Original result is preserved
@@ -267,7 +271,7 @@ class TestThunk:
         first_thunk = Thunk(async_increment, name="increment")
         second_thunk = Thunk(async_double, name="double")
         chained_thunk = first_thunk.chain(second_thunk)
-        
+
         assert chained_thunk.name == "increment → double"
         result = await chained_thunk(5)
         assert result == 12  # (5 + 1) * 2 = 12
@@ -278,7 +282,7 @@ class TestThunk:
         first_thunk = Thunk(async_increment, name="increment")
         second_thunk = Thunk(async_double, name="double")
         chained_thunk = first_thunk >> second_thunk
-        
+
         assert chained_thunk.name == "increment → double"
         result = await chained_thunk(5)
         assert result == 12  # (5 + 1) * 2 = 12
@@ -288,7 +292,7 @@ class TestThunk:
         """Test the label method (which uses tap with print)."""
         thunk_obj = Thunk(sync_increment, name="increment")
         labeled_thunk = thunk_obj.label("test_label")
-        
+
         # The label method creates a tap with a print function
         assert "tap" in labeled_thunk.name
         result = await labeled_thunk(5)
@@ -297,13 +301,14 @@ class TestThunk:
     @pytest.mark.asyncio
     async def test_compose_chain_method(self):
         """Test the compose_chain method on a thunk."""
+
         async def add_hundred(x):
             return x + 100
-            
+
         first_thunk = Thunk(async_increment, name="increment")
         second_thunk = Thunk(async_double, name="double")
         third_thunk = Thunk(add_hundred, name="add_hundred")
-        
+
         composed_thunk = first_thunk.compose_chain(second_thunk, third_thunk)
         result = await composed_thunk(5)
         assert result == 112  # ((5 + 1) * 2) + 100 = 112
@@ -314,61 +319,63 @@ class TestThunk:
         first_thunk = Thunk(async_increment, name="increment")
         second_thunk = Thunk(async_double, name="double")
         composed_thunk = Thunk.from_thunks(first_thunk, second_thunk)
-        
+
         result = await composed_thunk(5)
         assert result == 12  # (5 + 1) * 2 = 12
 
     @pytest.mark.asyncio
     async def test_complex_composition(self):
         """Test complex composition of multiple operations."""
+
         def double(x):
             return x * 2
-            
+
         # Create a complex pipeline: increment -> double -> filter even -> tap -> add 100
         base_thunk = Thunk(sync_increment, name="increment")
-        
-        complex_thunk = (base_thunk
-                        .map(double)  # double the incremented value
-                        .filter(is_even)   # keep only even results
-                        .tap(side_effect_sync)  # log the result
-                        .map(lambda x: x + 100))  # add 100
-        
+
+        complex_thunk = (
+            base_thunk.map(double)  # double the incremented value
+            .filter(is_even)  # keep only even results
+            .tap(side_effect_sync)  # log the result
+            .map(lambda x: x + 100)
+        )  # add 100
+
         result = await complex_thunk(5)
         assert result == 112  # (5 + 1) * 2 = 12 (even), then 12 + 100 = 112
         assert side_effects == ["sync_side_effect: 12"]
 
     def test_complex_composition_structure(self):
         """Test that complex composition creates the right structure."""
+
         def double(x):
             return x * 2
-            
+
         base_thunk = Thunk(sync_increment, name="increment")
-        
+
         # Test that we can create complex compositions
-        complex_thunk = (base_thunk
-                        .map(double)
-                        .filter(is_even))
-        
+        complex_thunk = base_thunk.map(double).filter(is_even)
+
         assert isinstance(complex_thunk, Thunk)
         assert "filter" in complex_thunk.name
 
     @pytest.mark.asyncio
     async def test_complex_composition_with_filter_fail(self):
         """Test complex composition where filter fails."""
+
         async def make_odd(x):
             return x * 2 + 1  # Always produces odd numbers
-            
+
         def add_hundred(x):
             if x is None:
                 return None  # Handle None case properly
             return x + 100
-            
+
         base_thunk = Thunk(make_odd, name="make_odd")
-        
-        complex_thunk = (base_thunk
-                        .filter(is_even)   # filter for even (will fail)
-                        .map(add_hundred))  # this should handle None properly
-        
+
+        complex_thunk = base_thunk.filter(is_even).map(  # filter for even (will fail)
+            add_hundred
+        )  # this should handle None properly
+
         result = await complex_thunk(5)
         assert result is None  # Filter failed, so result is None
 
@@ -379,6 +386,7 @@ class TestThunkDecorator:
     @pytest.mark.asyncio
     async def test_thunk_decorator_sync_function(self):
         """Test the @thunk decorator with a synchronous function."""
+
         @thunk(name="decorated_sync_increment")
         def sync_increment_func(x: int) -> int:
             return x + 1
@@ -391,6 +399,7 @@ class TestThunkDecorator:
     @pytest.mark.asyncio
     async def test_thunk_decorator_async_function(self):
         """Test the @thunk decorator with an asynchronous function."""
+
         @thunk(name="decorated_async_increment")
         async def async_increment_func(x: int) -> int:
             await asyncio.sleep(0.01)
@@ -404,6 +413,7 @@ class TestThunkDecorator:
     @pytest.mark.asyncio
     async def test_thunk_decorator_composition_sync(self):
         """Test that decorated sync thunks can be composed."""
+
         @thunk(name="increment")
         def increment_func(x: int) -> int:
             return x + 1
@@ -419,6 +429,7 @@ class TestThunkDecorator:
     @pytest.mark.asyncio
     async def test_thunk_decorator_composition_async(self):
         """Test that decorated async thunks can be composed."""
+
         @thunk(name="increment")
         async def increment_func(x: int) -> int:
             await asyncio.sleep(0.01)
@@ -442,10 +453,10 @@ class TestComposeChain:
         """Test composing two sync thunks."""
         first_thunk = Thunk(sync_increment, name="increment")
         second_thunk = Thunk(sync_double, name="double")
-        
+
         composed = compose_chain(first_thunk, second_thunk)
         assert composed.name == "compose(increment → double)"
-        
+
         result = await composed(5)
         assert result == 12  # (5 + 1) * 2 = 12
 
@@ -454,26 +465,27 @@ class TestComposeChain:
         """Test composing two async thunks."""
         first_thunk = Thunk(async_increment, name="increment")
         second_thunk = Thunk(async_double, name="double")
-        
+
         composed = compose_chain(first_thunk, second_thunk)
         assert composed.name == "compose(increment → double)"
-        
+
         result = await composed(5)
         assert result == 12  # (5 + 1) * 2 = 12
 
     @pytest.mark.asyncio
     async def test_compose_chain_three_async_thunks(self):
         """Test composing three async thunks."""
+
         async def add_hundred(x):
             return x + 100
-            
+
         first_thunk = Thunk(async_increment, name="increment")
         second_thunk = Thunk(async_double, name="double")
         third_thunk = Thunk(add_hundred, name="add_hundred")
-        
+
         composed = compose_chain(first_thunk, second_thunk, third_thunk)
         assert composed.name == "compose(increment → double → add_hundred)"
-        
+
         result = await composed(5)
         assert result == 112  # ((5 + 1) * 2) + 100 = 112
 
@@ -482,7 +494,7 @@ class TestComposeChain:
         """Test composing mixed sync and async thunks."""
         sync_thunk = Thunk(sync_increment, name="sync_increment")
         async_thunk = Thunk(async_double, name="async_double")
-        
+
         composed = compose_chain(sync_thunk, async_thunk)
         result = await composed(5)
         assert result == 12  # (5 + 1) * 2 = 12
@@ -492,7 +504,7 @@ class TestComposeChain:
         """Test composing asynchronous thunks."""
         first_thunk = Thunk(async_increment, name="async_increment")
         second_thunk = Thunk(async_double, name="async_double")
-        
+
         composed = compose_chain(first_thunk, second_thunk)
         result = await composed(5)
         assert result == 12  # (5 + 1) * 2 = 12
@@ -502,7 +514,7 @@ class TestComposeChain:
         """Test composing a single async thunk."""
         thunk_obj = Thunk(async_increment, name="increment")
         composed = compose_chain(thunk_obj)
-        
+
         result = await composed(5)
         assert result == 6
 
@@ -511,21 +523,22 @@ class TestComposeChain:
         """Test that exceptions are properly propagated through the chain."""
         good_thunk = Thunk(async_increment, name="increment")
         bad_thunk = Thunk(async_exception_raiser, name="error")
-        
+
         composed = compose_chain(good_thunk, bad_thunk)
-        
+
         with pytest.raises(ValueError, match="Async error with 6"):
             await composed(5)  # 5 + 1 = 6, then error with 6
 
     @pytest.mark.asyncio
     async def test_compose_chain_with_different_types(self):
         """Test composing thunks that change types."""
+
         async def int_to_str(x):
             return str(x)
-            
+
         int_to_str_thunk = Thunk(int_to_str, name="to_string")
         str_transform_thunk = Thunk(async_string_transform, name="transform")
-        
+
         composed = compose_chain(int_to_str_thunk, str_transform_thunk)
         result = await composed(42)
         assert result == "async_transformed_42"
@@ -536,23 +549,24 @@ class TestThunkEdgeCases:
 
     def test_thunk_name_fallback(self):
         """Test that thunk names fall back appropriately."""
+
         # Function with __name__
         async def named_function(x):
             return x
-        
+
         thunk_obj = Thunk(named_function, name="")
         assert thunk_obj.name == "named_function"
-        
+
         # Lambda with sync function (gets wrapped so name becomes _wrapper)
         lambda_func = lambda x: x
         thunk_obj2 = Thunk(lambda_func, name="")
         # Due to sync wrapper, name becomes "_wrapper" instead of "<lambda>"
         assert thunk_obj2.name == "_wrapper"
-        
+
         # Sync function with __name__
         def sync_named_function(x):
             return x
-            
+
         thunk_obj3 = Thunk(sync_named_function, name="")
         # Should use wrapper name since sync functions get wrapped
         assert thunk_obj3.name == "_wrapper"
@@ -561,10 +575,10 @@ class TestThunkEdgeCases:
         """Test that metadata doesn't interfere between thunks."""
         metadata1 = {"version": "1.0"}
         metadata2 = {"version": "2.0"}
-        
+
         thunk1 = Thunk(async_increment, name="thunk1", metadata=metadata1)
         thunk2 = Thunk(async_increment, name="thunk2", metadata=metadata2)
-        
+
         assert thunk1.metadata != thunk2.metadata
         assert thunk1.metadata["version"] == "1.0"
         assert thunk2.metadata["version"] == "2.0"
@@ -572,20 +586,24 @@ class TestThunkEdgeCases:
     @pytest.mark.asyncio
     async def test_nested_composition(self):
         """Test deeply nested composition."""
+
         async def add1(x):
             return x + 1
+
         async def mult2(x):
             return x * 2
+
         async def sub3(x):
             return x - 3
+
         async def div2(x):
             return x / 2
-            
+
         thunk1 = Thunk(add1, name="add1")
         thunk2 = Thunk(mult2, name="mult2")
         thunk3 = Thunk(sub3, name="sub3")
         thunk4 = Thunk(div2, name="div2")
-        
+
         # ((((5 + 1) * 2) - 3) / 2) = ((6 * 2 - 3) / 2) = (9 / 2) = 4.5
         nested = thunk1 >> thunk2 >> thunk3 >> thunk4
         result = await nested(5)
@@ -594,9 +612,10 @@ class TestThunkEdgeCases:
     @pytest.mark.asyncio
     async def test_thunk_with_none_result(self):
         """Test thunks that return None."""
+
         async def none_returner(x):
             return None
-            
+
         none_thunk = Thunk(none_returner, name="none_returner")
         result = await none_thunk(5)
         assert result is None
@@ -604,9 +623,10 @@ class TestThunkEdgeCases:
     @pytest.mark.asyncio
     async def test_thunk_with_complex_objects(self):
         """Test thunks with complex input/output types."""
+
         async def process_dict(d: dict) -> dict:
             return {k: v * 2 for k, v in d.items()}
-        
+
         dict_thunk = Thunk(process_dict, name="dict_processor")
         input_dict = {"a": 1, "b": 2, "c": 3}
         result = await dict_thunk(input_dict)
@@ -620,27 +640,28 @@ class TestFixedIssues:
     async def test_sync_function_wrapper_fixed(self):
         """Verify that sync function wrapping now works correctly."""
         thunk_obj = Thunk(sync_increment, name="sync_increment")
-        
+
         # Test basic properties
         assert thunk_obj.name == "sync_increment"
         assert thunk_obj.metadata == {}
-        
+
         # Test that execution works properly
         result = await thunk_obj(5)
         assert result == 6
         assert isinstance(result, int)
-        
+
     @pytest.mark.asyncio
     async def test_tap_method_fixed(self):
         """Verify that the tap method now works correctly with maybe_await."""
         thunk_obj = Thunk(sync_increment, name="sync_increment")
-        
+
         side_effects = []
+
         def log_effect(x):
             side_effects.append(f"logged: {x}")
-        
+
         tapped_thunk = thunk_obj.tap(log_effect)
         result = await tapped_thunk(5)
-        
+
         assert result == 6  # Original result preserved
         assert side_effects == ["logged: 6"]  # Side effect executed
