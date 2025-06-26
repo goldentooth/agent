@@ -1,4 +1,6 @@
 from __future__ import annotations
+from goldentooth_agent.core.event_thunk import EventThunk
+from goldentooth_agent.core.stream_thunk import StreamThunk
 from goldentooth_agent.core.util import maybe_await
 import inspect
 from typing import (
@@ -290,11 +292,8 @@ class Thunk(Generic[TIn, TOut]):
         """Compose multiple thunks after this one."""
         return self.chain(compose_chain(*thunks))
 
-    from .event_thunk import EventThunk
-
     def events(self) -> EventThunk[TIn, TOut]:
         """Convert this thunk to an event thunk."""
-        from .event_thunk import EventThunk
 
         async def _fn(ctx: TIn) -> AsyncIterator[TOut]:
             """Call the thunk with the context and yield its results."""
@@ -302,11 +301,8 @@ class Thunk(Generic[TIn, TOut]):
 
         return EventThunk(_fn, name=self.name, metadata=self.metadata)
 
-    from .stream_thunk import StreamThunk
-
     def stream(self) -> StreamThunk[TIn, TOut]:
         """Convert this thunk to a stream thunk."""
-        from .stream_thunk import StreamThunk
 
         async def _fn(stream: AsyncIterator[TIn]) -> AsyncIterator[TOut]:
             """Call the thunk with a stream and yield its results."""
