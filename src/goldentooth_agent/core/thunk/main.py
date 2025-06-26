@@ -302,6 +302,19 @@ class Thunk(Generic[TIn, TOut]):
 
         return EventThunk(_fn, name=self.name, metadata=self.metadata)
 
+    from .stream_thunk import StreamThunk
+
+    def stream(self) -> StreamThunk[TIn, TOut]:
+        """Convert this thunk to a stream thunk."""
+        from .stream_thunk import StreamThunk
+
+        async def _fn(stream: AsyncIterator[TIn]) -> AsyncIterator[TOut]:
+            """Call the thunk with a stream and yield its results."""
+            async for ctx in stream:
+                yield await self(ctx)
+
+        return StreamThunk(_fn, name=self.name, metadata=self.metadata)
+
 
 def thunk(
     *, name: str

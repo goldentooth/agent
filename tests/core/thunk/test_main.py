@@ -965,3 +965,171 @@ class TestFixedIssues:
 
         assert result == 6  # Original result preserved
         assert side_effects == ["logged: 6"]  # Side effect executed
+
+
+class TestThunkStreamMethod:
+    """Test cases for the Thunk.stream() method that converts to StreamThunk."""
+
+    def setup_method(self):
+        """Clear side effects before each test."""
+        side_effects.clear()
+
+    # Helper async generator for creating test streams
+    async def create_test_stream(self, items):
+        """Create an async stream from a list of items."""
+        for item in items:
+            yield item
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_conversion_basic(self):
+        """Test basic conversion of Thunk to StreamThunk."""
+        from goldentooth_agent.core.thunk import StreamThunk
+
+        thunk_obj = Thunk(sync_double, name="double")
+        stream_thunk = thunk_obj.stream()
+
+        assert isinstance(stream_thunk, StreamThunk)
+        assert stream_thunk.name == "double"
+        assert stream_thunk.metadata == thunk_obj.metadata
+
+        # Process a stream of values
+        input_stream = self.create_test_stream([1, 2, 3])
+        output_stream = stream_thunk(input_stream)
+        values = [item async for item in output_stream]
+        assert values == [2, 4, 6]  # Each item doubled
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_conversion_async(self):
+        """Test conversion of async Thunk to StreamThunk."""
+        from goldentooth_agent.core.thunk import StreamThunk
+
+        thunk_obj = Thunk(async_increment, name="async_increment")
+        stream_thunk = thunk_obj.stream()
+
+        assert isinstance(stream_thunk, StreamThunk)
+        assert stream_thunk.name == "async_increment"
+
+        # Process a stream of values
+        input_stream = self.create_test_stream([1, 2, 3])
+        output_stream = stream_thunk(input_stream)
+        values = [item async for item in output_stream]
+        assert values == [2, 3, 4]  # Each item incremented
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_preserves_metadata(self):
+        """Test that converting to StreamThunk preserves metadata."""
+        metadata = {"version": "1.0", "description": "test thunk"}
+        thunk_obj = Thunk(sync_increment, name="increment", metadata=metadata)
+        stream_thunk = thunk_obj.stream()
+
+        assert stream_thunk.metadata == metadata
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_empty_input(self):
+        """Test stream conversion with empty input stream."""
+        thunk_obj = Thunk(sync_double, name="double")
+        stream_thunk = thunk_obj.stream()
+
+        # Empty stream
+        input_stream = self.create_test_stream([])
+        output_stream = stream_thunk(input_stream)
+        values = [item async for item in output_stream]
+        assert values == []
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_with_complex_function(self):
+        """Test stream conversion with complex transformation function."""
+
+        def complex_transform(x):
+            if x % 2 == 0:
+                return x * 10
+            else:
+                return x + 100
+
+        thunk_obj = Thunk(complex_transform, name="complex")
+        stream_thunk = thunk_obj.stream()
+
+        input_stream = self.create_test_stream([0, 1, 2, 3])
+        output_stream = stream_thunk(input_stream)
+        values = [item async for item in output_stream]
+        assert values == [0, 101, 20, 103]  # 0*10, 1+100, 2*10, 3+100
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_with_type_transformation(self):
+        """Test stream conversion with type transformation."""
+        thunk_obj = Thunk(sync_string_transform, name="string_transform")
+        stream_thunk = thunk_obj.stream()
+
+        input_stream = self.create_test_stream(["hello", "world"])
+        output_stream = stream_thunk(input_stream)
+        values = [item async for item in output_stream]
+        assert values == ["transformed_hello", "transformed_world"]
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_exception_handling(self):
+        """Test that exceptions in stream processing are properly propagated."""
+
+        def conditional_exception(x):
+            if x == 2:
+                raise ValueError(f"Error with {x}")
+            return x * 2
+
+        thunk_obj = Thunk(conditional_exception, name="conditional")
+        stream_thunk = thunk_obj.stream()
+
+        input_stream = self.create_test_stream([1, 2, 3])
+        output_stream = stream_thunk(input_stream)
+
+        values = []
+        with pytest.raises(ValueError, match="Error with 2"):
+            async for item in output_stream:
+                values.append(item)
+
+        # Should have processed the first item before the exception
+        assert values == [2]  # 1 * 2
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_integration_with_stream_methods(self):
+        """Test that converted StreamThunk works with stream methods."""
+        thunk_obj = Thunk(sync_increment, name="increment")
+        stream_thunk = thunk_obj.stream()
+
+        # Use stream methods for further processing
+        processed_thunk = stream_thunk.map(sync_double).filter(lambda x: x > 5)
+
+        input_stream = self.create_test_stream([1, 2, 3, 4])
+        output_stream = processed_thunk(input_stream)
+        values = [item async for item in output_stream]
+        # Original: [1,2,3,4] -> increment: [2,3,4,5] -> double: [4,6,8,10] -> filter >5: [6,8,10]
+        assert values == [6, 8, 10]
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_collect_round_trip(self):
+        """Test round-trip conversion: Thunk -> StreamThunk -> collected Thunk."""
+        original_thunk = Thunk(sync_double, name="double")
+        stream_thunk = original_thunk.stream()
+        collected_thunk = stream_thunk.collect()
+
+        # The collected thunk should work with a stream input
+        input_stream = self.create_test_stream([1, 2, 3])
+        result = await collected_thunk(input_stream)
+        assert result == [2, 4, 6]
+        assert collected_thunk.name == "double.collect"
+
+    @pytest.mark.asyncio
+    async def test_thunk_stream_with_side_effects(self):
+        """Test stream conversion with thunks that have side effects."""
+
+        def increment_with_side_effect(x):
+            side_effects.append(f"processing: {x}")
+            return x + 1
+
+        thunk_obj = Thunk(increment_with_side_effect, name="increment")
+        stream_thunk = thunk_obj.stream()
+
+        input_stream = self.create_test_stream([1, 2, 3])
+        output_stream = stream_thunk(input_stream)
+        values = [item async for item in output_stream]
+
+        assert values == [2, 3, 4]
+        assert side_effects == ["processing: 1", "processing: 2", "processing: 3"]
