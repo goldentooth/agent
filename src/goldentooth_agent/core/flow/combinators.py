@@ -1,8 +1,8 @@
 """Flow combinators for composing and transforming stream processing flows.
 
 This module provides functional combinators that work with Flow objects,
-enabling functional-style stream processing. These combinators are adapted
-from the Thunk combinators but designed specifically for async stream operations.
+enabling functional-style stream processing. These combinators are designed
+specifically for async stream operations.
 """
 
 from __future__ import annotations

@@ -115,13 +115,6 @@ class Flow(Generic[Input, Output]):
         """
         return self.to_list()
 
-    def to_thunk(self) -> Callable[[AsyncIterator[Input]], Awaitable[list[Output]]]:
-        """Convert flow to thunk for one-off execution or testing.
-
-        Returns a function that takes a stream and returns all results as a list.
-        """
-        return self.collect()
-
     async def preview(
         self, stream: AsyncIterator[Input], limit: int = 10
     ) -> list[Output]:
@@ -326,28 +319,3 @@ class Flow(Generic[Input, Output]):
             yield value
 
         return Flow(_single, name=f"pure({value})")
-
-    @staticmethod
-    def from_thunk(
-        thunk_fn: Callable[[Input], Union[Output, Awaitable[Output]]],
-    ) -> Flow[Input, Output]:
-        """Create a flow from a thunk-like function.
-
-        Args:
-            thunk_fn: Function that takes an input and returns an output (sync or async)
-
-        Returns:
-            Flow that applies the thunk function to each item
-        """
-
-        async def _wrapper(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
-            async for item in stream:
-                result = thunk_fn(item)
-                if asyncio.iscoroutine(result):
-                    yield await result
-                else:
-                    yield result
-
-        return Flow(
-            _wrapper, name=f"from_thunk({getattr(thunk_fn, '__name__', 'anonymous')})"
-        )

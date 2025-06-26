@@ -34,7 +34,7 @@ include = [
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 pytest-cov = "^6.2.1"
-typer = {extras = ["all"], version = "^0.16.0"}
+typer = { extras = ["all"], version = "^0.16.0" }
 poethepoet = "^0.35.0"
 pytest-asyncio = "^1.0.0"
 hypothesis = "^6.135.16"
@@ -45,7 +45,6 @@ test = "pytest"
 test-cov = "pytest --cov=goldentooth_agent"
 test-sanity = "pytest tests/test_sanity.py -v"
 test-maybe-await = "pytest tests/core/util/test_maybe_await.py -v"
-test-thunk = "pytest tests/core/thunk/test_main.py -v"
 test-core = "pytest tests/core/ -v"
 
 [build-system]

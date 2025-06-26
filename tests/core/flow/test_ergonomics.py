@@ -44,18 +44,6 @@ class TestFluentAPI:
         assert result == [0, 2, 4, 6, 8]
 
     @pytest.mark.asyncio
-    async def test_to_thunk_method(self):
-        """Test .to_thunk() method for thunk conversion."""
-        flow = map_stream(lambda x: x + 1)
-        input_stream = async_range(3)
-
-        # Convert to thunk and execute
-        thunk = flow.to_thunk()
-        result = await thunk(input_stream)
-
-        assert result == [1, 2, 3]
-
-    @pytest.mark.asyncio
     async def test_preview_method(self):
         """Test .preview() method for REPL development."""
         flow = map_stream(lambda x: x**2)
@@ -111,36 +99,6 @@ class TestConvenienceConstructors:
 
         assert result == ["hello"]
         assert pure_flow.name == "pure(hello)"
-
-    @pytest.mark.asyncio
-    async def test_from_thunk_constructor_sync(self):
-        """Test Flow.from_thunk() with sync function."""
-
-        def double(x):
-            return x * 2
-
-        flow = Flow.from_thunk(double)
-        input_stream = async_range(3)
-
-        result = await flow.collect()(input_stream)
-
-        assert result == [0, 2, 4]
-        assert flow.name == "from_thunk(double)"
-
-    @pytest.mark.asyncio
-    async def test_from_thunk_constructor_async(self):
-        """Test Flow.from_thunk() with async function."""
-
-        async def async_double(x):
-            return x * 2
-
-        flow = Flow.from_thunk(async_double)
-        input_stream = async_range(3)
-
-        result = await flow.collect()(input_stream)
-
-        assert result == [0, 2, 4]
-        assert flow.name == "from_thunk(async_double)"
 
 
 class TestDebuggingAndRepr:
