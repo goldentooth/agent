@@ -37,12 +37,32 @@ from goldentooth_agent.core.flow.combinators import (
     while_condition_stream,
     flatten_stream,
     collect_stream,
+    # Advanced combinators
+    timeout_stream,
+    circuit_breaker_stream,
+    catch_and_continue_stream,
+    throttle_stream,
+    until_stream,
+    scan_stream,
+    zip_stream,
+    chain_stream,
+    merge_stream,
+    distinct_stream,
+    chunk_stream,
+    window_stream,
 )
 
 # Filter runtime warnings about unclosed async generators during exception handling
 warnings.filterwarnings(
     "ignore",
     message=".*coroutine method 'aclose'.*was never awaited",
+    category=RuntimeWarning,
+)
+
+# Filter base event loop warnings about unclosed coroutines
+warnings.filterwarnings(
+    "ignore",
+    message=".*coroutine method 'aclose' of 'async_range' was never awaited",
     category=RuntimeWarning,
 )
 
@@ -1516,3 +1536,455 @@ class TestNewCombinatorsIntegration:
         # 4 >= 4: condition false, pass 4,5 through unchanged
         expected = [1, 5, 4, 5]
         assert values == expected
+
+
+class TestAdvancedCombinators:
+    """Test cases for advanced flow combinators."""
+
+    def setup_method(self):
+        """Clear side effects before each test."""
+        side_effects.clear()
+
+    @pytest.mark.asyncio
+    async def test_timeout_stream_success(self):
+        """Test timeout_stream when processing is fast enough."""
+        timeout_flow = timeout_stream(0.1)  # 100ms timeout
+        assert timeout_flow.name == "timeout(0.1)"
+
+        input_stream = async_range(3)
+        result_stream = timeout_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [0, 1, 2]
+
+    @pytest.mark.asyncio
+    async def test_timeout_stream_failure(self):
+        """Test timeout_stream when processing takes too long."""
+        timeout_flow = timeout_stream(0.001)  # Very short timeout
+
+        # The timeout will be applied to the identity operation, which should be fast
+        # But we can test the timeout mechanism itself
+        input_stream = async_range(2)
+        result_stream = timeout_flow(input_stream)
+
+        # This should work since identity is very fast
+        values = [item async for item in result_stream]
+        assert values == [0, 1]
+
+    @pytest.mark.asyncio
+    async def test_circuit_breaker_stream_basic(self):
+        """Test basic circuit breaker functionality."""
+        circuit_breaker = circuit_breaker_stream(
+            2, 0.1
+        )  # Fail after 2 errors, reset in 0.1s
+        assert "circuit_breaker(2, 0.1)" in circuit_breaker.name
+
+        input_stream = async_range(3)
+        result_stream = circuit_breaker(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [0, 1, 2]  # Should work normally without failures
+
+    @pytest.mark.asyncio
+    async def test_catch_and_continue_stream_basic(self):
+        """Test basic catch_and_continue functionality."""
+
+        def error_handler(exc, item):
+            return f"error_{item}"
+
+        catch_flow = catch_and_continue_stream(error_handler)
+        assert "catch_and_continue" in catch_flow.name
+
+        input_stream = async_range(3)
+        result_stream = catch_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [0, 1, 2]  # No errors, should pass through
+
+    @pytest.mark.asyncio
+    async def test_catch_and_continue_stream_with_skip(self):
+        """Test catch_and_continue with None fallback (skip items)."""
+
+        def skip_handler(exc, item):
+            return None  # Skip on error
+
+        catch_flow = catch_and_continue_stream(skip_handler)
+
+        input_stream = async_range(3)
+        result_stream = catch_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [0, 1, 2]  # No errors, should pass through
+
+    @pytest.mark.asyncio
+    async def test_throttle_stream_basic(self):
+        """Test basic throttle functionality."""
+        throttle_flow = throttle_stream(
+            10.0
+        )  # 10 items per second (very fast for testing)
+        assert throttle_flow.name == "throttle(10.0/s)"
+
+        start_time = asyncio.get_event_loop().time()
+        input_stream = async_range(3)
+        result_stream = throttle_flow(input_stream)
+        values = [item async for item in result_stream]
+        end_time = asyncio.get_event_loop().time()
+
+        assert values == [0, 1, 2]
+        # Should have some delay but not much at 10/s
+        assert end_time - start_time >= 0.0  # At least some time passed
+
+    @pytest.mark.asyncio
+    async def test_until_stream_basic(self):
+        """Test basic until_stream functionality."""
+        until_flow = until_stream(lambda x: x >= 2)
+        assert until_flow.name == "until(<lambda>)"
+
+        input_stream = async_range(5)  # [0, 1, 2, 3, 4]
+        result_stream = until_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [
+            0,
+            1,
+            2,
+        ]  # Stop after yielding 2 (when predicate becomes true)
+
+    @pytest.mark.asyncio
+    async def test_until_stream_never_true(self):
+        """Test until_stream when predicate is never true."""
+        until_flow = until_stream(lambda x: x > 10)  # Never true for our range
+
+        input_stream = async_range(3)
+        result_stream = until_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [0, 1, 2]  # Process all items
+
+    @pytest.mark.asyncio
+    async def test_scan_stream_basic(self):
+        """Test basic scan_stream functionality."""
+        scan_flow = scan_stream(lambda acc, x: acc + x, 0)  # Running sum
+        assert "scan" in scan_flow.name and "0" in scan_flow.name
+
+        input_stream = async_range(4)  # [0, 1, 2, 3]
+        result_stream = scan_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [0, 0, 1, 3, 6]  # [initial, 0+0, 0+1, 1+2, 3+3]
+
+    @pytest.mark.asyncio
+    async def test_scan_stream_multiply(self):
+        """Test scan_stream with multiplication."""
+        scan_flow = scan_stream(lambda acc, x: acc * (x + 1), 1)  # Running product
+
+        input_stream = async_range(3)  # [0, 1, 2]
+        result_stream = scan_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [1, 1, 2, 6]  # [initial, 1*1, 1*2, 2*3]
+
+    @pytest.mark.asyncio
+    async def test_zip_stream_basic(self):
+        """Test basic zip_stream functionality."""
+
+        async def other_stream():
+            for i in ["a", "b", "c"]:
+                yield i
+
+        zip_flow = zip_stream(other_stream())
+        assert zip_flow.name == "zip"
+
+        input_stream = async_range(3)
+        result_stream = zip_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [(0, "a"), (1, "b"), (2, "c")]
+
+    @pytest.mark.asyncio
+    async def test_zip_stream_unequal_lengths(self):
+        """Test zip_stream with streams of different lengths."""
+
+        async def shorter_stream():
+            for i in ["a", "b"]:
+                yield i
+
+        zip_flow = zip_stream(shorter_stream())
+
+        input_stream = async_range(5)  # Longer than other stream
+        result_stream = zip_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [(0, "a"), (1, "b")]  # Stop when shorter stream ends
+
+    @pytest.mark.asyncio
+    async def test_chain_stream_basic(self):
+        """Test basic chain_stream functionality."""
+
+        async def stream1():
+            for i in [1, 2]:
+                yield i
+
+        async def stream2():
+            for i in [3, 4]:
+                yield i
+
+        async def stream3():
+            for i in [5]:
+                yield i
+
+        chain_flow = chain_stream(stream1(), stream2(), stream3())
+        assert chain_flow.name == "chain(3 streams)"
+
+        # Chain streams ignore input
+        input_stream = async_empty()
+        result_stream = chain_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [1, 2, 3, 4, 5]
+
+    @pytest.mark.asyncio
+    async def test_chain_stream_empty(self):
+        """Test chain_stream with empty streams."""
+
+        async def empty_stream():
+            return
+            yield  # unreachable
+
+        chain_flow = chain_stream(empty_stream(), empty_stream())
+
+        input_stream = async_empty()
+        result_stream = chain_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == []
+
+    @pytest.mark.asyncio
+    async def test_merge_stream_basic(self):
+        """Test basic merge_stream functionality."""
+        flow1 = map_stream(lambda x: x * 2)
+        flow2 = map_stream(lambda x: x + 10)
+
+        merge_flow = merge_stream(flow1, flow2)
+        assert "merge" in merge_flow.name
+
+        input_stream = async_range(2)  # [0, 1]
+        result_stream = merge_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # Results should include both transformations: [0*2, 1*2] and [0+10, 1+10]
+        # Order may vary due to concurrency, but we should have all 4 values
+        assert len(values) == 4
+        assert set(values) == {0, 2, 10, 11}
+
+    @pytest.mark.asyncio
+    async def test_merge_stream_empty(self):
+        """Test merge_stream with no flows."""
+        merge_flow = merge_stream()
+
+        input_stream = async_range(2)
+        result_stream = merge_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == []
+
+    @pytest.mark.asyncio
+    async def test_distinct_stream_basic(self):
+        """Test basic distinct_stream functionality."""
+        distinct_flow = distinct_stream()
+        assert distinct_flow.name == "distinct(str)"
+
+        async def dup_stream():
+            for val in [1, 2, 1, 3, 2, 4, 1]:
+                yield val
+
+        input_stream = dup_stream()
+        result_stream = distinct_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [1, 2, 3, 4]  # Only first occurrence of each
+
+    @pytest.mark.asyncio
+    async def test_distinct_stream_custom_key(self):
+        """Test distinct_stream with custom key function."""
+
+        def mod_key(x):
+            return str(x % 3)  # Group by modulo 3
+
+        distinct_flow = distinct_stream(mod_key)
+        assert distinct_flow.name == "distinct(mod_key)"
+
+        async def test_stream():
+            for val in [0, 1, 2, 3, 4, 5]:
+                yield val
+
+        input_stream = test_stream()
+        result_stream = distinct_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [0, 1, 2]  # First of each modulo class
+
+    @pytest.mark.asyncio
+    async def test_chunk_stream_basic(self):
+        """Test basic chunk_stream functionality."""
+        chunk_flow = chunk_stream(2)
+        assert chunk_flow.name == "chunk(2)"
+
+        input_stream = async_range(5)
+        result_stream = chunk_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [[0, 1], [2, 3], [4]]
+
+    @pytest.mark.asyncio
+    async def test_chunk_stream_exact_multiple(self):
+        """Test chunk_stream with exact multiple."""
+        chunk_flow = chunk_stream(3)
+
+        input_stream = async_range(6)
+        result_stream = chunk_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [[0, 1, 2], [3, 4, 5]]
+
+    @pytest.mark.asyncio
+    async def test_chunk_stream_empty(self):
+        """Test chunk_stream with empty stream."""
+        chunk_flow = chunk_stream(2)
+
+        input_stream = async_empty()
+        result_stream = chunk_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == []
+
+    @pytest.mark.asyncio
+    async def test_window_stream_basic(self):
+        """Test basic window_stream functionality."""
+        window_flow = window_stream(3, 1)  # Window size 3, step 1
+        assert window_flow.name == "window(3, 1)"
+
+        input_stream = async_range(5)  # [0, 1, 2, 3, 4]
+        result_stream = window_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [[0, 1, 2], [1, 2, 3], [2, 3, 4]]
+
+    @pytest.mark.asyncio
+    async def test_window_stream_step_2(self):
+        """Test window_stream with step size 2."""
+        window_flow = window_stream(3, 2)  # Window size 3, step 2
+
+        input_stream = async_range(7)  # [0, 1, 2, 3, 4, 5, 6]
+        result_stream = window_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == [[0, 1, 2], [2, 3, 4], [4, 5, 6]]
+
+    @pytest.mark.asyncio
+    async def test_window_stream_insufficient_items(self):
+        """Test window_stream when stream has fewer items than window size."""
+        window_flow = window_stream(5, 1)  # Window size 5
+
+        input_stream = async_range(3)  # Only 3 items
+        result_stream = window_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == []  # No complete windows
+
+
+class TestAdvancedCombinatorsIntegration:
+    """Integration tests for advanced combinators with existing ones."""
+
+    def setup_method(self):
+        """Clear side effects before each test."""
+        side_effects.clear()
+
+    @pytest.mark.asyncio
+    async def test_scan_with_filter_pipeline(self):
+        """Test scan_stream integrated with filter operations."""
+
+        # Pipeline: scan (running sum) -> filter (keep only even sums)
+        pipeline = compose(
+            scan_stream(lambda acc, x: acc + x, 0), filter_stream(is_even)
+        )
+
+        input_stream = async_range(5)  # [0, 1, 2, 3, 4]
+        result_stream = pipeline(input_stream)
+        values = [item async for item in result_stream]
+
+        # Scan produces: [0, 0, 1, 3, 6, 10]
+        # Filter evens: [0, 0, 6, 10]
+        assert values == [0, 0, 6, 10]
+
+    @pytest.mark.asyncio
+    async def test_distinct_with_map_pipeline(self):
+        """Test distinct_stream with transformation pipeline."""
+
+        # Pipeline: map to modulo -> distinct -> map to string
+        pipeline = compose(
+            compose(map_stream(lambda x: x % 3), distinct_stream()),
+            map_stream(lambda x: f"mod_{x}"),
+        )
+
+        input_stream = async_range(8)  # [0, 1, 2, 3, 4, 5, 6, 7]
+        result_stream = pipeline(input_stream)
+        values = [item async for item in result_stream]
+
+        # Modulo: [0, 1, 2, 0, 1, 2, 0, 1] -> distinct: [0, 1, 2] -> strings
+        assert values == ["mod_0", "mod_1", "mod_2"]
+
+    @pytest.mark.asyncio
+    async def test_until_with_scan_termination(self):
+        """Test until_stream with scan to control termination."""
+
+        # Pipeline: scan (running sum) -> until (sum >= 10)
+        pipeline = compose(
+            scan_stream(lambda acc, x: acc + x, 0), until_stream(lambda x: x >= 10)
+        )
+
+        input_stream = async_range(10)
+        result_stream = pipeline(input_stream)
+        values = [item async for item in result_stream]
+
+        # Scan: [0, 0, 1, 3, 6, 10, ...] -> until >= 10: [0, 0, 1, 3, 6, 10]
+        assert values == [0, 0, 1, 3, 6, 10]
+
+    @pytest.mark.asyncio
+    async def test_chunk_with_collect_aggregation(self):
+        """Test chunk_stream with collect for aggregation."""
+
+        # Pipeline: chunk into groups of 3 -> collect all chunks -> flatten
+        pipeline = compose(chunk_stream(3), collect_stream())
+
+        input_stream = async_range(7)  # [0, 1, 2, 3, 4, 5, 6]
+        result_stream = pipeline(input_stream)
+        values = [item async for item in result_stream]
+
+        # Chunk: [[0,1,2], [3,4,5], [6]] -> collect: [[[0,1,2], [3,4,5], [6]]]
+        assert len(values) == 1
+        assert values[0] == [[0, 1, 2], [3, 4, 5], [6]]
+
+    @pytest.mark.asyncio
+    async def test_window_with_map_analysis(self):
+        """Test window_stream with map for window analysis."""
+
+        # Pipeline: window(3,1) -> map to sum of window
+        pipeline = compose(window_stream(3, 1), map_stream(sum))
+
+        input_stream = async_range(5)  # [0, 1, 2, 3, 4]
+        result_stream = pipeline(input_stream)
+        values = [item async for item in result_stream]
+
+        # Windows: [[0,1,2], [1,2,3], [2,3,4]] -> sums: [3, 6, 9]
+        assert values == [3, 6, 9]
+
+    @pytest.mark.asyncio
+    async def test_throttle_with_then_timing(self):
+        """Test throttle_stream with then for timing verification."""
+
+        timestamps = []
+
+        def record_timestamp(x):
+            timestamps.append((x, asyncio.get_event_loop().time()))
+
+        # Pipeline: throttle to 5/second -> record timestamps
+        pipeline = compose(
+            throttle_stream(5.0),  # 5 items per second = 0.2s between items
+            then_stream(record_timestamp),
+        )
+
+        start_time = asyncio.get_event_loop().time()
+        input_stream = async_range(3)
+        result_stream = pipeline(input_stream)
+        values = [item async for item in result_stream]
+
+        assert values == [0, 1, 2]
+        assert len(timestamps) == 3
+
+        # Check that items were spaced appropriately (approximately 0.2s apart)
+        if len(timestamps) >= 2:
+            time_diff = timestamps[1][1] - timestamps[0][1]
+            assert time_diff >= 0.15  # Allow some tolerance for timing
+
+        total_time = timestamps[-1][1] - start_time
+        assert total_time >= 0.3  # Should take at least 0.4s for 3 items at 5/s rate

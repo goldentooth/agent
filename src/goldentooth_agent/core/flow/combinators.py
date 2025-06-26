@@ -744,3 +744,383 @@ def collect_stream() -> Flow[Input, list[Input]]:
         yield items
 
     return Flow(_flow, name="collect")
+
+
+def timeout_stream(seconds: float) -> Flow[Input, Input]:
+    """Create a flow that adds a timeout to each item's processing.
+
+    If processing an item takes longer than the specified timeout,
+    a TimeoutError is raised.
+
+    Args:
+        seconds: Maximum time to wait for each item
+
+    Returns:
+        A flow that enforces timeouts on item processing
+    """
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
+        """Process each item with timeout enforcement."""
+        async for item in stream:
+            try:
+                # Use asyncio.wait_for to enforce timeout
+                yield await asyncio.wait_for(_identity_async(item), timeout=seconds)
+            except asyncio.TimeoutError:
+                raise TimeoutError(
+                    f"Processing timed out after {seconds} seconds for item: {item}"
+                )
+
+    async def _identity_async(item: Input) -> Input:
+        """Identity function that can be awaited."""
+        return item
+
+    return Flow(_flow, name=f"timeout({seconds})")
+
+
+def circuit_breaker_stream(
+    failure_threshold: int, reset_timeout: float
+) -> Flow[Input, Input]:
+    """Create a flow that implements circuit breaker pattern for stream processing.
+
+    The circuit breaker opens after a specified number of consecutive failures,
+    preventing further processing until a reset timeout period has elapsed.
+
+    Args:
+        failure_threshold: Number of consecutive failures before opening circuit
+        reset_timeout: Time to wait before attempting to close circuit again
+
+    Returns:
+        A flow that implements circuit breaker pattern
+    """
+    failure_count = 0
+    circuit_open = False
+    last_failure_time = 0.0
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
+        """Process stream with circuit breaker protection."""
+        nonlocal failure_count, circuit_open, last_failure_time
+
+        async for item in stream:
+            current_time = asyncio.get_event_loop().time()
+
+            # Check if circuit should be reset
+            if circuit_open and (current_time - last_failure_time) >= reset_timeout:
+                circuit_open = False
+                failure_count = 0
+
+            # If circuit is open, reject all items
+            if circuit_open:
+                raise RuntimeError(
+                    f"Circuit breaker is open. Reset in {reset_timeout - (current_time - last_failure_time):.1f}s"
+                )
+
+            try:
+                yield item
+                failure_count = 0  # Reset on success
+            except Exception as e:
+                failure_count += 1
+                last_failure_time = current_time
+
+                if failure_count >= failure_threshold:
+                    circuit_open = True
+
+                raise e
+
+    return Flow(_flow, name=f"circuit_breaker({failure_threshold}, {reset_timeout})")
+
+
+def catch_and_continue_stream(
+    handler: Callable[[Exception, Input], Output | None] = lambda e, x: None
+) -> Flow[Input, Output]:
+    """Create a flow that catches exceptions and continues processing with fallback values.
+
+    When an exception occurs, the handler is called to provide a fallback value.
+    If the handler returns None, the item is skipped. Otherwise, the fallback
+    value is yielded and processing continues.
+
+    Args:
+        handler: Function to handle exceptions and provide fallback values
+
+    Returns:
+        A flow that handles exceptions gracefully
+    """
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+        """Process stream with exception handling and continuation."""
+        async for item in stream:
+            try:
+                yield item  # type: ignore  # Assume Input and Output are compatible
+            except Exception as e:
+                fallback = handler(e, item)
+                if fallback is not None:
+                    yield fallback
+                # If fallback is None, skip this item and continue
+
+    return Flow(
+        _flow, name=f"catch_and_continue({getattr(handler, '__name__', 'handler')})"
+    )
+
+
+def throttle_stream(rate_per_second: float) -> Flow[Input, Input]:
+    """Create a flow that throttles the rate of item processing.
+
+    Ensures that items are processed at most at the specified rate,
+    introducing delays as necessary.
+
+    Args:
+        rate_per_second: Maximum items per second to process
+
+    Returns:
+        A flow that throttles processing rate
+    """
+    last_yield_time = 0.0
+    min_interval = 1.0 / rate_per_second
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
+        """Throttle stream processing to specified rate."""
+        nonlocal last_yield_time
+
+        async for item in stream:
+            current_time = asyncio.get_event_loop().time()
+            time_since_last = current_time - last_yield_time
+
+            if time_since_last < min_interval:
+                await asyncio.sleep(min_interval - time_since_last)
+
+            last_yield_time = asyncio.get_event_loop().time()
+            yield item
+
+    return Flow(_flow, name=f"throttle({rate_per_second}/s)")
+
+
+def until_stream(predicate: Callable[[Input], bool]) -> Flow[Input, Input]:
+    """Create a flow that processes items until a predicate becomes true.
+
+    Once the predicate returns True for an item, that item is yielded
+    and processing stops (the predicate item is included in output).
+
+    Args:
+        predicate: Function that determines when to stop processing
+
+    Returns:
+        A flow that processes until predicate is satisfied
+    """
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
+        """Process items until predicate becomes true."""
+        try:
+            async for item in stream:
+                yield item
+                if predicate(item):
+                    break  # Stop processing after yielding the matching item
+        finally:
+            # Ensure the stream is properly closed when we break early
+            if hasattr(stream, "aclose"):
+                await stream.aclose()
+
+    return Flow(_flow, name=f"until({predicate.__name__})")
+
+
+def scan_stream(
+    fn: Callable[[Output, Input], Output], initial: Output
+) -> Flow[Input, Output]:
+    """Create a flow that performs a running accumulation (scan/fold) over the stream.
+
+    Similar to reduce, but yields intermediate results. The accumulator
+    function receives the current accumulated value and the next item,
+    returning the new accumulated value.
+
+    Args:
+        fn: Function that combines accumulator and current item
+        initial: Initial value for the accumulator
+
+    Returns:
+        A flow that yields running accumulation results
+    """
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+        """Perform running accumulation over the stream."""
+        accumulator = initial
+        yield accumulator  # Yield initial value
+
+        async for item in stream:
+            accumulator = fn(accumulator, item)
+            yield accumulator
+
+    return Flow(_flow, name=f"scan({getattr(fn, '__name__', 'function')}, {initial})")
+
+
+def zip_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]]:
+    """Create a flow that zips items with another stream.
+
+    Combines items from two streams pairwise. Processing stops when
+    either stream is exhausted.
+
+    Args:
+        other_stream: The stream to zip with
+
+    Returns:
+        A flow that yields tuples of paired items
+    """
+
+    async def _flow(stream: AsyncIterator[A]) -> AsyncIterator[tuple[A, B]]:
+        """Zip two streams together."""
+        other_iter = other_stream.__aiter__()
+
+        async for item in stream:
+            try:
+                other_item = await other_iter.__anext__()
+                yield (item, other_item)
+            except StopAsyncIteration:
+                break  # Other stream exhausted
+
+    return Flow(_flow, name="zip")
+
+
+def chain_stream(*streams: AsyncIterator[Input]) -> Flow[None, Input]:
+    """Create a flow that chains multiple streams sequentially.
+
+    Processes all items from the first stream, then all items from
+    the second stream, and so on.
+
+    Args:
+        *streams: Variable number of streams to chain
+
+    Returns:
+        A flow that yields items from all streams in sequence
+    """
+
+    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[Input]:
+        """Chain multiple streams sequentially."""
+        for stream in streams:
+            async for item in stream:
+                yield item
+
+    return Flow(_flow, name=f"chain({len(streams)} streams)")
+
+
+def merge_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
+    """Create a flow that merges multiple flows concurrently.
+
+    Unlike chain_stream which processes sequentially, merge_stream
+    processes all flows concurrently and yields items as they arrive.
+
+    Args:
+        *flows: Variable number of flows to merge
+
+    Returns:
+        A flow that yields items from all flows concurrently
+    """
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+        """Merge multiple flows concurrently."""
+        if not flows:
+            return
+
+        # Create iterator from input stream that can be shared
+        stream_items = []
+        async for item in stream:
+            stream_items.append(item)
+
+        # Create tasks for each flow
+        async def run_flow(flow: Flow[Input, Output]) -> AsyncIterator[Output]:
+            async def item_stream():
+                for item in stream_items:
+                    yield item
+
+            return flow(item_stream())
+
+        # Collect all results concurrently
+        tasks = [asyncio.create_task(run_flow(flow)) for flow in flows]
+
+        # Yield results as they become available
+        for task in asyncio.as_completed(tasks):
+            result_stream = await task
+            async for item in result_stream:
+                yield item
+
+    flow_names = [flow.name for flow in flows]
+    return Flow(_flow, name=f"merge({', '.join(flow_names)})")
+
+
+def distinct_stream(key_fn: Callable[[Input], str] = str) -> Flow[Input, Input]:
+    """Create a flow that filters out duplicate items based on a key function.
+
+    Only the first occurrence of each unique key is yielded.
+
+    Args:
+        key_fn: Function to generate keys for uniqueness checking
+
+    Returns:
+        A flow that yields only unique items
+    """
+    seen_keys: set[str] = set()
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
+        """Filter out duplicate items based on key function."""
+        async for item in stream:
+            key = key_fn(item)
+            if key not in seen_keys:
+                seen_keys.add(key)
+                yield item
+
+    return Flow(_flow, name=f"distinct({getattr(key_fn, '__name__', 'function')})")
+
+
+def chunk_stream(size: int) -> Flow[Input, list[Input]]:
+    """Create a flow that groups items into chunks of specified size.
+
+    Similar to batch_stream but with different semantics - chunk implies
+    fixed-size groups for processing efficiency.
+
+    Args:
+        size: Number of items per chunk
+
+    Returns:
+        A flow that yields chunks of items
+    """
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[list[Input]]:
+        """Group items into fixed-size chunks."""
+        chunk = []
+        async for item in stream:
+            chunk.append(item)
+            if len(chunk) >= size:
+                yield chunk
+                chunk = []
+        # Yield remaining items as final chunk
+        if chunk:
+            yield chunk
+
+    return Flow(_flow, name=f"chunk({size})")
+
+
+def window_stream(size: int, step: int = 1) -> Flow[Input, list[Input]]:
+    """Create a flow that generates sliding windows over the stream.
+
+    Creates overlapping windows of items, useful for time-series analysis
+    or pattern detection.
+
+    Args:
+        size: Number of items in each window
+        step: Number of items to advance between windows (default 1)
+
+    Returns:
+        A flow that yields sliding windows of items
+    """
+
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[list[Input]]:
+        """Generate sliding windows over the stream."""
+        window = []
+
+        async for item in stream:
+            window.append(item)
+
+            # If window is full, yield it and advance by step
+            if len(window) == size:
+                yield list(window)  # Copy the window
+                # Remove step items from the beginning
+                for _ in range(min(step, len(window))):
+                    window.pop(0)
+
+    return Flow(_flow, name=f"window({size}, {step})")

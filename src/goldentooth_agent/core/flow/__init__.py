@@ -30,6 +30,19 @@ from .combinators import (
     while_condition_stream,
     flatten_stream,
     collect_stream,
+    # Advanced combinators
+    timeout_stream,
+    circuit_breaker_stream,
+    catch_and_continue_stream,
+    throttle_stream,
+    until_stream,
+    scan_stream,
+    zip_stream,
+    chain_stream,
+    merge_stream,
+    distinct_stream,
+    chunk_stream,
+    window_stream,
 )
 
 __all__ = [
@@ -70,4 +83,17 @@ __all__ = [
     "range_flow",
     "repeat_flow",
     "empty_flow",
+    # Advanced combinators
+    "timeout_stream",
+    "circuit_breaker_stream",
+    "catch_and_continue_stream",
+    "throttle_stream",
+    "until_stream",
+    "scan_stream",
+    "zip_stream",
+    "chain_stream",
+    "merge_stream",
+    "distinct_stream",
+    "chunk_stream",
+    "window_stream",
 ]
