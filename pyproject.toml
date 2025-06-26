@@ -36,11 +36,13 @@ pytest = "^8.4.1"
 pytest-cov = "^6.2.1"
 typer = {extras = ["all"], version = "^0.16.0"}
 poethepoet = "^0.35.0"
+pytest-asyncio = "^1.0.0"
 
 [tool.poe.tasks]
 test = "pytest"
 test-cov = "pytest --cov=goldentooth_agent"
 test-sanity = "pytest tests/test_sanity.py -v"
+test-maybe-await = "pytest tests/test_maybe_await.py -v"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
