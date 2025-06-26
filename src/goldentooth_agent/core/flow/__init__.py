@@ -23,6 +23,14 @@ from .combinators import (
     range_flow,
     repeat_flow,
     empty_flow,
+    # New core combinators
+    flat_map_ctx_stream,
+    guard_stream,
+    then_stream,
+    memoize_stream,
+    while_condition_stream,
+    flatten_stream,
+    collect_stream,
 )
 
 __all__ = [
@@ -33,24 +41,32 @@ __all__ = [
     "filter_stream",
     "map_stream",
     "flat_map_stream",
+    "flat_map_ctx_stream",
     # Utility combinators
     "log_stream",
     "identity_stream",
     "if_then_stream",
     "tap_stream",
+    "then_stream",
     "delay_stream",
     "recover_stream",
+    "guard_stream",
     # Stream manipulation
     "take_stream",
     "skip_stream",
     "batch_stream",
     "debounce_stream",
+    "collect_stream",
+    "flatten_stream",
     # Control flow
     "retry_stream",
     "switch_stream",
     "race_stream",
     "parallel_stream",
     "parallel_stream_successful",
+    "while_condition_stream",
+    # Caching
+    "memoize_stream",
     # Source flows
     "range_flow",
     "repeat_flow",

@@ -49,7 +49,9 @@ class Flow(Generic[Input, Output]):
 
         return Flow(_filtered, name=f"{self.name}.filter({predicate.__name__})")
 
-    def flat_map(self, fn: Callable[[Output], AsyncIterator[Newput]]) -> Flow[Input, Newput]:
+    def flat_map(
+        self, fn: Callable[[Output], AsyncIterator[Newput]]
+    ) -> Flow[Input, Newput]:
         """Flat map a function over the output of the flow."""
 
         async def _flatmapped(stream: AsyncIterator[Input]) -> AsyncIterator[Newput]:
@@ -114,7 +116,9 @@ class Flow(Generic[Input, Output]):
         return Flow(_wrapper, name=fn.__name__)
 
     @staticmethod
-    def from_event_fn(fn: Callable[[Input], AsyncIterator[Output]]) -> Flow[Input, Output]:
+    def from_event_fn(
+        fn: Callable[[Input], AsyncIterator[Output]],
+    ) -> Flow[Input, Output]:
         """Create a flow from an async function that returns an async iterator."""
 
         async def _wrapper(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
