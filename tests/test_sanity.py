@@ -11,7 +11,7 @@ def test_imports():
     import goldentooth_agent.cli.main
     import goldentooth_agent.cli.commands.chat
     import goldentooth_agent.cli.commands.tools
-    
+
     # Test core module
     import goldentooth_agent.core
 
