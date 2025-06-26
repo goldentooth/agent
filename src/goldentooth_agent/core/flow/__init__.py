@@ -6,6 +6,67 @@ from .exceptions import (
     FlowTimeoutError,
     FlowConfigurationError,
 )
+
+# Performance monitoring
+from .performance import (
+    FlowMetrics,
+    PerformanceMonitor,
+    monitored_stream,
+    performance_stream,
+    benchmark_stream,
+    get_performance_monitor,
+    enable_memory_tracking,
+    get_performance_summary,
+    export_performance_metrics,
+)
+
+# Debugging and introspection
+from .debugging import (
+    FlowExecutionContext,
+    FlowDebugger,
+    debug_stream,
+    traced_flow,
+    get_flow_debugger,
+    enable_flow_debugging,
+    disable_flow_debugging,
+    add_flow_breakpoint,
+    remove_flow_breakpoint,
+    get_execution_trace,
+    export_execution_trace,
+    inspect_flow,
+    debug_session,
+)
+
+# Health monitoring and configuration validation
+from .health import (
+    HealthStatus,
+    HealthCheck,
+    HealthCheckResult,
+    SystemHealth,
+    FlowHealthMonitor,
+    FlowConfigValidator,
+    health_check_stream,
+    get_health_monitor,
+    get_config_validator,
+    check_system_health,
+    validate_flow_configuration,
+    register_health_check,
+    export_health_report,
+)
+
+# Flow analysis and composition tools
+from .analysis import (
+    FlowNode,
+    FlowEdge,
+    FlowGraph,
+    FlowAnalyzer,
+    analyze_flow,
+    analyze_flow_composition,
+    detect_flow_patterns,
+    generate_flow_optimizations,
+    export_flow_analysis,
+    get_flow_analyzer,
+)
 from .combinators import (
     run_fold,
     compose,
@@ -82,6 +143,55 @@ __all__ = [
     "FlowExecutionError",
     "FlowTimeoutError",
     "FlowConfigurationError",
+    # Performance monitoring
+    "FlowMetrics",
+    "PerformanceMonitor",
+    "monitored_stream",
+    "performance_stream",
+    "benchmark_stream",
+    "get_performance_monitor",
+    "enable_memory_tracking",
+    "get_performance_summary",
+    "export_performance_metrics",
+    # Debugging and introspection
+    "FlowExecutionContext",
+    "FlowDebugger",
+    "debug_stream",
+    "traced_flow",
+    "get_flow_debugger",
+    "enable_flow_debugging",
+    "disable_flow_debugging",
+    "add_flow_breakpoint",
+    "remove_flow_breakpoint",
+    "get_execution_trace",
+    "export_execution_trace",
+    "inspect_flow",
+    "debug_session",
+    # Health monitoring and configuration validation
+    "HealthStatus",
+    "HealthCheck",
+    "HealthCheckResult",
+    "SystemHealth",
+    "FlowHealthMonitor",
+    "FlowConfigValidator",
+    "health_check_stream",
+    "get_health_monitor",
+    "get_config_validator",
+    "check_system_health",
+    "validate_flow_configuration",
+    "register_health_check",
+    "export_health_report",
+    # Flow analysis and composition tools
+    "FlowNode",
+    "FlowEdge",
+    "FlowGraph",
+    "FlowAnalyzer",
+    "analyze_flow",
+    "analyze_flow_composition",
+    "detect_flow_patterns",
+    "generate_flow_optimizations",
+    "export_flow_analysis",
+    "get_flow_analyzer",
     # Core combinators
     "run_fold",
     "compose",
