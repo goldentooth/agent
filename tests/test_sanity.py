@@ -29,7 +29,7 @@ def test_chat_command_exists():
     runner = CliRunner()
     result = runner.invoke(app, ["chat", "--help"])
     assert result.exit_code == 0
-    assert "Start a chat session" in result.stdout
+    assert "Start an interactive chat session" in result.stdout
 
 
 def test_tools_command_exists():
@@ -45,4 +45,4 @@ def test_tools_list_command_exists():
     runner = CliRunner()
     result = runner.invoke(app, ["tools", "list", "--help"])
     assert result.exit_code == 0
-    assert "List available tools" in result.stdout
+    assert "List all available tools" in result.stdout

@@ -17,7 +17,32 @@ TNew = TypeVar("TNew")
 
 
 class Thunk(Generic[TIn, TOut]):
-    """A thunk is a callable that takes a context and returns an optional output."""
+    """A composable async computation that transforms input contexts to output values.
+    
+    Thunks are the core abstraction for building modular, composable operations in
+    the Goldentooth Agent framework. They wrap both synchronous and asynchronous
+    functions in a uniform interface that enables functional composition patterns.
+    
+    Key features:
+    - Uniform async interface (sync functions are auto-wrapped)
+    - Functional composition via map, flat_map, chain, etc.
+    - Control flow operations (repeat, while, conditional)
+    - Error handling and recovery patterns
+    - Metadata and naming for debugging/visualization
+    
+    Type Parameters:
+        TIn: The input context type
+        TOut: The output value type
+        
+    Example:
+        # Create thunks from functions
+        increment = Thunk(lambda x: x + 1, name="increment")
+        double = Thunk(lambda x: x * 2, name="double")
+        
+        # Compose them into pipelines
+        pipeline = increment.chain(double)  # or increment >> double
+        result = await pipeline(5)  # Returns 12: (5 + 1) * 2
+    """
 
     def __init__(
         self,
@@ -29,11 +54,12 @@ class Thunk(Generic[TIn, TOut]):
         if not callable(fn):
             raise TypeError("Thunk requires a callable")
         if not inspect.iscoroutinefunction(fn):
-            # If the function is not a coroutine, wrap it to ensure it can be awaited
+            # Wrap synchronous functions in an async wrapper so all thunks can be uniformly awaited.
+            # This allows both sync and async functions to be used interchangeably in thunk composition.
             original_fn = fn  # Store reference to original function before reassignment
 
             async def _wrapper(ctx: TIn) -> TOut:
-                """Wrap the function to ensure it can be awaited."""
+                """Wrap synchronous function to make it awaitable while preserving its behavior."""
                 return original_fn(ctx)  # type: ignore
 
             fn = _wrapper
@@ -75,7 +101,29 @@ class Thunk(Generic[TIn, TOut]):
         return Thunk(_filtered, name=f"{self.name}.filter({predicate.__name__})")
 
     def flat_map(self, fn: Callable[[TOut], Thunk[TIn, TNew]]) -> Thunk[TIn, TNew]:
-        """Flat-map a function over the result of the thunk."""
+        """Apply a function that returns a thunk, then execute that thunk with the original context.
+        
+        This is the monadic bind operation for thunks. The function receives the result
+        of this thunk and returns a new thunk, which is then executed with the original
+        context. Useful for conditional or dynamic thunk composition.
+        
+        Args:
+            fn: Function that takes this thunk's result and returns a new thunk
+            
+        Returns:
+            A new thunk that executes both operations in sequence
+            
+        Example:
+            def create_thunk(result):
+                if result > 0:
+                    return Thunk(lambda x: x * 2, name="double")
+                else:
+                    return Thunk(lambda x: x + 10, name="add_ten")
+            
+            base = Thunk(lambda x: x - 5, name="subtract")
+            dynamic = base.flat_map(create_thunk)
+            # Behavior depends on whether (input - 5) is positive
+        """
 
         async def _flat(ctx: TIn) -> TNew:
             """Call the thunk, get the result, and apply the function to it."""
@@ -84,7 +132,25 @@ class Thunk(Generic[TIn, TOut]):
         return Thunk(_flat, name=f"{self.name}.flat_map({fn.__name__})")
 
     def then(self, next_thunk: Thunk[TIn, TNew]) -> Thunk[TIn, TNew]:
-        """Run the next thunk, discarding the result of the current one."""
+        """Execute this thunk for side effects, then run the next thunk with the same context.
+        
+        The result of this thunk is discarded, making this useful for sequencing
+        operations where you care about the side effects (like logging or state changes)
+        but want to use the original context for the next operation.
+        
+        Args:
+            next_thunk: The thunk to execute after this one
+            
+        Returns:
+            A thunk that runs both operations but returns only the second result
+            
+        Example:
+            log_thunk = Thunk(lambda x: print(f"Processing: {x}"), name="log")
+            process_thunk = Thunk(lambda x: x * 2, name="double")
+            
+            pipeline = log_thunk.then(process_thunk)
+            # Logs the input, then returns the doubled value
+        """
 
         async def _thunk(ctx: TIn) -> TNew:
             """Call this thunk, then run the next thunk with the same context."""
@@ -109,7 +175,22 @@ class Thunk(Generic[TIn, TOut]):
     def repeat(self: Thunk[TIn, TOut], times: int) -> NoReturn: ...
 
     def repeat(self, times: int):
-        """Repeat this thunk a specified number of times."""
+        """Repeat this thunk a specified number of times.
+        
+        IMPORTANT: This method only works for thunks where input and output types are the same,
+        since the output of each iteration becomes the input to the next iteration.
+        
+        Args:
+            times: Number of times to repeat the thunk execution
+            
+        Returns:
+            A thunk that applies this operation repeatedly
+            
+        Example:
+            increment = Thunk(lambda x: x + 1, name="inc")
+            add_five = increment.repeat(5)
+            result = await add_five(10)  # Returns 15
+        """
         from .combinators import repeat
 
         return repeat(times, self)  # type: ignore
@@ -124,7 +205,22 @@ class Thunk(Generic[TIn, TOut]):
     ) -> NoReturn: ...
 
     def while_(self, condition: Callable[[TIn], bool]):
-        """Repeat this thunk while the condition is true."""
+        """Repeat this thunk while the condition remains true.
+        
+        IMPORTANT: This method only works for thunks where input and output types are the same,
+        since each iteration's output becomes the next iteration's input.
+        
+        Args:
+            condition: Function that takes the current context and returns True to continue
+            
+        Returns:
+            A thunk that repeats this operation until the condition becomes False
+            
+        Example:
+            increment = Thunk(lambda x: x + 1, name="inc")
+            count_to_10 = increment.while_(lambda x: x < 10)
+            result = await count_to_10(5)  # Returns 10
+        """
         from .combinators import while_true
 
         return while_true(condition, self)  # type: ignore
@@ -156,11 +252,37 @@ class Thunk(Generic[TIn, TOut]):
         return Thunk(_chained, name=f"{self.name} → {next_thunk.name}")
 
     def label(self, name: str) -> Thunk[TIn, TOut]:
-        """Add a print/logging label."""
+        """Add a debug label that prints when this thunk executes.
+        
+        Convenience method for adding print-based debugging to thunk pipelines.
+        The label is printed to stdout when the thunk executes, then the
+        original result is passed through unchanged.
+        
+        Args:
+            name: The label to print when this thunk executes
+            
+        Returns:
+            A thunk that prints the label and passes the result through
+        """
         return self.tap(lambda _: print(f"[{name}]"))
 
     def __rshift__(self, other: Thunk[TOut, TNew]) -> Thunk[TIn, TNew]:
-        """Compose this thunk with another, where the output of this is the input to the other."""
+        """Operator overload for chaining thunks with >> syntax.
+        
+        Enables pipeline-style composition where the output of this thunk
+        becomes the input to the next thunk. Equivalent to self.chain(other).
+        
+        Args:
+            other: The thunk to execute after this one
+            
+        Returns:
+            A composed thunk that executes both operations in sequence
+            
+        Example:
+            increment = Thunk(lambda x: x + 1, name="inc")
+            double = Thunk(lambda x: x * 2, name="double")
+            pipeline = increment >> double  # Same as increment.chain(double)
+        """
         return self.chain(other)
 
     def compose_chain(self, *thunks: Thunk[Any, Any]) -> Thunk[TIn, Any]:

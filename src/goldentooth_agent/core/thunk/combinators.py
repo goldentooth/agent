@@ -17,7 +17,23 @@ TC = TypeVar("TC")
 
 
 async def run_fold(ctx: TIn, steps: list[Thunk[TIn, TIn]]) -> TIn:
-    """Run a series of thunks in sequence, passing the context through each."""
+    """Execute a list of thunks sequentially, threading the context through each step.
+    
+    This is a fold/reduce operation where each thunk receives the output of the
+    previous thunk as its input. Useful for building sequential processing pipelines.
+    
+    Args:
+        ctx: The initial context value
+        steps: List of thunks to execute in order
+        
+    Returns:
+        The final context value after all steps have been executed
+        
+    Example:
+        increment = Thunk(lambda x: x + 1, name="inc")
+        double = Thunk(lambda x: x * 2, name="double")
+        result = await run_fold(5, [increment, double])  # Returns 12: (5+1)*2
+    """
     for step in steps:
         ctx = await step(ctx)
     return ctx
@@ -111,11 +127,20 @@ def guard(predicate: Callable[[TIn], bool]) -> Thunk[TIn, TIn]:
 def log_ctx(
     name: str, *, prefix: str = "", level: int = logging.DEBUG
 ) -> Thunk[TIn, TIn]:
-    """Create a thunk that logs the context to the console."""
+    """Create a thunk that logs the context value and returns it unchanged.
+    
+    Useful for debugging thunk pipelines by observing intermediate values
+    without affecting the data flow.
+    
+    Args:
+        name: Name for the thunk (used in pipeline visualization)
+        prefix: Optional prefix to add before the logged context
+        level: Logging level (defaults to DEBUG)
+    """
 
-    @inject
+    @inject  # Uses dependency injection to access the logger
     async def _thunk(ctx: TIn) -> TIn:
-        """Log the context to the console."""
+        """Log the context value and pass it through unchanged."""
         logger.log(level, f"{prefix}{ctx}")
         return ctx
 
@@ -213,11 +238,25 @@ def recover(
 
 
 def memoize(fn: Callable[[TIn], Awaitable[TOut]]) -> Thunk[TIn, TOut]:
-    """Create a thunk that caches the result of a function based on its input context."""
-    cache = {}
+    """Create a thunk that caches function results based on input context.
+    
+    Uses a simple in-memory dictionary cache with context values as keys.
+    Cache is bound to this specific memoized instance and persists for its lifetime.
+    
+    WARNING: The cache grows unbounded and may cause memory leaks for long-running
+    processes with many unique inputs. Consider using a more sophisticated cache
+    with size limits or TTL for production use.
+    
+    Args:
+        fn: The async function to memoize
+        
+    Returns:
+        A thunk that caches results keyed by context value
+    """
+    cache = {}  # Simple unbounded cache - consider LRU cache for production
 
     async def _thunk(ctx: TIn) -> TOut:
-        """Check the cache for the context, if not found, call the function and cache the result."""
+        """Check cache first, compute and store result if cache miss."""
         if ctx in cache:
             return cache[ctx]
         result = await fn(ctx)
