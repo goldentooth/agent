@@ -1,5 +1,0 @@
-id: 'nate'
-name: 'Nate'
-color: 'blue'
-context_providers:
-  - 'nate'

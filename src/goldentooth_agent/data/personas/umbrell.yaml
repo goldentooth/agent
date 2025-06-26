@@ -1,5 +1,0 @@
-id: 'umbrell'
-name: 'Mr. Umbrell Severin'
-color: 'gray'
-context_providers:
-  - 'umbrell'

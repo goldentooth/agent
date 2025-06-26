@@ -1,5 +1,0 @@
-id: 'calliope'
-name: 'Madam Calliope Harkthorn'
-color: 'red'
-context_providers:
-  - 'calliope'

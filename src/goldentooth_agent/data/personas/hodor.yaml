@@ -1,5 +1,0 @@
-id: 'hodor'
-name: 'Hodor'
-color: 'blue'
-context_providers:
-  - 'hodor'

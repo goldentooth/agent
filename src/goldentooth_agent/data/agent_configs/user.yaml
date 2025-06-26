@@ -1,5 +1,0 @@
-id: 'user'
-client: 'intake'
-model: 'intake'
-max_tokens: 4096
-temperature: 0.7

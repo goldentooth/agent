@@ -1,5 +1,0 @@
-id: 'caudex'
-name: 'Dr. Caudex Thorne'
-color: 'brown'
-context_providers:
-  - 'caudex'
