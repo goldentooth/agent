@@ -37,6 +37,8 @@ pytest-cov = "^6.2.1"
 typer = {extras = ["all"], version = "^0.16.0"}
 poethepoet = "^0.35.0"
 pytest-asyncio = "^1.0.0"
+hypothesis = "^6.135.16"
+psutil = "^7.0.0"
 
 [tool.poe.tasks]
 test = "pytest"

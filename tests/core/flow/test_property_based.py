@@ -477,7 +477,6 @@ class FlowStateMachine(RuleBasedStateMachine):
 
 
 # Configure hypothesis for faster test runs during development
-@settings(max_examples=50, deadline=5000)
 class TestFlowStateMachine:
     """Test runner for the Flow state machine."""
 

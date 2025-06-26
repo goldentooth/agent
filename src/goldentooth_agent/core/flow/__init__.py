@@ -67,6 +67,17 @@ from .analysis import (
     export_flow_analysis,
     get_flow_analyzer,
 )
+
+# Flow registry and discoverability
+from .registry import (
+    FlowRegistry,
+    flow_registry,
+    register_flow,
+    get_flow,
+    list_flows,
+    search_flows,
+    registered_flow,
+)
 from .combinators import (
     run_fold,
     compose,
@@ -192,6 +203,14 @@ __all__ = [
     "generate_flow_optimizations",
     "export_flow_analysis",
     "get_flow_analyzer",
+    # Flow registry and discoverability
+    "FlowRegistry",
+    "flow_registry",
+    "register_flow",
+    "get_flow",
+    "list_flows",
+    "search_flows",
+    "registered_flow",
     # Core combinators
     "run_fold",
     "compose",

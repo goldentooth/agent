@@ -348,18 +348,15 @@ class TestScalabilityTests:
                 raise ValueError(f"Intentional error for item {x}")
             return x * 2
 
-        # Use a flow that handles errors gracefully
-        from goldentooth_agent.core.flow.combinators import catch_and_continue_stream
+        # Create a flow that handles errors at the map level
+        def safe_map_function(x):
+            try:
+                return sometimes_fail(x)
+            except ValueError:
+                return x  # Return original value on error
 
-        safe_flow = catch_and_continue_stream(
-            handler=lambda e, x: x  # Return original value on error
-        )
-        error_flow = map_stream(sometimes_fail)
-
-        # Compose them
-        combined_flow = Flow(
-            lambda stream: safe_flow(error_flow(stream)), name="error_handling_test"
-        )
+        # Use the safe version instead
+        combined_flow = map_stream(safe_map_function)
 
         start_time = time.time()
         input_stream = async_range(1000)

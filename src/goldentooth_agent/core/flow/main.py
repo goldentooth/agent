@@ -6,6 +6,7 @@ from typing import (
     Callable,
     Generic,
     Any,
+    Union,
 )
 import asyncio
 
@@ -29,6 +30,18 @@ class Flow(Generic[Input, Output]):
     def __call__(self, stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
         """Call the flow with the given stream and return an async iterator."""
         return self.fn(stream)
+
+    def __repr__(self) -> str:
+        """Rich representation for debugging and development."""
+        return (
+            f"<Flow name='{self.name}' fn={self.fn.__name__} metadata={self.metadata}>"
+        )
+
+    def __aiter__(self):
+        """Prevent direct iteration - flows must be called with a stream."""
+        raise TypeError(
+            "Flows must be called with a stream to get an iterator (e.g., flow(stream))"
+        )
 
     def map(self, fn: Callable[[Output], Newput]) -> Flow[Input, Newput]:
         """Map a function over the output of the flow."""
@@ -95,38 +108,164 @@ class Flow(Generic[Input, Output]):
 
         return Flow(_labeled, name=f"{self.name}.label({label})")
 
+    def collect(self) -> Callable[[AsyncIterator[Input]], Awaitable[list[Output]]]:
+        """Ergonomic method to collect all items into a list.
+
+        This is equivalent to to_list() but more discoverable in fluent APIs.
+        """
+        return self.to_list()
+
+    def to_thunk(self) -> Callable[[AsyncIterator[Input]], Awaitable[list[Output]]]:
+        """Convert flow to thunk for one-off execution or testing.
+
+        Returns a function that takes a stream and returns all results as a list.
+        """
+        return self.collect()
+
+    async def preview(
+        self, stream: AsyncIterator[Input], limit: int = 10
+    ) -> list[Output]:
+        """Preview the first few items from a flow for REPL/Jupyter development.
+
+        Args:
+            stream: Input stream to process
+            limit: Maximum number of items to collect
+
+        Returns:
+            List of up to `limit` items from the flow
+        """
+        results = []
+        count = 0
+        async for item in self(stream):
+            results.append(item)
+            count += 1
+            if count >= limit:
+                break
+        return results
+
+    def print(self) -> Flow[Input, Output]:
+        """Print flow information for debugging (chainable).
+
+        Returns:
+            Self for method chaining
+        """
+        print(f"📦 Flow<{self.name}> :: {self.fn.__name__}")
+        if self.metadata:
+            print("  metadata:", self.metadata)
+        return self
+
+    def with_fallback(self, default: Output) -> Flow[Input, Output]:
+        """Add a fallback value that's yielded if the flow produces no items.
+
+        Args:
+            default: Value to yield if the flow is empty
+
+        Returns:
+            New flow that yields the default value if original flow is empty
+        """
+
+        async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+            yielded_any = False
+            async for item in self(stream):
+                yielded_any = True
+                yield item
+            if not yielded_any:
+                yield default
+
+        return Flow(_flow, name=f"{self.name}.with_fallback({default})")
+
+    def batch(self, size: int) -> Flow[Input, list[Output]]:
+        """Batch the output into groups of the specified size.
+
+        Args:
+            size: Number of items per batch
+
+        Returns:
+            Flow that yields lists of items
+        """
+        from .combinators import batch_stream
+
+        async def _batched(stream: AsyncIterator[Input]) -> AsyncIterator[list[Output]]:
+            async for batch in batch_stream(size)(self(stream)):
+                yield batch
+
+        return Flow(_batched, name=f"{self.name}.batch({size})")
+
     @staticmethod
-    def from_value_fn(fn: Callable[[Input], Awaitable[Output]]) -> Flow[Input, Output]:
-        """Create a flow from an async function that takes an input and returns an output."""
+    def from_value_fn(
+        fn: Callable[[Input], Awaitable[Output]] = None,
+    ) -> Union[Flow[Input, Output], Callable]:
+        """Create a flow from an async function that takes an input and returns an output.
 
-        async def _wrapper(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
-            async for item in stream:
-                yield await fn(item)
+        Can be used as a decorator:
+            @Flow.from_value_fn
+            async def process(item):
+                return await some_async_operation(item)
+        """
 
-        return Flow(_wrapper, name=fn.__name__)
+        def decorator(f: Callable[[Input], Awaitable[Output]]) -> Flow[Input, Output]:
+            async def _wrapper(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+                async for item in stream:
+                    yield await f(item)
+
+            return Flow(_wrapper, name=f.__name__)
+
+        if fn is None:
+            return decorator
+        else:
+            return decorator(fn)
 
     @staticmethod
-    def from_sync_fn(fn: Callable[[Input], Output]) -> Flow[Input, Output]:
-        """Create a flow from a synchronous function that takes an input and returns an output."""
+    def from_sync_fn(
+        fn: Callable[[Input], Output] = None,
+    ) -> Union[Flow[Input, Output], Callable]:
+        """Create a flow from a synchronous function that takes an input and returns an output.
 
-        async def _wrapper(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
-            async for item in stream:
-                yield fn(item)
+        Can be used as a decorator:
+            @Flow.from_sync_fn
+            def double(x):
+                return x * 2
+        """
 
-        return Flow(_wrapper, name=fn.__name__)
+        def decorator(f: Callable[[Input], Output]) -> Flow[Input, Output]:
+            async def _wrapper(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+                async for item in stream:
+                    yield f(item)
+
+            return Flow(_wrapper, name=f.__name__)
+
+        if fn is None:
+            return decorator
+        else:
+            return decorator(fn)
 
     @staticmethod
     def from_event_fn(
-        fn: Callable[[Input], AsyncIterator[Output]],
-    ) -> Flow[Input, Output]:
-        """Create a flow from an async function that returns an async iterator."""
+        fn: Callable[[Input], AsyncIterator[Output]] = None,
+    ) -> Union[Flow[Input, Output], Callable]:
+        """Create a flow from an async function that returns an async iterator.
 
-        async def _wrapper(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
-            async for item in stream:
-                async for sub in fn(item):
-                    yield sub
+        Can be used as a decorator:
+            @Flow.from_event_fn
+            async def split_lines(text):
+                for line in text.split('\\n'):
+                    yield line
+        """
 
-        return Flow(_wrapper, name=fn.__name__)
+        def decorator(
+            f: Callable[[Input], AsyncIterator[Output]],
+        ) -> Flow[Input, Output]:
+            async def _wrapper(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+                async for item in stream:
+                    async for sub in f(item):
+                        yield sub
+
+            return Flow(_wrapper, name=f.__name__)
+
+        if fn is None:
+            return decorator
+        else:
+            return decorator(fn)
 
     @staticmethod
     def from_iterable(iterable: list[Input]) -> Flow[None, Input]:
@@ -157,3 +296,58 @@ class Flow(Generic[Input, Output]):
                 yield item
 
         return Flow(_stream, name="from_emitter")
+
+    @staticmethod
+    def identity() -> Flow[Input, Input]:
+        """Create an identity flow that passes items through unchanged.
+
+        Returns:
+            Flow that yields each input item unchanged
+        """
+
+        async def _identity(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
+            async for item in stream:
+                yield item
+
+        return Flow(_identity, name="identity")
+
+    @staticmethod
+    def pure(value: Output) -> Flow[None, Output]:
+        """Create a flow that yields a single pure value.
+
+        Args:
+            value: The value to yield
+
+        Returns:
+            Flow that yields the given value once
+        """
+
+        async def _single(_: AsyncIterator[None]) -> AsyncIterator[Output]:
+            yield value
+
+        return Flow(_single, name=f"pure({value})")
+
+    @staticmethod
+    def from_thunk(
+        thunk_fn: Callable[[Input], Union[Output, Awaitable[Output]]],
+    ) -> Flow[Input, Output]:
+        """Create a flow from a thunk-like function.
+
+        Args:
+            thunk_fn: Function that takes an input and returns an output (sync or async)
+
+        Returns:
+            Flow that applies the thunk function to each item
+        """
+
+        async def _wrapper(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+            async for item in stream:
+                result = thunk_fn(item)
+                if asyncio.iscoroutine(result):
+                    yield await result
+                else:
+                    yield result
+
+        return Flow(
+            _wrapper, name=f"from_thunk({getattr(thunk_fn, '__name__', 'anonymous')})"
+        )
