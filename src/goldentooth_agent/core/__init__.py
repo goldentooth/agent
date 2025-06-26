@@ -1,4 +1,5 @@
 from . import (
+    background_loop,
     flow,
     named_registry,
     util,
@@ -7,6 +8,7 @@ from . import (
 )
 
 __all__ = [
+    "background_loop",
     "flow",
     "named_registry",
     "util",
