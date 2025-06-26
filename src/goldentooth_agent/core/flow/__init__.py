@@ -43,6 +43,28 @@ from .combinators import (
     distinct_stream,
     chunk_stream,
     window_stream,
+    # New combinators batch 2
+    pairwise_stream,
+    start_with_stream,
+    sample_stream,
+    combine_latest_stream,
+    group_by_stream,
+    finalize_stream,
+    buffer_stream,
+    expand_stream,
+    share_stream,
+    materialize_stream,
+    trace_stream,
+    metrics_stream,
+    inspect_stream,
+    chain_flows,
+    branch_flows,
+    merge_flows,
+    # Notification classes
+    StreamNotification,
+    OnNext,
+    OnError,
+    OnComplete,
 )
 
 __all__ = [
@@ -96,4 +118,28 @@ __all__ = [
     "distinct_stream",
     "chunk_stream",
     "window_stream",
+    # New combinators batch 2
+    "pairwise_stream",
+    "start_with_stream", 
+    "sample_stream",
+    "combine_latest_stream",
+    "group_by_stream",
+    "finalize_stream",
+    "buffer_stream",
+    "expand_stream",
+    "share_stream",
+    "materialize_stream",
+    # Debugging and monitoring
+    "trace_stream",
+    "metrics_stream",
+    "inspect_stream",
+    # Multi-flow combinators
+    "chain_flows",
+    "branch_flows",
+    "merge_flows",
+    # Notification classes
+    "StreamNotification",
+    "OnNext",
+    "OnError",
+    "OnComplete",
 ]
