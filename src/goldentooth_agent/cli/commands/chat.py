@@ -13,4 +13,5 @@ def chat():
     @inject
     def handle() -> None:
         """Handle the chat session."""
+
     handle()

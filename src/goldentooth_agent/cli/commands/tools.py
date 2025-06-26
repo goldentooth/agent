@@ -10,7 +10,7 @@ def list_tools() -> None:
     """List available tools."""
 
     @inject
-    def handle(
-    ) -> None:
+    def handle() -> None:
         """Handle the listing of tools."""
+
     handle()
