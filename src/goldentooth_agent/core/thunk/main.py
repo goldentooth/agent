@@ -8,6 +8,7 @@ from typing import (
     Generic,
     overload,
     TypeVar,
+    NoReturn,
 )
 
 TIn = TypeVar("TIn")
@@ -101,6 +102,32 @@ class Thunk(Generic[TIn, TOut]):
             return await inner(ctx)
 
         return Thunk(_flattened, name=f"{self.name}.flatten")
+
+    @overload
+    def repeat(self: Thunk[TIn, TIn], times: int) -> Thunk[TIn, TIn]: ...
+    @overload
+    def repeat(self: Thunk[TIn, TOut], times: int) -> NoReturn: ...
+
+    def repeat(self, times: int):
+        """Repeat this thunk a specified number of times."""
+        from .combinators import repeat
+
+        return repeat(times, self)  # type: ignore
+
+    @overload
+    def while_(
+        self: Thunk[TIn, TIn], condition: Callable[[TIn], bool]
+    ) -> Thunk[TIn, TIn]: ...
+    @overload
+    def while_(
+        self: Thunk[TIn, TOut], condition: Callable[[TIn], bool]
+    ) -> NoReturn: ...
+
+    def while_(self, condition: Callable[[TIn], bool]):
+        """Repeat this thunk while the condition is true."""
+        from .combinators import while_true
+
+        return while_true(condition, self)  # type: ignore
 
     @overload
     def tap(self, fn: Callable[[TOut], None]) -> Thunk[TIn, TOut]: ...
