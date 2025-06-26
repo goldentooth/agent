@@ -42,7 +42,9 @@ pytest-asyncio = "^1.0.0"
 test = "pytest"
 test-cov = "pytest --cov=goldentooth_agent"
 test-sanity = "pytest tests/test_sanity.py -v"
-test-maybe-await = "pytest tests/test_maybe_await.py -v"
+test-maybe-await = "pytest tests/core/util/test_maybe_await.py -v"
+test-thunk = "pytest tests/core/thunk/test_main.py -v"
+test-core = "pytest tests/core/ -v"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -1,3 +1,3 @@
-from . import util
+from . import thunk, util
 
-__all__ = ["util"]
+__all__ = ["thunk", "util"]

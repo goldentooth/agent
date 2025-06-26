@@ -55,7 +55,9 @@ class TestMaybeAwait:
     @pytest.mark.asyncio
     async def test_sync_function_with_args(self):
         """Test calling a synchronous function with positional and keyword arguments."""
-        result = await maybe_await(sync_function_with_args, "arg1", "arg2", kwarg1="kwarg1")
+        result = await maybe_await(
+            sync_function_with_args, "arg1", "arg2", kwarg1="kwarg1"
+        )
         assert result == "sync: arg1, arg2, kwarg1"
 
     @pytest.mark.asyncio
@@ -67,7 +69,9 @@ class TestMaybeAwait:
     @pytest.mark.asyncio
     async def test_async_function_with_args(self):
         """Test calling an asynchronous function with positional and keyword arguments."""
-        result = await maybe_await(async_function_with_args, "arg1", "arg2", kwarg1="kwarg1")
+        result = await maybe_await(
+            async_function_with_args, "arg1", "arg2", kwarg1="kwarg1"
+        )
         assert result == "async: arg1, arg2, kwarg1"
 
     @pytest.mark.asyncio
@@ -112,7 +116,7 @@ class TestMaybeAwait:
         async def async_multiply(x):
             await asyncio.sleep(0.01)
             return x * 3
-        
+
         async_lambda = lambda x: async_multiply(x)
         result = await maybe_await(async_lambda, 5)
         assert result == 15
@@ -120,19 +124,20 @@ class TestMaybeAwait:
     @pytest.mark.asyncio
     async def test_method_calls(self):
         """Test calling methods on objects."""
+
         class TestClass:
             def sync_method(self, value):
                 return f"sync_method: {value}"
-            
+
             async def async_method(self, value):
                 return f"async_method: {value}"
 
         obj = TestClass()
-        
+
         # Synchronous method
         result = await maybe_await(obj.sync_method, "test")
         assert result == "sync_method: test"
-        
+
         # Asynchronous method
         result = await maybe_await(obj.async_method, "test")
         assert result == "async_method: test"
@@ -151,17 +156,18 @@ class TestMaybeAwait:
     @pytest.mark.asyncio
     async def test_coroutine_detection(self):
         """Test that coroutine detection works correctly."""
+
         # This should test the core logic of inspecting the result
         def returns_coroutine():
             return async_function()  # Returns a coroutine object
-        
+
         def returns_regular_value():
             return "regular_value"
-        
+
         # Should await the coroutine returned by the function
         result = await maybe_await(returns_coroutine)
         assert result == "async_result"
-        
+
         # Should return the regular value directly
         result = await maybe_await(returns_regular_value)
         assert result == "regular_value"
@@ -171,33 +177,35 @@ class TestMaybeAwait:
         """Test with explicit empty args and kwargs."""
         result = await maybe_await(sync_function, *[], **{})
         assert result == "sync_result"
-        
+
         result = await maybe_await(async_function, *[], **{})
         assert result == "async_result"
 
     @pytest.mark.asyncio
     async def test_mixed_argument_types(self):
         """Test with various argument types."""
+
         def mixed_args_func(pos_arg, *args, keyword_arg=None, **kwargs):
             return {
-                'pos_arg': pos_arg,
-                'args': args,
-                'keyword_arg': keyword_arg,
-                'kwargs': kwargs
+                "pos_arg": pos_arg,
+                "args": args,
+                "keyword_arg": keyword_arg,
+                "kwargs": kwargs,
             }
-        
+
         result = await maybe_await(
             mixed_args_func,
             "position",
-            "extra1", "extra2",
+            "extra1",
+            "extra2",
             keyword_arg="keyword",
-            extra_kwarg="extra"
+            extra_kwarg="extra",
         )
-        
+
         expected = {
-            'pos_arg': "position",
-            'args': ("extra1", "extra2"),
-            'keyword_arg': "keyword",
-            'kwargs': {'extra_kwarg': "extra"}
+            "pos_arg": "position",
+            "args": ("extra1", "extra2"),
+            "keyword_arg": "keyword",
+            "kwargs": {"extra_kwarg": "extra"},
         }
         assert result == expected
