@@ -1,6 +1,6 @@
-from typing import Callable, Generic, Optional, TypeVar
+from typing import Callable, Generic, Optional, TypeVar, AsyncIterator
 from dataclasses import dataclass
-from .main import Thunk
+from ..flow import Flow
 
 TIn = TypeVar("TIn")
 
@@ -11,7 +11,7 @@ class Rule(Generic[TIn]):
 
     name: str
     condition: Callable[[TIn], bool]
-    action: Thunk[TIn, TIn]
+    action: Flow[TIn, TIn]
     priority: int = 0
     description: Optional[str] = None
 
@@ -22,11 +22,40 @@ class Rule(Generic[TIn]):
     async def apply(self, ctx: TIn) -> TIn:
         """Apply the rule to the given context."""
         if self.condition(ctx):
-            ctx = await self.action(ctx)
+            # Convert single context to stream, apply flow, and extract result
+            async def single_item_stream():
+                yield ctx
+
+            # Get the first (and only) result from the flow
+            result_stream = self.action(single_item_stream())
+            async for result in result_stream:
+                return result
+
+            # Fallback if flow produces no output
+            return ctx
         return ctx
 
-    def as_thunk(self) -> Thunk[TIn, TIn]:
-        """Convert the rule to a thunk that applies the rule."""
+    def as_flow(self) -> Flow[TIn, TIn]:
+        """Convert the rule to a flow that applies the rule."""
+
+        async def _flow_fn(stream: AsyncIterator[TIn]) -> AsyncIterator[TIn]:
+            async for item in stream:
+                yield await self.apply(item)
+
+        return Flow(
+            _flow_fn,
+            name=self.name,
+            metadata={
+                "condition": self.condition.__name__,
+                "action": self.action.name,
+                "priority": self.priority,
+                "description": self.description,
+            },
+        )
+
+    def as_thunk(self):
+        """Convert the rule to a thunk that applies the rule (for backward compatibility)."""
+        from .main import Thunk
 
         async def _thunk(ctx: TIn) -> TIn:
             return await self.apply(ctx)

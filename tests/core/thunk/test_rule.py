@@ -4,6 +4,7 @@ import asyncio
 import pytest
 from unittest.mock import Mock, AsyncMock
 from goldentooth_agent.core.thunk import Rule, Thunk
+from goldentooth_agent.core.flow import Flow
 
 
 # Test fixtures - context classes for testing
@@ -84,62 +85,68 @@ def text_contains_hello(ctx: StringContext) -> bool:
     return "hello" in ctx.text.lower()
 
 
-# Test fixtures - action thunks
-def create_increment_action() -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that increments the number context value."""
+# Test fixtures - action flows
+def create_increment_action() -> Flow[NumberContext, NumberContext]:
+    """Create a flow that increments the number context value."""
 
-    async def increment(ctx: NumberContext) -> NumberContext:
-        return NumberContext(ctx.value + 1)
+    async def increment_stream(stream):
+        async for ctx in stream:
+            yield NumberContext(ctx.value + 1)
 
-    return Thunk(increment, name="increment")
-
-
-def create_double_action() -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that doubles the number context value."""
-
-    async def double(ctx: NumberContext) -> NumberContext:
-        return NumberContext(ctx.value * 2)
-
-    return Thunk(double, name="double")
+    return Flow(increment_stream, name="increment")
 
 
-def create_negate_action() -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that negates the number context value."""
+def create_double_action() -> Flow[NumberContext, NumberContext]:
+    """Create a flow that doubles the number context value."""
 
-    async def negate(ctx: NumberContext) -> NumberContext:
-        return NumberContext(-ctx.value)
+    async def double_stream(stream):
+        async for ctx in stream:
+            yield NumberContext(ctx.value * 2)
 
-    return Thunk(negate, name="negate")
-
-
-def create_activate_action() -> Thunk[ComplexContext, ComplexContext]:
-    """Create a thunk that activates the complex context."""
-
-    async def activate(ctx: ComplexContext) -> ComplexContext:
-        return ComplexContext(ctx.name, ctx.value, True)
-
-    return Thunk(activate, name="activate")
+    return Flow(double_stream, name="double")
 
 
-def create_uppercase_action() -> Thunk[StringContext, StringContext]:
-    """Create a thunk that uppercases the string context."""
+def create_negate_action() -> Flow[NumberContext, NumberContext]:
+    """Create a flow that negates the number context value."""
 
-    async def uppercase(ctx: StringContext) -> StringContext:
-        return StringContext(ctx.text.upper())
+    async def negate_stream(stream):
+        async for ctx in stream:
+            yield NumberContext(-ctx.value)
 
-    return Thunk(uppercase, name="uppercase")
+    return Flow(negate_stream, name="negate")
+
+
+def create_activate_action() -> Flow[ComplexContext, ComplexContext]:
+    """Create a flow that activates the complex context."""
+
+    async def activate_stream(stream):
+        async for ctx in stream:
+            yield ComplexContext(ctx.name, ctx.value, True)
+
+    return Flow(activate_stream, name="activate")
+
+
+def create_uppercase_action() -> Flow[StringContext, StringContext]:
+    """Create a flow that uppercases the string context."""
+
+    async def uppercase_stream(stream):
+        async for ctx in stream:
+            yield StringContext(ctx.text.upper())
+
+    return Flow(uppercase_stream, name="uppercase")
 
 
 def create_side_effect_action(
     side_effects: list,
-) -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that adds side effects while preserving context."""
+) -> Flow[NumberContext, NumberContext]:
+    """Create a flow that adds side effects while preserving context."""
 
-    async def side_effect(ctx: NumberContext) -> NumberContext:
-        side_effects.append(f"processed: {ctx.value}")
-        return ctx
+    async def side_effect_stream(stream):
+        async for ctx in stream:
+            side_effects.append(f"processed: {ctx.value}")
+            yield ctx
 
-    return Thunk(side_effect, name="side_effect")
+    return Flow(side_effect_stream, name="side_effect")
 
 
 class TestRuleCreation:
@@ -289,8 +296,70 @@ class TestRuleCall:
         assert result_call.value == result_apply.value == 4
 
 
+class TestRuleAsFlow:
+    """Test cases for Rule.as_flow method."""
+
+    @pytest.mark.asyncio
+    async def test_as_flow_basic(self):
+        """Test converting rule to flow."""
+        action = create_double_action()
+        rule = Rule(
+            name="double_positive",
+            condition=is_positive,
+            action=action,
+            priority=5,
+            description="Doubles positive numbers",
+        )
+
+        flow = rule.as_flow()
+
+        assert flow.name == "double_positive"
+        assert isinstance(flow, Flow)
+
+        # Test flow functionality
+        async def test_stream():
+            yield NumberContext(3)
+            yield NumberContext(-3)
+
+        results = []
+        async for result in flow(test_stream()):
+            results.append(result)
+
+        assert len(results) == 2
+        assert results[0].value == 6  # 3 * 2
+        assert results[1].value == -3  # Unchanged
+
+    def test_as_flow_metadata(self):
+        """Test that as_flow preserves metadata."""
+        action = create_increment_action()
+        rule = Rule(
+            name="increment_even",
+            condition=is_even,
+            action=action,
+            priority=10,
+            description="Increments even numbers",
+        )
+
+        flow = rule.as_flow()
+
+        assert flow.metadata["condition"] == "is_even"
+        assert flow.metadata["action"] == "increment"
+        assert flow.metadata["priority"] == 10
+        assert flow.metadata["description"] == "Increments even numbers"
+
+    def test_as_flow_metadata_with_lambda(self):
+        """Test as_flow metadata with lambda condition."""
+        action = create_increment_action()
+        rule = Rule(name="lambda_rule", condition=lambda x: x.value > 5, action=action)
+
+        flow = rule.as_flow()
+
+        assert flow.metadata["condition"] == "<lambda>"
+        assert flow.metadata["action"] == "increment"
+
+
 class TestRuleAsThunk:
-    """Test cases for Rule.as_thunk method."""
+    """Test cases for Rule.as_thunk method (backward compatibility)."""
 
     @pytest.mark.asyncio
     async def test_as_thunk_basic(self):
@@ -462,12 +531,13 @@ class TestRuleEdgeCases:
     async def test_rule_action_exception(self):
         """Test rule behavior when action raises exception."""
 
+        @Flow.from_value_fn
         async def failing_action(ctx: NumberContext) -> NumberContext:
             if ctx.value == 99:
                 raise RuntimeError("Action failed")
             return NumberContext(ctx.value + 1)
 
-        action = Thunk(failing_action, name="failing_action")
+        action = failing_action
         rule = Rule(name="failing_action_rule", condition=is_positive, action=action)
 
         # Normal case should work
@@ -485,12 +555,12 @@ class TestRuleIntegration:
     """Integration tests for Rule with different thunk types."""
 
     @pytest.mark.asyncio
-    async def test_rule_with_complex_thunk_chain(self):
-        """Test rule with complex thunk action chain."""
-        # Create a complex action that increments then doubles
-        increment_thunk = create_increment_action()
-        double_thunk = create_double_action()
-        complex_action = increment_thunk.chain(double_thunk)
+    async def test_rule_with_complex_flow_chain(self):
+        """Test rule with complex flow action chain."""
+        # Create a complex action that increments then doubles using flow composition
+        increment_flow = create_increment_action()
+        double_flow = create_double_action()
+        complex_action = increment_flow >> double_flow
 
         rule = Rule(
             name="increment_then_double", condition=is_positive, action=complex_action
@@ -502,6 +572,28 @@ class TestRuleIntegration:
         assert result.value == 8  # (3 + 1) * 2
 
     @pytest.mark.asyncio
+    async def test_rule_flow_integration(self):
+        """Test that rule as flow integrates well with flow operations."""
+        action = create_double_action()
+        rule = Rule(name="double_positive", condition=is_positive, action=action)
+
+        rule_flow = rule.as_flow()
+
+        # Compose the rule flow with another flow
+        increment_flow = create_increment_action()
+        composed = rule_flow >> increment_flow
+
+        async def test_stream():
+            yield NumberContext(3)
+
+        results = []
+        async for result in composed(test_stream()):
+            results.append(result)
+
+        assert len(results) == 1
+        assert results[0].value == 7  # (3 * 2) + 1
+
+    @pytest.mark.asyncio
     async def test_rule_thunk_integration(self):
         """Test that rule as thunk integrates well with thunk operations."""
         action = create_double_action()
@@ -509,8 +601,11 @@ class TestRuleIntegration:
 
         rule_thunk = rule.as_thunk()
 
-        # Chain the rule thunk with another thunk
-        increment_thunk = create_increment_action()
+        # Chain the rule thunk with another thunk (need to create thunk for compatibility)
+        async def increment_fn(ctx):
+            return NumberContext(ctx.value + 1)
+
+        increment_thunk = Thunk(increment_fn, name="increment")
         chained = rule_thunk.chain(increment_thunk)
 
         ctx = NumberContext(3)
@@ -556,11 +651,12 @@ class TestRulePerformance:
     async def test_rule_with_async_heavy_action(self):
         """Test rule with async action that has delays."""
 
+        @Flow.from_value_fn
         async def slow_action(ctx: NumberContext) -> NumberContext:
             await asyncio.sleep(0.001)  # Small delay
             return NumberContext(ctx.value * 2)
 
-        action = Thunk(slow_action, name="slow_action")
+        action = slow_action
         rule = Rule(name="slow_rule", condition=is_positive, action=action)
 
         ctx = NumberContext(3)

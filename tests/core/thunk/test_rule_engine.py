@@ -4,6 +4,7 @@ import asyncio
 import pytest
 from unittest.mock import Mock, AsyncMock
 from goldentooth_agent.core.thunk import Rule, RuleEngine, Thunk
+from goldentooth_agent.core.flow import Flow
 
 
 # Test fixtures - context classes for testing (reused from Rule tests)
@@ -98,81 +99,89 @@ def has_urgent_tag(ctx: ComplexContext) -> bool:
     return "urgent" in ctx.tags
 
 
-# Test fixtures - action thunks
-def create_increment_action() -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that increments the number context value."""
+# Test fixtures - action flows
+def create_increment_action() -> Flow[NumberContext, NumberContext]:
+    """Create a flow that increments the number context value."""
 
-    async def increment(ctx: NumberContext) -> NumberContext:
-        return NumberContext(ctx.value + 1)
+    async def increment_stream(stream):
+        async for ctx in stream:
+            yield NumberContext(ctx.value + 1)
 
-    return Thunk(increment, name="increment")
-
-
-def create_double_action() -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that doubles the number context value."""
-
-    async def double(ctx: NumberContext) -> NumberContext:
-        return NumberContext(ctx.value * 2)
-
-    return Thunk(double, name="double")
+    return Flow(increment_stream, name="increment")
 
 
-def create_negate_action() -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that negates the number context value."""
+def create_double_action() -> Flow[NumberContext, NumberContext]:
+    """Create a flow that doubles the number context value."""
 
-    async def negate(ctx: NumberContext) -> NumberContext:
-        return NumberContext(-ctx.value)
+    async def double_stream(stream):
+        async for ctx in stream:
+            yield NumberContext(ctx.value * 2)
 
-    return Thunk(negate, name="negate")
-
-
-def create_add_5_action() -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that adds 5 to the number context value."""
-
-    async def add_5(ctx: NumberContext) -> NumberContext:
-        return NumberContext(ctx.value + 5)
-
-    return Thunk(add_5, name="add_5")
+    return Flow(double_stream, name="double")
 
 
-def create_multiply_by_3_action() -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that multiplies the number context value by 3."""
+def create_negate_action() -> Flow[NumberContext, NumberContext]:
+    """Create a flow that negates the number context value."""
 
-    async def multiply_by_3(ctx: NumberContext) -> NumberContext:
-        return NumberContext(ctx.value * 3)
+    async def negate_stream(stream):
+        async for ctx in stream:
+            yield NumberContext(-ctx.value)
 
-    return Thunk(multiply_by_3, name="multiply_by_3")
-
-
-def create_deactivate_action() -> Thunk[ComplexContext, ComplexContext]:
-    """Create a thunk that deactivates the complex context."""
-
-    async def deactivate(ctx: ComplexContext) -> ComplexContext:
-        return ComplexContext(ctx.name, ctx.value, False, ctx.tags)
-
-    return Thunk(deactivate, name="deactivate")
+    return Flow(negate_stream, name="negate")
 
 
-def create_add_tag_action(tag: str) -> Thunk[ComplexContext, ComplexContext]:
-    """Create a thunk that adds a tag to the complex context."""
+def create_add_5_action() -> Flow[NumberContext, NumberContext]:
+    """Create a flow that adds 5 to the number context value."""
 
-    async def add_tag(ctx: ComplexContext) -> ComplexContext:
-        new_tags = ctx.tags + [tag] if tag not in ctx.tags else ctx.tags
-        return ComplexContext(ctx.name, ctx.value, ctx.active, new_tags)
+    async def add_5_stream(stream):
+        async for ctx in stream:
+            yield NumberContext(ctx.value + 5)
 
-    return Thunk(add_tag, name=f"add_tag_{tag}")
+    return Flow(add_5_stream, name="add_5")
+
+
+def create_multiply_by_3_action() -> Flow[NumberContext, NumberContext]:
+    """Create a flow that multiplies the number context value by 3."""
+
+    async def multiply_by_3_stream(stream):
+        async for ctx in stream:
+            yield NumberContext(ctx.value * 3)
+
+    return Flow(multiply_by_3_stream, name="multiply_by_3")
+
+
+def create_deactivate_action() -> Flow[ComplexContext, ComplexContext]:
+    """Create a flow that deactivates the complex context."""
+
+    async def deactivate_stream(stream):
+        async for ctx in stream:
+            yield ComplexContext(ctx.name, ctx.value, False, ctx.tags)
+
+    return Flow(deactivate_stream, name="deactivate")
+
+
+def create_add_tag_action(tag: str) -> Flow[ComplexContext, ComplexContext]:
+    """Create a flow that adds a tag to the complex context."""
+
+    async def add_tag_stream(stream):
+        async for ctx in stream:
+            new_tags = ctx.tags + [tag] if tag not in ctx.tags else ctx.tags
+            yield ComplexContext(ctx.name, ctx.value, ctx.active, new_tags)
+
+    return Flow(add_tag_stream, name=f"add_tag_{tag}")
 
 
 def create_side_effect_action(
     side_effects: list,
-) -> Thunk[NumberContext, NumberContext]:
-    """Create a thunk that adds side effects while preserving context."""
+) -> Flow[NumberContext, NumberContext]:
+    """Create a flow that adds side effects while preserving context."""
 
-    async def side_effect(ctx: NumberContext) -> NumberContext:
-        side_effects.append(f"processed: {ctx.value}")
-        return ctx
+    async def side_effect_stream(stream):
+        async for ctx in stream:
+            side_effects.append(f"processed: {ctx.value}")
+            yield ctx
 
-    return Thunk(side_effect, name="side_effect")
+    return Flow(side_effect_stream, name="side_effect")
 
 
 # Test fixtures - rule creation helpers
@@ -485,8 +494,84 @@ class TestRuleEngineAddRule:
         assert engine.rules[2] is rule1  # priority 1
 
 
+class TestRuleEngineAsFlow:
+    """Test cases for RuleEngine.as_flow method."""
+
+    @pytest.mark.asyncio
+    async def test_as_flow_basic(self):
+        """Test converting rule engine to flow."""
+        rule1 = create_increment_positive_rule()
+        rule2 = create_double_even_rule()
+        engine = RuleEngine([rule1, rule2])
+
+        flow = engine.as_flow()
+
+        assert flow.name == "RuleEngine"
+        assert isinstance(flow, Flow)
+
+        # Test flow functionality
+        async def test_stream():
+            yield NumberContext(3)
+
+        results = []
+        async for result in flow(test_stream()):
+            results.append(result)
+
+        # Should behave same as engine.evaluate
+        expected = await engine.evaluate(NumberContext(3))
+        assert len(results) == 1
+        assert results[0].value == expected.value
+
+    def test_as_flow_metadata(self):
+        """Test that as_flow includes metadata."""
+        rule1 = create_increment_positive_rule()
+        rule2 = create_double_even_rule()
+        rule3 = create_negate_greater_than_10_rule()
+        engine = RuleEngine([rule1, rule2, rule3])
+
+        flow = engine.as_flow()
+
+        assert flow.metadata["rules"] == [
+            "increment_positive",
+            "double_even",
+            "negate_greater_than_10",
+        ]
+        assert flow.metadata["count"] == 3
+
+    def test_as_flow_empty_engine_metadata(self):
+        """Test as_flow metadata for empty engine."""
+        engine = RuleEngine([])
+        flow = engine.as_flow()
+
+        assert flow.metadata["rules"] == []
+        assert flow.metadata["count"] == 0
+
+    @pytest.mark.asyncio
+    async def test_as_flow_integration_with_other_flows(self):
+        """Test that rule engine flow integrates with other flows."""
+        rule = create_double_even_rule()
+        engine = RuleEngine([rule])
+        engine_flow = engine.as_flow()
+
+        # Compose with another flow
+        increment_flow = create_increment_action()
+        composed = engine_flow >> increment_flow
+
+        async def test_stream():
+            yield NumberContext(4)  # Even number
+
+        results = []
+        async for result in composed(test_stream()):
+            results.append(result)
+
+        assert len(results) == 1
+        # Engine: 4 -> 8 (double even)
+        # Increment: 8 -> 9
+        assert results[0].value == 9
+
+
 class TestRuleEngineAsThunk:
-    """Test cases for RuleEngine.as_thunk method."""
+    """Test cases for RuleEngine.as_thunk method (backward compatibility)."""
 
     @pytest.mark.asyncio
     async def test_as_thunk_basic(self):
@@ -539,8 +624,11 @@ class TestRuleEngineAsThunk:
         engine = RuleEngine([rule])
         engine_thunk = engine.as_thunk()
 
-        # Chain with another thunk
-        increment_thunk = create_increment_action()
+        # Chain with another thunk (need to create thunk for compatibility)
+        async def increment_fn(ctx):
+            return NumberContext(ctx.value + 1)
+
+        increment_thunk = Thunk(increment_fn, name="increment")
         chained = engine_thunk.chain(increment_thunk)
 
         ctx = NumberContext(4)  # Even number
@@ -676,13 +764,15 @@ class TestRuleEngineEdgeCases:
     async def test_rule_engine_action_exception(self):
         """Test rule engine behavior when a rule action raises exception."""
 
+        # Create a failing action using Flow.from_value_fn
+        @Flow.from_value_fn
         async def failing_action(ctx: NumberContext) -> NumberContext:
             raise RuntimeError("Action failed")
 
         failing_rule = Rule(
             name="failing_action_rule",
             condition=is_positive,
-            action=Thunk(failing_action, name="failing_action"),
+            action=failing_action,
             priority=2,
         )
 
@@ -778,10 +868,14 @@ class TestRuleEngineIntegration:
         double_even_rule = create_double_even_rule(priority=5)
 
         # If result > 20, divide by 2 (approximate with multiply by 0.5)
+        @Flow.from_sync_fn
+        def divide_by_2(ctx: NumberContext) -> NumberContext:
+            return NumberContext(ctx.value // 2)
+
         divide_large_rule = Rule(
             name="divide_large",
             condition=lambda ctx: ctx.value > 20,
-            action=Thunk(lambda ctx: NumberContext(ctx.value // 2), name="divide_by_2"),
+            action=divide_by_2,
             priority=1,
         )
 
@@ -804,10 +898,15 @@ class TestRuleEngineIntegration:
 
         engine_thunk = engine.as_thunk()
 
-        # Create a complex thunk chain
-        final_thunk = engine_thunk.map(
-            lambda ctx: NumberContext(ctx.value + 10)
-        ).filter(lambda ctx: ctx.value > 15)
+        # Create a complex thunk chain (create map and filter thunks manually)
+        async def map_add_10(ctx):
+            return NumberContext(ctx.value + 10)
+
+        async def filter_greater_15(ctx):
+            return ctx.value > 15
+
+        map_thunk = Thunk(map_add_10, name="map_add_10")
+        final_thunk = engine_thunk.chain(map_thunk).filter(filter_greater_15)
 
         ctx = NumberContext(3)
         result = await final_thunk(ctx)

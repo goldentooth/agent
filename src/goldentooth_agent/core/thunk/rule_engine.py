@@ -1,6 +1,6 @@
-from typing import List, TypeVar, Generic
+from typing import List, TypeVar, Generic, AsyncIterator
 from .rule import Rule
-from .main import Thunk
+from ..flow import Flow
 
 TIn = TypeVar("TIn")
 
@@ -27,8 +27,25 @@ class RuleEngine(Generic[TIn]):
         self.rules.append(rule)
         self.rules.sort(key=lambda r: -r.priority)
 
-    def as_thunk(self) -> Thunk[TIn, TIn]:
-        """Convert the rule engine to a thunk that evaluates the rules."""
+    def as_flow(self) -> Flow[TIn, TIn]:
+        """Convert the rule engine to a flow that evaluates the rules."""
+
+        async def _flow_fn(stream: AsyncIterator[TIn]) -> AsyncIterator[TIn]:
+            async for item in stream:
+                yield await self.evaluate(item)
+
+        return Flow(
+            _flow_fn,
+            name="RuleEngine",
+            metadata={
+                "rules": [rule.name for rule in self.rules],
+                "count": len(self.rules),
+            },
+        )
+
+    def as_thunk(self):
+        """Convert the rule engine to a thunk that evaluates the rules (for backward compatibility)."""
+        from .main import Thunk
 
         async def _thunk(ctx: TIn) -> TIn:
             return await self.evaluate(ctx)
