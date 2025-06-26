@@ -25,6 +25,7 @@ from goldentooth_agent.core.flow.combinators import (
     switch_stream,
     race_stream,
     parallel_stream,
+    parallel_stream_successful,
     range_flow,
     repeat_flow,
     empty_flow,
@@ -758,8 +759,9 @@ class TestRaceStream:
         
         result_stream = race_flow(test_stream())
         values = [item async for item in result_stream]
-        # For 0: second flow wins (0*3=0), for 1: first flow wins (1*2=2)
-        assert values == [0, 2]
+        # For 0: second flow wins (0*3=0), for 1: either flow could win
+        assert values[0] == 0  # Second flow must win for 0 since first fails
+        assert values[1] in [2, 3]  # Either flow could win for 1 (1*2=2 or 1*3=3)
 
     @pytest.mark.asyncio
     @pytest.mark.filterwarnings("ignore:.*coroutine method 'aclose'.*:RuntimeWarning")
@@ -840,6 +842,75 @@ class TestParallelStream:
     async def test_parallel_empty_list(self):
         """Test parallel with empty list of flows."""
         parallel_flow = parallel_stream([])
+        
+        input_stream = async_range(2)
+        result_stream = parallel_flow(input_stream)
+        values = [item async for item in result_stream]
+        
+        assert values == [[], []]  # Empty results for each input
+
+
+class TestParallelStreamSuccessful:
+    """Test cases for parallel_stream_successful combinator."""
+
+    @pytest.mark.asyncio
+    async def test_parallel_successful_all_succeed(self):
+        """Test parallel_successful where all flows succeed."""
+        flow1 = map_stream(lambda x: x * 2)
+        flow2 = map_stream(lambda x: x * 3)
+        flow3 = map_stream(lambda x: x + 10)
+        
+        parallel_flow = parallel_stream_successful([flow1, flow2, flow3])
+        
+        input_stream = async_range(2)
+        result_stream = parallel_flow(input_stream)
+        values = [item async for item in result_stream]
+        
+        # All flows succeed, no None values
+        assert values == [[0, 0, 10], [2, 3, 11]]  # [0*2, 0*3, 0+10], [1*2, 1*3, 1+10]
+
+    @pytest.mark.asyncio
+    async def test_parallel_successful_some_fail(self):
+        """Test parallel_successful where some flows fail."""
+        def fail_on_odd(x):
+            if x % 2 == 1:
+                raise ValueError("Failed on odd")
+            return x * 2
+        
+        flow1 = map_stream(fail_on_odd)  # Will fail on odd numbers
+        flow2 = map_stream(lambda x: x * 3)  # Always succeeds
+        
+        parallel_flow = parallel_stream_successful([flow1, flow2])
+        
+        input_stream = async_range(3)  # [0, 1, 2]
+        result_stream = parallel_flow(input_stream)
+        values = [item async for item in result_stream]
+        
+        # Failed flows are filtered out, no None values
+        assert values == [[0, 0], [3], [4, 6]]  # Only successful results
+
+    @pytest.mark.asyncio
+    async def test_parallel_successful_all_fail(self):
+        """Test parallel_successful where all flows fail."""
+        def always_fails(x):
+            raise ValueError("Always fails")
+        
+        flow1 = map_stream(always_fails)
+        flow2 = map_stream(always_fails)
+        
+        parallel_flow = parallel_stream_successful([flow1, flow2])
+        
+        input_stream = async_range(2)
+        result_stream = parallel_flow(input_stream)
+        values = [item async for item in result_stream]
+        
+        # All flows fail, empty lists returned
+        assert values == [[], []]
+
+    @pytest.mark.asyncio
+    async def test_parallel_successful_empty_list(self):
+        """Test parallel_successful with empty list of flows."""
+        parallel_flow = parallel_stream_successful([])
         
         input_stream = async_range(2)
         result_stream = parallel_flow(input_stream)

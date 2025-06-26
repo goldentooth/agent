@@ -19,6 +19,7 @@ from .combinators import (
     switch_stream,
     race_stream,
     parallel_stream,
+    parallel_stream_successful,
     range_flow,
     repeat_flow,
     empty_flow,
@@ -49,6 +50,7 @@ __all__ = [
     "switch_stream",
     "race_stream",
     "parallel_stream",
+    "parallel_stream_successful",
     # Source flows
     "range_flow",
     "repeat_flow",

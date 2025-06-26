@@ -433,14 +433,17 @@ def race_stream(flows: list[Flow[Input, Output]]) -> Flow[Input, Output]:
     )
 
 
-def parallel_stream(flows: list[Flow[Input, Output]]) -> Flow[Input, list[Output]]:
+def parallel_stream(flows: list[Flow[Input, Output]]) -> Flow[Input, list[Output | None]]:
     """Create a flow that runs multiple flows in parallel for each item and collects all results.
     
     For each input item, all flows are executed simultaneously, and all successful
     results are collected into a list. Failed flows contribute None to the result list.
+    
+    Note: If you want only successful results (filtering out None values),
+    use parallel_stream_successful() instead.
     """
     
-    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[list[Output]]:
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[list[Output | None]]:
         """Run multiple flows in parallel for each item."""
         async for item in stream:
             # Create tasks for each flow
@@ -464,6 +467,42 @@ def parallel_stream(flows: list[Flow[Input, Output]]) -> Flow[Input, list[Output
     return Flow(
         _flow,
         name=f"parallel({', '.join(flow_names)})"
+    )
+
+
+def parallel_stream_successful(flows: list[Flow[Input, Output]]) -> Flow[Input, list[Output]]:
+    """Create a flow that runs multiple flows in parallel and collects only successful results.
+    
+    For each input item, all flows are executed simultaneously, and only successful
+    results are collected into a list. Failed flows are ignored.
+    """
+    
+    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[list[Output]]:
+        """Run multiple flows in parallel for each item, keeping only successful results."""
+        async for item in stream:
+            # Create tasks for each flow
+            async def run_flow(flow: Flow[Input, Output]) -> Output | None:
+                try:
+                    async def single_item_stream():
+                        yield item
+                    
+                    result_stream = flow(single_item_stream())
+                    async for result in result_stream:
+                        return result
+                    return None  # Flow produced no output
+                except Exception:
+                    return None  # Flow failed
+            
+            tasks = [asyncio.create_task(run_flow(flow)) for flow in flows]
+            results = await asyncio.gather(*tasks, return_exceptions=False)
+            # Filter out None values
+            successful_results = [r for r in results if r is not None]
+            yield successful_results
+    
+    flow_names = [flow.name for flow in flows]
+    return Flow(
+        _flow,
+        name=f"parallel_successful({', '.join(flow_names)})"
     )
 
 
