@@ -2,8 +2,7 @@
 
 import asyncio
 import pytest
-from unittest.mock import Mock, AsyncMock
-from goldentooth_agent.core.thunk import Rule, Thunk
+from goldentooth_agent.core.rules import Rule
 from goldentooth_agent.core.flow import Flow
 
 
@@ -358,64 +357,6 @@ class TestRuleAsFlow:
         assert flow.metadata["action"] == "increment"
 
 
-class TestRuleAsThunk:
-    """Test cases for Rule.as_thunk method (backward compatibility)."""
-
-    @pytest.mark.asyncio
-    async def test_as_thunk_basic(self):
-        """Test converting rule to thunk."""
-        action = create_double_action()
-        rule = Rule(
-            name="double_positive",
-            condition=is_positive,
-            action=action,
-            priority=5,
-            description="Doubles positive numbers",
-        )
-
-        thunk = rule.as_thunk()
-
-        assert thunk.name == "double_positive"
-        assert isinstance(thunk, Thunk)
-
-        # Test thunk functionality
-        ctx_positive = NumberContext(3)
-        result_positive = await thunk(ctx_positive)
-        assert result_positive.value == 6  # 3 * 2
-
-        ctx_negative = NumberContext(-3)
-        result_negative = await thunk(ctx_negative)
-        assert result_negative.value == -3  # Unchanged
-
-    def test_as_thunk_metadata(self):
-        """Test that as_thunk preserves metadata."""
-        action = create_increment_action()
-        rule = Rule(
-            name="increment_even",
-            condition=is_even,
-            action=action,
-            priority=10,
-            description="Increments even numbers",
-        )
-
-        thunk = rule.as_thunk()
-
-        assert thunk.metadata["condition"] == "is_even"
-        assert thunk.metadata["action"] == "increment"
-        assert thunk.metadata["priority"] == 10
-        assert thunk.metadata["description"] == "Increments even numbers"
-
-    def test_as_thunk_metadata_with_lambda(self):
-        """Test as_thunk metadata with lambda condition."""
-        action = create_increment_action()
-        rule = Rule(name="lambda_rule", condition=lambda x: x.value > 5, action=action)
-
-        thunk = rule.as_thunk()
-
-        assert thunk.metadata["condition"] == "<lambda>"
-        assert thunk.metadata["action"] == "increment"
-
-
 class TestRuleChaining:
     """Test cases for chaining rules and complex scenarios."""
 
@@ -552,7 +493,7 @@ class TestRuleEdgeCases:
 
 
 class TestRuleIntegration:
-    """Integration tests for Rule with different thunk types."""
+    """Integration tests for Rule with different flow types."""
 
     @pytest.mark.asyncio
     async def test_rule_with_complex_flow_chain(self):
@@ -592,26 +533,6 @@ class TestRuleIntegration:
 
         assert len(results) == 1
         assert results[0].value == 7  # (3 * 2) + 1
-
-    @pytest.mark.asyncio
-    async def test_rule_thunk_integration(self):
-        """Test that rule as thunk integrates well with thunk operations."""
-        action = create_double_action()
-        rule = Rule(name="double_positive", condition=is_positive, action=action)
-
-        rule_thunk = rule.as_thunk()
-
-        # Chain the rule thunk with another thunk (need to create thunk for compatibility)
-        async def increment_fn(ctx):
-            return NumberContext(ctx.value + 1)
-
-        increment_thunk = Thunk(increment_fn, name="increment")
-        chained = rule_thunk.chain(increment_thunk)
-
-        ctx = NumberContext(3)
-        result = await chained(ctx)
-
-        assert result.value == 7  # (3 * 2) + 1
 
     def test_rule_repr(self):
         """Test string representation of Rule."""

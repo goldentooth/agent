@@ -2,8 +2,7 @@
 
 import asyncio
 import pytest
-from unittest.mock import Mock, AsyncMock
-from goldentooth_agent.core.thunk import Rule, RuleEngine, Thunk
+from goldentooth_agent.core.rules import Rule, RuleEngine
 from goldentooth_agent.core.flow import Flow
 
 
@@ -570,75 +569,6 @@ class TestRuleEngineAsFlow:
         assert results[0].value == 9
 
 
-class TestRuleEngineAsThunk:
-    """Test cases for RuleEngine.as_thunk method (backward compatibility)."""
-
-    @pytest.mark.asyncio
-    async def test_as_thunk_basic(self):
-        """Test converting rule engine to thunk."""
-        rule1 = create_increment_positive_rule()
-        rule2 = create_double_even_rule()
-        engine = RuleEngine([rule1, rule2])
-
-        thunk = engine.as_thunk()
-
-        assert thunk.name == "RuleEngine"
-        assert isinstance(thunk, Thunk)
-
-        # Test thunk functionality
-        ctx = NumberContext(3)
-        result = await thunk(ctx)
-
-        # Should behave same as engine.evaluate
-        expected = await engine.evaluate(NumberContext(3))
-        assert result.value == expected.value
-
-    def test_as_thunk_metadata(self):
-        """Test that as_thunk includes metadata."""
-        rule1 = create_increment_positive_rule()
-        rule2 = create_double_even_rule()
-        rule3 = create_negate_greater_than_10_rule()
-        engine = RuleEngine([rule1, rule2, rule3])
-
-        thunk = engine.as_thunk()
-
-        assert thunk.metadata["rules"] == [
-            "increment_positive",
-            "double_even",
-            "negate_greater_than_10",
-        ]
-        assert thunk.metadata["count"] == 3
-
-    def test_as_thunk_empty_engine_metadata(self):
-        """Test as_thunk metadata for empty engine."""
-        engine = RuleEngine([])
-        thunk = engine.as_thunk()
-
-        assert thunk.metadata["rules"] == []
-        assert thunk.metadata["count"] == 0
-
-    @pytest.mark.asyncio
-    async def test_as_thunk_integration_with_other_thunks(self):
-        """Test that rule engine thunk integrates with other thunks."""
-        rule = create_double_even_rule()
-        engine = RuleEngine([rule])
-        engine_thunk = engine.as_thunk()
-
-        # Chain with another thunk (need to create thunk for compatibility)
-        async def increment_fn(ctx):
-            return NumberContext(ctx.value + 1)
-
-        increment_thunk = Thunk(increment_fn, name="increment")
-        chained = engine_thunk.chain(increment_thunk)
-
-        ctx = NumberContext(4)  # Even number
-        result = await chained(ctx)
-
-        # Engine: 4 -> 8 (double even)
-        # Increment: 8 -> 9
-        assert result.value == 9
-
-
 class TestRuleEngineSideEffects:
     """Test cases for side effects and logging in RuleEngine."""
 
@@ -890,31 +820,28 @@ class TestRuleEngineIntegration:
         assert result.value == 12
 
     @pytest.mark.asyncio
-    async def test_rule_engine_nested_with_thunk_operations(self):
-        """Test rule engine integration with thunk operations."""
+    async def test_rule_engine_flow_integration(self):
+        """Test rule engine integration with flow operations."""
         rule1 = create_increment_positive_rule()
         rule2 = create_double_even_rule()
         engine = RuleEngine([rule1, rule2])
 
-        engine_thunk = engine.as_thunk()
+        engine_flow = engine.as_flow()
 
-        # Create a complex thunk chain (create map and filter thunks manually)
-        async def map_add_10(ctx):
-            return NumberContext(ctx.value + 10)
+        # Create a complex flow composition with the rule engine
+        final_flow = engine_flow.map(lambda ctx: NumberContext(ctx.value + 10))
 
-        async def filter_greater_15(ctx):
-            return ctx.value > 15
+        async def test_stream():
+            yield NumberContext(3)
 
-        map_thunk = Thunk(map_add_10, name="map_add_10")
-        final_thunk = engine_thunk.chain(map_thunk).filter(filter_greater_15)
+        results = []
+        async for result in final_flow(test_stream()):
+            results.append(result)
 
-        ctx = NumberContext(3)
-        result = await final_thunk(ctx)
-
+        assert len(results) == 1
         # Engine: 3 -> 4 -> 8 (increment then double)
         # Map: 8 -> 18
-        # Filter: 18 > 15, so passes through
-        assert result.value == 18
+        assert results[0].value == 18
 
     def test_rule_engine_repr(self):
         """Test string representation of RuleEngine."""

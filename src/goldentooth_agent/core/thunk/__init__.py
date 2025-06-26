@@ -19,8 +19,6 @@ from .combinators import (
     race,
 )
 from .main import Thunk, thunk, compose_chain
-from .rule import Rule
-from .rule_engine import RuleEngine
 from ..event_thunk import EventThunk
 from ..stream_thunk import StreamThunk
 
@@ -28,8 +26,6 @@ from ..stream_thunk import StreamThunk
 __all__ = [
     "Thunk",
     "EventThunk",
-    "Rule",
-    "RuleEngine",
     "StreamThunk",
     "thunk",
     "compose_chain",

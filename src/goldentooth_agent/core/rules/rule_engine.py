@@ -6,7 +6,11 @@ TIn = TypeVar("TIn")
 
 
 class RuleEngine(Generic[TIn]):
-    """A rule engine that evaluates a list of rules against a context and applies actions based on matching conditions."""
+    """A rule engine that evaluates a list of rules against a context and applies actions based on matching conditions.
+
+    The RuleEngine is pure Flow-based and processes rules in priority order. It can be converted
+    to a Flow for stream processing or used directly for single context evaluation.
+    """
 
     def __init__(self, rules: List[Rule[TIn]]):
         """Initialize the rule engine with a list of rules."""
@@ -28,7 +32,7 @@ class RuleEngine(Generic[TIn]):
         self.rules.sort(key=lambda r: -r.priority)
 
     def as_flow(self) -> Flow[TIn, TIn]:
-        """Convert the rule engine to a flow that evaluates the rules."""
+        """Convert the rule engine to a flow that evaluates the rules for each item in a stream."""
 
         async def _flow_fn(stream: AsyncIterator[TIn]) -> AsyncIterator[TIn]:
             async for item in stream:
@@ -36,22 +40,6 @@ class RuleEngine(Generic[TIn]):
 
         return Flow(
             _flow_fn,
-            name="RuleEngine",
-            metadata={
-                "rules": [rule.name for rule in self.rules],
-                "count": len(self.rules),
-            },
-        )
-
-    def as_thunk(self):
-        """Convert the rule engine to a thunk that evaluates the rules (for backward compatibility)."""
-        from .main import Thunk
-
-        async def _thunk(ctx: TIn) -> TIn:
-            return await self.evaluate(ctx)
-
-        return Thunk(
-            _thunk,
             name="RuleEngine",
             metadata={
                 "rules": [rule.name for rule in self.rules],

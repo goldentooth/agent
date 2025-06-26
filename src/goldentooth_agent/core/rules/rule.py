@@ -7,7 +7,11 @@ TIn = TypeVar("TIn")
 
 @dataclass
 class Rule(Generic[TIn]):
-    """A rule that applies a condition to an input and executes an action if the condition is met."""
+    """A rule that applies a condition to an input and executes an action if the condition is met.
+
+    Rules are pure Flow-based components that evaluate conditions and apply transformations
+    conditionally. They integrate seamlessly with the Flow system for stream processing.
+    """
 
     name: str
     condition: Callable[[TIn], bool]
@@ -36,7 +40,7 @@ class Rule(Generic[TIn]):
         return ctx
 
     def as_flow(self) -> Flow[TIn, TIn]:
-        """Convert the rule to a flow that applies the rule."""
+        """Convert the rule to a flow that applies the rule to each item in a stream."""
 
         async def _flow_fn(stream: AsyncIterator[TIn]) -> AsyncIterator[TIn]:
             async for item in stream:
@@ -44,24 +48,6 @@ class Rule(Generic[TIn]):
 
         return Flow(
             _flow_fn,
-            name=self.name,
-            metadata={
-                "condition": self.condition.__name__,
-                "action": self.action.name,
-                "priority": self.priority,
-                "description": self.description,
-            },
-        )
-
-    def as_thunk(self):
-        """Convert the rule to a thunk that applies the rule (for backward compatibility)."""
-        from .main import Thunk
-
-        async def _thunk(ctx: TIn) -> TIn:
-            return await self.apply(ctx)
-
-        return Thunk(
-            _thunk,
             name=self.name,
             metadata={
                 "condition": self.condition.__name__,

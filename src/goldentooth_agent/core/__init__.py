@@ -1,4 +1,13 @@
-from . import flow, named_registry, thunk, util, yaml_store, event_thunk, stream_thunk
+from . import (
+    flow,
+    named_registry,
+    thunk,
+    util,
+    yaml_store,
+    event_thunk,
+    stream_thunk,
+    rules,
+)
 
 __all__ = [
     "flow",
@@ -8,4 +17,5 @@ __all__ = [
     "yaml_store",
     "event_thunk",
     "stream_thunk",
+    "rules",
 ]
