@@ -64,7 +64,6 @@ class TestBackgroundEventLoop:
     def test_submit_runs_multiple_coroutines(self):
         """Submit should handle multiple coroutines concurrently."""
         loop = BackgroundEventLoop()
-        results = []
 
         async def test_coroutine(value: int):
             await asyncio.sleep(0.1)

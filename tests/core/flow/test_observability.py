@@ -435,8 +435,8 @@ class TestIntegratedObservability:
 
             # Analyze the flow
             graph = analyze_flow(monitored_flow)
-            patterns = detect_flow_patterns(graph)
-            optimizations = generate_flow_optimizations(graph)
+            _patterns = detect_flow_patterns(graph)
+            _optimizations = generate_flow_optimizations(graph)
 
             # Run the flow
             # Create empty input for from_iterable

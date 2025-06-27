@@ -102,7 +102,7 @@ class TestPerformanceMonitoring:
     async def test_memory_tracking(self):
         """Test memory usage tracking."""
         try:
-            import psutil
+            import psutil  # noqa: F401
         except ImportError:
             pytest.skip("psutil not available for memory tracking")
 
@@ -283,7 +283,7 @@ class TestScalabilityTests:
 
         start_time = time.time()
         count = 0
-        async for item in flow(input_stream):
+        async for _item in flow(input_stream):
             count += 1
             if count % 1000 == 0:
                 # Check that we're not accumulating too much time

@@ -55,11 +55,17 @@ class TestMapStreamProperties:
     @pytest.mark.asyncio
     async def test_map_functor_composition(self, items):
         """Test that map(f ∘ g) == map(f) ∘ map(g)."""
-        f = lambda x: x * 2
-        g = lambda x: x + 1
+
+        def f(x):
+            return x * 2
+
+        def g(x):
+            return x + 1
 
         # map(f ∘ g)
-        composed_fn = lambda x: f(g(x))
+        def composed_fn(x):
+            return f(g(x))
+
         direct_flow = map_stream(composed_fn)
 
         # map(f) ∘ map(g)
@@ -108,7 +114,10 @@ class TestFilterStreamProperties:
     @pytest.mark.asyncio
     async def test_filter_is_idempotent(self, items):
         """Test that filter(p) ∘ filter(p) == filter(p)."""
-        predicate = lambda x: x % 2 == 0
+
+        def predicate(x):
+            return x % 2 == 0
+
         single_filter = filter_stream(predicate)
         double_filter = compose(filter_stream(predicate), filter_stream(predicate))
 
@@ -124,7 +133,10 @@ class TestFilterStreamProperties:
     @pytest.mark.asyncio
     async def test_filter_respects_predicate(self, items):
         """Test that filter only keeps items matching the predicate."""
-        predicate = lambda x: x > 0
+
+        def predicate(x):
+            return x > 0
+
         filter_flow = filter_stream(predicate)
         input_stream = async_iter_from_list(items)
         result = await list_from_async_iter(filter_flow(input_stream))
@@ -236,7 +248,7 @@ class TestDistinctStreamProperties:
         result = await list_from_async_iter(distinct_flow(input_stream))
 
         # Result should have no duplicates
-        assert len(result) == len(set(str(item) for item in result))
+        assert len(result) == len({str(item) for item in result})
 
         # All items in result should be from original items
         assert all(item in items for item in result)

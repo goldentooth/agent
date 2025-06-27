@@ -109,8 +109,11 @@ class TestMaybeAwait:
     @pytest.mark.asyncio
     async def test_lambda_functions(self):
         """Test with lambda functions (both sync and async)."""
+
         # Synchronous lambda
-        sync_lambda = lambda x: x * 2
+        def sync_lambda(x):
+            return x * 2
+
         result = await maybe_await(sync_lambda, 5)
         assert result == 10
 
@@ -119,7 +122,9 @@ class TestMaybeAwait:
             await asyncio.sleep(0.01)
             return x * 3
 
-        async_lambda = lambda x: async_multiply(x)
+        def async_lambda(x):
+            return async_multiply(x)
+
         result = await maybe_await(async_lambda, 5)
         assert result == 15
 

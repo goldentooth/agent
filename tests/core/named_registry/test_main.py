@@ -206,7 +206,9 @@ class TestMakeRegisterFn:
 
         # Create instance function to mock object creation
         test_obj = RegistryItem("test_value")
-        get_instance_fn = lambda: test_obj
+
+        def get_instance_fn():
+            return test_obj
 
         register_fn = make_register_fn(
             NamedRegistry[RegistryItem], get_instance_fn=get_instance_fn
@@ -257,7 +259,9 @@ class TestMakeRegisterFn:
         mock_world.__getitem__.return_value = self.registry
 
         custom_obj = RegistryItem("custom")
-        get_instance_fn = lambda: custom_obj
+
+        def get_instance_fn():
+            return custom_obj
 
         register_fn = make_register_fn(
             NamedRegistry[RegistryItem], get_instance_fn=get_instance_fn

@@ -685,7 +685,7 @@ class TestRetryStream:
         result_stream = retry_flow(single_item())
 
         with pytest.raises(ValueError, match="Always fails"):
-            async for item in result_stream:
+            async for _item in result_stream:
                 pass
 
 
@@ -748,7 +748,7 @@ class TestSwitchStream:
         result_stream = switch_flow(single_item())
 
         with pytest.raises(KeyError, match="No case for key: nonexistent"):
-            async for item in result_stream:
+            async for _item in result_stream:
                 pass
 
 
@@ -815,7 +815,7 @@ class TestRaceStream:
         from goldentooth_agent.core.flow.exceptions import FlowExecutionError
 
         with pytest.raises(FlowExecutionError, match="All flows failed"):
-            async for item in result_stream:
+            async for _item in result_stream:
                 pass
 
     @pytest.mark.asyncio

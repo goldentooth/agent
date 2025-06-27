@@ -19,6 +19,10 @@ class ContextFrame:
         """Set the value for a key in this context frame."""
         self.data[key] = value
 
+    def __delitem__(self, key: str) -> None:
+        """Delete a key from this context frame."""
+        del self.data[key]
+
     def __contains__(self, key: str) -> bool:
         """Check if a key exists in this context frame."""
         return key in self.data

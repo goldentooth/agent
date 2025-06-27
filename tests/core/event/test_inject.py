@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 from pyee import EventEmitter
 from pyee.asyncio import AsyncIOEventEmitter
@@ -83,7 +85,8 @@ class TestEventInjection:
         assert sync_emitter is not async_emitter
         assert type(sync_emitter) is not type(async_emitter)
 
-    def test_emitters_cross_event_isolation(self) -> None:
+    @pytest.mark.asyncio
+    async def test_emitters_cross_event_isolation(self) -> None:
         """Test that sync and async emitters don't interfere with each other."""
         sync_emitter = get_sync_event_emitter()
         async_emitter = get_async_event_emitter()
@@ -111,7 +114,9 @@ class TestEventInjection:
         # Emit on async emitter only
         async_emitter.emit("shared_event", "async_data")
 
+        # Allow async handler to complete
+        await asyncio.sleep(0.01)
+
         # Now both should have their respective data
         assert sync_received == ["sync_data"]
-        # Note: async_received might still be empty due to async nature,
-        # but the important thing is that sync_received didn't change
+        assert async_received == ["async_data"]

@@ -202,6 +202,24 @@ class Context:
                 return frame[key]
         raise KeyError(f"Context key '{key}' not found")
 
+    def set(self, key: str, value: Any) -> None:
+        """Set a value for a key in the current frame and notify subscribers/emit events."""
+        old_value = self.get(key)
+
+        # Apply transformations if any exist for this key
+        transformed_value = self._apply_transformations(key, value)
+
+        self.frames[-1][key] = transformed_value
+
+        # Invalidate computed properties that depend on this key
+        self._invalidate_dependent_computed_properties(key)
+
+        # Record change in history
+        self._record_change(key, old_value, transformed_value)
+
+        # Emit events through EventFlow system
+        self._emit_change_event(key, transformed_value, old_value)
+
     def __setitem__(self, key: str, value: Any) -> None:
         """Set a value for a key in the current frame and notify subscribers/emit events."""
         old_value = self.get(key)

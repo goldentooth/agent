@@ -317,8 +317,8 @@ class TestPathsIntegration:
         # All paths should be different
         config_paths = [r[0] for r in results]
         data_paths = [r[1] for r in results]
-        assert len(set(str(p) for p in config_paths)) == 5
-        assert len(set(str(p) for p in data_paths)) == 5
+        assert len({str(p) for p in config_paths}) == 5
+        assert len({str(p) for p in data_paths}) == 5
 
     def test_path_persistence(self):
         """Test that paths are consistent across instances."""
