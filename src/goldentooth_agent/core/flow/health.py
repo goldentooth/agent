@@ -156,7 +156,7 @@ class SystemHealth:
 class FlowHealthMonitor:
     """Health monitoring system for Flow applications."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.checks: Dict[str, HealthCheck] = {}
         self.history: List[SystemHealth] = []
         self.max_history = 100
@@ -168,7 +168,7 @@ class FlowHealthMonitor:
         """Register default system health checks."""
 
         # Memory usage check
-        async def memory_check():
+        async def memory_check() -> AsyncIterator[bool]:
             try:
                 import psutil
 

@@ -1824,8 +1824,8 @@ def merge_flows(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
             items.append(item)
 
         # Create tasks for each flow
-        async def run_flow(flow: Flow[Input, Output]):
-            async def replay_stream():
+        async def run_flow(flow: Flow[Input, Output]) -> AsyncIterator[Output]:
+            async def replay_stream() -> AsyncIterator[Input]:
                 for item in items:
                     yield item
 
@@ -1841,11 +1841,11 @@ def merge_flows(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
 
 
 # Utility function for merging async generators
-async def merge_async_generators(*async_generators):
+async def merge_async_generators(*async_generators: AsyncIterator[Any]) -> AsyncIterator[Any]:
     """Merge outputs from multiple async generators."""
-    queues = [asyncio.Queue() for _ in async_generators]
+    queues: list[asyncio.Queue[Any]] = [asyncio.Queue[Any]() for _ in async_generators]
 
-    async def collect_from_generator(generator, queue):
+    async def collect_from_generator(generator: AsyncIterator[Any], queue: asyncio.Queue[Any]) -> None:
         """Collect items from a generator into a queue."""
         try:
             async for item in generator:
@@ -1869,7 +1869,7 @@ async def merge_async_generators(*async_generators):
             queue_tasks = []
             for i in active_queues:
                 queue_task = asyncio.create_task(queues[i].get())
-                queue_task._queue_index = i
+                queue_task._queue_index = i  # type: ignore[attr-defined]
                 queue_tasks.append(queue_task)
 
             if not queue_tasks:
@@ -1890,7 +1890,7 @@ async def merge_async_generators(*async_generators):
             # Process completed tasks
             for task in done:
                 result = await task
-                queue_index = task._queue_index
+                queue_index = task._queue_index  # type: ignore[attr-defined]
 
                 if result is _STREAM_END:
                     active_queues.discard(queue_index)

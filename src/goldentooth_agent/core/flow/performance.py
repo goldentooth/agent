@@ -8,7 +8,7 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Callable, AsyncIterator
+from typing import Any, Dict, List, Optional, Callable, AsyncIterator, Awaitable
 from collections import defaultdict
 import json
 
@@ -69,9 +69,9 @@ class FlowMetrics:
 class PerformanceMonitor:
     """Performance monitoring system for Flow executions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.metrics: Dict[str, FlowMetrics] = {}
-        self.global_stats = defaultdict(list)
+        self.global_stats: defaultdict[str, list[Any]] = defaultdict(list)
         self._memory_tracking = False
 
     def enable_memory_tracking(self) -> None:
@@ -181,7 +181,7 @@ _performance_monitor = PerformanceMonitor()
 
 def monitored_stream(
     monitor_name: Optional[str] = None,
-) -> Callable[[Callable[[], Flow]], Flow]:
+) -> Callable[[Callable[[], Flow[Any, Any]]], Flow[Any, Any]]:
     """Decorator to add performance monitoring to a Flow.
 
     Args:
@@ -196,11 +196,11 @@ def monitored_stream(
             return Flow(...)
     """
 
-    def decorator(flow_factory: Callable[[], Flow]) -> Flow:
+    def decorator(flow_factory: Callable[[], Flow[Any, Any]]) -> Flow[Any, Any]:
         flow = flow_factory()
         name = monitor_name or flow.name
 
-        async def _monitored_flow(stream: AsyncIterator) -> AsyncIterator:
+        async def _monitored_flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
             metrics_id = _performance_monitor.start_monitoring(name)
 
             try:
@@ -226,7 +226,7 @@ def monitored_stream(
     return decorator
 
 
-def performance_stream() -> Flow:
+def performance_stream() -> Flow[Any, Any]:
     """Create a flow that adds performance monitoring to the pipeline.
 
     This combinator automatically tracks timing, throughput, and memory usage
@@ -236,7 +236,7 @@ def performance_stream() -> Flow:
         A flow that monitors performance and passes items through unchanged.
     """
 
-    async def _flow(stream: AsyncIterator) -> AsyncIterator:
+    async def _flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
         metrics_id = _performance_monitor.start_monitoring("performance_stream")
 
         try:
@@ -256,7 +256,7 @@ def performance_stream() -> Flow:
 
 def benchmark_stream(
     iterations: int = 100, warmup_iterations: int = 10
-) -> Callable[[Flow], Dict[str, Any]]:
+) -> Callable[[Flow[Any, Any]], Callable[[Callable[[], AsyncIterator[Any]]], Awaitable[Dict[str, Any]]]]:
     """Benchmark a Flow's performance over multiple iterations.
 
     Args:
@@ -272,8 +272,8 @@ def benchmark_stream(
         print(f"Average duration: {stats['avg_duration_ms']:.2f}ms")
     """
 
-    def benchmark_func(flow: Flow) -> Callable:
-        async def run_benchmark(test_stream_factory: Callable) -> Dict[str, Any]:
+    def benchmark_func(flow: Flow[Any, Any]) -> Callable[[Callable[[], AsyncIterator[Any]]], Awaitable[Dict[str, Any]]]:
+        async def run_benchmark(test_stream_factory: Callable[[], AsyncIterator[Any]]) -> Dict[str, Any]:
             """Run the benchmark with a test stream factory."""
             durations = []
 
