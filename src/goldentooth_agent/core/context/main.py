@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import json
 import time
-from collections import defaultdict
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 from typing import Any, TypeVar
 
 from pyee import EventEmitter
@@ -23,9 +22,6 @@ class Context:
     def __init__(self, frames: list[ContextFrame] | None = None):
         """Initialize the context with optional initial frames."""
         self.frames: list[ContextFrame] = frames or [ContextFrame()]
-
-        # Legacy callback system for backward compatibility
-        self.subscribers: dict[str, list[Callable[[Any], None]]] = defaultdict(list)
 
         # Create isolated emitters for this context instance
         self._sync_emitter = EventEmitter()
@@ -61,10 +57,6 @@ class Context:
         """Set a value for a key in the current frame and notify subscribers/emit events."""
         old_value = self.get(key)
         self.frames[-1][key] = value
-
-        # Legacy callback system for backward compatibility
-        for cb in self.subscribers.get(key, []):
-            cb(value)
 
         # Emit events through EventFlow system
         self._emit_change_event(key, value, old_value)
@@ -231,13 +223,6 @@ class Context:
             return self._global_async_events.as_flow()
         else:
             return self._global_sync_events.as_flow()
-
-    def subscribe(self, key: str, callback: Callable[[Any], None]) -> None:
-        """Subscribe to changes on a specific key (legacy callback API).
-
-        Note: For new code, prefer subscribe_sync() or subscribe_async() for EventFlow integration.
-        """
-        self.subscribers[key].append(callback)
 
     def dump(self) -> str:
         """Dump the context as a JSON string, merging all frames."""

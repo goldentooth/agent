@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import pytest
 
 from goldentooth_agent.core.context import Context, ContextFrame
@@ -205,39 +203,6 @@ class TestContextBasicFunctionality:
         # key1 and key3 should come first (from top layer)
         assert all_keys.index("key1") < all_keys.index("key2")
         assert all_keys.index("key3") < all_keys.index("key2")
-
-    def test_legacy_subscribe_still_works(self) -> None:
-        """Test that legacy subscribe() method still works."""
-        context = Context()
-
-        received_values = []
-
-        def callback(value: Any) -> None:
-            received_values.append(value)
-
-        context.subscribe("test_key", callback)
-
-        # Set values and verify callback is called
-        context["test_key"] = "value1"
-        assert received_values == ["value1"]
-
-        context["test_key"] = "value2"
-        assert received_values == ["value1", "value2"]
-
-    def test_multiple_legacy_subscribers(self) -> None:
-        """Test multiple legacy subscribers for the same key."""
-        context = Context()
-
-        values1 = []
-        values2 = []
-
-        context.subscribe("shared_key", lambda v: values1.append(v))
-        context.subscribe("shared_key", lambda v: values2.append(v))
-
-        context["shared_key"] = "test_value"
-
-        assert values1 == ["test_value"]
-        assert values2 == ["test_value"]
 
     def test_dump_produces_valid_json(self) -> None:
         """Test that dump() produces valid JSON."""

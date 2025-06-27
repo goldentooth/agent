@@ -248,26 +248,6 @@ class TestContextEventFlowIntegration:
         assert received_changes[1]["key"] == "key2"
         assert received_changes[1]["new_value"] == "value2"
 
-    def test_backward_compatibility_with_legacy_subscribe(self) -> None:
-        """Test that legacy subscribe() method still works alongside EventFlow."""
-        context = Context()
-
-        # Legacy subscription
-        legacy_values = []
-        context.subscribe("test_key", lambda v: legacy_values.append(v))
-
-        # EventFlow subscription
-        event_flow = context.subscribe_sync("test_key")
-        eventflow_values = []
-        event_flow.on(lambda v: eventflow_values.append(v))
-
-        # Set a value
-        context["test_key"] = "test_value"
-
-        # Both should receive the event
-        assert legacy_values == ["test_value"]
-        assert eventflow_values == ["test_value"]
-
     def test_multiple_key_subscriptions(self) -> None:
         """Test subscribing to multiple keys with different EventFlows."""
         context = Context()
