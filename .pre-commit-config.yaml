@@ -62,6 +62,17 @@ repos:
         pass_filenames: false
         always_run: true
 
+  # Note: Pyright (Pylance equivalent) can be enabled but requires additional setup
+  # Uncomment the below section if you want more sophisticated type checking
+  # - repo: https://github.com/RobertCraigie/pyright-python
+  #   rev: v1.1.390
+  #   hooks:
+  #     - id: pyright
+  #       description: Run Pyright type checking (Pylance equivalent)
+  #       args: ['--pythonpath=src', '--project=pyproject.toml']
+  #       additional_dependencies: []
+  #       pass_filenames: false
+
   # Run pytest tests
   - repo: local
     hooks:

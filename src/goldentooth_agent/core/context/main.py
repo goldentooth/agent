@@ -458,10 +458,11 @@ class Context:
 
         # Apply the reversals
         for event in changes_to_reverse:
+            # Save the tracker before attempting any changes
+            saved_tracker = self._history_tracker
             try:
                 # Set the value back to its old value
                 # We temporarily save and clear history to avoid recording the rollback changes
-                saved_tracker = self._history_tracker
                 self._history_tracker = HistoryTracker(max_size=0)
 
                 self[event.key] = event.old_value

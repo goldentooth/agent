@@ -124,6 +124,35 @@ module = [
 ]
 ignore_missing_imports = true
 
+[tool.pyright]
+# Pyright configuration (powers Pylance) - focus on catching issues MyPy misses
+include = ["src"]
+exclude = ["**/__pycache__", "build", "dist"]
+pythonVersion = "3.13"
+pythonPlatform = "All"
+
+# Use basic type checking mode to avoid overwhelming errors
+typeCheckingMode = "basic"
+
+# Focus on the specific issues we want to catch that MyPy misses
+reportPossiblyUnboundVariable = "error"
+reportUnboundVariable = "error"
+
+# Keep other checks as warnings to not overwhelm the output
+reportOptionalMemberAccess = "warning"
+reportOptionalSubscript = "warning"
+reportOptionalIterable = "warning"
+reportOptionalContextManager = "warning"
+reportOptionalOperand = "warning"
+
+# Allow flexibility for existing codebase
+reportPrivateUsage = "none"
+reportUnknownMemberType = "none"
+reportUnknownVariableType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownLambdaType = "none"
+reportAny = "none"
+
 # Black code formatting configuration
 [tool.black]
 line-length = 88
