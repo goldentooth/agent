@@ -136,7 +136,7 @@ class FlowRegistry:
             self._flows.clear()
             self._categories.clear()
 
-    def info(self, name: str) -> Optional[Dict]:
+    def info(self, name: str) -> Optional[Dict[str, Any]]:
         """Get detailed information about a flow.
 
         Args:
@@ -200,7 +200,7 @@ flow_registry = FlowRegistry()
 
 
 # Convenience functions
-def register_flow(name: str, flow: Flow, category: Optional[str] = None) -> Flow:
+def register_flow(name: str, flow: Flow[Any, Any], category: Optional[str] = None) -> Flow[Any, Any]:
     """Register a flow in the global registry.
 
     Args:
@@ -265,7 +265,7 @@ def registered_flow(name: str, category: Optional[str] = None):
             return text.upper()
     """
 
-    def decorator(flow: Flow) -> Flow:
+    def decorator(flow: Flow[Any, Any]) -> Flow[Any, Any]:
         return register_flow(name, flow, category)
 
     return decorator

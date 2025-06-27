@@ -180,8 +180,15 @@ class Flow(Generic[Input, Output]):
         from .combinators import batch_stream
 
         async def _batched(stream: AsyncIterator[Input]) -> AsyncIterator[list[Output]]:
-            batch_flow = batch_stream(size)(self(stream))
-            async for batch in batch_flow:
+            output_stream = self(stream)
+            batch: list[Output] = []
+            async for item in output_stream:
+                batch.append(item)
+                if len(batch) >= size:
+                    yield batch
+                    batch = []
+            # Yield remaining items if any
+            if batch:
                 yield batch
 
         return Flow(_batched, name=f"{self.name}.batch({size})")
@@ -279,7 +286,7 @@ class Flow(Generic[Input, Output]):
         """Create a flow from an emitter that registers a callback to receive items."""
 
         async def _stream(_: AsyncIterator[None]) -> AsyncIterator[Output]:
-            queue: asyncio.Queue[Output] = asyncio.Queue()
+            queue: asyncio.Queue[Output] = asyncio.Queue[Output]()
 
             def on_emit(item: Output) -> None:
                 queue.put_nowait(item)
