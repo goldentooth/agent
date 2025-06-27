@@ -15,6 +15,7 @@ from goldentooth_agent.core.event import AsyncEventFlow, SyncEventFlow
 from goldentooth_agent.core.flow import Flow
 
 from .frame import ContextFrame
+from .snapshot_manager import SnapshotManager
 
 T = TypeVar("T")
 
@@ -197,7 +198,7 @@ class Context:
         )  # key -> set of computed properties that depend on it
 
         # Snapshots and time-travel debugging
-        self._snapshots: dict[str, ContextSnapshot] = {}
+        self._snapshot_manager = SnapshotManager()
         self._change_history: list[ContextChangeEvent] = []
         self._max_history_size = 1000  # Limit history to prevent memory issues
 
@@ -293,7 +294,8 @@ class Context:
         ]
 
         # Copy snapshots (but update context_id references)
-        for name, snapshot in self._snapshots.items():
+        for name in self._snapshot_manager.list_snapshots():
+            snapshot = self._snapshot_manager.get_snapshot(name)
             forked_snapshot = ContextSnapshot(forked, name)
             forked_snapshot.timestamp = snapshot.timestamp
             forked_snapshot.frames = [frame.copy() for frame in snapshot.frames]
@@ -301,7 +303,7 @@ class Context:
                 snapshot.computed_properties
             )
             forked_snapshot.transformations = copy.deepcopy(snapshot.transformations)
-            forked._snapshots[name] = forked_snapshot
+            forked._snapshot_manager._snapshots[name] = forked_snapshot
 
         return forked
 
@@ -365,12 +367,7 @@ class Context:
         Raises:
             ValueError: If a snapshot with the same name already exists
         """
-        if name in self._snapshots:
-            raise ValueError(f"Snapshot '{name}' already exists")
-
-        snapshot = ContextSnapshot(self, name)
-        self._snapshots[name] = snapshot
-        return snapshot
+        return self._snapshot_manager.create_snapshot(self, name)
 
     def restore_snapshot(self, name: str) -> None:
         """Restore the context to a previous snapshot state.
@@ -381,11 +378,7 @@ class Context:
         Raises:
             KeyError: If snapshot with the given name doesn't exist
         """
-        if name not in self._snapshots:
-            raise KeyError(f"Snapshot '{name}' not found")
-
-        snapshot = self._snapshots[name]
-        snapshot.restore_to(self)
+        self._snapshot_manager.restore_snapshot(self, name)
 
     def list_snapshots(self) -> dict[str, float]:
         """List all available snapshots with their timestamps.
@@ -393,7 +386,7 @@ class Context:
         Returns:
             Dictionary mapping snapshot names to their timestamps
         """
-        return {name: snapshot.timestamp for name, snapshot in self._snapshots.items()}
+        return self._snapshot_manager.list_snapshots()
 
     def delete_snapshot(self, name: str) -> None:
         """Delete a snapshot.
@@ -404,10 +397,7 @@ class Context:
         Raises:
             KeyError: If snapshot with the given name doesn't exist
         """
-        if name not in self._snapshots:
-            raise KeyError(f"Snapshot '{name}' not found")
-
-        del self._snapshots[name]
+        self._snapshot_manager.delete_snapshot(name)
 
     def get_change_history(
         self, limit: int | None = None, since: float | None = None
@@ -513,7 +503,10 @@ class Context:
         Returns:
             Dictionary of snapshot names to snapshot objects
         """
-        return self._snapshots.copy()
+        return {
+            name: self._snapshot_manager.get_snapshot(name)
+            for name in self._snapshot_manager.list_snapshots()
+        }
 
     def replay_changes_since(self, timestamp: float) -> list[ContextChangeEvent]:
         """Get all changes that occurred since a specific timestamp.
