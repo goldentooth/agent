@@ -1,6 +1,7 @@
 from . import (
     background_loop,
     context,
+    event,
     flow,
     named_registry,
     paths,
@@ -12,6 +13,7 @@ from . import (
 __all__ = [
     "background_loop",
     "context",
+    "event",
     "flow",
     "named_registry",
     "paths",
