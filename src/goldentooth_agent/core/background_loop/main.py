@@ -16,7 +16,7 @@ T = TypeVar("T")
 class BackgroundEventLoop:
     """A class to manage an asyncio event loop in a background thread."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the background event loop."""
         self.loop = asyncio.new_event_loop()
         self._running = True
@@ -33,7 +33,7 @@ class BackgroundEventLoop:
         """Create a new instance of BackgroundEventLoop."""
         return cls()
 
-    def _run_loop(self):
+    def _run_loop(self) -> None:
         """Run the asyncio event loop in a separate thread."""
         asyncio.set_event_loop(self.loop)
         try:

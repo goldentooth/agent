@@ -565,8 +565,9 @@ def empty_flow() -> Flow[None, Any]:
 
     async def _flow(_: AsyncIterator[None]) -> AsyncIterator[Any]:
         """Produce no items."""
+        # This is a generator that produces no items
         return
-        yield  # Make this generator, even though unreachable
+        yield  # pragma: no cover
 
     return Flow(_flow, name="empty")
 
@@ -1072,8 +1073,8 @@ def merge_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
         # Yield results as they become available
         for task in asyncio.as_completed(tasks):
             result_stream = await task
-            async for item in result_stream:
-                yield item
+            async for output_item in result_stream:
+                yield output_item
 
     flow_names = [flow.name for flow in flows]
     return Flow(_flow, name=f"merge({', '.join(flow_names)})")
@@ -1195,7 +1196,7 @@ def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
 
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[tuple[Input, Input]]:
         """Emit consecutive pairs of items."""
-        previous = None
+        previous: Optional[Input] = None
         first_item = True
 
         async for item in stream:
@@ -1203,6 +1204,7 @@ def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
                 previous = item
                 first_item = False
             else:
+                assert previous is not None  # This ensures type safety
                 yield (previous, item)
                 previous = item
 
@@ -1254,7 +1256,7 @@ def sample_stream(interval: float) -> Flow[Input, Input]:
         latest_item = None
         has_new_item = False
 
-        async def item_collector():
+        async def item_collector() -> None:
             """Collect items from the stream."""
             nonlocal latest_item, has_new_item
             async for item in stream:
@@ -1301,13 +1303,13 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
 
     async def _flow(stream: AsyncIterator[A]) -> AsyncIterator[tuple[A, B]]:
         """Combine latest values from both streams."""
-        latest_a = None
-        latest_b = None
+        latest_a: Optional[A] = None
+        latest_b: Optional[B] = None
         has_a = False
         has_b = False
         result_queue: asyncio.Queue[tuple[A, B]] = asyncio.Queue()
 
-        async def collect_a():
+        async def collect_a() -> None:
             """Collect items from stream A."""
             nonlocal latest_a, has_a
             try:
@@ -1315,14 +1317,14 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
                     latest_a = item
                     has_a = True
                     # Emit if we have both values
-                    if has_a and has_b:
+                    if has_a and has_b and latest_a is not None and latest_b is not None:
                         await result_queue.put((latest_a, latest_b))
             except Exception:
                 pass
             finally:
-                await result_queue.put(_STREAM_END)
+                await result_queue.put(_STREAM_END)  # type: ignore[arg-type]
 
-        async def collect_b():
+        async def collect_b() -> None:
             """Collect items from stream B."""
             nonlocal latest_b, has_b
             try:
@@ -1330,12 +1332,12 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
                     latest_b = item
                     has_b = True
                     # Emit if we have both values
-                    if has_a and has_b:
+                    if has_a and has_b and latest_a is not None and latest_b is not None:
                         await result_queue.put((latest_a, latest_b))
             except Exception:
                 pass
             finally:
-                await result_queue.put(_STREAM_END)
+                await result_queue.put(_STREAM_END)  # type: ignore[arg-type]
 
         # Start both collectors
         task_a = asyncio.create_task(collect_a())
@@ -1440,7 +1442,7 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
         buffer: list[Input] = []
         result_queue: asyncio.Queue[list[Input]] = asyncio.Queue()
 
-        async def collect_items():
+        async def collect_items() -> None:
             """Collect items into buffer."""
             nonlocal buffer
             try:
@@ -1449,12 +1451,12 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
             except Exception:
                 pass
 
-        async def wait_for_triggers():
+        async def wait_for_triggers() -> None:
             """Wait for trigger events."""
             nonlocal buffer
             try:
                 # Create empty stream for trigger
-                async def empty_trigger():
+                async def empty_trigger() -> AsyncIterator[None]:
                     yield None
 
                 trigger_stream = trigger_flow(empty_trigger())
@@ -1465,7 +1467,7 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
             except Exception:
                 pass
             finally:
-                await result_queue.put(_STREAM_END)
+                await result_queue.put(_STREAM_END)  # type: ignore[arg-type]
 
         # Start both tasks
         collect_task = asyncio.create_task(collect_items())
@@ -1568,7 +1570,7 @@ class OnNext(StreamNotification):
     def __init__(self, value: Any):
         self.value = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"OnNext({self.value})"
 
 
@@ -1576,12 +1578,12 @@ class OnError(StreamNotification):
     def __init__(self, error: Exception):
         self.error = error
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"OnError({self.error})"
 
 
 class OnComplete(StreamNotification):
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "OnComplete()"
 
 
@@ -1609,7 +1611,7 @@ def materialize_stream() -> Flow[Input, StreamNotification]:
     return Flow(_flow, name="materialize")
 
 
-def trace_stream(tracer: Callable[[str, Input], None]) -> Flow[Input, Input]:
+def trace_stream(tracer: Callable[[str, Any], None]) -> Flow[Input, Input]:
     """Create a flow that provides detailed tracing of stream processing.
 
     Calls the tracer function for each item with event type and item data.
@@ -1671,7 +1673,7 @@ def metrics_stream(counter: Callable[[str], None]) -> Flow[Input, Input]:
     return Flow(_flow, name=f"metrics({getattr(counter, '__name__', 'function')})")
 
 
-def inspect_stream(inspector: Callable[[Input, dict], None]) -> Flow[Input, Input]:
+def inspect_stream(inspector: Callable[[Input, dict[str, Any]], None]) -> Flow[Input, Input]:
     """Create a flow that inspects stream items with context metadata.
 
     Calls the inspector function with each item and a context dictionary
@@ -1726,7 +1728,7 @@ def chain_flows(*flows: Flow[Input, Input]) -> Flow[Input, Input]:
         # Apply each flow to the original items
         for flow in flows:
 
-            async def replay_stream():
+            async def replay_stream() -> AsyncIterator[Input]:
                 for item in items:
                     yield item
 
@@ -1771,16 +1773,16 @@ def branch_flows(
                 false_items.append(item)
 
         # Process both branches
-        async def process_true():
-            async def true_stream():
+        async def process_true() -> AsyncIterator[Output]:
+            async def true_stream() -> AsyncIterator[Input]:
                 for item in true_items:
                     yield item
 
             async for result in true_flow(true_stream()):
                 yield result
 
-        async def process_false():
-            async def false_stream():
+        async def process_false() -> AsyncIterator[Output]:
+            async def false_stream() -> AsyncIterator[Input]:
                 for item in false_items:
                     yield item
 
