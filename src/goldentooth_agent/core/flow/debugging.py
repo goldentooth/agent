@@ -373,7 +373,7 @@ def export_execution_trace(filepath: str) -> None:
     _flow_debugger.export_trace(filepath)
 
 
-def inspect_flow(flow: Flow) -> Dict[str, Any]:
+def inspect_flow(flow: Flow[Any, Any]) -> Dict[str, Any]:
     """Inspect a flow and return metadata about its structure.
 
     Args:
@@ -395,7 +395,7 @@ def inspect_flow(flow: Flow) -> Dict[str, Any]:
 
 # Context manager for temporary debugging
 @asynccontextmanager
-async def debug_session(enable_breakpoints: bool = True) -> AsyncGenerator[None, None]:
+async def debug_session(enable_breakpoints: bool = True) -> AsyncGenerator[FlowDebugger, None]:
     """Context manager for a temporary debugging session.
 
     Args:

@@ -1890,7 +1890,7 @@ async def merge_async_generators(*async_generators: AsyncIterator[Any]) -> Async
 
             # Process completed tasks
             for task in done:
-                result: Any = await task
+                result: Any = await task  # type: ignore[func-returns-value]
                 queue_index = task._queue_index  # type: ignore[attr-defined]
 
                 if result is _STREAM_END:

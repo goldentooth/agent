@@ -215,13 +215,13 @@ class FlowAnalyzer:
         self.node_id_counter += 1
         return f"node_{self.node_id_counter}"
 
-    def _get_flow_signature(self, flow: Flow) -> str:
+    def _get_flow_signature(self, flow: Flow[Any, Any]) -> str:
         """Generate a signature for a flow based on its properties."""
         components = [flow.name, str(type(flow)), str(getattr(flow, "metadata", {}))]
         signature = hashlib.md5("|".join(components).encode()).hexdigest()[:8]
         return signature
 
-    def analyze_flow(self, flow: Flow) -> FlowGraph:
+    def analyze_flow(self, flow: Flow[Any, Any]) -> FlowGraph:
         """Analyze a single Flow and return its graph representation."""
         graph = FlowGraph()
 
@@ -263,7 +263,7 @@ class FlowAnalyzer:
 
         return graph
 
-    def _create_flow_node(self, flow: Flow, node_id: str) -> FlowNode:
+    def _create_flow_node(self, flow: Flow[Any, Any], node_id: str) -> FlowNode:
         """Create a FlowNode from a Flow object."""
         flow_type = self._categorize_flow_type(flow)
         complexity = self._calculate_complexity(flow)
@@ -281,7 +281,7 @@ class FlowAnalyzer:
             },
         )
 
-    def _categorize_flow_type(self, flow: Flow) -> str:
+    def _categorize_flow_type(self, flow: Flow[Any, Any]) -> str:
         """Categorize the type of flow based on its name and characteristics."""
         name = flow.name.lower()
 
@@ -306,7 +306,7 @@ class FlowAnalyzer:
         else:
             return "utility"
 
-    def _calculate_complexity(self, flow: Flow) -> int:
+    def _calculate_complexity(self, flow: Flow[Any, Any]) -> int:
         """Calculate complexity score for a flow."""
         base_complexity = 1
         name = flow.name.lower()
@@ -323,13 +323,13 @@ class FlowAnalyzer:
 
         return base_complexity
 
-    def _extract_description(self, flow: Flow) -> Optional[str]:
+    def _extract_description(self, flow: Flow[Any, Any]) -> Optional[str]:
         """Extract description from flow function docstring."""
         if hasattr(flow, "_flow") and hasattr(flow._flow, "__doc__"):
             docstring = flow._flow.__doc__
-            if docstring:
+            if docstring and isinstance(docstring, str):
                 # Return first line of docstring
-                return docstring.strip().split("\n")[0]
+                return str(docstring.strip().split("\n")[0])
         return None
 
     def detect_patterns(self, graph: FlowGraph) -> List[Dict[str, Any]]:
@@ -513,7 +513,7 @@ class FlowAnalyzer:
 _flow_analyzer = FlowAnalyzer()
 
 
-def analyze_flow(flow: Flow) -> FlowGraph:
+def analyze_flow(flow: Flow[Any, Any]) -> FlowGraph:
     """Analyze a single Flow and return its graph representation."""
     return _flow_analyzer.analyze_flow(flow)
 

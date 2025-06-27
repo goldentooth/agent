@@ -252,7 +252,7 @@ class FlowHealthMonitor:
 
     async def run_all_checks(self) -> SystemHealth:
         """Run all enabled health checks."""
-        results = []
+        final_results: list[HealthCheckResult]
 
         # Run all checks concurrently
         tasks = []
@@ -283,16 +283,16 @@ class FlowHealthMonitor:
                     assert isinstance(result, HealthCheckResult)
                     processed_results.append(result)
 
-            results: list[HealthCheckResult] = processed_results
+            final_results = processed_results
         else:
-            results: list[HealthCheckResult] = []
+            final_results = []
 
         # Determine overall system health
-        overall_status = self._determine_overall_status(results)
-        overall_message = self._generate_overall_message(results, overall_status)
+        overall_status = self._determine_overall_status(final_results)
+        overall_message = self._generate_overall_message(final_results, overall_status)
 
         system_health = SystemHealth(
-            status=overall_status, message=overall_message, checks=results
+            status=overall_status, message=overall_message, checks=final_results
         )
 
         # Add to history
@@ -349,7 +349,7 @@ class FlowHealthMonitor:
     def export_health_report(self, filepath: str) -> None:
         """Export health report to JSON file."""
         if not self.history:
-            report_data = {"message": "No health data available"}
+            report_data: dict[str, Any] = {"message": "No health data available"}
         else:
             latest_health = self.history[-1]
             report_data = {
@@ -473,7 +473,7 @@ class FlowConfigValidator:
 
         return errors
 
-    def validate_flow_config(self, flow: Flow, config: Dict[str, Any]) -> List[str]:
+    def validate_flow_config(self, flow: Flow[Any, Any], config: Dict[str, Any]) -> List[str]:
         """Validate configuration specific to a Flow.
 
         Args:
@@ -516,7 +516,7 @@ _health_monitor = FlowHealthMonitor()
 _config_validator = FlowConfigValidator()
 
 
-def health_check_stream(health_monitor: Optional[FlowHealthMonitor] = None) -> Flow:
+def health_check_stream(health_monitor: Optional[FlowHealthMonitor] = None) -> Flow[Any, Any]:
     """Create a flow that performs health checks during stream processing.
 
     Args:
@@ -527,15 +527,13 @@ def health_check_stream(health_monitor: Optional[FlowHealthMonitor] = None) -> F
     """
     monitor = health_monitor or _health_monitor
 
-    async def _flow(stream: AsyncIterator) -> AsyncIterator:
+    async def _flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
+        item_count = 0
         async for item in stream:
             # Run a quick health check every 100 items
-            if hasattr(_flow, "_item_count"):
-                _flow._item_count += 1
-            else:
-                _flow._item_count = 1
+            item_count += 1
 
-            if _flow._item_count % 100 == 0:
+            if item_count % 100 == 0:
                 # Run a subset of critical health checks
                 critical_checks = [
                     name

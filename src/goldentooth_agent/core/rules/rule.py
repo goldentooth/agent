@@ -1,4 +1,4 @@
-from typing import Callable, Generic, Optional, TypeVar, AsyncIterator
+from typing import Callable, Generic, Optional, TypeVar, AsyncIterator, Any
 from dataclasses import dataclass
 from ..flow import Flow
 
@@ -27,7 +27,7 @@ class Rule(Generic[TIn]):
         """Apply the rule to the given context."""
         if self.condition(ctx):
             # Convert single context to stream, apply flow, and extract result
-            async def single_item_stream():
+            async def single_item_stream() -> AsyncIterator[Any]:
                 yield ctx
 
             # Get the first (and only) result from the flow
