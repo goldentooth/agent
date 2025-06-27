@@ -142,6 +142,15 @@ from .registry import (
     search_flows,
 )
 
+# Trampoline execution patterns
+from .trampoline import (
+    SHOULD_BREAK_KEY,
+    SHOULD_EXIT_KEY,
+    SHOULD_SKIP_KEY,
+    TrampolineFlowCombinators,
+    extend_flow_with_trampoline,
+)
+
 __all__ = [
     "Flow",
     # Exception classes
@@ -280,4 +289,13 @@ __all__ = [
     "OnNext",
     "OnError",
     "OnComplete",
+    # Trampoline execution patterns
+    "TrampolineFlowCombinators",
+    "SHOULD_EXIT_KEY",
+    "SHOULD_BREAK_KEY",
+    "SHOULD_SKIP_KEY",
+    "extend_flow_with_trampoline",
 ]
+
+# Automatically extend Flow with trampoline methods
+extend_flow_with_trampoline()
