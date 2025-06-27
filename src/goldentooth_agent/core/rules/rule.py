@@ -1,5 +1,7 @@
-from typing import Callable, Generic, Optional, TypeVar, AsyncIterator, Any
+from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass
+from typing import Any, Generic, TypeVar
+
 from ..flow import Flow
 
 TIn = TypeVar("TIn")
@@ -17,7 +19,7 @@ class Rule(Generic[TIn]):
     condition: Callable[[TIn], bool]
     action: Flow[TIn, TIn]
     priority: int = 0
-    description: Optional[str] = None
+    description: str | None = None
 
     async def __call__(self, ctx: TIn) -> TIn:
         """Evaluate the rule against the context and return the modified context."""

@@ -1,15 +1,8 @@
 from __future__ import annotations
-from typing import (
-    TypeVar,
-    AsyncIterator,
-    Awaitable,
-    Callable,
-    Generic,
-    Any,
-    Union,
-    Optional,
-)
+
 import asyncio
+from collections.abc import AsyncIterator, Awaitable, Callable
+from typing import Any, Generic, TypeVar
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
@@ -177,7 +170,6 @@ class Flow(Generic[Input, Output]):
         Returns:
             Flow that yields lists of items
         """
-        from .combinators import batch_stream
 
         async def _batched(stream: AsyncIterator[Input]) -> AsyncIterator[list[Output]]:
             output_stream = self(stream)
@@ -195,8 +187,11 @@ class Flow(Generic[Input, Output]):
 
     @staticmethod
     def from_value_fn(
-        fn: Optional[Callable[[Input], Awaitable[Output]]] = None,
-    ) -> Union[Flow[Input, Output], Callable[[Callable[[Input], Awaitable[Output]]], Flow[Input, Output]]]:
+        fn: Callable[[Input], Awaitable[Output]] | None = None,
+    ) -> (
+        Flow[Input, Output]
+        | Callable[[Callable[[Input], Awaitable[Output]]], Flow[Input, Output]]
+    ):
         """Create a flow from an async function that takes an input and returns an output.
 
         Can be used as a decorator:
@@ -219,8 +214,10 @@ class Flow(Generic[Input, Output]):
 
     @staticmethod
     def from_sync_fn(
-        fn: Optional[Callable[[Input], Output]] = None,
-    ) -> Union[Flow[Input, Output], Callable[[Callable[[Input], Output]], Flow[Input, Output]]]:
+        fn: Callable[[Input], Output] | None = None,
+    ) -> (
+        Flow[Input, Output] | Callable[[Callable[[Input], Output]], Flow[Input, Output]]
+    ):
         """Create a flow from a synchronous function that takes an input and returns an output.
 
         Can be used as a decorator:
@@ -243,8 +240,11 @@ class Flow(Generic[Input, Output]):
 
     @staticmethod
     def from_event_fn(
-        fn: Optional[Callable[[Input], AsyncIterator[Output]]] = None,
-    ) -> Union[Flow[Input, Output], Callable[[Callable[[Input], AsyncIterator[Output]]], Flow[Input, Output]]]:
+        fn: Callable[[Input], AsyncIterator[Output]] | None = None,
+    ) -> (
+        Flow[Input, Output]
+        | Callable[[Callable[[Input], AsyncIterator[Output]]], Flow[Input, Output]]
+    ):
         """Create a flow from an async function that returns an async iterator.
 
         Can be used as a decorator:

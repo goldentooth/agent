@@ -4,7 +4,9 @@ This module provides a global registry for named flows, enabling
 easy discovery and reuse across applications.
 """
 
-from typing import Dict, List, Optional, TypeVar, Generic, Any, Callable
+from collections.abc import Callable
+from typing import Any, TypeVar
+
 from .main import Flow
 
 Input = TypeVar("Input")
@@ -15,10 +17,12 @@ class FlowRegistry:
     """Registry for named flows with discovery and introspection capabilities."""
 
     def __init__(self) -> None:
-        self._flows: Dict[str, Flow[Any, Any]] = {}
-        self._categories: Dict[str, List[str]] = {}
+        self._flows: dict[str, Flow[Any, Any]] = {}
+        self._categories: dict[str, list[str]] = {}
 
-    def register(self, name: str, flow: Flow[Any, Any], category: Optional[str] = None) -> Flow[Any, Any]:
+    def register(
+        self, name: str, flow: Flow[Any, Any], category: str | None = None
+    ) -> Flow[Any, Any]:
         """Register a flow with the given name.
 
         Args:
@@ -39,7 +43,7 @@ class FlowRegistry:
 
         return flow
 
-    def get(self, name: str) -> Optional[Flow[Any, Any]]:
+    def get(self, name: str) -> Flow[Any, Any] | None:
         """Get a flow by name.
 
         Args:
@@ -50,7 +54,7 @@ class FlowRegistry:
         """
         return self._flows.get(name)
 
-    def list_flows(self, category: Optional[str] = None) -> List[str]:
+    def list_flows(self, category: str | None = None) -> list[str]:
         """List all registered flow names.
 
         Args:
@@ -63,7 +67,7 @@ class FlowRegistry:
             return self._categories.get(category, [])
         return list(self._flows.keys())
 
-    def list_categories(self) -> List[str]:
+    def list_categories(self) -> list[str]:
         """List all categories.
 
         Returns:
@@ -71,7 +75,7 @@ class FlowRegistry:
         """
         return list(self._categories.keys())
 
-    def search(self, query: str) -> List[str]:
+    def search(self, query: str) -> list[str]:
         """Search for flows by name or metadata.
 
         Args:
@@ -121,7 +125,7 @@ class FlowRegistry:
             return True
         return False
 
-    def clear(self, category: Optional[str] = None) -> None:
+    def clear(self, category: str | None = None) -> None:
         """Clear flows from registry.
 
         Args:
@@ -136,7 +140,7 @@ class FlowRegistry:
             self._flows.clear()
             self._categories.clear()
 
-    def info(self, name: str) -> Optional[Dict[str, Any]]:
+    def info(self, name: str) -> dict[str, Any] | None:
         """Get detailed information about a flow.
 
         Args:
@@ -189,7 +193,7 @@ class FlowRegistry:
             name for name in self._flows.keys() if name not in categorized_flows
         ]
         if uncategorized:
-            print(f"\n📄 Uncategorized:")
+            print("\n📄 Uncategorized:")
             for name in sorted(uncategorized):
                 flow = self._flows[name]
                 print(f"  • {name} ({flow.name})")
@@ -200,7 +204,9 @@ flow_registry = FlowRegistry()
 
 
 # Convenience functions
-def register_flow(name: str, flow: Flow[Any, Any], category: Optional[str] = None) -> Flow[Any, Any]:
+def register_flow(
+    name: str, flow: Flow[Any, Any], category: str | None = None
+) -> Flow[Any, Any]:
     """Register a flow in the global registry.
 
     Args:
@@ -214,7 +220,7 @@ def register_flow(name: str, flow: Flow[Any, Any], category: Optional[str] = Non
     return flow_registry.register(name, flow, category)
 
 
-def get_flow(name: str) -> Optional[Flow[Any, Any]]:
+def get_flow(name: str) -> Flow[Any, Any] | None:
     """Get a flow from the global registry.
 
     Args:
@@ -226,7 +232,7 @@ def get_flow(name: str) -> Optional[Flow[Any, Any]]:
     return flow_registry.get(name)
 
 
-def list_flows(category: Optional[str] = None) -> List[str]:
+def list_flows(category: str | None = None) -> list[str]:
     """List flows in the global registry.
 
     Args:
@@ -238,7 +244,7 @@ def list_flows(category: Optional[str] = None) -> List[str]:
     return flow_registry.list_flows(category)
 
 
-def search_flows(query: str) -> List[str]:
+def search_flows(query: str) -> list[str]:
     """Search flows in the global registry.
 
     Args:
@@ -251,7 +257,9 @@ def search_flows(query: str) -> List[str]:
 
 
 # Decorator for registering flows
-def registered_flow(name: str, category: Optional[str] = None) -> Callable[[Flow[Any, Any]], Flow[Any, Any]]:
+def registered_flow(
+    name: str, category: str | None = None
+) -> Callable[[Flow[Any, Any]], Flow[Any, Any]]:
     """Decorator to register a flow in the global registry.
 
     Args:

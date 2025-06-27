@@ -6,20 +6,14 @@ specifically for async stream operations.
 """
 
 from __future__ import annotations
+
 import asyncio
 import logging
-from typing import (
-    AsyncIterator,
-    Awaitable,
-    Callable,
-    TypeVar,
-    Any,
-    Optional,
-    List,
-)
+from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
+from typing import Any, TypeVar
 
+from .exceptions import FlowExecutionError, FlowTimeoutError, FlowValidationError
 from .main import Flow
-from .exceptions import FlowValidationError, FlowExecutionError, FlowTimeoutError
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
@@ -171,7 +165,7 @@ def identity_stream() -> Flow[Input, Input]:
 def if_then_stream(
     predicate: Callable[[Input], bool],
     if_flow: Flow[Input, Output],
-    else_flow: Optional[Flow[Input, Output]] = None,
+    else_flow: Flow[Input, Output] | None = None,
 ) -> Flow[Input, Output]:
     """Create a flow that conditionally processes items based on a predicate.
 
@@ -184,17 +178,27 @@ def if_then_stream(
         async for item in stream:
             if predicate(item):
                 # Create a single-item stream for the if_flow
-                async def single_item_stream() -> AsyncIterator[Input]:
-                    yield item
+                def make_single_item_stream(
+                    captured_item: Input,
+                ) -> AsyncIterator[Input]:
+                    async def single_item_stream() -> AsyncIterator[Input]:
+                        yield captured_item
 
-                async for result in if_flow(single_item_stream()):
+                    return single_item_stream()
+
+                async for result in if_flow(make_single_item_stream(item)):
                     yield result
             elif else_flow is not None:
                 # Create a single-item stream for the else_flow
-                async def single_item_stream() -> AsyncIterator[Input]:
-                    yield item
+                def make_single_item_stream(
+                    captured_item: Input,
+                ) -> AsyncIterator[Input]:
+                    async def single_item_stream() -> AsyncIterator[Input]:
+                        yield captured_item
 
-                async for result in else_flow(single_item_stream()):
+                    return single_item_stream()
+
+                async for result in else_flow(make_single_item_stream(item)):
                     yield result
             else:
                 # Pass through unchanged (assuming Input and Output are compatible)
@@ -344,10 +348,17 @@ def retry_stream(n: int, flow: Flow[Input, Output]) -> Flow[Input, Output]:
             for attempt in range(n):
                 try:
                     # Create a single-item stream for the retry flow
-                    async def single_item_stream() -> AsyncIterator[Input]:
-                        yield item
+                    def make_single_item_stream(
+                        captured_item: Input,
+                    ) -> AsyncIterator[Input]:
+                        async def single_item_stream() -> AsyncIterator[Input]:
+                            yield captured_item
 
-                    result_stream = flow(single_item_stream())
+                        return single_item_stream()
+
+                    stream_for_retry = make_single_item_stream(item)
+
+                    result_stream = flow(stream_for_retry)
                     async for result in result_stream:
                         yield result
                         success = True
@@ -358,7 +369,7 @@ def retry_stream(n: int, flow: Flow[Input, Output]) -> Flow[Input, Output]:
                 except Exception as e:
                     last_exception = e
                     if attempt == n - 1:  # Last attempt
-                        raise last_exception
+                        raise last_exception from e
 
     return Flow(_flow, name=f"retry({n}, {flow.name})")
 
@@ -366,7 +377,7 @@ def retry_stream(n: int, flow: Flow[Input, Output]) -> Flow[Input, Output]:
 def switch_stream(
     selector: Callable[[Input], str],
     cases: dict[str, Flow[Input, Output]],
-    default: Optional[Flow[Input, Output]] = None,
+    default: Flow[Input, Output] | None = None,
 ) -> Flow[Input, Output]:
     """Create a flow that routes items to different flows based on a selector function."""
 
@@ -384,10 +395,13 @@ def switch_stream(
                 raise KeyError(f"No case for key: {key}")
 
             # Create a single-item stream for the selected flow
-            async def single_item_stream() -> AsyncIterator[Input]:
-                yield item
+            def make_single_item_stream(captured_item: Input) -> AsyncIterator[Input]:
+                async def single_item_stream() -> AsyncIterator[Input]:
+                    yield captured_item
 
-            async for result in selected_flow(single_item_stream()):
+                return single_item_stream()
+
+            async for result in selected_flow(make_single_item_stream(item)):
                 yield result
 
     default_name = default.name if default else "None"
@@ -459,8 +473,8 @@ def race_stream(flows: list[Flow[Input, Output]]) -> Flow[Input, Output]:
 
 
 def parallel_stream(
-    flows: List[Flow[Input, Output]],
-) -> Flow[Input, List[Optional[Output]]]:
+    flows: list[Flow[Input, Output]],
+) -> Flow[Input, list[Output | None]]:
     """Create a flow that runs multiple flows in parallel for each item and collects all results.
 
     For each input item, all flows are executed simultaneously, and all successful
@@ -474,20 +488,31 @@ def parallel_stream(
         """Run multiple flows in parallel for each item."""
         async for item in stream:
             # Create tasks for each flow
-            async def run_flow(flow: Flow[Input, Output]) -> Optional[Output]:
-                try:
+            def make_run_flow(
+                captured_item: Input,
+            ) -> Callable[[Flow[Input, Output]], Coroutine[Any, Any, Output | None]]:
+                async def run_flow(captured_flow: Flow[Input, Output]) -> Output | None:
+                    try:
 
-                    async def single_item_stream() -> AsyncIterator[Input]:
-                        yield item
+                        def make_single_item_stream() -> AsyncIterator[Input]:
+                            async def single_item_stream() -> AsyncIterator[Input]:
+                                yield captured_item
 
-                    result_stream = flow(single_item_stream())
-                    async for result in result_stream:
-                        return result
-                    return None  # Flow produced no output
-                except Exception:
-                    return None  # Flow failed
+                            return single_item_stream()
 
-            tasks = [asyncio.create_task(run_flow(flow)) for flow in flows]
+                        result_stream = captured_flow(make_single_item_stream())
+                        async for result in result_stream:
+                            return result
+                        return None  # Flow produced no output
+                    except Exception:
+                        return None  # Flow failed
+
+                return run_flow
+
+            run_flow = make_run_flow(item)
+            tasks: list[asyncio.Task[Output | None]] = [
+                asyncio.create_task(run_flow(flow)) for flow in flows
+            ]
             results = await asyncio.gather(*tasks, return_exceptions=False)
             yield list(results)
 
@@ -508,20 +533,31 @@ def parallel_stream_successful(
         """Run multiple flows in parallel for each item, keeping only successful results."""
         async for item in stream:
             # Create tasks for each flow
-            async def run_flow(flow: Flow[Input, Output]) -> Optional[Output]:
-                try:
+            def make_run_flow_successful(
+                captured_item: Input,
+            ) -> Callable[[Flow[Input, Output]], Coroutine[Any, Any, Output | None]]:
+                async def run_flow(captured_flow: Flow[Input, Output]) -> Output | None:
+                    try:
 
-                    async def single_item_stream() -> AsyncIterator[Input]:
-                        yield item
+                        def make_single_item_stream() -> AsyncIterator[Input]:
+                            async def single_item_stream() -> AsyncIterator[Input]:
+                                yield captured_item
 
-                    result_stream = flow(single_item_stream())
-                    async for result in result_stream:
-                        return result
-                    return None  # Flow produced no output
-                except Exception:
-                    return None  # Flow failed
+                            return single_item_stream()
 
-            tasks = [asyncio.create_task(run_flow(flow)) for flow in flows]
+                        result_stream = captured_flow(make_single_item_stream())
+                        async for result in result_stream:
+                            return result
+                        return None  # Flow produced no output
+                    except Exception:
+                        return None  # Flow failed
+
+                return run_flow
+
+            run_flow = make_run_flow_successful(item)
+            tasks: list[asyncio.Task[Output | None]] = [
+                asyncio.create_task(run_flow(flow)) for flow in flows
+            ]
             results = await asyncio.gather(*tasks, return_exceptions=False)
             # Filter out None values
             successful_results = [r for r in results if r is not None]
@@ -543,7 +579,7 @@ def range_flow(start: int, stop: int, step: int = 1) -> Flow[None, int]:
     return Flow(_flow, name=f"range({start}, {stop}, {step})")
 
 
-def repeat_flow(value: A, times: Optional[int] = None) -> Flow[None, A]:
+def repeat_flow(value: A, times: int | None = None) -> Flow[None, A]:
     """Create a flow that repeats a value a specified number of times (or infinitely)."""
 
     async def _flow(stream: AsyncIterator[None]) -> AsyncIterator[A]:
@@ -725,11 +761,16 @@ def while_condition_stream(
         async for item in stream:
             if condition(item):
                 # Create single-item stream for transform
-                async def single_item() -> AsyncIterator[Input]:
-                    yield item
+                def make_single_item_stream(
+                    captured_item: Input,
+                ) -> AsyncIterator[Input]:
+                    async def single_item() -> AsyncIterator[Input]:
+                        yield captured_item
+
+                    return single_item()
 
                 # Apply transform and yield result
-                transform_stream = transform(single_item())
+                transform_stream = transform(make_single_item_stream(item))
                 async for transformed in transform_stream:
                     yield transformed
             else:
@@ -803,10 +844,10 @@ def timeout_stream(seconds: float) -> Flow[Input, Input]:
             try:
                 # Use asyncio.wait_for to enforce timeout
                 yield await asyncio.wait_for(_identity_async(item), timeout=seconds)
-            except asyncio.TimeoutError:
+            except TimeoutError as e:
                 raise FlowTimeoutError(
                     f"Processing timed out after {seconds} seconds for item: {item}"
-                )
+                ) from e
 
     async def _identity_async(item: Input) -> Input:
         """Identity function that can be awaited."""
@@ -868,7 +909,7 @@ def circuit_breaker_stream(
 
 
 def catch_and_continue_stream(
-    handler: Callable[[Exception, Input], Optional[Output]] = lambda e, x: None
+    handler: Callable[[Exception, Input], Output | None] = lambda e, x: None
 ) -> Flow[Input, Output]:
     """Create a flow that catches exceptions and continues processing with fallback values.
 
@@ -1197,7 +1238,7 @@ def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
 
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[tuple[Input, Input]]:
         """Emit consecutive pairs of items."""
-        previous: Optional[Input] = None
+        previous: Input | None = None
         first_item = True
 
         async for item in stream:
@@ -1304,8 +1345,8 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
 
     async def _flow(stream: AsyncIterator[A]) -> AsyncIterator[tuple[A, B]]:
         """Combine latest values from both streams."""
-        latest_a: Optional[A] = None
-        latest_b: Optional[B] = None
+        latest_a: A | None = None
+        latest_b: B | None = None
         has_a = False
         has_b = False
         result_queue: asyncio.Queue[tuple[A, B]] = asyncio.Queue()
@@ -1318,7 +1359,12 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
                     latest_a = item
                     has_a = True
                     # Emit if we have both values
-                    if has_a and has_b and latest_a is not None and latest_b is not None:
+                    if (
+                        has_a
+                        and has_b
+                        and latest_a is not None
+                        and latest_b is not None
+                    ):
                         await result_queue.put((latest_a, latest_b))
             except Exception:
                 pass
@@ -1333,7 +1379,12 @@ def combine_latest_stream(other_stream: AsyncIterator[B]) -> Flow[A, tuple[A, B]
                     latest_b = item
                     has_b = True
                     # Emit if we have both values
-                    if has_a and has_b and latest_a is not None and latest_b is not None:
+                    if (
+                        has_a
+                        and has_b
+                        and latest_a is not None
+                        and latest_b is not None
+                    ):
                         await result_queue.put((latest_a, latest_b))
             except Exception:
                 pass
@@ -1498,7 +1549,7 @@ def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
 
 
 def expand_stream(
-    fn: Callable[[Input], AsyncIterator[Input]], max_depth: Optional[int] = None
+    fn: Callable[[Input], AsyncIterator[Input]], max_depth: int | None = None
 ) -> Flow[Input, Input]:
     """Create a flow that recursively expands each item using a function.
 
@@ -1674,7 +1725,9 @@ def metrics_stream(counter: Callable[[str], None]) -> Flow[Input, Input]:
     return Flow(_flow, name=f"metrics({getattr(counter, '__name__', 'function')})")
 
 
-def inspect_stream(inspector: Callable[[Input, dict[str, Any]], None]) -> Flow[Input, Input]:
+def inspect_stream(
+    inspector: Callable[[Input, dict[str, Any]], None]
+) -> Flow[Input, Input]:
     """Create a flow that inspects stream items with context metadata.
 
     Calls the inspector function with each item and a context dictionary
@@ -1842,11 +1895,15 @@ def merge_flows(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
 
 
 # Utility function for merging async generators
-async def merge_async_generators(*async_generators: AsyncIterator[Any]) -> AsyncIterator[Any]:
+async def merge_async_generators(
+    *async_generators: AsyncIterator[Any],
+) -> AsyncIterator[Any]:
     """Merge outputs from multiple async generators."""
     queues: list[asyncio.Queue[Any]] = [asyncio.Queue[Any]() for _ in async_generators]
 
-    async def collect_from_generator(generator: AsyncIterator[Any], queue: asyncio.Queue[Any]) -> None:
+    async def collect_from_generator(
+        generator: AsyncIterator[Any], queue: asyncio.Queue[Any]
+    ) -> None:
         """Collect items from a generator into a queue."""
         try:
             async for item in generator:
@@ -1858,7 +1915,7 @@ async def merge_async_generators(*async_generators: AsyncIterator[Any]) -> Async
 
     # Start collector tasks
     tasks = []
-    for generator, queue in zip(async_generators, queues):
+    for generator, queue in zip(async_generators, queues, strict=False):
         task = asyncio.create_task(collect_from_generator(generator, queue))
         tasks.append(task)
 

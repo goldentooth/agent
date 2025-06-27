@@ -1,11 +1,13 @@
 from __future__ import annotations
-from typing import TypeVar, Callable, Awaitable, Any, AsyncIterator, Coroutine, Optional
-from antidote import inject
+
 import asyncio
+from collections.abc import AsyncIterator, Callable, Coroutine
+from typing import Any, TypeVar
 
-from ..flow import Flow, map_stream, flat_map_stream
+from antidote import inject
+
+from ..flow import Flow, flat_map_stream, map_stream
 from .main import BackgroundEventLoop
-
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -76,7 +78,7 @@ def schedule_flow(
 def timeout_async_flow(
     coroutine_fn: Callable[[T], Coroutine[Any, Any, R]],
     timeout_seconds: float,
-    default_value: Optional[R] = None,
+    default_value: R | None = None,
 ) -> Flow[T, R]:
     """
     Create a Flow that runs async operations with a timeout.
@@ -95,13 +97,13 @@ def timeout_async_flow(
         results = urls >> timeout_async_flow(fetch_data, 5.0, default_value={})
     """
 
-    async def with_timeout(item: T) -> Optional[R]:
+    async def with_timeout(item: T) -> R | None:
         try:
             return await asyncio.wait_for(coroutine_fn(item), timeout_seconds)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return default_value
 
-    def filter_none(item: Optional[R]) -> AsyncIterator[R]:
+    def filter_none(item: R | None) -> AsyncIterator[R]:
         async def _filter() -> AsyncIterator[R]:
             if item is not None:
                 yield item

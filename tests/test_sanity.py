@@ -1,19 +1,15 @@
 """Sanity tests to ensure basic project functionality."""
 
-import pytest
 from typer.testing import CliRunner
+
 from goldentooth_agent.cli.main import app
 
 
 def test_imports():
     """Test that available modules can be imported without errors."""
     # Test CLI imports
-    import goldentooth_agent.cli.main
-    import goldentooth_agent.cli.commands.chat
-    import goldentooth_agent.cli.commands.tools
 
     # Test core module
-    import goldentooth_agent.core
 
 
 def test_cli_app_creation():

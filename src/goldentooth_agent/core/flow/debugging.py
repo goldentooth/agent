@@ -5,17 +5,18 @@ execution context tracking, and flow introspection capabilities.
 """
 
 from __future__ import annotations
-import asyncio
-import traceback
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Callable, AsyncIterator, TypeVar, AsyncGenerator
-from contextlib import asynccontextmanager
-import json
-import sys
-from datetime import datetime
 
-from .main import Flow
+import asyncio
+import json
+import traceback
+from collections.abc import AsyncGenerator, AsyncIterator, Callable
+from contextlib import asynccontextmanager
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, TypeVar
+
 from .exceptions import FlowError, FlowExecutionError
+from .main import Flow
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
@@ -27,14 +28,14 @@ class FlowExecutionContext:
 
     flow_name: str
     started_at: datetime
-    input_type: Optional[str] = None
+    input_type: str | None = None
     current_item: Any = None
     item_index: int = 0
-    parent_flow: Optional[str] = None
+    parent_flow: str | None = None
     execution_id: str = field(default_factory=lambda: f"flow_{id(object())}")
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert context to dictionary for serialization."""
         return {
             "flow_name": self.flow_name,
@@ -54,9 +55,9 @@ class FlowDebugger:
     """Debugging system for Flow executions."""
 
     def __init__(self) -> None:
-        self.execution_stack: List[FlowExecutionContext] = []
-        self.execution_history: List[FlowExecutionContext] = []
-        self.breakpoints: Dict[str, Callable[[Any, FlowExecutionContext], bool]] = {}
+        self.execution_stack: list[FlowExecutionContext] = []
+        self.execution_history: list[FlowExecutionContext] = []
+        self.breakpoints: dict[str, Callable[[Any, FlowExecutionContext], bool]] = {}
         self.debug_enabled = False
         self.max_history = 1000
 
@@ -87,8 +88,8 @@ class FlowDebugger:
 
     @asynccontextmanager
     async def execution_context(
-        self, flow_name: str, parent_flow: Optional[str] = None
-    ) -> AsyncGenerator[FlowExecutionContext, None]:
+        self, flow_name: str, parent_flow: str | None = None
+    ) -> AsyncGenerator[FlowExecutionContext]:
         """Context manager for tracking flow execution."""
         context = FlowExecutionContext(
             flow_name=flow_name, started_at=datetime.now(), parent_flow=parent_flow
@@ -154,7 +155,7 @@ class FlowDebugger:
 
     def print_item_inspection(self, item: Any) -> None:
         """Print detailed inspection of the current item."""
-        print(f"\n🔬 Item Inspection:")
+        print("\n🔬 Item Inspection:")
         print(f"   Type: {type(item).__name__}")
         print(f"   Value: {repr(item)}")
         print(f"   String: {str(item)}")
@@ -162,7 +163,7 @@ class FlowDebugger:
         if hasattr(item, "__dict__"):
             print(f"   Attributes: {list(item.__dict__.keys())}")
 
-    def get_execution_trace(self) -> List[Dict[str, Any]]:
+    def get_execution_trace(self) -> list[dict[str, Any]]:
         """Get the full execution trace."""
         return [ctx.to_dict() for ctx in self.execution_history]
 
@@ -189,9 +190,9 @@ class FlowExecutionErrorWithContext(FlowError):
     def __init__(
         self,
         message: str,
-        flow_name: Optional[str] = None,
-        execution_context: Optional[FlowExecutionContext] = None,
-        original_exception: Optional[Exception] = None,
+        flow_name: str | None = None,
+        execution_context: FlowExecutionContext | None = None,
+        original_exception: Exception | None = None,
     ):
         super().__init__(message)
         self.flow_name = flow_name
@@ -201,7 +202,7 @@ class FlowExecutionErrorWithContext(FlowError):
         # Capture execution stack
         self.execution_stack = list(_flow_debugger.execution_stack)
 
-    def get_debug_info(self) -> Dict[str, Any]:
+    def get_debug_info(self) -> dict[str, Any]:
         """Get comprehensive debug information."""
         return {
             "error_message": str(self),
@@ -226,20 +227,20 @@ class FlowExecutionErrorWithContext(FlowError):
             print(f"   Item Index: {self.execution_context.item_index}")
 
         if self.execution_stack:
-            print(f"\n📚 Execution Stack:")
+            print("\n📚 Execution Stack:")
             for i, ctx in enumerate(reversed(self.execution_stack)):
                 indent = "  " * i
                 print(f"{indent}└─ {ctx.flow_name} (item {ctx.item_index})")
 
         if self.original_exception:
-            print(f"\n🔍 Original Exception:")
+            print("\n🔍 Original Exception:")
             print(
                 f"   {type(self.original_exception).__name__}: {self.original_exception}"
             )
 
 
 def debug_stream(
-    breakpoint_condition: Optional[Callable[[Any], bool]] = None, log_items: bool = True
+    breakpoint_condition: Callable[[Any], bool] | None = None, log_items: bool = True
 ) -> Flow[Input, Input]:
     """Create a flow that adds debugging capabilities to the pipeline.
 
@@ -284,7 +285,7 @@ def debug_stream(
                     execution_context=context,
                     original_exception=e,
                 )
-                raise enhanced_error
+                raise enhanced_error from e
 
     return Flow(_flow, name="debug")
 
@@ -327,7 +328,7 @@ def traced_flow(flow: Flow[Input, Output]) -> Flow[Input, Output]:
                         execution_context=context,
                         original_exception=e,
                     )
-                    raise enhanced_error
+                    raise enhanced_error from e
                 else:
                     raise  # Re-raise already enhanced errors
 
@@ -363,7 +364,7 @@ def remove_flow_breakpoint(flow_name: str) -> None:
     _flow_debugger.remove_breakpoint(flow_name)
 
 
-def get_execution_trace() -> List[Dict[str, Any]]:
+def get_execution_trace() -> list[dict[str, Any]]:
     """Get the current execution trace."""
     return _flow_debugger.get_execution_trace()
 
@@ -373,7 +374,7 @@ def export_execution_trace(filepath: str) -> None:
     _flow_debugger.export_trace(filepath)
 
 
-def inspect_flow(flow: Flow[Any, Any]) -> Dict[str, Any]:
+def inspect_flow(flow: Flow[Any, Any]) -> dict[str, Any]:
     """Inspect a flow and return metadata about its structure.
 
     Args:
@@ -395,7 +396,9 @@ def inspect_flow(flow: Flow[Any, Any]) -> Dict[str, Any]:
 
 # Context manager for temporary debugging
 @asynccontextmanager
-async def debug_session(enable_breakpoints: bool = True) -> AsyncGenerator[FlowDebugger, None]:
+async def debug_session(
+    enable_breakpoints: bool = True,
+) -> AsyncGenerator[FlowDebugger]:
     """Context manager for a temporary debugging session.
 
     Args:

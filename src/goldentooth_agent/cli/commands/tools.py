@@ -1,6 +1,6 @@
 import typer
-from rich.console import Console
 from antidote import inject
+from rich.console import Console
 
 app = typer.Typer()
 

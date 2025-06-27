@@ -1,19 +1,18 @@
 """Tests for Flow ergonomic improvements and developer experience features."""
 
-import asyncio
-import pytest
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 
-from goldentooth_agent.core.flow import (
+import pytest
+
+from goldentooth_agent.core.flow import (  # Registry functionality
     Flow,
-    map_stream,
-    # Registry functionality
-    register_flow,
+    flow_registry,
     get_flow,
     list_flows,
-    search_flows,
+    map_stream,
+    register_flow,
     registered_flow,
-    flow_registry,
+    search_flows,
 )
 
 

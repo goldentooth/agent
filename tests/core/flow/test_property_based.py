@@ -5,38 +5,35 @@ and behave correctly across a wide range of inputs.
 """
 
 import asyncio
-import pytest
-from typing import AsyncIterator, List
-from hypothesis import given, strategies as st, assume, settings
-from hypothesis.stateful import RuleBasedStateMachine, rule, invariant, initialize
+from collections.abc import AsyncIterator
 
-from goldentooth_agent.core.flow import Flow
+import pytest
+from hypothesis import assume, given
+from hypothesis import strategies as st
+from hypothesis.stateful import RuleBasedStateMachine, initialize, invariant, rule
+
 from goldentooth_agent.core.flow.combinators import (
-    map_stream,
-    filter_stream,
-    flat_map_stream,
-    take_stream,
-    skip_stream,
     batch_stream,
-    distinct_stream,
     compose,
+    distinct_stream,
+    filter_stream,
     identity_stream,
-    scan_stream,
-    zip_stream,
-    chunk_stream,
-    window_stream,
+    map_stream,
     pairwise_stream,
-    start_with_stream,
+    scan_stream,
+    skip_stream,
+    take_stream,
+    window_stream,
 )
 
 
 # Async test utilities
-async def list_from_async_iter(async_iter: AsyncIterator) -> List:
+async def list_from_async_iter(async_iter: AsyncIterator) -> list:
     """Convert async iterator to list."""
     return [item async for item in async_iter]
 
 
-async def async_iter_from_list(items: List) -> AsyncIterator:
+async def async_iter_from_list(items: list) -> AsyncIterator:
     """Convert list to async iterator."""
     for item in items:
         yield item

@@ -1,6 +1,7 @@
 from __future__ import annotations
-from antidote import inject
+
 import typer
+from antidote import inject
 
 app = typer.Typer()
 

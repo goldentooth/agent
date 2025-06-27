@@ -1,17 +1,7 @@
 from __future__ import annotations
 
-from typing import (
-    Callable,
-    Generic,
-    Dict,
-    Optional,
-    Protocol,
-    TypeVar,
-    runtime_checkable,
-    List,
-    Tuple,
-    Type,
-)
+from collections.abc import Callable
+from typing import Generic, Protocol, TypeVar, runtime_checkable
 
 T = TypeVar("T")
 
@@ -21,7 +11,7 @@ class NamedRegistry(Generic[T]):
 
     def __init__(self) -> None:
         """Initialize the registry with an empty dictionary."""
-        self._registry: Dict[str, T] = {}
+        self._registry: dict[str, T] = {}
 
     def set(self, id: str, obj: T) -> None:
         """Register an object with a given ID."""
@@ -43,15 +33,15 @@ class NamedRegistry(Generic[T]):
         """Check if an object with the given ID is registered."""
         return id in self._registry
 
-    def list(self) -> List[str]:
+    def list_ids(self) -> list[str]:
         """List all registered IDs in the registry."""
         return sorted(self._registry.keys())
 
-    def all(self) -> List[T]:
+    def all_objects(self) -> list[T]:
         """Get all registered objects."""
         return list(self._registry.values())
 
-    def items(self) -> List[Tuple[str, T]]:
+    def all_items(self) -> list[tuple[str, T]]:
         """Get all registered objects as (name, object) pairs."""
         return list(self._registry.items())
 
@@ -79,31 +69,31 @@ class RegisterCallable(Protocol[T]):
 
     def __call__(
         self,
-        cls: Optional[Type[T]] = None,
+        cls: type[T] | None = None,
         *,
-        obj: Optional[T] = None,
-        id: Optional[str] = None,
-    ) -> Type[T]:
+        obj: T | None = None,
+        id: str | None = None,
+    ) -> type[T]:
         """Register an object with the given ID in the specified registry."""
         ...
 
 
 def make_register_fn(
-    registry_cls: Type[NamedRegistry[T]],
+    registry_cls: type[NamedRegistry[T]],
     *,
-    get_instance_fn: Optional[Callable[[], T]] = None,
-    default_id_fn: Optional[Callable[[T], str]] = None,
+    get_instance_fn: Callable[[], T] | None = None,
+    default_id_fn: Callable[[T], str] | None = None,
 ) -> RegisterCallable[T]:
     """Create a registration function for the given type."""
 
     def _decorate(
-        cls: Optional[Type[T]] = None,
+        cls: type[T] | None = None,
         *,
-        obj: Optional[T] = None,
-        id: Optional[str] = None,
-        get_instance_fn: Optional[Callable[[], T]] = get_instance_fn,
-        default_id_fn: Optional[Callable[[T], str]] = default_id_fn,
-    ) -> Type[T]:
+        obj: T | None = None,
+        id: str | None = None,
+        get_instance_fn: Callable[[], T] | None = get_instance_fn,
+        default_id_fn: Callable[[T], str] | None = default_id_fn,
+    ) -> type[T]:
         """Register an object with the given ID in the specified registry."""
         from antidote import world
 
@@ -112,7 +102,7 @@ def make_register_fn(
             final_obj = get_instance_fn()
         elif obj is not None:
             final_obj = obj
-        elif cls and hasattr(cls, 'create'):
+        elif cls and hasattr(cls, "create"):
             final_obj = cls.create()  # type: ignore[attr-defined]
         else:
             raise ValueError("An object must be provided or creatable.")

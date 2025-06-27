@@ -1,6 +1,8 @@
-from typing import List, TypeVar, Generic, AsyncIterator
-from .rule import Rule
+from collections.abc import AsyncIterator
+from typing import Generic, TypeVar
+
 from ..flow import Flow
+from .rule import Rule
 
 TIn = TypeVar("TIn")
 
@@ -12,7 +14,7 @@ class RuleEngine(Generic[TIn]):
     to a Flow for stream processing or used directly for single context evaluation.
     """
 
-    def __init__(self, rules: List[Rule[TIn]]):
+    def __init__(self, rules: list[Rule[TIn]]):
         """Initialize the rule engine with a list of rules."""
         self.rules = sorted(rules, key=lambda r: -r.priority)
 

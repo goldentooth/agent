@@ -1,55 +1,51 @@
 """Comprehensive tests for Flow combinators and stream processing utilities."""
 
 import asyncio
-import pytest
 import warnings
-from unittest.mock import AsyncMock, Mock
-from goldentooth_agent.core.flow import Flow
-from goldentooth_agent.core.flow.combinators import (
-    run_fold,
+
+import pytest
+
+from goldentooth_agent.core.flow.combinators import (  # New core combinators; Advanced combinators
+    batch_stream,
+    catch_and_continue_stream,
+    chain_stream,
+    chunk_stream,
+    circuit_breaker_stream,
+    collect_stream,
     compose,
+    delay_stream,
+    distinct_stream,
+    empty_flow,
     filter_stream,
-    map_stream,
+    flat_map_ctx_stream,
     flat_map_stream,
-    log_stream,
+    flatten_stream,
+    guard_stream,
     identity_stream,
     if_then_stream,
-    tap_stream,
-    delay_stream,
-    recover_stream,
-    take_stream,
-    skip_stream,
-    batch_stream,
-    debounce_stream,
-    retry_stream,
-    switch_stream,
-    race_stream,
+    log_stream,
+    map_stream,
+    memoize_stream,
+    merge_stream,
     parallel_stream,
     parallel_stream_successful,
+    race_stream,
     range_flow,
     repeat_flow,
-    empty_flow,
-    # New core combinators
-    flat_map_ctx_stream,
-    guard_stream,
-    then_stream,
-    memoize_stream,
-    while_condition_stream,
-    flatten_stream,
-    collect_stream,
-    # Advanced combinators
-    timeout_stream,
-    circuit_breaker_stream,
-    catch_and_continue_stream,
-    throttle_stream,
-    until_stream,
+    retry_stream,
+    run_fold,
     scan_stream,
-    zip_stream,
-    chain_stream,
-    merge_stream,
-    distinct_stream,
-    chunk_stream,
+    skip_stream,
+    switch_stream,
+    take_stream,
+    tap_stream,
+    then_stream,
+    throttle_stream,
+    timeout_stream,
+    until_stream,
+    while_condition_stream,
     window_stream,
+    zip_stream,
 )
 
 # Filter runtime warnings about unclosed async generators during exception handling

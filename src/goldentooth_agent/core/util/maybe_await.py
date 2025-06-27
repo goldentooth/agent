@@ -1,5 +1,6 @@
 import inspect
-from typing import Callable, Any
+from collections.abc import Callable
+from typing import Any
 
 
 async def maybe_await(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:

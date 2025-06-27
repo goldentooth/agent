@@ -1,11 +1,9 @@
 from __future__ import annotations
-import pytest
+
 import asyncio
 import threading
-from concurrent.futures import Future
-import time
-from typing import Any
-from unittest.mock import Mock, patch
+
+import pytest
 
 from goldentooth_agent.core.background_loop import (
     BackgroundEventLoop,

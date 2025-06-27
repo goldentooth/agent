@@ -1,11 +1,14 @@
 from __future__ import annotations
-from antidote import inject, injectable, lazy
+
 import asyncio
-import threading
-from typing import Any, Coroutine, TypeVar
-from concurrent.futures import Future
 import atexit
 import logging
+import threading
+from collections.abc import Coroutine
+from concurrent.futures import Future
+from typing import Any, TypeVar
+
+from antidote import inject, injectable
 
 logger = logging.getLogger(__name__)
 

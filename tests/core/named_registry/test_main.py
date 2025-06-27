@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import Mock, patch
-from typing import Protocol
 
 from goldentooth_agent.core.named_registry.main import (
-    NamedRegistry,
     Creatable,
+    NamedRegistry,
     RegisterCallable,
     make_register_fn,
 )
@@ -101,12 +101,12 @@ class TestNamedRegistry:
         self.registry.set("a", RegistryItem())
         self.registry.set("b", RegistryItem())
 
-        ids = self.registry.list()
+        ids = self.registry.list_ids()
         assert ids == ["a", "b", "c"]
 
     def test_list_returns_empty_for_empty_registry(self):
         """Test that list() returns empty list for empty registry."""
-        assert self.registry.list() == []
+        assert self.registry.list_ids() == []
 
     def test_all_returns_all_objects(self):
         """Test that all() returns all registered objects."""
@@ -116,14 +116,14 @@ class TestNamedRegistry:
         self.registry.set("id1", obj1)
         self.registry.set("id2", obj2)
 
-        all_objects = self.registry.all()
+        all_objects = self.registry.all_objects()
         assert len(all_objects) == 2
         assert obj1 in all_objects
         assert obj2 in all_objects
 
     def test_all_returns_empty_for_empty_registry(self):
         """Test that all() returns empty list for empty registry."""
-        assert self.registry.all() == []
+        assert self.registry.all_objects() == []
 
     def test_items_returns_name_object_pairs(self):
         """Test that items() returns (name, object) pairs."""
@@ -133,14 +133,14 @@ class TestNamedRegistry:
         self.registry.set("id1", obj1)
         self.registry.set("id2", obj2)
 
-        items = self.registry.items()
+        items = self.registry.all_items()
         assert len(items) == 2
         assert ("id1", obj1) in items
         assert ("id2", obj2) in items
 
     def test_items_returns_empty_for_empty_registry(self):
         """Test that items() returns empty list for empty registry."""
-        assert self.registry.items() == []
+        assert self.registry.all_items() == []
 
     def test_clear_removes_all_entries(self):
         """Test that clear() removes all registry entries."""
@@ -150,7 +150,7 @@ class TestNamedRegistry:
         self.registry.clear()
 
         assert self.registry._registry == {}
-        assert self.registry.list() == []
+        assert self.registry.list_ids() == []
 
     def test_generic_typing_with_different_types(self):
         """Test that generic typing works with different types."""
@@ -189,7 +189,7 @@ class TestRegisterCallableProtocol:
     def test_protocol_structure(self):
         """Test that RegisterCallable protocol has correct structure."""
         # This is mainly a structural test to ensure the protocol is defined correctly
-        assert hasattr(RegisterCallable, "__call__")
+        assert callable(RegisterCallable)
 
 
 class TestMakeRegisterFn:
@@ -357,10 +357,10 @@ class TestIntegration:
         assert registry.get("custom_second") is obj2
 
         # Test listing
-        assert sorted(registry.list()) == ["custom_second", "obj_first"]
+        assert sorted(registry.list_ids()) == ["custom_second", "obj_first"]
 
         # Test items
-        items = registry.items()
+        items = registry.all_items()
         assert len(items) == 2
         assert ("obj_first", obj1) in items
         assert ("custom_second", obj2) in items

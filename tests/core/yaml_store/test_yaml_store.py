@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import pytest
-import yaml
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
+
+import pytest
+import yaml
 
 from goldentooth_agent.core.yaml_store import (
     YamlStore,

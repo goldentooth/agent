@@ -5,12 +5,13 @@ tools for Flow stream processing pipelines.
 """
 
 from __future__ import annotations
-import asyncio
-import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Callable, AsyncIterator, Awaitable
-from collections import defaultdict
+
 import json
+import time
+from collections import defaultdict
+from collections.abc import AsyncIterator, Awaitable, Callable
+from dataclasses import dataclass, field
+from typing import Any
 
 from .main import Flow
 
@@ -21,12 +22,12 @@ class FlowMetrics:
 
     name: str
     start_time: float
-    end_time: Optional[float] = None
+    end_time: float | None = None
     items_processed: int = 0
     items_yielded: int = 0
-    errors: List[Exception] = field(default_factory=list)
-    memory_usage_kb: Optional[float] = None
-    peak_memory_kb: Optional[float] = None
+    errors: list[Exception] = field(default_factory=list)
+    memory_usage_kb: float | None = None
+    peak_memory_kb: float | None = None
 
     @property
     def duration_ms(self) -> float:
@@ -50,7 +51,7 @@ class FlowMetrics:
             return 0.0
         return self.items_yielded / self.items_processed
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert metrics to dictionary for serialization."""
         return {
             "name": self.name,
@@ -70,7 +71,7 @@ class PerformanceMonitor:
     """Performance monitoring system for Flow executions."""
 
     def __init__(self) -> None:
-        self.metrics: Dict[str, FlowMetrics] = {}
+        self.metrics: dict[str, FlowMetrics] = {}
         self.global_stats: defaultdict[str, list[Any]] = defaultdict(list)
         self._memory_tracking = False
 
@@ -139,12 +140,12 @@ class PerformanceMonitor:
         # Return empty metrics if not found
         return FlowMetrics(name="unknown", start_time=time.time(), end_time=time.time())
 
-    def get_summary_stats(self) -> Dict[str, Any]:
+    def get_summary_stats(self) -> dict[str, Any]:
         """Get summary statistics across all monitored flows."""
         if not self.global_stats["duration_ms"]:
             return {"message": "No metrics collected yet"}
 
-        def stats(values: List[float]) -> Dict[str, float]:
+        def stats(values: list[float]) -> dict[str, float]:
             if not values:
                 return {"min": 0, "max": 0, "avg": 0, "count": 0}
             return {
@@ -180,7 +181,7 @@ _performance_monitor = PerformanceMonitor()
 
 
 def monitored_stream(
-    monitor_name: Optional[str] = None,
+    monitor_name: str | None = None,
 ) -> Callable[[Callable[[], Flow[Any, Any]]], Flow[Any, Any]]:
     """Decorator to add performance monitoring to a Flow.
 
@@ -254,9 +255,10 @@ def performance_stream() -> Flow[Any, Any]:
     return Flow(_flow, name="performance")
 
 
-def benchmark_stream(
-    iterations: int = 100, warmup_iterations: int = 10
-) -> Callable[[Flow[Any, Any]], Callable[[Callable[[], AsyncIterator[Any]]], Awaitable[Dict[str, Any]]]]:
+def benchmark_stream(iterations: int = 100, warmup_iterations: int = 10) -> Callable[
+    [Flow[Any, Any]],
+    Callable[[Callable[[], AsyncIterator[Any]]], Awaitable[dict[str, Any]]],
+]:
     """Benchmark a Flow's performance over multiple iterations.
 
     Args:
@@ -272,8 +274,12 @@ def benchmark_stream(
         print(f"Average duration: {stats['avg_duration_ms']:.2f}ms")
     """
 
-    def benchmark_func(flow: Flow[Any, Any]) -> Callable[[Callable[[], AsyncIterator[Any]]], Awaitable[Dict[str, Any]]]:
-        async def run_benchmark(test_stream_factory: Callable[[], AsyncIterator[Any]]) -> Dict[str, Any]:
+    def benchmark_func(
+        flow: Flow[Any, Any]
+    ) -> Callable[[Callable[[], AsyncIterator[Any]]], Awaitable[dict[str, Any]]]:
+        async def run_benchmark(
+            test_stream_factory: Callable[[], AsyncIterator[Any]]
+        ) -> dict[str, Any]:
             """Run the benchmark with a test stream factory."""
             durations = []
 
@@ -337,7 +343,7 @@ def enable_memory_tracking() -> None:
     _performance_monitor.enable_memory_tracking()
 
 
-def get_performance_summary() -> Dict[str, Any]:
+def get_performance_summary() -> dict[str, Any]:
     """Get summary of all performance metrics."""
     return _performance_monitor.get_summary_stats()
 

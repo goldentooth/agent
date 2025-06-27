@@ -1,15 +1,17 @@
 from __future__ import annotations
-import pytest
-import asyncio
-from typing import TypeVar, AsyncIterator
 
-from goldentooth_agent.core.flow import Flow
+import asyncio
+from collections.abc import AsyncIterator
+from typing import TypeVar
+
+import pytest
+
 from goldentooth_agent.core.background_loop import (
     async_flow,
     schedule_flow,
     timeout_async_flow,
 )
-
+from goldentooth_agent.core.flow import Flow
 
 T = TypeVar("T")
 

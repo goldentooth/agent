@@ -1,5 +1,6 @@
 import typer
 from dotenv import load_dotenv
+
 from . import commands
 
 load_dotenv()

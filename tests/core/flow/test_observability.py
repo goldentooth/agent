@@ -1,42 +1,35 @@
 """Integration tests for Flow observability, debugging, and analysis features."""
 
-import asyncio
-import pytest
-import tempfile
 import os
-from typing import AsyncIterator
+import tempfile
+from collections.abc import AsyncIterator
 
-from goldentooth_agent.core.flow import (
+import pytest
+
+from goldentooth_agent.core.flow import (  # Performance monitoring; Debugging; Health monitoring; Analysis
     Flow,
-    map_stream,
-    filter_stream,
-    batch_stream,
-    # Performance monitoring
-    monitored_stream,
-    performance_stream,
-    get_performance_summary,
-    enable_memory_tracking,
-    export_performance_metrics,
-    # Debugging
-    debug_stream,
-    traced_flow,
-    enable_flow_debugging,
-    disable_flow_debugging,
-    add_flow_breakpoint,
-    get_execution_trace,
-    inspect_flow,
-    # Health monitoring
-    check_system_health,
-    register_health_check,
     HealthStatus,
-    validate_flow_configuration,
-    get_health_monitor,
-    # Analysis
     analyze_flow,
     analyze_flow_composition,
+    batch_stream,
+    check_system_health,
+    debug_stream,
     detect_flow_patterns,
-    generate_flow_optimizations,
+    disable_flow_debugging,
+    enable_flow_debugging,
     export_flow_analysis,
+    export_performance_metrics,
+    filter_stream,
+    generate_flow_optimizations,
+    get_execution_trace,
+    get_performance_summary,
+    inspect_flow,
+    map_stream,
+    monitored_stream,
+    performance_stream,
+    register_health_check,
+    traced_flow,
+    validate_flow_configuration,
 )
 
 
@@ -79,9 +72,7 @@ class TestPerformanceObservability:
     @pytest.mark.asyncio
     async def test_performance_stream_combinator(self):
         """Test performance stream combinator."""
-        from goldentooth_agent.core.flow.combinators import compose
-
-        from goldentooth_agent.core.flow.combinators import batch_stream
+        from goldentooth_agent.core.flow.combinators import batch_stream, compose
 
         base_pipeline = (
             Flow.from_iterable(range(50))
@@ -337,7 +328,7 @@ class TestFlowAnalysis:
                 # Should be valid JSON
                 import json
 
-                with open(f.name, "r") as read_file:
+                with open(f.name) as read_file:
                     data = json.load(read_file)
                     assert "graph" in data
                     assert "patterns" in data

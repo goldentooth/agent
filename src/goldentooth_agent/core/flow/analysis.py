@@ -5,12 +5,11 @@ and understanding the structure and behavior of complex Flow pipelines.
 """
 
 from __future__ import annotations
-import inspect
+
+import hashlib
 import json
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Callable, Set, Tuple
-from collections import defaultdict, deque
-import hashlib
+from typing import Any
 
 from .main import Flow
 
@@ -22,13 +21,13 @@ class FlowNode:
     id: str
     name: str
     flow_type: str
-    description: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    inputs: List[str] = field(default_factory=list)
-    outputs: List[str] = field(default_factory=list)
+    description: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    inputs: list[str] = field(default_factory=list)
+    outputs: list[str] = field(default_factory=list)
     complexity_score: int = 1
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert node to dictionary representation."""
         return {
             "id": self.id,
@@ -49,9 +48,9 @@ class FlowEdge:
     source_id: str
     target_id: str
     edge_type: str = "data_flow"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert edge to dictionary representation."""
         return {
             "source_id": self.source_id,
@@ -65,10 +64,10 @@ class FlowEdge:
 class FlowGraph:
     """Represents a complete Flow composition as a directed graph."""
 
-    nodes: Dict[str, FlowNode] = field(default_factory=dict)
-    edges: List[FlowEdge] = field(default_factory=list)
-    entry_points: List[str] = field(default_factory=list)
-    exit_points: List[str] = field(default_factory=list)
+    nodes: dict[str, FlowNode] = field(default_factory=dict)
+    edges: list[FlowEdge] = field(default_factory=list)
+    entry_points: list[str] = field(default_factory=list)
+    exit_points: list[str] = field(default_factory=list)
 
     @property
     def complexity_score(self) -> int:
@@ -89,7 +88,7 @@ class FlowGraph:
 
         return max_depth
 
-    def _calculate_depth_from_node(self, node_id: str, visited: Set[str]) -> int:
+    def _calculate_depth_from_node(self, node_id: str, visited: set[str]) -> int:
         """Calculate depth from a specific node."""
         if node_id in visited or node_id not in self.nodes:
             return 0
@@ -111,7 +110,7 @@ class FlowGraph:
 
         return 1 + max_child_depth
 
-    def get_critical_path(self) -> List[str]:
+    def get_critical_path(self) -> list[str]:
         """Find the critical path (longest path) through the graph."""
         if not self.entry_points:
             return []
@@ -128,8 +127,8 @@ class FlowGraph:
         return longest_path
 
     def _find_longest_path_from_node(
-        self, node_id: str, visited: Set[str]
-    ) -> List[str]:
+        self, node_id: str, visited: set[str]
+    ) -> list[str]:
         """Find the longest path from a specific node."""
         if node_id in visited or node_id not in self.nodes:
             return []
@@ -152,13 +151,13 @@ class FlowGraph:
 
         return [node_id] + longest_child_path
 
-    def find_cycles(self) -> List[List[str]]:
+    def find_cycles(self) -> list[list[str]]:
         """Find cycles in the graph."""
         cycles = []
         visited = set()
         rec_stack = set()
 
-        def dfs(node_id: str, path: List[str]) -> None:
+        def dfs(node_id: str, path: list[str]) -> None:
             if node_id in rec_stack:
                 # Found a cycle
                 cycle_start = path.index(node_id)
@@ -185,7 +184,7 @@ class FlowGraph:
 
         return cycles
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert graph to dictionary representation."""
         return {
             "nodes": {node_id: node.to_dict() for node_id, node in self.nodes.items()},
@@ -208,7 +207,7 @@ class FlowAnalyzer:
 
     def __init__(self) -> None:
         self.node_id_counter = 0
-        self.flow_registry: Dict[str, Flow[Any, Any]] = {}
+        self.flow_registry: dict[str, Flow[Any, Any]] = {}
 
     def _generate_node_id(self) -> str:
         """Generate a unique node ID."""
@@ -218,7 +217,9 @@ class FlowAnalyzer:
     def _get_flow_signature(self, flow: Flow[Any, Any]) -> str:
         """Generate a signature for a flow based on its properties."""
         components = [flow.name, str(type(flow)), str(getattr(flow, "metadata", {}))]
-        signature = hashlib.md5("|".join(components).encode()).hexdigest()[:8]
+        signature = hashlib.md5(
+            "|".join(components).encode(), usedforsecurity=False
+        ).hexdigest()[:8]
         return signature
 
     def analyze_flow(self, flow: Flow[Any, Any]) -> FlowGraph:
@@ -235,7 +236,7 @@ class FlowAnalyzer:
 
         return graph
 
-    def analyze_composition(self, flows: List[Flow[Any, Any]]) -> FlowGraph:
+    def analyze_composition(self, flows: list[Flow[Any, Any]]) -> FlowGraph:
         """Analyze a composition of multiple flows."""
         graph = FlowGraph()
 
@@ -323,7 +324,7 @@ class FlowAnalyzer:
 
         return base_complexity
 
-    def _extract_description(self, flow: Flow[Any, Any]) -> Optional[str]:
+    def _extract_description(self, flow: Flow[Any, Any]) -> str | None:
         """Extract description from flow function docstring."""
         if hasattr(flow, "_flow") and hasattr(flow._flow, "__doc__"):
             docstring = flow._flow.__doc__
@@ -332,7 +333,7 @@ class FlowAnalyzer:
                 return str(docstring.strip().split("\n")[0])
         return None
 
-    def detect_patterns(self, graph: FlowGraph) -> List[Dict[str, Any]]:
+    def detect_patterns(self, graph: FlowGraph) -> list[dict[str, Any]]:
         """Detect common patterns in the flow graph."""
         patterns = []
 
@@ -358,7 +359,7 @@ class FlowAnalyzer:
 
         return patterns
 
-    def _detect_map_filter_pattern(self, graph: FlowGraph) -> Optional[Dict[str, Any]]:
+    def _detect_map_filter_pattern(self, graph: FlowGraph) -> dict[str, Any] | None:
         """Detect map-filter sequential pattern."""
         for edge in graph.edges:
             source_node = graph.nodes.get(edge.source_id)
@@ -378,7 +379,7 @@ class FlowAnalyzer:
                 }
         return None
 
-    def _detect_fan_out_pattern(self, graph: FlowGraph) -> Optional[Dict[str, Any]]:
+    def _detect_fan_out_pattern(self, graph: FlowGraph) -> dict[str, Any] | None:
         """Detect fan-out pattern (one node with multiple outputs)."""
         for node_id, node in graph.nodes.items():
             outgoing_edges = [edge for edge in graph.edges if edge.source_id == node_id]
@@ -392,7 +393,7 @@ class FlowAnalyzer:
                 }
         return None
 
-    def _detect_pipeline_pattern(self, graph: FlowGraph) -> Optional[Dict[str, Any]]:
+    def _detect_pipeline_pattern(self, graph: FlowGraph) -> dict[str, Any] | None:
         """Detect linear pipeline pattern."""
         if len(graph.entry_points) == 1 and len(graph.exit_points) == 1:
             critical_path = graph.get_critical_path()
@@ -406,9 +407,7 @@ class FlowAnalyzer:
                 }
         return None
 
-    def _detect_error_handling_pattern(
-        self, graph: FlowGraph
-    ) -> Optional[Dict[str, Any]]:
+    def _detect_error_handling_pattern(self, graph: FlowGraph) -> dict[str, Any] | None:
         """Detect error handling patterns."""
         error_handling_nodes = [
             node for node in graph.nodes.values() if node.flow_type == "error_handling"
@@ -425,7 +424,7 @@ class FlowAnalyzer:
 
     def generate_optimization_suggestions(
         self, graph: FlowGraph
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Generate optimization suggestions for the flow graph."""
         suggestions = []
 
@@ -467,7 +466,7 @@ class FlowAnalyzer:
 
         return suggestions
 
-    def _find_sequential_transformations(self, graph: FlowGraph) -> List[str]:
+    def _find_sequential_transformations(self, graph: FlowGraph) -> list[str]:
         """Find sequences of transformation nodes."""
         transformation_sequences = []
 
@@ -518,17 +517,17 @@ def analyze_flow(flow: Flow[Any, Any]) -> FlowGraph:
     return _flow_analyzer.analyze_flow(flow)
 
 
-def analyze_flow_composition(flows: List[Flow[Any, Any]]) -> FlowGraph:
+def analyze_flow_composition(flows: list[Flow[Any, Any]]) -> FlowGraph:
     """Analyze a composition of multiple flows."""
     return _flow_analyzer.analyze_composition(flows)
 
 
-def detect_flow_patterns(graph: FlowGraph) -> List[Dict[str, Any]]:
+def detect_flow_patterns(graph: FlowGraph) -> list[dict[str, Any]]:
     """Detect common patterns in a flow graph."""
     return _flow_analyzer.detect_patterns(graph)
 
 
-def generate_flow_optimizations(graph: FlowGraph) -> List[Dict[str, Any]]:
+def generate_flow_optimizations(graph: FlowGraph) -> list[dict[str, Any]]:
     """Generate optimization suggestions for a flow graph."""
     return _flow_analyzer.generate_optimization_suggestions(graph)
 

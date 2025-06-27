@@ -1,7 +1,9 @@
 """Tests for the maybe_await utility."""
 
 import asyncio
+
 import pytest
+
 from goldentooth_agent.core.util.maybe_await import maybe_await
 
 

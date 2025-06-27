@@ -5,16 +5,18 @@ and system diagnostics for Flow-based applications.
 """
 
 from __future__ import annotations
-import asyncio
-import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Callable, AsyncIterator, Union
-from enum import Enum
-import json
-from datetime import datetime, timedelta
 
+import asyncio
+import json
+import time
+from collections.abc import AsyncIterator, Callable
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
+
+from .exceptions import FlowConfigurationError
 from .main import Flow
-from .exceptions import FlowError, FlowConfigurationError
 
 
 class HealthStatus(Enum):
@@ -36,9 +38,9 @@ class HealthCheck:
     timeout_seconds: float = 5.0
     critical: bool = False
     enabled: bool = True
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
-    async def run(self) -> "HealthCheckResult":
+    async def run(self) -> HealthCheckResult:
         """Execute the health check."""
         start_time = time.time()
 
@@ -58,7 +60,7 @@ class HealthCheck:
                 critical=self.critical,
             )
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             duration = time.time() - start_time
             return HealthCheckResult(
                 name=self.name,
@@ -95,11 +97,11 @@ class HealthCheckResult:
     message: str
     duration_seconds: float
     critical: bool = False
-    error: Optional[str] = None
+    error: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert result to dictionary."""
         return {
             "name": self.name,
@@ -119,25 +121,25 @@ class SystemHealth:
 
     status: HealthStatus
     message: str
-    checks: List[HealthCheckResult]
+    checks: list[HealthCheckResult]
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
-    def healthy_checks(self) -> List[HealthCheckResult]:
+    def healthy_checks(self) -> list[HealthCheckResult]:
         """Get all healthy checks."""
         return [check for check in self.checks if check.status == HealthStatus.HEALTHY]
 
     @property
-    def warning_checks(self) -> List[HealthCheckResult]:
+    def warning_checks(self) -> list[HealthCheckResult]:
         """Get all warning checks."""
         return [check for check in self.checks if check.status == HealthStatus.WARNING]
 
     @property
-    def critical_checks(self) -> List[HealthCheckResult]:
+    def critical_checks(self) -> list[HealthCheckResult]:
         """Get all critical checks."""
         return [check for check in self.checks if check.status == HealthStatus.CRITICAL]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "status": self.status.value,
@@ -157,8 +159,8 @@ class FlowHealthMonitor:
     """Health monitoring system for Flow applications."""
 
     def __init__(self) -> None:
-        self.checks: Dict[str, HealthCheck] = {}
-        self.history: List[SystemHealth] = []
+        self.checks: dict[str, HealthCheck] = {}
+        self.history: list[SystemHealth] = []
         self.max_history = 100
 
         # Register default health checks
@@ -193,8 +195,8 @@ class FlowHealthMonitor:
         # Async event loop check
         async def event_loop_check() -> AsyncIterator[bool]:
             try:
-                loop = asyncio.get_running_loop()
                 # Check if event loop is responsive
+                asyncio.get_running_loop()  # Just verify loop exists
                 start_time = time.time()
                 await asyncio.sleep(0.001)  # 1ms sleep
                 response_time = time.time() - start_time
@@ -223,7 +225,7 @@ class FlowHealthMonitor:
         check_function: Callable[[], AsyncIterator[bool]],
         timeout_seconds: float = 5.0,
         critical: bool = False,
-        tags: Optional[List[str]] = None,
+        tags: list[str] | None = None,
     ) -> None:
         """Register a new health check."""
         self.checks[name] = HealthCheck(
@@ -239,7 +241,7 @@ class FlowHealthMonitor:
         """Unregister a health check."""
         self.checks.pop(name, None)
 
-    async def run_check(self, name: str) -> Optional[HealthCheckResult]:
+    async def run_check(self, name: str) -> HealthCheckResult | None:
         """Run a specific health check."""
         if name not in self.checks:
             return None
@@ -303,7 +305,7 @@ class FlowHealthMonitor:
         return system_health
 
     def _determine_overall_status(
-        self, results: List[HealthCheckResult]
+        self, results: list[HealthCheckResult]
     ) -> HealthStatus:
         """Determine overall system status from individual check results."""
         if not results:
@@ -325,7 +327,7 @@ class FlowHealthMonitor:
         return HealthStatus.HEALTHY
 
     def _generate_overall_message(
-        self, results: List[HealthCheckResult], status: HealthStatus
+        self, results: list[HealthCheckResult], status: HealthStatus
     ) -> str:
         """Generate overall system health message."""
         if status == HealthStatus.CRITICAL:
@@ -341,7 +343,7 @@ class FlowHealthMonitor:
         else:
             return "System health unknown: No health checks available"
 
-    def get_health_history(self, hours: int = 1) -> List[SystemHealth]:
+    def get_health_history(self, hours: int = 1) -> list[SystemHealth]:
         """Get health check history for the specified number of hours."""
         cutoff_time = datetime.now() - timedelta(hours=hours)
         return [h for h in self.history if h.timestamp >= cutoff_time]
@@ -376,8 +378,8 @@ class FlowConfigValidator:
     """Configuration validation for Flow systems."""
 
     def __init__(self) -> None:
-        self.validators: Dict[str, Callable[[Any], bool]] = {}
-        self.config_schema: Dict[str, Any] = {}
+        self.validators: dict[str, Callable[[Any], bool]] = {}
+        self.config_schema: dict[str, Any] = {}
 
         # Register default validators
         self._register_default_validators()
@@ -414,11 +416,11 @@ class FlowConfigValidator:
         """Register a custom validator."""
         self.validators[name] = validator
 
-    def set_config_schema(self, schema: Dict[str, Any]) -> None:
+    def set_config_schema(self, schema: dict[str, Any]) -> None:
         """Set the configuration schema for validation."""
         self.config_schema = schema
 
-    def validate_config(self, config: Dict[str, Any]) -> List[str]:
+    def validate_config(self, config: dict[str, Any]) -> list[str]:
         """Validate configuration against the schema.
 
         Returns:
@@ -473,7 +475,9 @@ class FlowConfigValidator:
 
         return errors
 
-    def validate_flow_config(self, flow: Flow[Any, Any], config: Dict[str, Any]) -> List[str]:
+    def validate_flow_config(
+        self, flow: Flow[Any, Any], config: dict[str, Any]
+    ) -> list[str]:
         """Validate configuration specific to a Flow.
 
         Args:
@@ -516,7 +520,9 @@ _health_monitor = FlowHealthMonitor()
 _config_validator = FlowConfigValidator()
 
 
-def health_check_stream(health_monitor: Optional[FlowHealthMonitor] = None) -> Flow[Any, Any]:
+def health_check_stream(
+    health_monitor: FlowHealthMonitor | None = None,
+) -> Flow[Any, Any]:
     """Create a flow that performs health checks during stream processing.
 
     Args:
@@ -571,7 +577,7 @@ async def check_system_health() -> SystemHealth:
     return await _health_monitor.run_all_checks()
 
 
-def validate_flow_configuration(config: Dict[str, Any]) -> List[str]:
+def validate_flow_configuration(config: dict[str, Any]) -> list[str]:
     """Validate flow configuration."""
     return _config_validator.validate_config(config)
 

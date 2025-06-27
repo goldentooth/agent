@@ -1,9 +1,11 @@
 """Comprehensive tests for the Rule class."""
 
 import asyncio
+
 import pytest
-from goldentooth_agent.core.rules import Rule
+
 from goldentooth_agent.core.flow import Flow
+from goldentooth_agent.core.rules import Rule
 
 
 # Test fixtures - context classes for testing

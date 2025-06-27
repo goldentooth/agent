@@ -1,28 +1,27 @@
 """Performance and benchmarking tests for Flow combinators."""
 
 import asyncio
-import pytest
 import time
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
+
+import pytest
 
 from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow.combinators import (
-    map_stream,
-    filter_stream,
-    flat_map_stream,
     batch_stream,
-    parallel_stream,
-    race_stream,
     distinct_stream,
+    filter_stream,
+    map_stream,
     memoize_stream,
+    parallel_stream,
 )
 from goldentooth_agent.core.flow.performance import (
+    benchmark_stream,
+    enable_memory_tracking,
+    get_performance_monitor,
+    get_performance_summary,
     monitored_stream,
     performance_stream,
-    benchmark_stream,
-    get_performance_monitor,
-    enable_memory_tracking,
-    get_performance_summary,
 )
 
 

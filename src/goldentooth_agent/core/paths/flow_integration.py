@@ -1,11 +1,13 @@
 from __future__ import annotations
+
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import Callable, TypeVar, Any, AsyncIterator
+from typing import Any, TypeVar
+
 from antidote import inject
 
-from ..flow import Flow, map_stream, filter_stream, flat_map_stream
+from ..flow import Flow, filter_stream, flat_map_stream, map_stream
 from .main import Paths
-
 
 T = TypeVar("T")
 

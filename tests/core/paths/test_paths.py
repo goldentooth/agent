@@ -1,10 +1,10 @@
 from __future__ import annotations
-import pytest
-from pathlib import Path
+
 import tempfile
-import shutil
-from unittest.mock import Mock, patch, MagicMock
-import platform
+from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
 
 from goldentooth_agent.core.paths import Paths
 

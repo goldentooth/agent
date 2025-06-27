@@ -1,9 +1,10 @@
 """Comprehensive tests for the Flow class and stream processing functionality."""
 
 import asyncio
-import pytest
 import warnings
-from unittest.mock import AsyncMock, Mock
+
+import pytest
+
 from goldentooth_agent.core.flow import Flow
 
 # Filter runtime warnings about unclosed async generators during exception handling

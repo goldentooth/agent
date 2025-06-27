@@ -1,6 +1,7 @@
 """Shared test fixtures for Flow tests."""
 
 import pytest
+
 from goldentooth_agent.core.flow import Flow
 
 

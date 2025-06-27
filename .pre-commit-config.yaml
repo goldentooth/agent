@@ -1,0 +1,94 @@
+# Pre-commit hooks configuration
+# This ensures code quality checks run before every commit
+
+repos:
+  # Standard pre-commit hooks for basic code quality
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        description: Remove trailing whitespace
+      - id: end-of-file-fixer
+        description: Ensure files end with newline
+      - id: check-yaml
+        description: Validate YAML syntax
+      - id: check-json
+        description: Validate JSON syntax
+      - id: check-toml
+        description: Validate TOML syntax
+      - id: check-merge-conflict
+        description: Check for merge conflict markers
+      - id: check-added-large-files
+        description: Prevent large files from being committed
+        args: ['--maxkb=1000']
+      - id: debug-statements
+        description: Check for debugger statements
+      - id: check-case-conflict
+        description: Check for case conflicts in filenames
+
+  # Python-specific code formatting and linting
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        description: Format Python code with Black
+        language_version: python3
+        args: ['--line-length=88']
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        description: Sort Python imports
+        args: ['--profile=black']
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        description: Run Ruff linter
+        args: [--fix, --exit-non-zero-on-fix]
+
+  # Type checking with MyPy
+  - repo: local
+    hooks:
+      - id: mypy
+        name: MyPy Type Check
+        entry: poetry run mypy
+        language: system
+        types: [python]
+        args: ['src/goldentooth_agent', '--strict', '--show-error-codes', '--pretty']
+        description: Run MyPy type checking
+        pass_filenames: false
+        always_run: true
+
+  # Run pytest tests
+  - repo: local
+    hooks:
+      - id: pytest
+        name: PyTest
+        entry: poetry run pytest
+        language: system
+        types: [python]
+        description: Run pytest tests
+        pass_filenames: false
+        always_run: true
+        args: ['-v', '--tb=short']
+
+  # Optional: Additional security checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        description: Run Bandit security linter
+        args: ['-r', 'src/', '-ll']
+        exclude: tests/
+        pass_filenames: false
+
+# Configuration for individual hooks
+default_language_version:
+  python: python3.13
+
+# Global settings
+fail_fast: false
+default_stages: [pre-commit]

@@ -1,29 +1,28 @@
 """Comprehensive tests for new Flow combinators (batch 2)."""
 
 import asyncio
+
 import pytest
+
 from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow.combinators import (
-    pairwise_stream,
-    start_with_stream,
-    sample_stream,
-    combine_latest_stream,
-    group_by_stream,
-    finalize_stream,
-    buffer_stream,
-    expand_stream,
-    share_stream,
-    materialize_stream,
-    trace_stream,
-    metrics_stream,
-    inspect_stream,
-    chain_flows,
-    branch_flows,
-    merge_flows,
-    StreamNotification,
-    OnNext,
-    OnError,
     OnComplete,
+    OnError,
+    OnNext,
+    branch_flows,
+    chain_flows,
+    combine_latest_stream,
+    expand_stream,
+    finalize_stream,
+    group_by_stream,
+    inspect_stream,
+    materialize_stream,
+    merge_flows,
+    metrics_stream,
+    pairwise_stream,
+    sample_stream,
+    start_with_stream,
+    trace_stream,
 )
 
 
@@ -219,7 +218,7 @@ class TestSampleStream:
             async with asyncio.timeout(0.05):
                 async for item in result_stream:
                     values.append(item)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pass
 
         assert values == []

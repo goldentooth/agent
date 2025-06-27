@@ -42,6 +42,11 @@ psutil = "^7.0.0"
 mypy = "^1.14.0"
 types-PyYAML = "^6.0.0"
 types-psutil = "^6.1.0"
+pre-commit = "^4.0.1"
+black = "^24.10.0"
+isort = "^5.13.2"
+ruff = "^0.8.4"
+bandit = "^1.7.10"
 
 [tool.poe.tasks]
 test = "pytest"
@@ -51,6 +56,15 @@ test-maybe-await = "pytest tests/core/util/test_maybe_await.py -v"
 test-core = "pytest tests/core/ -v"
 typecheck = "mypy src/goldentooth_agent --strict --show-error-codes --pretty"
 typecheck-all = "mypy . --strict --show-error-codes --pretty"
+
+# Pre-commit management tasks
+precommit-install = "pre-commit install"
+precommit-update = "pre-commit autoupdate"
+precommit-run = "pre-commit run --all-files"
+precommit-run-hook = "pre-commit run"
+
+# Quality assurance - run all checks
+qa = ["typecheck", "test", "precommit-run"]
 
 [tool.mypy]
 # Strict type checking configuration aligned with Pylance standards
@@ -109,6 +123,65 @@ module = [
     "hypothesis.*",
 ]
 ignore_missing_imports = true
+
+# Black code formatting configuration
+[tool.black]
+line-length = 88
+target-version = ['py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | old
+)/
+'''
+
+# isort import sorting configuration
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["goldentooth_agent"]
+known_third_party = ["pytest", "typer", "antidote", "atomic_agents"]
+
+# Ruff linting configuration
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+extend-exclude = ["old/"]
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+    "RUF100", # unused noqa
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
+
+# Bandit security linting configuration
+[tool.bandit]
+exclude_dirs = ["tests", "old"]
+skips = ["B101", "B601"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
