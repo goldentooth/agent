@@ -33,9 +33,18 @@ class Rule(Generic[TIn]):
                 yield ctx
 
             # Get the first (and only) result from the flow
-            result_stream = self.action(single_item_stream())
-            async for result in result_stream:
-                return result
+            input_stream = single_item_stream()
+            result_stream = self.action(input_stream)
+            async_iter = aiter(result_stream)
+            try:
+                async for result in async_iter:
+                    return result
+            finally:
+                # Ensure async iterators are properly closed
+                if hasattr(async_iter, "aclose"):
+                    await async_iter.aclose()
+                if hasattr(input_stream, "aclose"):
+                    await input_stream.aclose()
 
             # Fallback if flow produces no output
             return ctx

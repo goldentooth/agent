@@ -123,11 +123,17 @@ class Flow(Generic[Input, Output]):
         """
         results = []
         count = 0
-        async for item in self(stream):
-            results.append(item)
-            count += 1
-            if count >= limit:
-                break
+        async_iter = aiter(self(stream))
+        try:
+            async for item in async_iter:
+                results.append(item)
+                count += 1
+                if count >= limit:
+                    break
+        finally:
+            # Ensure async iterator is properly closed
+            if hasattr(async_iter, "aclose"):
+                await async_iter.aclose()
         return results
 
     def print(self) -> Flow[Input, Output]:

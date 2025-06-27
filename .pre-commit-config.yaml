@@ -8,23 +8,32 @@ repos:
     hooks:
       - id: trailing-whitespace
         description: Remove trailing whitespace
+        exclude: ^old/
       - id: end-of-file-fixer
         description: Ensure files end with newline
+        exclude: ^old/
       - id: check-yaml
         description: Validate YAML syntax
+        exclude: ^old/
       - id: check-json
         description: Validate JSON syntax
+        exclude: ^old/
       - id: check-toml
         description: Validate TOML syntax
+        exclude: ^old/
       - id: check-merge-conflict
         description: Check for merge conflict markers
+        exclude: ^old/
       - id: check-added-large-files
         description: Prevent large files from being committed
         args: ['--maxkb=1000']
+        exclude: ^old/
       - id: debug-statements
         description: Check for debugger statements
+        exclude: ^old/
       - id: check-case-conflict
         description: Check for case conflicts in filenames
+        exclude: ^old/
 
   # Python-specific code formatting and linting
   - repo: https://github.com/psf/black
@@ -34,6 +43,7 @@ repos:
         description: Format Python code with Black
         language_version: python3
         args: ['--line-length=88']
+        exclude: ^old/
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
@@ -41,6 +51,7 @@ repos:
       - id: isort
         description: Sort Python imports
         args: ['--profile=black']
+        exclude: ^old/
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.8.4
@@ -48,6 +59,7 @@ repos:
       - id: ruff
         description: Run Ruff linter
         args: [--fix, --exit-non-zero-on-fix]
+        exclude: ^old/
 
   # Type checking with MyPy
   - repo: local
@@ -84,7 +96,7 @@ repos:
         description: Run pytest tests
         pass_filenames: false
         always_run: true
-        args: ['-v', '--tb=short']
+        args: ['tests/', '-v', '--tb=short']
 
   # Optional: Additional security checks
   - repo: https://github.com/PyCQA/bandit
@@ -93,7 +105,7 @@ repos:
       - id: bandit
         description: Run Bandit security linter
         args: ['-r', 'src/', '-ll']
-        exclude: tests/
+        exclude: (tests/|old/)
         pass_filenames: false
 
 # Configuration for individual hooks
