@@ -8,7 +8,7 @@ from __future__ import annotations
 import asyncio
 import traceback
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Callable, AsyncIterator, TypeVar
+from typing import Any, Dict, List, Optional, Callable, AsyncIterator, TypeVar, AsyncGenerator
 from contextlib import asynccontextmanager
 import json
 import sys
@@ -53,7 +53,7 @@ class FlowExecutionContext:
 class FlowDebugger:
     """Debugging system for Flow executions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.execution_stack: List[FlowExecutionContext] = []
         self.execution_history: List[FlowExecutionContext] = []
         self.breakpoints: Dict[str, Callable[[Any, FlowExecutionContext], bool]] = {}
@@ -88,7 +88,7 @@ class FlowDebugger:
     @asynccontextmanager
     async def execution_context(
         self, flow_name: str, parent_flow: Optional[str] = None
-    ):
+    ) -> AsyncGenerator[FlowExecutionContext, None]:
         """Context manager for tracking flow execution."""
         context = FlowExecutionContext(
             flow_name=flow_name, started_at=datetime.now(), parent_flow=parent_flow
@@ -395,7 +395,7 @@ def inspect_flow(flow: Flow) -> Dict[str, Any]:
 
 # Context manager for temporary debugging
 @asynccontextmanager
-async def debug_session(enable_breakpoints: bool = True):
+async def debug_session(enable_breakpoints: bool = True) -> AsyncGenerator[None, None]:
     """Context manager for a temporary debugging session.
 
     Args:

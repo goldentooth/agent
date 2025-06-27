@@ -191,7 +191,7 @@ class FlowHealthMonitor:
         )
 
         # Async event loop check
-        async def event_loop_check():
+        async def event_loop_check() -> AsyncIterator[bool]:
             try:
                 loop = asyncio.get_running_loop()
                 # Check if event loop is responsive
@@ -261,11 +261,11 @@ class FlowHealthMonitor:
                 tasks.append(asyncio.create_task(check.run()))
 
         if tasks:
-            results = await asyncio.gather(*tasks, return_exceptions=True)
+            raw_results = await asyncio.gather(*tasks, return_exceptions=True)
 
             # Convert exceptions to failed health check results
-            processed_results = []
-            for i, result in enumerate(results):
+            processed_results: list[HealthCheckResult] = []
+            for i, result in enumerate(raw_results):
                 if isinstance(result, Exception):
                     check_name = list(self.checks.keys())[i]
                     processed_results.append(
@@ -279,9 +279,13 @@ class FlowHealthMonitor:
                         )
                     )
                 else:
+                    # Type check: ensure result is HealthCheckResult
+                    assert isinstance(result, HealthCheckResult)
                     processed_results.append(result)
 
-            results = processed_results
+            results: list[HealthCheckResult] = processed_results
+        else:
+            results: list[HealthCheckResult] = []
 
         # Determine overall system health
         overall_status = self._determine_overall_status(results)
@@ -371,7 +375,7 @@ class FlowHealthMonitor:
 class FlowConfigValidator:
     """Configuration validation for Flow systems."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.validators: Dict[str, Callable[[Any], bool]] = {}
         self.config_schema: Dict[str, Any] = {}
 
@@ -578,7 +582,7 @@ def register_health_check(
     name: str,
     description: str,
     check_function: Callable[[], AsyncIterator[bool]],
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     """Register a custom health check."""
     _health_monitor.register_check(name, description, check_function, **kwargs)

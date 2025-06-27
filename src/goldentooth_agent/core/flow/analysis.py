@@ -142,7 +142,7 @@ class FlowGraph:
         if not outgoing_edges:
             return [node_id]
 
-        longest_child_path = []
+        longest_child_path: list[str] = []
         for edge in outgoing_edges:
             child_path = self._find_longest_path_from_node(
                 edge.target_id, visited.copy()
@@ -206,9 +206,9 @@ class FlowGraph:
 class FlowAnalyzer:
     """Analyzer for Flow compositions and structures."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.node_id_counter = 0
-        self.flow_registry: Dict[str, Flow] = {}
+        self.flow_registry: Dict[str, Flow[Any, Any]] = {}
 
     def _generate_node_id(self) -> str:
         """Generate a unique node ID."""
@@ -235,7 +235,7 @@ class FlowAnalyzer:
 
         return graph
 
-    def analyze_composition(self, flows: List[Flow]) -> FlowGraph:
+    def analyze_composition(self, flows: List[Flow[Any, Any]]) -> FlowGraph:
         """Analyze a composition of multiple flows."""
         graph = FlowGraph()
 
@@ -518,7 +518,7 @@ def analyze_flow(flow: Flow) -> FlowGraph:
     return _flow_analyzer.analyze_flow(flow)
 
 
-def analyze_flow_composition(flows: List[Flow]) -> FlowGraph:
+def analyze_flow_composition(flows: List[Flow[Any, Any]]) -> FlowGraph:
     """Analyze a composition of multiple flows."""
     return _flow_analyzer.analyze_composition(flows)
 

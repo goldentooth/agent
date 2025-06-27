@@ -566,8 +566,9 @@ def empty_flow() -> Flow[None, Any]:
     async def _flow(_: AsyncIterator[None]) -> AsyncIterator[Any]:
         """Produce no items."""
         # This is a generator that produces no items
+        if False:  # This ensures it's a generator without unreachable code
+            yield  # type: ignore[unreachable]
         return
-        yield  # pragma: no cover
 
     return Flow(_flow, name="empty")
 
@@ -1889,7 +1890,7 @@ async def merge_async_generators(*async_generators: AsyncIterator[Any]) -> Async
 
             # Process completed tasks
             for task in done:
-                result = await task
+                result: Any = await task
                 queue_index = task._queue_index  # type: ignore[attr-defined]
 
                 if result is _STREAM_END:
