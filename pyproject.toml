@@ -39,6 +39,8 @@ poethepoet = "^0.35.0"
 pytest-asyncio = "^1.0.0"
 hypothesis = "^6.135.16"
 psutil = "^7.0.0"
+mypy = "^1.14.0"
+types-PyYAML = "^6.0.0"
 
 [tool.poe.tasks]
 test = "pytest"
@@ -46,6 +48,66 @@ test-cov = "pytest --cov=goldentooth_agent"
 test-sanity = "pytest tests/test_sanity.py -v"
 test-maybe-await = "pytest tests/core/util/test_maybe_await.py -v"
 test-core = "pytest tests/core/ -v"
+typecheck = "mypy src/goldentooth_agent --strict --show-error-codes --pretty"
+typecheck-all = "mypy . --strict --show-error-codes --pretty"
+
+[tool.mypy]
+# Strict type checking configuration aligned with Pylance standards
+python_version = "3.13"
+strict = true
+show_error_codes = true
+pretty = true
+color_output = true
+
+# Error reporting
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+# Import handling
+ignore_missing_imports = false
+follow_imports = "normal"
+namespace_packages = true
+
+# Disallow untyped code
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+disallow_any_generics = true
+disallow_any_unimported = true
+disallow_any_expr = false  # Allow Any in expressions where needed
+disallow_any_decorated = false  # Allow Any in decorated functions
+disallow_any_explicit = false  # Allow explicit Any usage
+disallow_subclassing_any = true
+
+# None and Optional handling
+no_implicit_optional = true
+strict_optional = true
+
+# Miscellaneous strictness
+strict_equality = true
+extra_checks = true
+check_untyped_defs = true
+
+# Plugin support
+plugins = []
+
+# Per-module options for external libraries
+[[tool.mypy.overrides]]
+module = [
+    "antidote.*",
+    "atomic_agents.*",
+    "typer.*",
+    "platformdirs.*",
+    "hunter.*",
+    "loguru.*",
+    "pytest.*",
+    "hypothesis.*",
+]
+ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

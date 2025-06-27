@@ -6,7 +6,7 @@ app = typer.Typer()
 
 
 @app.command("chat")
-def chat():
+def chat() -> None:
     """Start an interactive chat session with the Goldentooth Agent.
 
     This command creates a conversational interface where users can interact

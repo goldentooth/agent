@@ -2,7 +2,7 @@ import inspect
 from typing import Callable, Any
 
 
-async def maybe_await(func: Callable, *args, **kwargs) -> Any:
+async def maybe_await(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
     """Call a function and conditionally await its result if it returns a coroutine.
 
     This utility enables uniform handling of both synchronous and asynchronous functions
