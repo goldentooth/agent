@@ -491,7 +491,9 @@ def parallel_stream(
             def make_run_flow(
                 captured_item: Input,
             ) -> Callable[[Flow[Input, Output]], Coroutine[Any, Any, Output | None]]:
-                async def run_flow(captured_flow: Flow[Input, Output]) -> Output | None:
+                async def run_flow_inner(
+                    captured_flow: Flow[Input, Output]
+                ) -> Output | None:
                     try:
 
                         def make_single_item_stream() -> AsyncIterator[Input]:
@@ -507,11 +509,11 @@ def parallel_stream(
                     except Exception:
                         return None  # Flow failed
 
-                return run_flow
+                return run_flow_inner
 
-            run_flow = make_run_flow(item)
+            run_flow_func = make_run_flow(item)
             tasks: list[asyncio.Task[Output | None]] = [
-                asyncio.create_task(run_flow(flow)) for flow in flows
+                asyncio.create_task(run_flow_func(flow)) for flow in flows
             ]
             results = await asyncio.gather(*tasks, return_exceptions=False)
             yield list(results)
@@ -536,7 +538,9 @@ def parallel_stream_successful(
             def make_run_flow_successful(
                 captured_item: Input,
             ) -> Callable[[Flow[Input, Output]], Coroutine[Any, Any, Output | None]]:
-                async def run_flow(captured_flow: Flow[Input, Output]) -> Output | None:
+                async def run_flow_inner(
+                    captured_flow: Flow[Input, Output]
+                ) -> Output | None:
                     try:
 
                         def make_single_item_stream() -> AsyncIterator[Input]:
@@ -552,11 +556,11 @@ def parallel_stream_successful(
                     except Exception:
                         return None  # Flow failed
 
-                return run_flow
+                return run_flow_inner
 
-            run_flow = make_run_flow_successful(item)
+            run_flow_func = make_run_flow_successful(item)
             tasks: list[asyncio.Task[Output | None]] = [
-                asyncio.create_task(run_flow(flow)) for flow in flows
+                asyncio.create_task(run_flow_func(flow)) for flow in flows
             ]
             results = await asyncio.gather(*tasks, return_exceptions=False)
             # Filter out None values

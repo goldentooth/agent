@@ -14,11 +14,11 @@ class Flow(Generic[Input, Output]):
         self,
         fn: Callable[[AsyncIterator[Input]], AsyncIterator[Output]],
         name: str = "<anonymous>",
-        metadata: dict[str, Any] = {},
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         self.fn = fn
         self.name = name
-        self.metadata = metadata
+        self.metadata = metadata if metadata is not None else {}
         self.__name__ = name
 
     def __call__(self, stream: AsyncIterator[Input]) -> AsyncIterator[Output]:

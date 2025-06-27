@@ -258,7 +258,7 @@ class FlowHealthMonitor:
 
         # Run all checks concurrently
         tasks = []
-        for name, check in self.checks.items():
+        for _name, check in self.checks.items():
             if check.enabled:
                 tasks.append(asyncio.create_task(check.run()))
 
@@ -389,11 +389,11 @@ class FlowConfigValidator:
 
         def validate_positive_number(value: Any) -> bool:
             """Validate that value is a positive number."""
-            return isinstance(value, (int, float)) and value > 0
+            return isinstance(value, int | float) and value > 0
 
         def validate_non_negative_number(value: Any) -> bool:
             """Validate that value is a non-negative number."""
-            return isinstance(value, (int, float)) and value >= 0
+            return isinstance(value, int | float) and value >= 0
 
         def validate_string(value: Any) -> bool:
             """Validate that value is a non-empty string."""
@@ -459,7 +459,7 @@ class FlowConfigValidator:
                 )
 
             # Check range for numbers
-            if isinstance(value, (int, float)):
+            if isinstance(value, int | float):
                 min_value = field_config.get("min_value")
                 max_value = field_config.get("max_value")
 
@@ -496,7 +496,7 @@ class FlowConfigValidator:
 
         if "timeout_seconds" in config:
             if (
-                not isinstance(config["timeout_seconds"], (int, float))
+                not isinstance(config["timeout_seconds"], int | float)
                 or config["timeout_seconds"] <= 0
             ):
                 errors.append("timeout_seconds must be a positive number")
@@ -507,7 +507,7 @@ class FlowConfigValidator:
 
         if "memory_limit_mb" in config:
             if (
-                not isinstance(config["memory_limit_mb"], (int, float))
+                not isinstance(config["memory_limit_mb"], int | float)
                 or config["memory_limit_mb"] <= 0
             ):
                 errors.append("memory_limit_mb must be a positive number")

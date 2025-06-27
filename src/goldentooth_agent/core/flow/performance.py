@@ -80,6 +80,7 @@ class PerformanceMonitor:
         try:
             import psutil
 
+            self._psutil = psutil  # Store reference for potential future use
             self._memory_tracking = True
         except ImportError:
             print("Warning: psutil not available, memory tracking disabled")
