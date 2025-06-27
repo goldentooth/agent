@@ -14,6 +14,7 @@ from pyee.asyncio import AsyncIOEventEmitter
 from goldentooth_agent.core.event import AsyncEventFlow, SyncEventFlow
 from goldentooth_agent.core.flow import Flow
 
+from .dependency_graph import DependencyGraph
 from .frame import ContextFrame
 from .history_tracker import ContextChangeEvent, HistoryTracker
 from .snapshot_manager import SnapshotManager
@@ -171,9 +172,7 @@ class Context:
         # Computed properties and transformations
         self._computed_properties: dict[str, ComputedProperty] = {}
         self._transformations: dict[str, list[Transformation]] = {}
-        self._dependency_graph: dict[str, set[str]] = (
-            {}
-        )  # key -> set of computed properties that depend on it
+        self._dependency_graph = DependencyGraph()
 
         # Snapshots and time-travel debugging
         self._snapshot_manager = SnapshotManager()
@@ -650,8 +649,8 @@ class Context:
 
     def _invalidate_dependent_computed_properties(self, key: str) -> None:
         """Invalidate computed properties that depend on the given key."""
-        if key in self._dependency_graph:
-            for computed_key in self._dependency_graph[key]:
+        if self._dependency_graph.has_dependents(key):
+            for computed_key in self._dependency_graph.get_dependents(key):
                 if computed_key in self._computed_properties:
                     computed_prop = self._computed_properties[computed_key]
                     computed_prop.invalidate()
@@ -665,6 +664,9 @@ class Context:
                 old_value = prop._cached_value if prop._is_cached else None
                 new_value = prop.compute(self)
                 self._emit_change_event(key, new_value, old_value)
+
+                # Also invalidate any computed properties that depend on this one
+                self._invalidate_dependent_computed_properties(key)
                 break
 
     def add_computed_property(
@@ -686,9 +688,7 @@ class Context:
 
         # Build dependency graph
         for dep_key in computed_prop.dependencies:
-            if dep_key not in self._dependency_graph:
-                self._dependency_graph[dep_key] = set()
-            self._dependency_graph[dep_key].add(key)
+            self._dependency_graph.add_dependency(dep_key, key)
 
     def remove_computed_property(self, key: str) -> None:
         """Remove a computed property from the context."""
@@ -699,10 +699,7 @@ class Context:
 
         # Clean up dependency graph
         for dep_key in computed_prop.dependencies:
-            if dep_key in self._dependency_graph:
-                self._dependency_graph[dep_key].discard(key)
-                if not self._dependency_graph[dep_key]:
-                    del self._dependency_graph[dep_key]
+            self._dependency_graph.remove_dependency(dep_key, key)
 
         del self._computed_properties[key]
 

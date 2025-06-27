@@ -1,3 +1,4 @@
+from .dependency_graph import DependencyGraph
 from .frame import ContextFrame
 from .history_tracker import HistoryTracker
 from .key import ContextKey, context_key
@@ -10,6 +11,7 @@ __all__ = [
     "ContextFrame",
     "ContextKey",
     "context_key",
+    "DependencyGraph",
     "HistoryTracker",
     "SnapshotManager",
     "Symbol",
