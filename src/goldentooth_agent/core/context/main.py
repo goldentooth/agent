@@ -15,6 +15,7 @@ from goldentooth_agent.core.event import AsyncEventFlow, SyncEventFlow
 from goldentooth_agent.core.flow import Flow
 
 from .frame import ContextFrame
+from .history_tracker import ContextChangeEvent, HistoryTracker
 from .snapshot_manager import SnapshotManager
 
 T = TypeVar("T")
@@ -81,29 +82,6 @@ class ContextSnapshot:
         for key, funcs in self.transformations.items():
             for func in funcs:
                 context.add_transformation(key, func)
-
-
-class ContextChangeEvent:
-    """Represents a single change event in context history."""
-
-    def __init__(self, key: str, old_value: Any, new_value: Any, context_id: int):
-        """Create a change event.
-
-        Args:
-            key: The key that changed
-            old_value: Previous value
-            new_value: New value
-            context_id: ID of the context that changed
-        """
-        self.key = key
-        self.old_value = old_value
-        self.new_value = new_value
-        self.context_id = context_id
-        self.timestamp = time.time()
-
-    def __repr__(self) -> str:
-        """String representation of the change event."""
-        return f"ContextChangeEvent(key='{self.key}', {self.old_value} -> {self.new_value}, t={self.timestamp})"
 
 
 class ComputedProperty:
@@ -199,8 +177,7 @@ class Context:
 
         # Snapshots and time-travel debugging
         self._snapshot_manager = SnapshotManager()
-        self._change_history: list[ContextChangeEvent] = []
-        self._max_history_size = 1000  # Limit history to prevent memory issues
+        self._history_tracker = HistoryTracker(max_size=1000)
 
     def get(self, key: str, default: T | None = None) -> T | None:
         """Get the value for a key, searching through all frames and computed properties."""
@@ -289,9 +266,17 @@ class Context:
         forked = self.fork()
 
         # Copy history (deep copy to avoid shared references)
-        forked._change_history = [
-            copy.deepcopy(event) for event in self._change_history
-        ]
+        all_history = self._history_tracker.get_all_history()
+        for event in all_history:
+            # Create a deep copy of the event
+            copied_event = ContextChangeEvent(
+                event.key,
+                copy.deepcopy(event.old_value),
+                copy.deepcopy(event.new_value),
+                id(forked),  # Update context_id to the forked context
+            )
+            copied_event.timestamp = event.timestamp  # Preserve original timestamp
+            forked._history_tracker._change_history.append(copied_event)
 
         # Copy snapshots (but update context_id references)
         for name in self._snapshot_manager.list_snapshots():
@@ -411,28 +396,15 @@ class Context:
         Returns:
             List of change events
         """
-        history = self._change_history
-
-        # Filter by timestamp if specified
-        if since is not None:
-            history = [event for event in history if event.timestamp > since]
-
-        # Reverse to get most recent first
-        history = list(reversed(history))
-
-        # Apply limit if specified
-        if limit is not None:
-            history = history[:limit]
-
-        return history
+        return self._history_tracker.get_history(limit=limit, since=since)
 
     def clear_history(self) -> None:
         """Clear the change history."""
-        self._change_history.clear()
+        self._history_tracker.clear_history()
 
     def get_history_size(self) -> int:
         """Get the current size of the change history."""
-        return len(self._change_history)
+        return self._history_tracker.get_history_size()
 
     def set_max_history_size(self, size: int) -> None:
         """Set the maximum history size.
@@ -440,14 +412,7 @@ class Context:
         Args:
             size: Maximum number of change events to keep
         """
-        if size < 0:
-            raise ValueError("History size must be non-negative")
-
-        self._max_history_size = size
-
-        # Trim current history if needed
-        if len(self._change_history) > size:
-            self._change_history = self._change_history[-size:] if size > 0 else []
+        self._history_tracker.set_max_history_size(size)
 
     def rollback_to_timestamp(self, timestamp: float) -> None:
         """Rollback context to state at a specific timestamp.
@@ -464,37 +429,39 @@ class Context:
         if timestamp > time.time():
             raise ValueError("Cannot rollback to future timestamp")
 
-        if not self._change_history:
+        if self._history_tracker.get_history_size() == 0:
             raise ValueError("No change history available for rollback")
 
         # Create automatic snapshot before rollback
         auto_snapshot_name = f"auto_rollback_{int(time.time())}"
         self.create_snapshot(auto_snapshot_name)
 
-        # Find the state at the target timestamp
-        # We need to reverse apply changes that happened after the timestamp
-        changes_to_reverse = [
-            event
-            for event in reversed(self._change_history)
-            if event.timestamp > timestamp
-        ]
+        # Get changes that need to be reversed
+        changes_to_reverse = self._history_tracker.get_changes_to_reverse(timestamp)
 
         # Apply the reversals
         for event in changes_to_reverse:
             try:
                 # Set the value back to its old value
-                # We temporarily disable history recording to avoid recursive changes
-                old_history = self._change_history
-                self._change_history = []
+                # We temporarily save and clear history to avoid recording the rollback changes
+                saved_tracker = self._history_tracker
+                self._history_tracker = HistoryTracker(max_size=0)
 
                 self[event.key] = event.old_value
 
-                # Restore history (minus this change we just reversed)
-                self._change_history = [e for e in old_history if e != event]
+                # Restore the history tracker (with the reversed change removed)
+                self._history_tracker = saved_tracker
+                # Remove the reversed event from history
+                all_history = self._history_tracker.get_all_history()
+                filtered_history = [e for e in all_history if e != event]
+                self._history_tracker.clear_history()
+                for e in filtered_history:
+                    self._history_tracker._change_history.append(e)
 
             except Exception:
                 # If we can't reverse a change (e.g., key doesn't exist anymore),
-                # we continue with the next one
+                # restore the tracker and continue with the next one
+                self._history_tracker = saved_tracker
                 pass
 
     def get_snapshots(self) -> dict[str, ContextSnapshot]:
@@ -517,7 +484,7 @@ class Context:
         Returns:
             List of change events in chronological order
         """
-        return [event for event in self._change_history if event.timestamp > timestamp]
+        return self._history_tracker.replay_changes_since(timestamp)
 
     def keys(self) -> Iterator[str]:
         """Yield all unique keys from the context, including computed properties."""
@@ -538,13 +505,7 @@ class Context:
 
     def _record_change(self, key: str, old_value: Any, new_value: Any) -> None:
         """Record a change event in the history."""
-        change_event = ContextChangeEvent(key, old_value, new_value, id(self))
-        self._change_history.append(change_event)
-
-        # Limit history size to prevent memory issues
-        if len(self._change_history) > self._max_history_size:
-            # Remove oldest entries, keeping most recent ones
-            self._change_history = self._change_history[-self._max_history_size :]
+        self._history_tracker.record_change(key, old_value, new_value, id(self))
 
     def _emit_change_event(self, key: str, new_value: Any, old_value: Any) -> None:
         """Emit context change events through EventFlow system."""

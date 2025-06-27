@@ -1,4 +1,5 @@
 from .frame import ContextFrame
+from .history_tracker import HistoryTracker
 from .key import ContextKey, context_key
 from .main import Context
 from .snapshot_manager import SnapshotManager
@@ -9,6 +10,7 @@ __all__ = [
     "ContextFrame",
     "ContextKey",
     "context_key",
+    "HistoryTracker",
     "SnapshotManager",
     "Symbol",
 ]
