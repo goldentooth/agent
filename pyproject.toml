@@ -41,6 +41,7 @@ hypothesis = "^6.135.16"
 psutil = "^7.0.0"
 mypy = "^1.14.0"
 types-PyYAML = "^6.0.0"
+types-psutil = "^6.1.0"
 
 [tool.poe.tasks]
 test = "pytest"
