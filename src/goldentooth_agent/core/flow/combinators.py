@@ -42,7 +42,7 @@ def _get_function_name(fn: Callable) -> str:
 def _create_single_item_stream(item: Input) -> AsyncIterator[Input]:
     """Create an async iterator that yields a single item."""
 
-    async def _stream():
+    async def _stream() -> AsyncIterator[Input]:
         yield item
 
     return _stream()

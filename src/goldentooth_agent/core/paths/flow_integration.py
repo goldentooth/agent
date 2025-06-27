@@ -11,7 +11,7 @@ T = TypeVar("T")
 
 
 @inject
-def path_exists_filter(paths_instance: Paths = inject.get(Paths)) -> Flow[Path, Path]:
+def path_exists_filter(paths_instance: Paths = inject[Paths]) -> Flow[Path, Path]:
     """
     Create a Flow that filters paths to only existing ones.
 
@@ -41,7 +41,7 @@ def resolve_config_path(relative_path: str) -> Flow[Any, Path]:
     """
 
     @inject
-    def _inner(paths_instance: Paths = inject.get(Paths)) -> Flow[Any, Path]:
+    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[Any, Path]:
         config_dir = paths_instance.config()
         resolved = config_dir / relative_path
         return map_stream(lambda _: resolved)
@@ -65,7 +65,7 @@ def resolve_data_path(relative_path: str) -> Flow[Any, Path]:
     """
 
     @inject
-    def _inner(paths_instance: Paths = inject.get(Paths)) -> Flow[Any, Path]:
+    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[Any, Path]:
         data_dir = paths_instance.data()
         resolved = data_dir / relative_path
         return map_stream(lambda _: resolved)
@@ -75,7 +75,7 @@ def resolve_data_path(relative_path: str) -> Flow[Any, Path]:
 
 @inject
 def list_directory_flow(
-    pattern: str = "*", paths_instance: Paths = inject.get(Paths)
+    pattern: str = "*", paths_instance: Paths = inject[Paths]
 ) -> Flow[Path, Path]:
     """
     Create a Flow that lists files in a directory.
@@ -93,7 +93,7 @@ def list_directory_flow(
     """
 
     def list_files_async(directory: Path) -> AsyncIterator[Path]:
-        async def _list():
+        async def _list() -> AsyncIterator[Path]:
             if directory.is_dir():
                 for path in directory.glob(pattern):
                     yield path
@@ -104,7 +104,7 @@ def list_directory_flow(
 
 
 @inject
-def ensure_parent_dir(paths_instance: Paths = inject.get(Paths)) -> Flow[Path, Path]:
+def ensure_parent_dir(paths_instance: Paths = inject[Paths]) -> Flow[Path, Path]:
     """
     Create a Flow that ensures parent directories exist.
 
@@ -140,7 +140,7 @@ def read_config_file(filename: str, default_content: str = "") -> Flow[Any, str]
     """
 
     @inject
-    def _inner(paths_instance: Paths = inject.get(Paths)) -> Flow[Any, str]:
+    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[Any, str]:
         config_path = paths_instance.config() / filename
 
         if config_path.exists():
@@ -169,7 +169,7 @@ def write_config_file(filename: str) -> Flow[str, Path]:
     """
 
     @inject
-    def _inner(paths_instance: Paths = inject.get(Paths)) -> Flow[str, Path]:
+    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[str, Path]:
         def write_content(content: str) -> Path:
             config_path = paths_instance.config() / filename
             config_path.write_text(content)

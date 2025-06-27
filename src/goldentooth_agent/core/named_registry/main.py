@@ -110,10 +110,10 @@ def make_register_fn(
         registry = world[registry_cls]
         if get_instance_fn:
             final_obj = get_instance_fn()
-        elif cls and isinstance(cls, Creatable):
-            final_obj = cls.create()
         elif obj is not None:
             final_obj = obj
+        elif cls and hasattr(cls, 'create'):
+            final_obj = cls.create()  # type: ignore[attr-defined]
         else:
             raise ValueError("An object must be provided or creatable.")
         final_id = id or (default_id_fn(final_obj) if default_id_fn else None)
@@ -122,6 +122,6 @@ def make_register_fn(
         registry.set(final_id, final_obj)
         if cls is not None:
             return cls
-        return type(final_obj)  # type: ignore[return-value]
+        return type(final_obj)
 
     return _decorate

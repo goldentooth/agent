@@ -102,7 +102,7 @@ def timeout_async_flow(
             return default_value
 
     def filter_none(item: Optional[R]) -> AsyncIterator[R]:
-        async def _filter():
+        async def _filter() -> AsyncIterator[R]:
             if item is not None:
                 yield item
 

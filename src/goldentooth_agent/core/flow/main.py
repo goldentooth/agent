@@ -38,7 +38,7 @@ class Flow(Generic[Input, Output]):
             f"<Flow name='{self.name}' fn={self.fn.__name__} metadata={self.metadata}>"
         )
 
-    def __aiter__(self):
+    def __aiter__(self) -> None:
         """Prevent direct iteration - flows must be called with a stream."""
         raise TypeError(
             "Flows must be called with a stream to get an iterator (e.g., flow(stream))"
@@ -180,7 +180,8 @@ class Flow(Generic[Input, Output]):
         from .combinators import batch_stream
 
         async def _batched(stream: AsyncIterator[Input]) -> AsyncIterator[list[Output]]:
-            async for batch in batch_stream(size)(self(stream)):
+            batch_flow = batch_stream(size)(self(stream))
+            async for batch in batch_flow:
                 yield batch
 
         return Flow(_batched, name=f"{self.name}.batch({size})")
@@ -188,7 +189,7 @@ class Flow(Generic[Input, Output]):
     @staticmethod
     def from_value_fn(
         fn: Optional[Callable[[Input], Awaitable[Output]]] = None,
-    ) -> Union[Flow[Input, Output], Callable]:
+    ) -> Union[Flow[Input, Output], Callable[[Callable[[Input], Awaitable[Output]]], Flow[Input, Output]]]:
         """Create a flow from an async function that takes an input and returns an output.
 
         Can be used as a decorator:
@@ -212,7 +213,7 @@ class Flow(Generic[Input, Output]):
     @staticmethod
     def from_sync_fn(
         fn: Optional[Callable[[Input], Output]] = None,
-    ) -> Union[Flow[Input, Output], Callable]:
+    ) -> Union[Flow[Input, Output], Callable[[Callable[[Input], Output]], Flow[Input, Output]]]:
         """Create a flow from a synchronous function that takes an input and returns an output.
 
         Can be used as a decorator:
@@ -236,7 +237,7 @@ class Flow(Generic[Input, Output]):
     @staticmethod
     def from_event_fn(
         fn: Optional[Callable[[Input], AsyncIterator[Output]]] = None,
-    ) -> Union[Flow[Input, Output], Callable]:
+    ) -> Union[Flow[Input, Output], Callable[[Callable[[Input], AsyncIterator[Output]]], Flow[Input, Output]]]:
         """Create a flow from an async function that returns an async iterator.
 
         Can be used as a decorator:
@@ -278,9 +279,9 @@ class Flow(Generic[Input, Output]):
         """Create a flow from an emitter that registers a callback to receive items."""
 
         async def _stream(_: AsyncIterator[None]) -> AsyncIterator[Output]:
-            queue: asyncio.Queue = asyncio.Queue()
+            queue: asyncio.Queue[Output] = asyncio.Queue()
 
-            def on_emit(item):
+            def on_emit(item: Output) -> None:
                 queue.put_nowait(item)
 
             register(on_emit)

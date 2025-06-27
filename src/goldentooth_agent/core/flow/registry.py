@@ -4,7 +4,7 @@ This module provides a global registry for named flows, enabling
 easy discovery and reuse across applications.
 """
 
-from typing import Dict, List, Optional, TypeVar, Generic
+from typing import Dict, List, Optional, TypeVar, Generic, Any
 from .main import Flow
 
 Input = TypeVar("Input")
@@ -15,10 +15,10 @@ class FlowRegistry:
     """Registry for named flows with discovery and introspection capabilities."""
 
     def __init__(self):
-        self._flows: Dict[str, Flow] = {}
+        self._flows: Dict[str, Flow[Any, Any]] = {}
         self._categories: Dict[str, List[str]] = {}
 
-    def register(self, name: str, flow: Flow, category: Optional[str] = None) -> Flow:
+    def register(self, name: str, flow: Flow[Any, Any], category: Optional[str] = None) -> Flow[Any, Any]:
         """Register a flow with the given name.
 
         Args:
@@ -39,7 +39,7 @@ class FlowRegistry:
 
         return flow
 
-    def get(self, name: str) -> Optional[Flow]:
+    def get(self, name: str) -> Optional[Flow[Any, Any]]:
         """Get a flow by name.
 
         Args:
@@ -214,7 +214,7 @@ def register_flow(name: str, flow: Flow, category: Optional[str] = None) -> Flow
     return flow_registry.register(name, flow, category)
 
 
-def get_flow(name: str) -> Optional[Flow]:
+def get_flow(name: str) -> Optional[Flow[Any, Any]]:
     """Get a flow from the global registry.
 
     Args:
