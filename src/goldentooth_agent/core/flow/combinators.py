@@ -202,7 +202,7 @@ def if_then_stream(
                     yield result
             else:
                 # Pass through unchanged (assuming Input and Output are compatible)
-                yield item  # type: ignore
+                yield item  # type: ignore[misc]
 
     else_name = else_flow.name if else_flow else "identity"
     return Flow(
@@ -254,7 +254,7 @@ def recover_stream(
         """Process stream with exception handling."""
         async for item in stream:
             try:
-                yield item  # type: ignore  # Assume Input and Output are compatible
+                yield item  # type: ignore[misc]  # Assume Input and Output are compatible
             except Exception as e:
                 fallback = await handler(e, item)
                 yield fallback
@@ -932,7 +932,7 @@ def catch_and_continue_stream(
         """Process stream with exception handling and continuation."""
         async for item in stream:
             try:
-                yield item  # type: ignore  # Assume Input and Output are compatible
+                yield item  # type: ignore[misc]  # Assume Input and Output are compatible
             except Exception as e:
                 fallback = handler(e, item)
                 if fallback is not None:

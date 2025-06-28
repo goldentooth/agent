@@ -8,11 +8,20 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     pass
 
+# Type alias for tracked values - contexts can store any type of value
+TrackedValue = Any
+
 
 class ContextChangeEvent:
     """Represents a single change event in context history."""
 
-    def __init__(self, key: str, old_value: Any, new_value: Any, context_id: int):
+    def __init__(
+        self,
+        key: str,
+        old_value: TrackedValue,
+        new_value: TrackedValue,
+        context_id: int,
+    ):
         """Create a change event.
 
         Args:
@@ -45,7 +54,11 @@ class HistoryTracker:
         self._max_history_size = max_size
 
     def record_change(
-        self, key: str, old_value: Any, new_value: Any, context_id: int
+        self,
+        key: str,
+        old_value: TrackedValue,
+        new_value: TrackedValue,
+        context_id: int,
     ) -> None:
         """Record a change event in the history.
 

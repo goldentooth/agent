@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -44,7 +44,10 @@ class FlowIOSchema(BaseModel):
             field_type = type(field_value) if field_value is not None else Any
 
             # Create and set the context key
-            context_key = ContextKey.create(key_name, field_type, description)
+            # We need to cast to the expected type since ContextKey.create is generic
+            context_key = ContextKey.create(
+                key_name, cast(type[Any], field_type), description
+            )
             updated_context.set(context_key.path, field_value)
 
         return updated_context

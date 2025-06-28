@@ -93,9 +93,9 @@ disallow_incomplete_defs = true
 disallow_untyped_decorators = true
 disallow_any_generics = true
 disallow_any_unimported = true
-disallow_any_expr = false  # Allow Any in expressions where needed
-disallow_any_decorated = false  # Allow Any in decorated functions
-disallow_any_explicit = false  # Allow explicit Any usage
+disallow_any_expr = false  # Too many errors currently - enable gradually
+disallow_any_decorated = false  # Still allow Any in decorated functions (can be complex)
+disallow_any_explicit = false  # TODO: Enable gradually - 174 errors remain
 disallow_subclassing_any = true
 
 # None and Optional handling
@@ -106,6 +106,8 @@ strict_optional = true
 strict_equality = true
 extra_checks = true
 check_untyped_defs = true
+strict_concatenate = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 
 # Plugin support
 plugins = []
