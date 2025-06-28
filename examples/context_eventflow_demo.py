@@ -165,10 +165,6 @@ async def main() -> None:
     print("\n6. Legacy compatibility:")
     print("-" * 20)
 
-    # Old callback system still works
-    legacy_events = []
-    context.subscribe("legacy_key", lambda v: legacy_events.append(f"Legacy: {v}"))
-
     # New EventFlow system also works on same key
     modern_events = []
     context.subscribe_sync("legacy_key").on(
@@ -177,7 +173,6 @@ async def main() -> None:
 
     context["legacy_key"] = "backwards_compatible"
 
-    print(f"Legacy callbacks: {legacy_events}")
     print(f"Modern EventFlow: {modern_events}")
 
     print("\n✨ Demo complete! Context now has full EventFlow integration.")
