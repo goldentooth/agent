@@ -21,9 +21,7 @@ class ProcessExecuteInput(FlowIOSchema):
 
     command: str = Field(..., description="Command to execute")
     args: list[str] = Field(default_factory=list, description="Command arguments")
-    working_directory: str | None = Field(
-        default=None, description="Working directory"
-    )
+    working_directory: str | None = Field(default=None, description="Working directory")
     environment: dict[str, str] | None = Field(
         default=None, description="Environment variables"
     )

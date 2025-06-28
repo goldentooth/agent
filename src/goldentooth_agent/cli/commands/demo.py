@@ -4,7 +4,7 @@ import asyncio
 import json
 import time
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from antidote import inject
@@ -23,14 +23,17 @@ app = typer.Typer()
 
 @app.command("flows")
 def demo_flows(
-    scenario: str | None = typer.Option(
-        None,
-        "--scenario",
-        help="Specific scenario: stream_processing, error_handling, composition",
-    ),
-    interactive: bool = typer.Option(
-        True, "--interactive/--no-interactive", help="Enable interactive mode"
-    ),
+    scenario: Annotated[
+        str | None,
+        typer.Option(
+            "--scenario",
+            help="Specific scenario: stream_processing, error_handling, composition",
+        ),
+    ] = None,
+    interactive: Annotated[
+        bool,
+        typer.Option("--interactive/--no-interactive", help="Enable interactive mode"),
+    ] = True,
 ) -> None:
     """Interactive demonstration of the flow system."""
 
@@ -59,14 +62,17 @@ def demo_flows(
 
 @app.command("context")
 def demo_context(
-    scenario: str | None = typer.Option(
-        None,
-        "--scenario",
-        help="Specific scenario: time_travel, computed_properties, queries",
-    ),
-    interactive: bool = typer.Option(
-        True, "--interactive/--no-interactive", help="Enable interactive mode"
-    ),
+    scenario: Annotated[
+        str | None,
+        typer.Option(
+            "--scenario",
+            help="Specific scenario: time_travel, computed_properties, queries",
+        ),
+    ] = None,
+    interactive: Annotated[
+        bool,
+        typer.Option("--interactive/--no-interactive", help="Enable interactive mode"),
+    ] = True,
 ) -> None:
     """Interactive demonstration of the context system."""
 
@@ -95,12 +101,16 @@ def demo_context(
 
 @app.command("agents")
 def demo_agents(
-    scenario: str | None = typer.Option(
-        None, "--scenario", help="Specific scenario: creation, collaboration, pipelines"
-    ),
-    interactive: bool = typer.Option(
-        True, "--interactive/--no-interactive", help="Enable interactive mode"
-    ),
+    scenario: Annotated[
+        str | None,
+        typer.Option(
+            "--scenario", help="Specific scenario: creation, collaboration, pipelines"
+        ),
+    ] = None,
+    interactive: Annotated[
+        bool,
+        typer.Option("--interactive/--no-interactive", help="Enable interactive mode"),
+    ] = True,
 ) -> None:
     """Interactive demonstration of the agent system."""
 

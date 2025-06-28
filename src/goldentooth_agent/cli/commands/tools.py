@@ -3,7 +3,7 @@ import json
 import math
 import sys
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from antidote import inject
@@ -183,18 +183,21 @@ def list_tools() -> None:
 
 @app.command("run")
 def run_tool(
-    tool_name: str = typer.Argument(..., help="Name of the tool to run"),
-    input_data: str | None = typer.Option(None, "--input", help="JSON input data"),
-    format: str = typer.Option(
-        "text", "--format", "-f", help="Output format: text, json"
-    ),
+    tool_name: Annotated[str, typer.Argument(help="Name of the tool to run")],
+    input_data: Annotated[
+        str | None, typer.Option("--input", help="JSON input data")
+    ] = None,
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Output format: text, json")
+    ] = "text",
     # Tool-specific options
-    expression: str | None = typer.Option(
-        None, "--expression", help="Mathematical expression (for calculator)"
-    ),
-    message: str | None = typer.Option(
-        None, "--message", help="Message to echo (for echo tool)"
-    ),
+    expression: Annotated[
+        str | None,
+        typer.Option("--expression", help="Mathematical expression (for calculator)"),
+    ] = None,
+    message: Annotated[
+        str | None, typer.Option("--message", help="Message to echo (for echo tool)")
+    ] = None,
 ) -> None:
     """Run a specific tool with input data."""
 

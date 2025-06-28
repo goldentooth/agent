@@ -6,7 +6,7 @@ import asyncio
 import json
 import time
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from antidote import inject
@@ -280,7 +280,9 @@ def list_pipelines() -> None:
 
 @app.command("describe")
 def describe_pipeline(
-    pipeline_name: str = typer.Argument(..., help="Name of the pipeline to describe"),
+    pipeline_name: Annotated[
+        str, typer.Argument(help="Name of the pipeline to describe")
+    ],
 ) -> None:
     """Show detailed information about a specific pipeline."""
 
@@ -332,11 +334,13 @@ def describe_pipeline(
 
 @app.command("run")
 def run_pipeline(
-    pipeline_name: str = typer.Argument(..., help="Name of the pipeline to run"),
-    input_data: str | None = typer.Option(None, "--input", help="JSON input data"),
-    format: str = typer.Option(
-        "summary", "--format", "-f", help="Output format: summary, json, full"
-    ),
+    pipeline_name: Annotated[str, typer.Argument(help="Name of the pipeline to run")],
+    input_data: Annotated[
+        str | None, typer.Option("--input", help="JSON input data")
+    ] = None,
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Output format: summary, json, full")
+    ] = "summary",
 ) -> None:
     """Execute a pipeline with input data."""
 
@@ -416,10 +420,10 @@ def run_pipeline(
 
 @app.command("create")
 def create_pipeline(
-    name: str = typer.Argument(..., help="Name for the new pipeline"),
-    config_file: str | None = typer.Option(
-        None, "--config", help="JSON config file path"
-    ),
+    name: Annotated[str, typer.Argument(help="Name for the new pipeline")],
+    config_file: Annotated[
+        str | None, typer.Option("--config", help="JSON config file path")
+    ] = None,
 ) -> None:
     """Create a new pipeline from configuration."""
 

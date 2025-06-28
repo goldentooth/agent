@@ -4,7 +4,7 @@ import asyncio
 import json
 import sys
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from antidote import inject
@@ -103,7 +103,7 @@ def list_agents() -> None:
 
 @app.command("describe")
 def describe_agent(
-    agent_name: str = typer.Argument(..., help="Name of the agent to describe"),
+    agent_name: Annotated[str, typer.Argument(help="Name of the agent to describe")],
 ) -> None:
     """Show detailed information about a specific agent."""
 
@@ -160,15 +160,18 @@ def describe_agent(
 
 @app.command("run")
 def run_agent(
-    agent_name: str = typer.Argument(..., help="Name of the agent to run"),
-    input_data: str | None = typer.Option(None, "--input", help="JSON input data"),
-    format: str = typer.Option(
-        "text", "--format", "-f", help="Output format: text, json"
-    ),
+    agent_name: Annotated[str, typer.Argument(help="Name of the agent to run")],
+    input_data: Annotated[
+        str | None, typer.Option("--input", help="JSON input data")
+    ] = None,
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Output format: text, json")
+    ] = "text",
     # Agent-specific options
-    message: str | None = typer.Option(
-        None, "--message", help="Message to send (for message-based agents)"
-    ),
+    message: Annotated[
+        str | None,
+        typer.Option("--message", help="Message to send (for message-based agents)"),
+    ] = None,
 ) -> None:
     """Run a specific agent with input data."""
 
@@ -235,10 +238,11 @@ def run_agent(
 
 @app.command("test")
 def test_agent(
-    agent_name: str = typer.Argument(..., help="Name of the agent to test"),
-    input_data: str | None = typer.Option(
-        None, "--input", help="JSON input data (uses default if not provided)"
-    ),
+    agent_name: Annotated[str, typer.Argument(help="Name of the agent to test")],
+    input_data: Annotated[
+        str | None,
+        typer.Option("--input", help="JSON input data (uses default if not provided)"),
+    ] = None,
 ) -> None:
     """Test an agent with sample input to verify it's working correctly."""
 

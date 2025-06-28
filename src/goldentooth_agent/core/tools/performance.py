@@ -6,8 +6,8 @@ import asyncio
 import functools
 import time
 from collections import defaultdict
-from typing import Any, TypeVar
 from collections.abc import Callable
+from typing import Any, TypeVar
 
 import httpx
 
@@ -210,9 +210,7 @@ def batch_processor(batch_size: int = 10, timeout: float = 1.0):
             except TimeoutError:
                 # Set timeout exceptions for all items
                 for _, future in items:
-                    future.set_exception(
-                        TimeoutError("Batch processing timeout")
-                    )
+                    future.set_exception(TimeoutError("Batch processing timeout"))
             except Exception as e:
                 # Set exception for all items
                 for _, future in items:

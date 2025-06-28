@@ -24,12 +24,8 @@ class HttpRequestInput(FlowIOSchema):
         default="GET", description="HTTP method (GET, POST, PUT, DELETE)"
     )
     headers: dict[str, str] | None = Field(default=None, description="HTTP headers")
-    params: dict[str, str] | None = Field(
-        default=None, description="Query parameters"
-    )
-    data: dict[str, Any] | None = Field(
-        default=None, description="Request body data"
-    )
+    params: dict[str, str] | None = Field(default=None, description="Query parameters")
+    data: dict[str, Any] | None = Field(default=None, description="Request body data")
     timeout: float = Field(default=30.0, description="Request timeout in seconds")
     follow_redirects: bool = Field(default=True, description="Follow HTTP redirects")
 
@@ -272,9 +268,7 @@ class JsonApiInput(FlowIOSchema):
     url: HttpUrl = Field(..., description="API endpoint URL")
     method: str = Field(default="GET", description="HTTP method")
     headers: dict[str, str] | None = Field(default=None, description="HTTP headers")
-    params: dict[str, str] | None = Field(
-        default=None, description="Query parameters"
-    )
+    params: dict[str, str] | None = Field(default=None, description="Query parameters")
     json_data: dict[str, Any] | None = Field(
         default=None, description="JSON request body"
     )

@@ -4,7 +4,7 @@ import asyncio
 import json
 import sys
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from antidote import inject
@@ -116,11 +116,13 @@ def list_flows() -> None:
 
 @app.command("exec")
 def exec_flow(
-    flow_name: str = typer.Argument(..., help="Name of the flow to execute"),
-    input_data: str | None = typer.Option(None, "--input", help="JSON input data"),
-    format: str = typer.Option(
-        "auto", "--format", "-f", help="Output format: auto, json, text"
-    ),
+    flow_name: Annotated[str, typer.Argument(help="Name of the flow to execute")],
+    input_data: Annotated[
+        str | None, typer.Option("--input", help="JSON input data")
+    ] = None,
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Output format: auto, json, text")
+    ] = "auto",
 ) -> None:
     """Execute a flow with input data."""
 
@@ -228,7 +230,7 @@ async def run_flow_async(
 
 @app.command("describe")
 def describe_flow(
-    flow_name: str = typer.Argument(..., help="Name of the flow to describe"),
+    flow_name: Annotated[str, typer.Argument(help="Name of the flow to describe")],
 ) -> None:
     """Show detailed information about a flow."""
 

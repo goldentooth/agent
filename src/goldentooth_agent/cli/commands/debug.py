@@ -5,7 +5,7 @@ import json
 import sys
 import time
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from antidote import inject
@@ -53,17 +53,18 @@ class TraceDataDict:
 
 @app.command("health")
 def system_health(
-    component: str | None = typer.Option(
-        None,
-        "--component",
-        help="Specific component to check: flows, tools, agents, all",
-    ),
-    format: str = typer.Option(
-        "rich", "--format", "-f", help="Output format: rich, json"
-    ),
-    export: str | None = typer.Option(
-        None, "--export", help="Export health report to file"
-    ),
+    component: Annotated[
+        str | None,
+        typer.Option(
+            "--component", help="Specific component to check: flows, tools, agents, all"
+        ),
+    ] = None,
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Output format: rich, json")
+    ] = "rich",
+    export: Annotated[
+        str | None, typer.Option("--export", help="Export health report to file")
+    ] = None,
 ) -> None:
     """Check system health and component status."""
 
@@ -113,10 +114,18 @@ def system_health(
 
 @app.command("trace")
 def trace_execution(
-    flow: str | None = typer.Option(None, "--flow", help="Flow name to trace"),
-    agent: str | None = typer.Option(None, "--agent", help="Agent name to trace"),
-    input_data: str | None = typer.Option(None, "--input", help="JSON input data"),
-    verbose: bool = typer.Option(False, "--verbose", help="Enable verbose output"),
+    flow: Annotated[
+        str | None, typer.Option("--flow", help="Flow name to trace")
+    ] = None,
+    agent: Annotated[
+        str | None, typer.Option("--agent", help="Agent name to trace")
+    ] = None,
+    input_data: Annotated[
+        str | None, typer.Option("--input", help="JSON input data")
+    ] = None,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", help="Enable verbose output")
+    ] = False,
 ) -> None:
     """Trace flow or agent execution for debugging."""
 
@@ -155,13 +164,15 @@ def trace_execution(
 
 @app.command("profile")
 def profile_performance(
-    command: str = typer.Argument(
-        ..., help="Command to profile (e.g., 'agents run echo')"
-    ),
-    iterations: int = typer.Option(
-        10, "--iterations", "-n", help="Number of iterations"
-    ),
-    input_data: str | None = typer.Option(None, "--input", help="JSON input data"),
+    command: Annotated[
+        str, typer.Argument(help="Command to profile (e.g., 'agents run echo')")
+    ],
+    iterations: Annotated[
+        int, typer.Option("--iterations", "-n", help="Number of iterations")
+    ] = 10,
+    input_data: Annotated[
+        str | None, typer.Option("--input", help="JSON input data")
+    ] = None,
 ) -> None:
     """Profile command performance and resource usage."""
 

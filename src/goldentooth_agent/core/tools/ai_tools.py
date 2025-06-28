@@ -44,9 +44,7 @@ class TextAnalysisOutput(FlowIOSchema):
     readability_score: float | None = Field(
         default=None, description="Readability score"
     )
-    language_detected: str | None = Field(
-        default=None, description="Detected language"
-    )
+    language_detected: str | None = Field(default=None, description="Detected language")
     metadata: dict[str, Any] = Field(
         default_factory=dict, description="Additional analysis data"
     )

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from antidote import inject
@@ -23,14 +23,18 @@ app = typer.Typer()
 
 @app.command("inspect")
 def inspect_context(
-    key: str | None = typer.Option(None, "--key", "-k", help="Specific key to inspect"),
-    format: str = typer.Option(
-        "rich", "--format", "-f", help="Output format: rich, json, tree"
-    ),
-    show_history: bool = typer.Option(False, "--history", help="Show context history"),
-    show_computed: bool = typer.Option(
-        False, "--computed", help="Show computed properties"
-    ),
+    key: Annotated[
+        str | None, typer.Option("--key", "-k", help="Specific key to inspect")
+    ] = None,
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Output format: rich, json, tree")
+    ] = "rich",
+    show_history: Annotated[
+        bool, typer.Option("--history", help="Show context history")
+    ] = False,
+    show_computed: Annotated[
+        bool, typer.Option("--computed", help="Show computed properties")
+    ] = False,
 ) -> None:
     """Inspect context state and structure."""
 
@@ -64,11 +68,14 @@ def inspect_context(
 
 @app.command("set")
 def set_context_value(
-    key: str = typer.Argument(..., help="Context key to set"),
-    value: str = typer.Argument(..., help="Value to set (JSON string or plain text)"),
-    type_hint: str | None = typer.Option(
-        None, "--type", help="Value type: str, int, float, bool, json"
-    ),
+    key: Annotated[str, typer.Argument(help="Context key to set")],
+    value: Annotated[
+        str, typer.Argument(help="Value to set (JSON string or plain text)")
+    ],
+    type_hint: Annotated[
+        str | None,
+        typer.Option("--type", help="Value type: str, int, float, bool, json"),
+    ] = None,
 ) -> None:
     """Set a value in the context."""
 
@@ -97,12 +104,12 @@ def set_context_value(
 
 @app.command("export")
 def export_context(
-    format: str = typer.Option(
-        "json", "--format", "-f", help="Export format: json, yaml"
-    ),
-    output: str | None = typer.Option(
-        None, "--output", "-o", help="Output file (default: stdout)"
-    ),
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Export format: json, yaml")
+    ] = "json",
+    output: Annotated[
+        str | None, typer.Option("--output", "-o", help="Output file (default: stdout)")
+    ] = None,
 ) -> None:
     """Export context to file or stdout."""
 

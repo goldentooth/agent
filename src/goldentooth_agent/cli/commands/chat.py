@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import sys
 from collections.abc import AsyncIterator
+from typing import Annotated
 
 import typer
 from antidote import inject
@@ -91,14 +92,19 @@ def create_echo_agent() -> FlowAgent:
 
 @app.command()
 def chat(
-    agent: str | None = typer.Option(None, "--agent", "-a", help="Agent to chat with"),
-    session: str | None = typer.Option(
-        None, "--session", "-s", help="Session ID for context persistence"
-    ),
-    stream: bool = typer.Option(False, "--stream", help="Enable streaming responses"),
-    model: str | None = typer.Option(
-        None, "--model", "-m", help="Model to use for responses"
-    ),
+    agent: Annotated[
+        str | None, typer.Option("--agent", "-a", help="Agent to chat with")
+    ] = None,
+    session: Annotated[
+        str | None,
+        typer.Option("--session", "-s", help="Session ID for context persistence"),
+    ] = None,
+    stream: Annotated[
+        bool, typer.Option("--stream", help="Enable streaming responses")
+    ] = False,
+    model: Annotated[
+        str | None, typer.Option("--model", "-m", help="Model to use for responses")
+    ] = None,
 ) -> None:
     """Start an interactive chat session with the Goldentooth Agent.
 
@@ -232,11 +238,15 @@ async def chat_loop(
 
 @app.command()
 def send(
-    message: str | None = typer.Argument(None, help="Message to send to the agent"),
-    agent: str | None = typer.Option("echo", "--agent", "-a", help="Agent to use"),
-    format: str = typer.Option(
-        "text", "--format", "-f", help="Output format: text, json"
-    ),
+    message: Annotated[
+        str | None, typer.Argument(help="Message to send to the agent")
+    ] = None,
+    agent: Annotated[
+        str | None, typer.Option("--agent", "-a", help="Agent to use")
+    ] = "echo",
+    format: Annotated[
+        str, typer.Option("--format", "-f", help="Output format: text, json")
+    ] = "text",
 ) -> None:
     """Send a single message to an agent (UNIX pipe friendly).
 
