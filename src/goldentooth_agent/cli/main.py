@@ -8,3 +8,7 @@ load_dotenv()
 app = typer.Typer()
 app.add_typer(commands.chat.app, help="Talk to the agent.")
 app.add_typer(commands.tools.app, name="tools", help="Manage tools and utilities.")
+app.add_typer(commands.flow.app, name="flow", help="Execute and manage flows.")
+app.add_typer(
+    commands.context.app, name="context", help="Inspect and manage context state."
+)
