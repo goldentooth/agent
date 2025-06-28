@@ -1,0 +1,32 @@
+id: goldentooth/agent
+name: agent
+full_name: goldentooth/agent
+description: Intelligent agent system with RAG capabilities for managing distributed infrastructure and knowledge bases
+url: https://github.com/goldentooth/agent
+clone_url: https://github.com/goldentooth/agent.git
+default_branch: main
+language: Python
+languages:
+  - Python
+  - Shell
+  - Dockerfile
+topics:
+  - ai
+  - agent
+  - rag
+  - automation
+  - infrastructure
+  - knowledge-base
+stars: 47
+forks: 8
+open_issues: 3
+size_kb: 2048
+is_private: false
+is_fork: false
+is_archived: false
+created_at: '2024-01-15T09:00:00Z'
+updated_at: '2025-06-28T17:45:00Z'
+pushed_at: '2025-06-28T17:30:00Z'
+last_synced: '2025-06-28T18:00:00Z'
+rag_include: true
+priority: high

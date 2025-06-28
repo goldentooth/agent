@@ -22,6 +22,10 @@ dependencies = [
   "httpx (>=0.27.0,<0.28.0)",
   "beautifulsoup4 (>=4.12.0,<5.0.0)",
   "aiofiles (>=24.1.0,<25.0.0)",
+  "cryptography (>=45.0.4,<46.0.0)",
+  "sqlite-vec (>=0.1.0,<0.2.0)",
+  "numpy (>=1.24.0,<2.0.0)",
+  "PyGithub (>=2.1.0,<3.0.0)",
 ]
 scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 
@@ -29,6 +33,10 @@ scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 packages = [{ include = "goldentooth_agent", from = "src" }]
 include = [
   { path = "src/goldentooth_agent/data/system_prompts/*.yaml", format = [
+    "sdist",
+    "wheel",
+  ] },
+  { path = "src/goldentooth_agent/data/sample_github/**/*.yaml", format = [
     "sdist",
     "wheel",
   ] },

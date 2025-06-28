@@ -120,6 +120,8 @@ class InputValidator:
         self._sql_patterns = [
             re.compile(r"';.*--", re.IGNORECASE),
             re.compile(r"'.*OR.*'1'.*=.*'1", re.IGNORECASE),
+            re.compile(r"'\s*OR\s*'?\d+'?\s*=\s*'?\d+'?", re.IGNORECASE),
+            re.compile(r"'\s*OR\s+\d+\s*=\s*\d+", re.IGNORECASE),
             re.compile(r"union.*select", re.IGNORECASE),
             re.compile(r"insert.*into", re.IGNORECASE),
             re.compile(r"delete.*from", re.IGNORECASE),
@@ -128,6 +130,8 @@ class InputValidator:
             re.compile(r"create.*table", re.IGNORECASE),
             re.compile(r"alter.*table", re.IGNORECASE),
             re.compile(r"exec(ute)?", re.IGNORECASE),
+            re.compile(r";\s*drop\s+table", re.IGNORECASE),
+            re.compile(r";\s*delete\s+from", re.IGNORECASE),
         ]
 
         self._path_traversal_patterns = [

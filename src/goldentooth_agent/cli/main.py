@@ -27,3 +27,23 @@ app.add_typer(
     name="instructor",
     help="Structured output with Instructor.",
 )
+app.add_typer(
+    commands.docs.app,
+    name="docs", 
+    help="Manage knowledge base documents and embeddings.",
+)
+app.add_typer(
+    commands.github.app,
+    name="github",
+    help="Sync GitHub organizations and repositories.",
+)
+app.add_typer(
+    commands.setup.app,
+    name="setup",
+    help="Initialize and configure the system.",
+)
+app.add_typer(
+    commands.git_sync.app,
+    name="git",
+    help="Sync knowledge base data to Git repositories.",
+)

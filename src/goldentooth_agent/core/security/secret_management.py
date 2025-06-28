@@ -62,6 +62,7 @@ class SecretConfig:
             "certificate",
             "private_key",
             "database_url",
+            "unknown",
         }
     )
 
@@ -148,7 +149,7 @@ class SecretValue:
         """Representation without exposing value."""
         return f"SecretValue(type='{self.metadata.secret_type}', created={self.metadata.created_at}, ***)"
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Secure cleanup when object is destroyed."""
         if hasattr(self, "_value"):
             # Overwrite memory (Python string interning makes this limited)
@@ -263,7 +264,10 @@ class EnvironmentSecretStore(SecretStore):
 
         try:
             json_data = os.environ[name]
-            return json.loads(json_data)
+            data = json.loads(json_data)
+            if not isinstance(data, dict):
+                raise SecretError(f"Secret data is not a dictionary: {type(data)}")
+            return data
         except json.JSONDecodeError as e:
             raise SecretError(f"Failed to parse secret data: {e}") from e
 
@@ -317,7 +321,10 @@ class FileSecretStore(SecretStore):
 
         try:
             json_data = secret_file.read_text(encoding="utf-8")
-            return json.loads(json_data)
+            data = json.loads(json_data)
+            if not isinstance(data, dict):
+                raise SecretError(f"Secret data is not a dictionary: {type(data)}")
+            return data
         except Exception as e:
             raise SecretError(f"Failed to read secret from file: {e}") from e
 
@@ -341,7 +348,7 @@ class FileSecretStore(SecretStore):
 class InMemorySecretStore(SecretStore):
     """Store secrets in memory (for testing)."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._secrets: dict[str, dict[str, Any]] = {}
 
     def store_secret(self, name: str, data: dict[str, Any]) -> None:
@@ -384,7 +391,7 @@ class SecretManager:
                     key_path.write_bytes(key)
                     if os.name == "posix":
                         key_path.chmod(0o600)
-                self.encryption = FernetEncryptionProvider(key)
+                self.encryption: EncryptionProvider = FernetEncryptionProvider(key)
             else:
                 self.encryption = FernetEncryptionProvider()
         else:
@@ -392,7 +399,7 @@ class SecretManager:
 
         # Initialize secret store
         if config.store_type == "environment":
-            self.store = EnvironmentSecretStore()
+            self.store: SecretStore = EnvironmentSecretStore()
         elif config.store_type == "file":
             store_path = Path(config.file_store_path or "./secrets")
             self.store = FileSecretStore(store_path)

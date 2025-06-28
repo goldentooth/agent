@@ -1,0 +1,42 @@
+id: github-integration
+title: GitHub Integration Guide
+content: |
+  # GitHub Integration with Goldentooth Agent
+
+  This note documents how to set up and use the GitHub integration features.
+
+  ## Setup
+  1. Set GITHUB_TOKEN environment variable
+  2. Use `goldentooth-agent github sync-org <org-name>` to sync organizations
+  3. Data is automatically embedded for RAG queries
+
+  ## Features
+  - Sync organizations and repositories
+  - Automatic RAG embedding
+  - Semantic search across GitHub data
+  - Rate limit monitoring
+
+  ## Best Practices
+  - Sync periodically to keep data fresh
+  - Use organization sync for comprehensive coverage
+  - Monitor rate limits when syncing large datasets
+category: integration
+tags:
+  - github
+  - sync
+  - setup
+  - documentation
+status: active
+priority: high
+author: goldentooth-team
+created_at: '2025-06-28T18:00:00Z'
+updated_at: '2025-06-28T18:00:00Z'
+last_synced: '2025-06-28T18:00:00Z'
+rag_include: true
+rag_priority: high
+keywords:
+  - github
+  - integration
+  - sync
+  - repository
+  - organization
