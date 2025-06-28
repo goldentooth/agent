@@ -18,4 +18,8 @@
 16. Establish reasonable defaults for CLI commands without subcommands.
 17. Ensure that tracing support is integrated and that we can step through a complicated pipeline to debug it, with the output being both machine-readable and human-readable.
 18. Can the Agent interact with Claude Code? It would be useful to be able to run certain queries through the Claude Code API (or using my plan, or whatever) and other queries through the metered API key I have.
-19. Add functionality to support querying the various other GitHub organizations and repositories I have available, so I can say to investigate some given GitHub project and devise a plan for updating/expanding/improving it, etc.
+19. Investigate GitHub MCP and other methods of maintaining a developing and ongoing relationship with GitHub and my repositories.
+20. Add functionality to support querying the various other GitHub organizations and repositories I have available, so I can say to investigate some given GitHub project and devise a plan for updating/expanding/improving it, etc.
+21. Start thinking about integrating Goldentooth Agent with the Terraform repository specifically. We want to be able to maintain a human-readable and machine-readable graph of the infrastructure in that repository and use that to update the README, etc.
+22. Start thinking about integrating Goldentooth Agent with the Ansible repository specifically. We can use this to figure out ways of describing the infrastructure, service catalog, inventory, etc and summarize that in READMEs, etc.
+23. Start thinking about integrating Goldentooth Agent with the Clog. We can use that to get a good picture of the journey thusfar, formulate longer-term strategies for the cluster, document things as we go, and so forth.
