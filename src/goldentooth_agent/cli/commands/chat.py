@@ -16,6 +16,7 @@ from rich.text import Text
 from goldentooth_agent.core.context import Context
 from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow_agent import AgentInput, AgentOutput, FlowAgent
+from goldentooth_agent.core.llm import create_claude_agent
 
 app = typer.Typer()
 
@@ -148,13 +149,25 @@ async def chat_loop(
 ) -> None:
     """Main chat interaction loop."""
 
-    # Create agent (currently only echo agent is implemented)
-    if agent_name and agent_name != "echo":
-        console.print(
-            f"[yellow]Warning: Agent '{agent_name}' not implemented, using echo agent.[/yellow]"
-        )
-
-    agent = create_echo_agent()
+    # Create agent - try Claude first, fallback to echo
+    try:
+        if agent_name == "echo":
+            agent = create_echo_agent()
+            console.print("[dim]Using echo agent (demonstration mode)[/dim]")
+        else:
+            # Try to create Claude agent
+            agent = create_claude_agent(
+                name=agent_name or "claude",
+                model=model_name or "claude-3-5-sonnet-20241022",
+                system_prompt="You are a helpful AI assistant. Be concise and helpful.",
+            )
+            console.print(
+                f"[dim]Using Claude agent ({model_name or 'claude-3-5-sonnet-20241022'})[/dim]"
+            )
+    except ValueError as e:
+        # If Claude fails (e.g., missing API key), fallback to echo
+        console.print(f"[yellow]Claude unavailable ({e}), using echo agent[/yellow]")
+        agent = create_echo_agent()
     context = Context()
 
     # Add session context
@@ -300,13 +313,20 @@ async def process_single_message(
 ) -> AgentOutput:
     """Process a single message through an agent."""
 
-    # Create agent (currently only echo agent)
-    if agent_name and agent_name != "echo":
-        console.print(
-            f"[yellow]Warning: Agent '{agent_name}' not implemented, using echo agent.[/yellow]"
-        )
-
-    agent = create_echo_agent()
+    # Create agent - try Claude first, fallback to echo
+    try:
+        if agent_name == "echo":
+            agent = create_echo_agent()
+        else:
+            # Try to create Claude agent
+            agent = create_claude_agent(
+                name=agent_name or "claude",
+                system_prompt="You are a helpful AI assistant. Be concise and helpful.",
+            )
+    except ValueError as e:
+        # If Claude fails (e.g., missing API key), fallback to echo
+        console.print(f"[yellow]Claude unavailable ({e}), using echo agent[/yellow]")
+        agent = create_echo_agent()
     context = Context()
 
     # Create input

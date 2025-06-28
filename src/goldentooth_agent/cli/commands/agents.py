@@ -14,6 +14,7 @@ from rich.table import Table
 
 from goldentooth_agent.cli.commands.chat import create_echo_agent
 from goldentooth_agent.core.flow_agent import AgentOutput, FlowAgent, FlowIOSchema
+from goldentooth_agent.core.llm import create_claude_agent
 
 app = typer.Typer()
 
@@ -24,10 +25,21 @@ AgentMetadata = dict[str, Any]  # type: ignore[explicit-any]  # Agent metadata c
 
 def get_available_agents() -> AgentRegistry:
     """Get a registry of available agents."""
-    return {
+    agents = {
         "echo": create_echo_agent(),
-        # Future agents will be added here
     }
+
+    # Try to add Claude agent if available
+    try:
+        agents["claude"] = create_claude_agent(
+            name="claude",
+            system_prompt="You are a helpful AI assistant.",
+        )
+    except ValueError:
+        # Claude not available (missing API key), skip silently
+        pass
+
+    return agents
 
 
 def get_agent_metadata(agent_name: str, agent: FlowAgent) -> AgentMetadata:
@@ -48,7 +60,7 @@ def get_agent_description(agent_name: str) -> str:
     """Get a human-readable description for an agent."""
     descriptions = {
         "echo": "Simple echo agent that returns user input with metadata",
-        # Future agent descriptions
+        "claude": "AI agent powered by Anthropic's Claude models",
     }
     return descriptions.get(agent_name, "Custom agent implementation")
 
