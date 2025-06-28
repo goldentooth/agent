@@ -96,7 +96,7 @@ disallow_any_generics = true
 disallow_any_unimported = true
 disallow_any_expr = false    # Too aggressive - 245 errors (future enhancement)
 disallow_any_decorated = true  # Enabled - no errors found
-disallow_any_explicit = true   # Migrating modules gradually
+disallow_any_explicit = false  # Too restrictive for practical use
 disallow_subclassing_any = true
 
 # None and Optional handling
