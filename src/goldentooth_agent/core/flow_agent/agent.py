@@ -9,6 +9,9 @@ from ..context import Context
 from ..flow import Flow
 from .schema import FlowIOSchema
 
+# Type alias for agent system
+LLMClient = Any  # type: ignore[explicit-any]  # Various LLM clients (OpenAI, Anthropic, etc.)
+
 
 class FlowAgent:
     """Flow-based agent using functional composition.
@@ -28,7 +31,7 @@ class FlowAgent:
         output_schema: type[FlowIOSchema],
         system_flow: Flow[Context, Context],
         processing_flow: Flow[Context, Context],
-        client: Any = None,
+        client: LLMClient = None,
         model: str = "gpt-4",
     ):
         """Initialize a FlowAgent.

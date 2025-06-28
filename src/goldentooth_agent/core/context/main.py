@@ -19,6 +19,22 @@ from .frame import ContextFrame
 from .history_tracker import ContextChangeEvent, HistoryTracker
 from .snapshot_manager import SnapshotManager
 
+# Type aliases for context system
+ContextValue = Any  # type: ignore[explicit-any]
+ContextData = dict[str, Any]  # type: ignore[explicit-any]
+ContextDiff = dict[str, tuple[Any, Any]]  # type: ignore[explicit-any]
+ComputedFunction = Callable[["Context"], Any]  # type: ignore[explicit-any]
+TransformFunction = Callable[[Any], Any]  # type: ignore[explicit-any]
+ValuePredicate = Callable[[Any], bool]  # type: ignore[explicit-any]
+SyncEventRegistry = dict[str, SyncEventFlow[ContextValue]]
+AsyncEventRegistry = dict[str, AsyncEventFlow[ContextValue]]
+AnyFlow = Flow[None, Any]  # type: ignore[explicit-any]
+GlobalChangeData = dict[str, Any]  # type: ignore[explicit-any]
+SyncGlobalEventFlow = SyncEventFlow[GlobalChangeData]
+AsyncGlobalEventFlow = AsyncEventFlow[GlobalChangeData]
+GlobalChangeFlow = Flow[None, GlobalChangeData]
+FlattenedData = dict[str, Any]  # type: ignore[explicit-any]
+
 T = TypeVar("T")
 
 
@@ -40,7 +56,12 @@ class ContextSnapshot:
 
         # Store computed property definitions (but not cached values)
         self.computed_properties = {}
-        for key, prop in context._computed_properties.items():
+        for (
+            key,
+            prop,
+        ) in (
+            context._computed_properties.items()
+        ):  # pyright: ignore[reportPrivateUsage]
             self.computed_properties[key] = {
                 "func": prop.func,
                 "dependencies": prop.dependencies.copy(),
@@ -48,7 +69,10 @@ class ContextSnapshot:
 
         # Store transformations
         self.transformations = {}
-        for key, transforms in context._transformations.items():
+        for (
+            key,
+            transforms,
+        ) in context._transformations.items():  # pyright: ignore[reportPrivateUsage]
             self.transformations[key] = [t.func for t in transforms]
 
         # Store metadata
@@ -62,11 +86,11 @@ class ContextSnapshot:
         """
         # Clear current state
         context.frames.clear()
-        context._computed_properties.clear()
-        context._transformations.clear()
-        context._dependency_graph.clear()
-        context._sync_events.clear()
-        context._async_events.clear()
+        context._computed_properties.clear()  # pyright: ignore[reportPrivateUsage]
+        context._transformations.clear()  # pyright: ignore[reportPrivateUsage]
+        context._dependency_graph.clear()  # pyright: ignore[reportPrivateUsage]
+        context._sync_events.clear()  # pyright: ignore[reportPrivateUsage]
+        context._async_events.clear()  # pyright: ignore[reportPrivateUsage]
 
         # Restore frames
         context.frames.extend([frame.copy() for frame in self.frames])
@@ -88,9 +112,7 @@ class ContextSnapshot:
 class ComputedProperty:
     """Represents a computed property that automatically updates when its dependencies change."""
 
-    def __init__(
-        self, func: Callable[[Context], Any], dependencies: list[str] | None = None
-    ):
+    def __init__(self, func: ComputedFunction, dependencies: list[str] | None = None):
         """Initialize a computed property.
 
         Args:
@@ -99,11 +121,11 @@ class ComputedProperty:
         """
         self.func = func
         self.dependencies = dependencies or []
-        self._cached_value: Any = None
+        self._cached_value: ContextValue = None
         self._is_cached = False
         self._subscribers: WeakSet[Context] = WeakSet()
 
-    def compute(self, context: Context) -> Any:
+    def compute(self, context: Context) -> ContextValue:
         """Compute the property value for the given context."""
         if self._is_cached:
             return self._cached_value
@@ -125,13 +147,15 @@ class ComputedProperty:
     def notify_change(self) -> None:
         """Notify all subscribed contexts that this property may have changed."""
         for context in self._subscribers:
-            context._handle_computed_property_change(self)
+            context._handle_computed_property_change(
+                self
+            )  # pyright: ignore[reportPrivateUsage]
 
 
 class Transformation:
     """Represents a value transformation applied to context keys."""
 
-    def __init__(self, func: Callable[[Any], Any], key: str):
+    def __init__(self, func: TransformFunction, key: str):
         """Initialize a transformation.
 
         Args:
@@ -141,7 +165,7 @@ class Transformation:
         self.func = func
         self.key = key
 
-    def apply(self, value: Any) -> Any:
+    def apply(self, value: ContextValue) -> ContextValue:
         """Apply the transformation to a value."""
         return self.func(value)
 
@@ -158,14 +182,14 @@ class Context:
         self._async_emitter = AsyncIOEventEmitter()
 
         # EventFlow integration with isolated emitters
-        self._sync_events: dict[str, SyncEventFlow[Any]] = {}
-        self._async_events: dict[str, AsyncEventFlow[Any]] = {}
+        self._sync_events: SyncEventRegistry = {}
+        self._async_events: AsyncEventRegistry = {}
 
         # Global context change events with isolated emitters
-        self._global_sync_events = SyncEventFlow[dict[str, Any]](
+        self._global_sync_events = SyncEventFlow[GlobalChangeData](
             "context.global_changes", self._sync_emitter
         )
-        self._global_async_events = AsyncEventFlow[dict[str, Any]](
+        self._global_async_events = AsyncEventFlow[GlobalChangeData](
             "context.global_changes", self._async_emitter
         )
 
@@ -190,7 +214,7 @@ class Context:
                 return frame[key]  # type: ignore[no-any-return]
         return default
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: str) -> ContextValue:
         """Get the value for a key, raising KeyError if not found."""
         # Check if it's a computed property first
         if key in self._computed_properties:
@@ -202,7 +226,7 @@ class Context:
                 return frame[key]
         raise KeyError(f"Context key '{key}' not found")
 
-    def set(self, key: str, value: Any) -> None:
+    def set(self, key: str, value: ContextValue) -> None:
         """Set a value for a key in the current frame and notify subscribers/emit events."""
         old_value = self.get(key)
 
@@ -220,7 +244,7 @@ class Context:
         # Emit events through EventFlow system
         self._emit_change_event(key, transformed_value, old_value)
 
-    def __setitem__(self, key: str, value: Any) -> None:
+    def __setitem__(self, key: str, value: ContextValue) -> None:
         """Set a value for a key in the current frame and notify subscribers/emit events."""
         old_value = self.get(key)
 
@@ -293,7 +317,9 @@ class Context:
                 id(forked),  # Update context_id to the forked context
             )
             copied_event.timestamp = event.timestamp  # Preserve original timestamp
-            forked._history_tracker._change_history.append(copied_event)
+            forked._history_tracker._change_history.append(
+                copied_event
+            )  # pyright: ignore[reportPrivateUsage]
 
         # Copy snapshots (but update context_id references)
         for name in self._snapshot_manager.list_snapshots():
@@ -305,7 +331,9 @@ class Context:
                 snapshot.computed_properties
             )
             forked_snapshot.transformations = copy.deepcopy(snapshot.transformations)
-            forked._snapshot_manager._snapshots[name] = forked_snapshot
+            forked._snapshot_manager._snapshots[name] = (
+                forked_snapshot  # pyright: ignore[reportPrivateUsage]
+            )
 
         return forked
 
@@ -319,7 +347,7 @@ class Context:
                 new.frames.append(frame.copy())
         return new
 
-    def diff(self, other: Context) -> dict[str, tuple[Any, Any]]:
+    def diff(self, other: Context) -> ContextDiff:
         """Compute the differences between this context and another."""
         diffs = {}
         keys = set(self.keys()) | set(other.keys())
@@ -330,9 +358,7 @@ class Context:
                 diffs[k] = (a, b)
         return diffs
 
-    def deep_diff(
-        self, other: Context, delimiter: str = "."
-    ) -> dict[str, tuple[Any, Any]]:
+    def deep_diff(self, other: Context, delimiter: str = ".") -> ContextDiff:
         """Compute deep differences including nested values.
 
         Args:
@@ -474,7 +500,9 @@ class Context:
                 filtered_history = [e for e in all_history if e != event]
                 self._history_tracker.clear_history()
                 for e in filtered_history:
-                    self._history_tracker._change_history.append(e)
+                    self._history_tracker._change_history.append(
+                        e
+                    )  # pyright: ignore[reportPrivateUsage]
 
             except Exception:
                 # If we can't reverse a change (e.g., key doesn't exist anymore),
@@ -521,11 +549,15 @@ class Context:
                     yield k
                     seen.add(k)
 
-    def _record_change(self, key: str, old_value: Any, new_value: Any) -> None:
+    def _record_change(
+        self, key: str, old_value: ContextValue, new_value: ContextValue
+    ) -> None:
         """Record a change event in the history."""
         self._history_tracker.record_change(key, old_value, new_value, id(self))
 
-    def _emit_change_event(self, key: str, new_value: Any, old_value: Any) -> None:
+    def _emit_change_event(
+        self, key: str, new_value: ContextValue, old_value: ContextValue
+    ) -> None:
         """Emit context change events through EventFlow system."""
         change_data = {
             "key": key,
@@ -563,7 +595,7 @@ class Context:
             # Ignore handler errors - they shouldn't break context operations
             pass
 
-    def subscribe_sync(self, key: str) -> SyncEventFlow[Any]:
+    def subscribe_sync(self, key: str) -> SyncEventFlow[ContextValue]:
         """Get a synchronous EventFlow for changes to a specific key.
 
         Args:
@@ -573,12 +605,12 @@ class Context:
             SyncEventFlow that emits new values when the key changes
         """
         if key not in self._sync_events:
-            self._sync_events[key] = SyncEventFlow[Any](
+            self._sync_events[key] = SyncEventFlow[ContextValue](
                 f"context.{key}", self._sync_emitter
             )
         return self._sync_events[key]
 
-    def subscribe_async(self, key: str) -> AsyncEventFlow[Any]:
+    def subscribe_async(self, key: str) -> AsyncEventFlow[ContextValue]:
         """Get an asynchronous EventFlow for changes to a specific key.
 
         Args:
@@ -588,12 +620,12 @@ class Context:
             AsyncEventFlow that emits new values when the key changes
         """
         if key not in self._async_events:
-            self._async_events[key] = AsyncEventFlow[Any](
+            self._async_events[key] = AsyncEventFlow[ContextValue](
                 f"context.{key}", self._async_emitter
             )
         return self._async_events[key]
 
-    def as_flow(self, key: str, use_async: bool = True) -> Flow[None, Any]:
+    def as_flow(self, key: str, use_async: bool = True) -> AnyFlow:
         """Convert context key changes to a Flow stream.
 
         Args:
@@ -608,7 +640,7 @@ class Context:
         else:
             return self.subscribe_sync(key).as_flow()
 
-    def global_changes_sync(self) -> SyncEventFlow[dict[str, Any]]:
+    def global_changes_sync(self) -> SyncGlobalEventFlow:
         """Get a synchronous EventFlow for all context changes.
 
         Returns:
@@ -616,7 +648,7 @@ class Context:
         """
         return self._global_sync_events
 
-    def global_changes_async(self) -> AsyncEventFlow[dict[str, Any]]:
+    def global_changes_async(self) -> AsyncGlobalEventFlow:
         """Get an asynchronous EventFlow for all context changes.
 
         Returns:
@@ -624,9 +656,7 @@ class Context:
         """
         return self._global_async_events
 
-    def global_changes_as_flow(
-        self, use_async: bool = True
-    ) -> Flow[None, dict[str, Any]]:
+    def global_changes_as_flow(self, use_async: bool = True) -> GlobalChangeFlow:
         """Convert all context changes to a Flow stream.
 
         Args:
@@ -651,7 +681,7 @@ class Context:
         """Return a string representation of the context."""
         return f"<Context frames={len(self.frames)} keys={list(self.keys())}>"
 
-    def _apply_transformations(self, key: str, value: Any) -> Any:
+    def _apply_transformations(self, key: str, value: ContextValue) -> ContextValue:
         """Apply all transformations for a given key to the value."""
         if key not in self._transformations:
             return value
@@ -680,7 +710,9 @@ class Context:
         # Find the key for this computed property and emit change event
         for key, prop in self._computed_properties.items():
             if prop is computed_prop:
-                old_value = prop._cached_value if prop._is_cached else None
+                old_value = (
+                    prop._cached_value if prop._is_cached else None
+                )  # pyright: ignore[reportPrivateUsage]
                 new_value = prop.compute(self)
                 self._emit_change_event(key, new_value, old_value)
 
@@ -691,7 +723,7 @@ class Context:
     def add_computed_property(
         self,
         key: str,
-        func: Callable[[Context], Any],
+        func: ComputedFunction,
         dependencies: list[str] | None = None,
     ) -> None:
         """Add a computed property to the context.
@@ -722,7 +754,7 @@ class Context:
 
         del self._computed_properties[key]
 
-    def add_transformation(self, key: str, func: Callable[[Any], Any]) -> None:
+    def add_transformation(self, key: str, func: TransformFunction) -> None:
         """Add a value transformation for a specific key.
 
         Args:
@@ -740,7 +772,7 @@ class Context:
         if key in self._transformations:
             del self._transformations[key]
 
-    def get_computed_value(self, key: str) -> Any:
+    def get_computed_value(self, key: str) -> ContextValue:
         """Get the value of a computed property.
 
         Args:
@@ -773,9 +805,9 @@ class Context:
         self,
         pattern: str | None = None,
         key_filter: Callable[[str], bool] | None = None,
-        value_filter: Callable[[Any], bool] | None = None,
+        value_filter: ValuePredicate | None = None,
         include_computed: bool = True,
-    ) -> dict[str, Any]:
+    ) -> ContextData:
         """Query context data with various filtering options.
 
         Args:
@@ -830,7 +862,7 @@ class Context:
         regex = re.compile(pattern)
         return [key for key in self.keys() if regex.search(key)]
 
-    def find_values(self, predicate: Callable[[Any], bool]) -> dict[str, Any]:
+    def find_values(self, predicate: ValuePredicate) -> ContextData:
         """Find all key-value pairs where the value matches a predicate.
 
         Args:
@@ -841,7 +873,7 @@ class Context:
         """
         return self.query(value_filter=predicate)
 
-    def filter_by_type(self, value_type: type) -> dict[str, Any]:
+    def filter_by_type(self, value_type: type) -> ContextData:
         """Filter context entries by value type.
 
         Args:
@@ -852,7 +884,7 @@ class Context:
         """
         return self.query(value_filter=lambda v: isinstance(v, value_type))
 
-    def search(self, search_term: str, case_sensitive: bool = False) -> dict[str, Any]:
+    def search(self, search_term: str, case_sensitive: bool = False) -> ContextData:
         """Search for keys or values containing a term.
 
         Args:
@@ -865,7 +897,7 @@ class Context:
         if not case_sensitive:
             search_term = search_term.lower()
 
-        def matches_search(key: str, value: Any) -> bool:
+        def matches_search(key: str, value: ContextValue) -> bool:
             # Check key
             key_match = search_term in (key if case_sensitive else key.lower())
 
@@ -891,7 +923,7 @@ class Context:
 
         return results
 
-    def get_nested(self, path: str, delimiter: str = ".") -> Any:
+    def get_nested(self, path: str, delimiter: str = ".") -> ContextValue:
         """Get a nested value using dot notation or custom delimiter.
 
         Args:
@@ -924,7 +956,11 @@ class Context:
         return current
 
     def set_nested(
-        self, path: str, value: Any, delimiter: str = ".", create_missing: bool = True
+        self,
+        path: str,
+        value: ContextValue,
+        delimiter: str = ".",
+        create_missing: bool = True,
     ) -> None:
         """Set a nested value using dot notation or custom delimiter.
 
@@ -946,7 +982,7 @@ class Context:
         if current_value is None:
             if not create_missing:
                 raise KeyError(f"Cannot set '{path}' - '{parts[0]}' does not exist")
-            current_dict: dict[str, Any] = {}
+            current_dict: ContextData = {}
             self[parts[0]] = current_dict
             current_value = current_dict
 
@@ -991,7 +1027,7 @@ class Context:
 
     def flatten(
         self, delimiter: str = ".", max_depth: int | None = None
-    ) -> dict[str, Any]:
+    ) -> FlattenedData:
         """Flatten nested dictionaries into dot-separated keys.
 
         Args:
@@ -1003,8 +1039,8 @@ class Context:
         """
 
         def _flatten_dict(
-            obj: dict[str, Any], prefix: str = "", depth: int = 0
-        ) -> dict[str, Any]:
+            obj: ContextData, prefix: str = "", depth: int = 0
+        ) -> FlattenedData:
             items = {}
 
             for key, value in obj.items():

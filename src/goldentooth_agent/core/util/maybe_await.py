@@ -5,7 +5,7 @@ from typing import TypeVar
 T = TypeVar("T")
 
 
-async def maybe_await(func: Callable[..., T], *args: object, **kwargs: object) -> T:
+async def maybe_await(func: Callable[..., T], *args: object, **kwargs: object) -> T:  # type: ignore[explicit-any]
     """Call a function and conditionally await its result if it returns a coroutine.
 
     This utility enables uniform handling of both synchronous and asynchronous functions

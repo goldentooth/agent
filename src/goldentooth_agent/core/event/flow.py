@@ -92,21 +92,15 @@ class AsyncEventFlow(EventFlow[T]):
         """Emit an asynchronous event with the given data."""
         self.emitter.emit(self.event_name, data)
 
-    async def on(
-        self, handler: Callable[[T], Any] | Callable[[T], Awaitable[Any]]
-    ) -> None:
+    async def on(self, handler: AnyEventHandler | AnyAwaitableEventHandler) -> None:
         """Register an asynchronous event handler."""
         self.emitter.on(self.event_name, handler)
 
-    async def once(
-        self, handler: Callable[[T], Any] | Callable[[T], Awaitable[Any]]
-    ) -> None:
+    async def once(self, handler: AnyEventHandler | AnyAwaitableEventHandler) -> None:
         """Register a one-time asynchronous event handler."""
         self.emitter.once(self.event_name, handler)
 
-    async def off(
-        self, handler: Callable[[T], Any] | Callable[[T], Awaitable[Any]]
-    ) -> None:
+    async def off(self, handler: AnyEventHandler | AnyAwaitableEventHandler) -> None:
         """Remove an asynchronous event handler."""
         self.emitter.remove_listener(self.event_name, handler)
 
@@ -114,7 +108,7 @@ class AsyncEventFlow(EventFlow[T]):
         """Remove all listeners for this event."""
         self.emitter.remove_all_listeners(self.event_name)
 
-    def listeners(self) -> list[Callable[[T], Any]]:
+    def listeners(self) -> list[AnyEventHandler]:
         """Get all listeners for this event."""
         return self.emitter.listeners(self.event_name)
 
@@ -132,10 +126,21 @@ class AsyncEventFlow(EventFlow[T]):
         return Flow.from_emitter(register_callback)
 
 
+# Type aliases for event handling (after class definitions)
+AnyEventHandler = Callable[[Any], Any]  # type: ignore[explicit-any]
+AnyAwaitableEventHandler = Callable[[Any], Awaitable[Any]]  # type: ignore[explicit-any]
+AnyEventFlow = EventFlow[Any]  # type: ignore[explicit-any]
+AnyAsyncEventFlow = AsyncEventFlow[Any]  # type: ignore[explicit-any]
+AnySyncEventFlow = SyncEventFlow[Any]  # type: ignore[explicit-any]
+AnyFlow = Flow[None, Any]  # type: ignore[explicit-any]
+AnyTransformer = Callable[[Any], Any]  # type: ignore[explicit-any]
+AnyTransformFlow = Flow[None, Any]  # type: ignore[explicit-any]
+
+
 # Flow derivative functions for common event patterns
 
 
-def event_source(event_name: str, use_async: bool = True) -> Flow[None, Any]:
+def event_source(event_name: str, use_async: bool = True) -> AnyFlow:
     """Create a Flow that emits events from the specified event name.
 
     Args:
@@ -146,7 +151,7 @@ def event_source(event_name: str, use_async: bool = True) -> Flow[None, Any]:
         Flow that yields events as they are emitted
     """
     if use_async:
-        event_flow: EventFlow[Any] = AsyncEventFlow[Any](event_name)
+        event_flow: AnyEventFlow = AsyncEventFlow[Any](event_name)
     else:
         event_flow = SyncEventFlow[Any](event_name)
 
@@ -191,8 +196,8 @@ def event_bridge(
         Flow that forwards events from source to target
     """
     if use_async:
-        source_flow: EventFlow[Any] = AsyncEventFlow[Any](from_event)
-        target_flow: EventFlow[Any] = AsyncEventFlow[Any](to_event)
+        source_flow: AnyEventFlow = AsyncEventFlow[Any](from_event)
+        target_flow: AnyEventFlow = AsyncEventFlow[Any](to_event)
     else:
         source_flow = SyncEventFlow[Any](from_event)
         target_flow = SyncEventFlow[Any](to_event)
@@ -250,8 +255,8 @@ def event_filter(
 
 
 def event_transform(
-    event_name: str, transformer: Callable[[T], Any], use_async: bool = True
-) -> Flow[None, Any]:
+    event_name: str, transformer: AnyTransformer, use_async: bool = True
+) -> AnyTransformFlow:
     """Create a Flow that transforms events with a function.
 
     Args:
@@ -263,14 +268,14 @@ def event_transform(
         Flow that yields transformed events
     """
     if use_async:
-        event_flow: EventFlow[T] = AsyncEventFlow[T](event_name)
+        event_flow: AnyEventFlow = AsyncEventFlow[Any](event_name)
     else:
-        event_flow = SyncEventFlow[T](event_name)
+        event_flow = SyncEventFlow[Any](event_name)
 
     # Get the base event flow and apply transformation
     base_flow = event_flow.as_flow()
 
-    async def _transform_stream(_: AsyncIterator[None]) -> AsyncIterator[Any]:
+    async def _transform_stream(_: AsyncIterator[None]) -> AsyncIterator[Any]:  # type: ignore[explicit-any]
         """Transform events with the given function."""
 
         # Start with an empty stream since we don't consume input
@@ -287,12 +292,12 @@ def event_transform(
 # Convenience factory functions
 
 
-def create_sync_event_flow(event_name: str) -> SyncEventFlow[Any]:
+def create_sync_event_flow(event_name: str) -> AnySyncEventFlow:
     """Create a synchronous event flow for the given event name."""
     return SyncEventFlow[Any](event_name)
 
 
-def create_async_event_flow(event_name: str) -> AsyncEventFlow[Any]:
+def create_async_event_flow(event_name: str) -> AnyAsyncEventFlow:
     """Create an asynchronous event flow for the given event name."""
     return AsyncEventFlow[Any](event_name)
 

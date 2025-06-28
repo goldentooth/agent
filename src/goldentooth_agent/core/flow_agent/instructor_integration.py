@@ -9,6 +9,14 @@ from ..context import Context, ContextKey
 from ..flow import Flow
 from .schema import FlowIOSchema
 
+# Type aliases for instructor integration
+LLMClient = Any  # type: ignore[explicit-any]  # Various LLM clients (OpenAI, Anthropic, etc.)
+MessageData = dict[str, Any]  # type: ignore[explicit-any]  # LLM message format
+FieldDefaults = dict[str, Any]  # type: ignore[explicit-any]  # Default values for model fields
+CompletionMetadata = dict[str, Any]  # type: ignore[explicit-any]  # LLM completion metadata
+FlowKwargs = Any  # type: ignore[explicit-any]  # Additional flow arguments
+MockResponse = Any  # type: ignore[explicit-any]  # Mock response can be any schema type
+
 T = TypeVar("T", bound=FlowIOSchema)
 R = TypeVar("R", bound=FlowIOSchema)
 
@@ -20,7 +28,9 @@ class MockLLMClient:
     without requiring actual API calls.
     """
 
-    def __init__(self, mock_responses: dict[type[FlowIOSchema], Any] | None = None):
+    def __init__(
+        self, mock_responses: dict[type[FlowIOSchema], MockResponse] | None = None
+    ):
         """Initialize the mock client.
 
         Args:
@@ -31,9 +41,9 @@ class MockLLMClient:
     async def create_completion(
         self,
         response_model: type[R],
-        messages: list[dict[str, Any]],
+        messages: list[MessageData],
         model: str = "gpt-4",
-        **kwargs: Any,
+        **kwargs: FlowKwargs,
     ) -> R:
         """Mock completion creation that returns predefined responses.
 
@@ -57,7 +67,7 @@ class MockLLMClient:
             # For testing, return a basic instance with minimal valid data
             if hasattr(response_model, "model_fields"):
                 # Create with minimal required fields
-                field_defaults: dict[str, Any] = {}
+                field_defaults: FieldDefaults = {}
                 for field_name, field_info in response_model.model_fields.items():
                     if field_info.is_required():
                         annotation_str = str(field_info.annotation)
@@ -94,7 +104,7 @@ class InstructorFlow:
 
     def __init__(
         self,
-        client: Any,  # LLM client (OpenAI, Anthropic, etc.)
+        client: LLMClient,  # LLM client (OpenAI, Anthropic, etc.)
         model: str,
         input_schema: type[T],
         output_schema: type[R],
@@ -179,7 +189,7 @@ class InstructorFlow:
                 f"Failed to extract {self.input_schema.__name__} from context: {e}"
             ) from e
 
-    def _build_messages(self, input_data: T) -> list[dict[str, Any]]:
+    def _build_messages(self, input_data: T) -> list[MessageData]:
         """Build messages list for LLM completion.
 
         Args:
@@ -224,7 +234,7 @@ class InstructorFlow:
         return "\n".join(prompt_parts)
 
     async def _call_llm_with_instructor(
-        self, messages: list[dict[str, Any]]
+        self, messages: list[MessageData]
     ) -> FlowIOSchema:
         """Call LLM with Instructor for structured output.
 
@@ -255,16 +265,16 @@ SYSTEM_PROMPT_KEY = ContextKey[str]("system_prompt")
 MODEL_NAME_KEY = ContextKey[str]("model_name")
 TEMPERATURE_KEY = ContextKey[float]("temperature")
 MAX_TOKENS_KEY = ContextKey[int]("max_tokens")
-COMPLETION_METADATA_KEY = ContextKey[dict[str, Any]]("completion_metadata")
+COMPLETION_METADATA_KEY = ContextKey[CompletionMetadata]("completion_metadata")
 
 
 def create_instructor_flow(
-    client: Any,
+    client: LLMClient,
     model: str,
     input_schema: type[T],
     output_schema: type[R],
     system_prompt: str | None = None,
-    **kwargs: Any,
+    **kwargs: FlowKwargs,
 ) -> Flow[Context, Context]:
     """Factory function to create an InstructorFlow as a Flow.
 

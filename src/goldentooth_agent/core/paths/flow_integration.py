@@ -9,6 +9,9 @@ from antidote import inject
 from ..flow import Flow, filter_stream, flat_map_stream, map_stream
 from .main import Paths
 
+# Type aliases for paths flow integration
+AnyInput = Any  # type: ignore[explicit-any]  # Input type doesn't matter for path operations
+
 T = TypeVar("T")
 
 
@@ -27,7 +30,7 @@ def path_exists_filter(paths_instance: Paths = inject[Paths]) -> Flow[Path, Path
     return filter_stream(lambda path: path.exists())
 
 
-def resolve_config_path(relative_path: str) -> Flow[Any, Path]:
+def resolve_config_path(relative_path: str) -> Flow[AnyInput, Path]:
     """
     Create a Flow that resolves a relative path within the config directory.
 
@@ -43,7 +46,7 @@ def resolve_config_path(relative_path: str) -> Flow[Any, Path]:
     """
 
     @inject
-    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[Any, Path]:
+    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[AnyInput, Path]:
         config_dir = paths_instance.config()
         resolved = config_dir / relative_path
         return map_stream(lambda _: resolved)
@@ -51,7 +54,7 @@ def resolve_config_path(relative_path: str) -> Flow[Any, Path]:
     return _inner()
 
 
-def resolve_data_path(relative_path: str) -> Flow[Any, Path]:
+def resolve_data_path(relative_path: str) -> Flow[AnyInput, Path]:
     """
     Create a Flow that resolves a relative path within the data directory.
 
@@ -67,7 +70,7 @@ def resolve_data_path(relative_path: str) -> Flow[Any, Path]:
     """
 
     @inject
-    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[Any, Path]:
+    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[AnyInput, Path]:
         data_dir = paths_instance.data()
         resolved = data_dir / relative_path
         return map_stream(lambda _: resolved)
@@ -125,7 +128,7 @@ def ensure_parent_dir(paths_instance: Paths = inject[Paths]) -> Flow[Path, Path]
     return map_stream(ensure_parent)
 
 
-def read_config_file(filename: str, default_content: str = "") -> Flow[Any, str]:
+def read_config_file(filename: str, default_content: str = "") -> Flow[AnyInput, str]:
     """
     Create a Flow that reads a config file.
 
@@ -142,7 +145,7 @@ def read_config_file(filename: str, default_content: str = "") -> Flow[Any, str]
     """
 
     @inject
-    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[Any, str]:
+    def _inner(paths_instance: Paths = inject[Paths]) -> Flow[AnyInput, str]:
         config_path = paths_instance.config() / filename
 
         if config_path.exists():

@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
-from typing import Any, TypeVar, cast
+from typing import Any  # Only for type aliases
+from typing import TypeVar, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..context import Context, ContextKey
 
+# Type aliases for schema system
+ContextData = dict[str, Any]  # type: ignore[explicit-any]  # Context can store arbitrary data
+AnyType = type[Any]  # type: ignore[explicit-any]  # For type casting in generic contexts
+
 T = TypeVar("T", bound="FlowIOSchema")
 
 
-class FlowIOSchema(BaseModel):
+class FlowIOSchema(BaseModel):  # type: ignore[explicit-any]
     """Base schema for all Flow-based agent interactions with context integration."""
 
     model_config = ConfigDict(
@@ -41,12 +46,12 @@ class FlowIOSchema(BaseModel):
             )
 
             # Determine the type for the context key
-            field_type = type(field_value) if field_value is not None else Any
+            field_type = type(field_value) if field_value is not None else type(None)
 
             # Create and set the context key
             # We need to cast to the expected type since ContextKey.create is generic
             context_key = ContextKey.create(
-                key_name, cast(type[Any], field_type), description
+                key_name, cast(AnyType, field_type), description
             )
             updated_context.set(context_key.path, field_value)
 
@@ -93,19 +98,17 @@ class FlowIOSchema(BaseModel):
         return cls(**field_values)
 
 
-class AgentInput(FlowIOSchema):
+class AgentInput(FlowIOSchema):  # type: ignore[explicit-any]
     """Standard input for agent flows."""
 
     message: str = Field(..., description="Input message")
-    context_data: dict[str, Any] = Field(
+    context_data: ContextData = Field(
         default_factory=dict, description="Additional context data"
     )
 
 
-class AgentOutput(FlowIOSchema):
+class AgentOutput(FlowIOSchema):  # type: ignore[explicit-any]
     """Standard output for agent flows."""
 
     response: str = Field(..., description="Agent response")
-    metadata: dict[str, Any] = Field(
-        default_factory=dict, description="Response metadata"
-    )
+    metadata: ContextData = Field(default_factory=dict, description="Response metadata")

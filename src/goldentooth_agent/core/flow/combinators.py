@@ -23,12 +23,19 @@ A = TypeVar("A")
 B = TypeVar("B")
 C = TypeVar("C")
 
+# Type aliases for common patterns
+AnyCallable = Callable[..., Any]  # type: ignore[explicit-any]
+AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
+AnyTask = asyncio.Task[Any]  # type: ignore[explicit-any]
+AnyQueue = asyncio.Queue[Any]  # type: ignore[explicit-any]
+AnyValue = Any  # type: ignore[explicit-any]
+
 # Sentinel object for stream termination
 _STREAM_END = object()
 
 
 # Utility functions for common patterns
-def _get_function_name(fn: Callable[..., Any]) -> str:
+def _get_function_name(fn: AnyCallable) -> str:
     """Extract function name for flow naming."""
     return getattr(fn, "__name__", "function")
 
@@ -425,7 +432,7 @@ def race_stream(flows: list[Flow[Input, Output]]) -> Flow[Input, Output]:
             return result
         raise FlowExecutionError(f"Flow {flow.name} produced no output")
 
-    async def _cancel_pending_tasks(tasks: list[asyncio.Task[Any]]) -> None:
+    async def _cancel_pending_tasks(tasks: list[AnyTask]) -> None:
         """Cancel all pending tasks safely."""
         for task in tasks:
             if not task.done():
@@ -490,7 +497,9 @@ def parallel_stream(
             # Create tasks for each flow
             def make_run_flow(
                 captured_item: Input,
-            ) -> Callable[[Flow[Input, Output]], Coroutine[Any, Any, Output | None]]:
+            ) -> Callable[
+                [Flow[Input, Output]], Coroutine[AnyValue, AnyValue, Output | None]
+            ]:
                 async def run_flow_inner(
                     captured_flow: Flow[Input, Output]
                 ) -> Output | None:
@@ -537,7 +546,9 @@ def parallel_stream_successful(
             # Create tasks for each flow
             def make_run_flow_successful(
                 captured_item: Input,
-            ) -> Callable[[Flow[Input, Output]], Coroutine[Any, Any, Output | None]]:
+            ) -> Callable[
+                [Flow[Input, Output]], Coroutine[AnyValue, AnyValue, Output | None]
+            ]:
                 async def run_flow_inner(
                     captured_flow: Flow[Input, Output]
                 ) -> Output | None:
@@ -600,10 +611,10 @@ def repeat_flow(value: A, times: int | None = None) -> Flow[None, A]:
     return Flow(_flow, name=f"repeat({value}, {times_str})")
 
 
-def empty_flow() -> Flow[None, Any]:
+def empty_flow() -> Flow[None, AnyValue]:
     """Create a flow that produces no items."""
 
-    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[Any]:
+    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[AnyValue]:
         """Produce no items."""
         # This is a generator that produces no items
         if False:  # This ensures it's a generator without unreachable code
@@ -1480,7 +1491,7 @@ def finalize_stream(cleanup: Callable[[], Awaitable[None]]) -> Flow[Input, Input
     return Flow(_flow, name=f"finalize({getattr(cleanup, '__name__', 'function')})")
 
 
-def buffer_stream(trigger_flow: Flow[Any, Any]) -> Flow[Input, list[Input]]:
+def buffer_stream(trigger_flow: AnyFlow) -> Flow[Input, list[Input]]:
     """Create a flow that buffers items until a trigger flow emits.
 
     More flexible than time-based batching - allows event-driven batching
@@ -1623,7 +1634,7 @@ class StreamNotification:
 
 
 class OnNext(StreamNotification):
-    def __init__(self, value: Any):
+    def __init__(self, value: AnyValue):
         self.value = value
 
     def __repr__(self) -> str:
@@ -1667,7 +1678,7 @@ def materialize_stream() -> Flow[Input, StreamNotification]:
     return Flow(_flow, name="materialize")
 
 
-def trace_stream(tracer: Callable[[str, Any], None]) -> Flow[Input, Input]:
+def trace_stream(tracer: Callable[[str, AnyValue], None]) -> Flow[Input, Input]:
     """Create a flow that provides detailed tracing of stream processing.
 
     Calls the tracer function for each item with event type and item data.
@@ -1730,7 +1741,7 @@ def metrics_stream(counter: Callable[[str], None]) -> Flow[Input, Input]:
 
 
 def inspect_stream(
-    inspector: Callable[[Input, dict[str, Any]], None]
+    inspector: Callable[[Input, dict[str, AnyValue]], None]
 ) -> Flow[Input, Input]:
     """Create a flow that inspects stream items with context metadata.
 
@@ -1900,13 +1911,13 @@ def merge_flows(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
 
 # Utility function for merging async generators
 async def merge_async_generators(
-    *async_generators: AsyncIterator[Any],
-) -> AsyncIterator[Any]:
+    *async_generators: AsyncIterator[AnyValue],
+) -> AsyncIterator[AnyValue]:
     """Merge outputs from multiple async generators."""
-    queues: list[asyncio.Queue[Any]] = [asyncio.Queue[Any]() for _ in async_generators]
+    queues: list[AnyQueue] = [AnyQueue() for _ in async_generators]
 
     async def collect_from_generator(
-        generator: AsyncIterator[Any], queue: asyncio.Queue[Any]
+        generator: AsyncIterator[AnyValue], queue: AnyQueue
     ) -> None:
         """Collect items from a generator into a queue."""
         try:
@@ -1951,7 +1962,7 @@ async def merge_async_generators(
 
             # Process completed tasks
             for task in done:
-                result: Any = await task  # type: ignore[func-returns-value]
+                result: AnyValue = await task  # type: ignore[func-returns-value]
                 queue_index = task._queue_index  # type: ignore[attr-defined]
 
                 if result is _STREAM_END:

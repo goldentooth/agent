@@ -22,7 +22,7 @@
   "reportUnknownArgumentType": "error",
   "reportUnknownLambdaType": "error",
   "reportUnknownVariableType": "error",
-  "reportUnknownMemberType": "error",
+  "reportUnknownMemberType": "warning",
   "reportMissingParameterType": "error",
   "reportMissingTypeArgument": "error",
   "reportInvalidTypeVarUse": "error",

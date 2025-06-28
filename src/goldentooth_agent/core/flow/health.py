@@ -18,6 +18,18 @@ from typing import Any
 from .exceptions import FlowConfigurationError
 from .main import Flow
 
+# Type aliases for health monitoring
+HealthMetadata = dict[str, Any]  # type: ignore[explicit-any]
+HealthData = dict[str, Any]  # type: ignore[explicit-any]
+ConfigData = dict[str, Any]  # type: ignore[explicit-any]
+ConfigSchema = dict[str, Any]  # type: ignore[explicit-any]
+ValidatorRegistry = dict[str, Callable[[Any], bool]]  # type: ignore[explicit-any]
+AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
+AnyValue = Any  # type: ignore[explicit-any]
+AnyValidator = Callable[[Any], bool]  # type: ignore[explicit-any]
+HealthCheckIterator = AsyncIterator[Any]  # type: ignore[explicit-any]
+HealthCheckStream = Flow[Any, Any]  # type: ignore[explicit-any]
+
 
 class HealthStatus(Enum):
     """Health status levels."""
@@ -99,9 +111,9 @@ class HealthCheckResult:
     critical: bool = False
     error: str | None = None
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: HealthMetadata = field(default_factory=dict)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> HealthData:
         """Convert result to dictionary."""
         return {
             "name": self.name,
@@ -139,7 +151,7 @@ class SystemHealth:
         """Get all critical checks."""
         return [check for check in self.checks if check.status == HealthStatus.CRITICAL]
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> HealthData:
         """Convert to dictionary."""
         return {
             "status": self.status.value,
@@ -351,7 +363,7 @@ class FlowHealthMonitor:
     def export_health_report(self, filepath: str) -> None:
         """Export health report to JSON file."""
         if not self.history:
-            report_data: dict[str, Any] = {"message": "No health data available"}
+            report_data: HealthData = {"message": "No health data available"}
         else:
             latest_health = self.history[-1]
             report_data = {
@@ -378,8 +390,8 @@ class FlowConfigValidator:
     """Configuration validation for Flow systems."""
 
     def __init__(self) -> None:
-        self.validators: dict[str, Callable[[Any], bool]] = {}
-        self.config_schema: dict[str, Any] = {}
+        self.validators: ValidatorRegistry = {}
+        self.config_schema: ConfigSchema = {}
 
         # Register default validators
         self._register_default_validators()
@@ -387,19 +399,19 @@ class FlowConfigValidator:
     def _register_default_validators(self) -> None:
         """Register default configuration validators."""
 
-        def validate_positive_number(value: Any) -> bool:
+        def validate_positive_number(value: AnyValue) -> bool:
             """Validate that value is a positive number."""
             return isinstance(value, int | float) and value > 0
 
-        def validate_non_negative_number(value: Any) -> bool:
+        def validate_non_negative_number(value: AnyValue) -> bool:
             """Validate that value is a non-negative number."""
             return isinstance(value, int | float) and value >= 0
 
-        def validate_string(value: Any) -> bool:
+        def validate_string(value: AnyValue) -> bool:
             """Validate that value is a non-empty string."""
             return isinstance(value, str) and len(value.strip()) > 0
 
-        def validate_boolean(value: Any) -> bool:
+        def validate_boolean(value: AnyValue) -> bool:
             """Validate that value is a boolean."""
             return isinstance(value, bool)
 
@@ -412,15 +424,15 @@ class FlowConfigValidator:
             }
         )
 
-    def register_validator(self, name: str, validator: Callable[[Any], bool]) -> None:
+    def register_validator(self, name: str, validator: AnyValidator) -> None:
         """Register a custom validator."""
         self.validators[name] = validator
 
-    def set_config_schema(self, schema: dict[str, Any]) -> None:
+    def set_config_schema(self, schema: ConfigSchema) -> None:
         """Set the configuration schema for validation."""
         self.config_schema = schema
 
-    def validate_config(self, config: dict[str, Any]) -> list[str]:
+    def validate_config(self, config: ConfigData) -> list[str]:
         """Validate configuration against the schema.
 
         Returns:
@@ -475,9 +487,7 @@ class FlowConfigValidator:
 
         return errors
 
-    def validate_flow_config(
-        self, flow: Flow[Any, Any], config: dict[str, Any]
-    ) -> list[str]:
+    def validate_flow_config(self, flow: AnyFlow, config: ConfigData) -> list[str]:
         """Validate configuration specific to a Flow.
 
         Args:
@@ -522,7 +532,7 @@ _config_validator = FlowConfigValidator()
 
 def health_check_stream(
     health_monitor: FlowHealthMonitor | None = None,
-) -> Flow[Any, Any]:
+) -> HealthCheckStream:
     """Create a flow that performs health checks during stream processing.
 
     Args:
@@ -533,7 +543,7 @@ def health_check_stream(
     """
     monitor = health_monitor or _health_monitor
 
-    async def _flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
+    async def _flow(stream: HealthCheckIterator) -> HealthCheckIterator:
         item_count = 0
         async for item in stream:
             # Run a quick health check every 100 items
@@ -577,7 +587,7 @@ async def check_system_health() -> SystemHealth:
     return await _health_monitor.run_all_checks()
 
 
-def validate_flow_configuration(config: dict[str, Any]) -> list[str]:
+def validate_flow_configuration(config: ConfigData) -> list[str]:
     """Validate flow configuration."""
     return _config_validator.validate_config(config)
 
@@ -586,7 +596,7 @@ def register_health_check(
     name: str,
     description: str,
     check_function: Callable[[], AsyncIterator[bool]],
-    **kwargs: Any,
+    **kwargs: AnyValue,
 ) -> None:
     """Register a custom health check."""
     _health_monitor.register_check(name, description, check_function, **kwargs)

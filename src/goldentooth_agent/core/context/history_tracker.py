@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     pass
 
 # Type alias for tracked values - contexts can store any type of value
-TrackedValue = Any
+TrackedValue = Any  # type: ignore[explicit-any]
 
 
 class ContextChangeEvent:

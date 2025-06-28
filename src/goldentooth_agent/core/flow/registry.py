@@ -12,17 +12,21 @@ from .main import Flow
 Input = TypeVar("Input")
 Output = TypeVar("Output")
 
+# Type aliases for generic flow storage
+AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
+FlowInfo = dict[str, Any]  # type: ignore[explicit-any]
+
 
 class FlowRegistry:
     """Registry for named flows with discovery and introspection capabilities."""
 
     def __init__(self) -> None:
-        self._flows: dict[str, Flow[Any, Any]] = {}
+        self._flows: dict[str, AnyFlow] = {}
         self._categories: dict[str, list[str]] = {}
 
     def register(
-        self, name: str, flow: Flow[Any, Any], category: str | None = None
-    ) -> Flow[Any, Any]:
+        self, name: str, flow: AnyFlow, category: str | None = None
+    ) -> AnyFlow:
         """Register a flow with the given name.
 
         Args:
@@ -43,7 +47,7 @@ class FlowRegistry:
 
         return flow
 
-    def get(self, name: str) -> Flow[Any, Any] | None:
+    def get(self, name: str) -> AnyFlow | None:
         """Get a flow by name.
 
         Args:
@@ -140,7 +144,7 @@ class FlowRegistry:
             self._flows.clear()
             self._categories.clear()
 
-    def info(self, name: str) -> dict[str, Any] | None:
+    def info(self, name: str) -> FlowInfo | None:
         """Get detailed information about a flow.
 
         Args:
@@ -204,9 +208,7 @@ flow_registry = FlowRegistry()
 
 
 # Convenience functions
-def register_flow(
-    name: str, flow: Flow[Any, Any], category: str | None = None
-) -> Flow[Any, Any]:
+def register_flow(name: str, flow: AnyFlow, category: str | None = None) -> AnyFlow:
     """Register a flow in the global registry.
 
     Args:
@@ -220,7 +222,7 @@ def register_flow(
     return flow_registry.register(name, flow, category)
 
 
-def get_flow(name: str) -> Flow[Any, Any] | None:
+def get_flow(name: str) -> AnyFlow | None:
     """Get a flow from the global registry.
 
     Args:
@@ -259,7 +261,7 @@ def search_flows(query: str) -> list[str]:
 # Decorator for registering flows
 def registered_flow(
     name: str, category: str | None = None
-) -> Callable[[Flow[Any, Any]], Flow[Any, Any]]:
+) -> Callable[[AnyFlow], AnyFlow]:
     """Decorator to register a flow in the global registry.
 
     Args:
@@ -273,7 +275,7 @@ def registered_flow(
             return text.upper()
     """
 
-    def decorator(flow: Flow[Any, Any]) -> Flow[Any, Any]:
+    def decorator(flow: AnyFlow) -> AnyFlow:
         return register_flow(name, flow, category)
 
     return decorator

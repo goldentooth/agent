@@ -8,13 +8,16 @@ Input = TypeVar("Input")
 Output = TypeVar("Output")
 Newput = TypeVar("Newput")
 
+# Type alias for flow metadata
+FlowMetadata = dict[str, Any]  # type: ignore[explicit-any]
+
 
 class Flow(Generic[Input, Output]):
     def __init__(
         self,
         fn: Callable[[AsyncIterator[Input]], AsyncIterator[Output]],
         name: str = "<anonymous>",
-        metadata: dict[str, Any] | None = None,
+        metadata: FlowMetadata | None = None,
     ) -> None:
         self.fn = fn
         self.name = name

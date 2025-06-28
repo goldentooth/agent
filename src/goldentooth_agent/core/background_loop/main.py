@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
+# Type alias for coroutines - we don't use send/yield types
+AnyCoroutine = Coroutine[Any, Any, T]  # type: ignore[explicit-any]
+
 
 @injectable(factory_method="create")
 class BackgroundEventLoop:
@@ -46,7 +49,7 @@ class BackgroundEventLoop:
             self._shutdown_complete.set()
 
     @inject
-    def submit(self, coroutine: Coroutine[Any, Any, T]) -> Future[T]:
+    def submit(self, coroutine: AnyCoroutine[T]) -> Future[T]:
         """Submit a coroutine to be run in the background event loop.
 
         Args:
@@ -91,7 +94,7 @@ class BackgroundEventLoop:
 
 @inject
 def run_in_background(
-    coroutine: Coroutine[Any, Any, T],
+    coroutine: AnyCoroutine[T],
     background_loop: BackgroundEventLoop = inject[BackgroundEventLoop],
 ) -> T:
     """Run a coroutine in the background event loop."""

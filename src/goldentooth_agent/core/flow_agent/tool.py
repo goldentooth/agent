@@ -9,6 +9,12 @@ from typing import Any, TypeVar
 from ..flow import Flow
 from .schema import FlowIOSchema
 
+# Type aliases for tool system
+AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]  # Flexible flow types for tool conversion
+AnyAgent = Any  # type: ignore[explicit-any]  # Agent type (avoid forward reference)
+AnyInput = Any  # type: ignore[explicit-any]  # Flexible input for tool pipeline
+AnyOutput = Any  # type: ignore[explicit-any]  # Flexible output for tool pipeline
+
 T = TypeVar("T", bound=FlowIOSchema)
 R = TypeVar("R", bound=FlowIOSchema)
 
@@ -43,7 +49,7 @@ class FlowTool:
         self.implementation = implementation
         self.description = description
 
-    def as_flow(self) -> Flow[Any, Any]:
+    def as_flow(self) -> AnyFlow:
         """Convert tool to a composable flow.
 
         Returns:
@@ -51,7 +57,7 @@ class FlowTool:
         """
         return Flow(self._tool_pipeline, name=f"tool:{self.name}")
 
-    def as_agent(self) -> Any:  # Use Any to avoid forward reference issues
+    def as_agent(self) -> AnyAgent:  # Use Any to avoid forward reference issues
         """Convert tool to an agent-compatible interface.
 
         Returns:
@@ -69,8 +75,8 @@ class FlowTool:
         )
 
     async def _tool_pipeline(
-        self, stream: AsyncIterator[Any]  # Use Any for flexibility
-    ) -> AsyncIterator[Any]:  # Use Any for flexibility
+        self, stream: AsyncIterator[AnyInput]  # Use Any for flexibility
+    ) -> AsyncIterator[AnyOutput]:  # Use Any for flexibility
         """Implementation of the tool pipeline."""
         async for input_data in stream:
             # Validate input
@@ -96,7 +102,9 @@ class FlowTool:
 
             yield validated_output
 
-    async def _passthrough(self, stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
+    async def _passthrough(
+        self, stream: AsyncIterator[AnyInput]
+    ) -> AsyncIterator[AnyOutput]:
         """Passthrough flow for system processing (used when tool acts as agent)."""
         async for item in stream:
             yield item

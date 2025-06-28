@@ -18,6 +18,14 @@ from typing import Any, TypeVar
 from .exceptions import FlowError, FlowExecutionError
 from .main import Flow
 
+# Type aliases for debugging
+DebugMetadata = dict[str, Any]  # type: ignore[explicit-any]
+DebugData = dict[str, Any]  # type: ignore[explicit-any]
+TraceData = list[DebugData]
+AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
+AnyItem = Any  # type: ignore[explicit-any]
+ItemCondition = Callable[[Any], bool]  # type: ignore[explicit-any]
+
 Input = TypeVar("Input")
 Output = TypeVar("Output")
 
@@ -29,13 +37,13 @@ class FlowExecutionContext:
     flow_name: str
     started_at: datetime
     input_type: str | None = None
-    current_item: Any = None
+    current_item: AnyItem = None
     item_index: int = 0
     parent_flow: str | None = None
     execution_id: str = field(default_factory=lambda: f"flow_{id(object())}")
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: DebugMetadata = field(default_factory=dict)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> DebugData:
         """Convert context to dictionary for serialization."""
         return {
             "flow_name": self.flow_name,
@@ -51,13 +59,18 @@ class FlowExecutionContext:
         }
 
 
+# Breakpoint-related aliases (after FlowExecutionContext is defined)
+BreakpointCondition = Callable[[Any, FlowExecutionContext], bool]  # type: ignore[explicit-any]
+BreakpointRegistry = dict[str, BreakpointCondition]
+
+
 class FlowDebugger:
     """Debugging system for Flow executions."""
 
     def __init__(self) -> None:
         self.execution_stack: list[FlowExecutionContext] = []
         self.execution_history: list[FlowExecutionContext] = []
-        self.breakpoints: dict[str, Callable[[Any, FlowExecutionContext], bool]] = {}
+        self.breakpoints: BreakpointRegistry = {}
         self.debug_enabled = False
         self.max_history = 1000
 
@@ -72,7 +85,7 @@ class FlowDebugger:
     def add_breakpoint(
         self,
         flow_name: str,
-        condition: Callable[[Any, FlowExecutionContext], bool] = lambda item, ctx: True,
+        condition: BreakpointCondition = lambda item, ctx: True,
     ) -> None:
         """Add a breakpoint for a specific flow.
 
@@ -108,7 +121,9 @@ class FlowDebugger:
             if len(self.execution_history) > self.max_history:
                 self.execution_history.pop(0)
 
-    async def check_breakpoint(self, item: Any, context: FlowExecutionContext) -> None:
+    async def check_breakpoint(
+        self, item: AnyItem, context: FlowExecutionContext
+    ) -> None:
         """Check if a breakpoint should trigger."""
         if not self.debug_enabled:
             return
@@ -120,7 +135,7 @@ class FlowDebugger:
                 await self._trigger_breakpoint(item, context)
 
     async def _trigger_breakpoint(
-        self, item: Any, context: FlowExecutionContext
+        self, item: AnyItem, context: FlowExecutionContext
     ) -> None:
         """Trigger a breakpoint and enter interactive mode."""
         print(f"\n🔍 Breakpoint hit in flow: {context.flow_name}")
@@ -153,7 +168,7 @@ class FlowDebugger:
             indent = "  " * i
             print(f"{indent}└─ {context.flow_name} (item {context.item_index})")
 
-    def print_item_inspection(self, item: Any) -> None:
+    def print_item_inspection(self, item: AnyItem) -> None:
         """Print detailed inspection of the current item."""
         print("\n🔬 Item Inspection:")
         print(f"   Type: {type(item).__name__}")
@@ -163,7 +178,7 @@ class FlowDebugger:
         if hasattr(item, "__dict__"):
             print(f"   Attributes: {list(item.__dict__.keys())}")
 
-    def get_execution_trace(self) -> list[dict[str, Any]]:
+    def get_execution_trace(self) -> TraceData:
         """Get the full execution trace."""
         return [ctx.to_dict() for ctx in self.execution_history]
 
@@ -202,7 +217,7 @@ class FlowExecutionErrorWithContext(FlowError):
         # Capture execution stack
         self.execution_stack = list(_flow_debugger.execution_stack)
 
-    def get_debug_info(self) -> dict[str, Any]:
+    def get_debug_info(self) -> DebugData:
         """Get comprehensive debug information."""
         return {
             "error_message": str(self),
@@ -240,7 +255,7 @@ class FlowExecutionErrorWithContext(FlowError):
 
 
 def debug_stream(
-    breakpoint_condition: Callable[[Any], bool] | None = None, log_items: bool = True
+    breakpoint_condition: ItemCondition | None = None, log_items: bool = True
 ) -> Flow[Input, Input]:
     """Create a flow that adds debugging capabilities to the pipeline.
 
@@ -353,7 +368,7 @@ def disable_flow_debugging() -> None:
 
 def add_flow_breakpoint(
     flow_name: str,
-    condition: Callable[[Any, FlowExecutionContext], bool] = lambda item, ctx: True,
+    condition: BreakpointCondition = lambda item, ctx: True,
 ) -> None:
     """Add a breakpoint for a specific flow."""
     _flow_debugger.add_breakpoint(flow_name, condition)
@@ -364,7 +379,7 @@ def remove_flow_breakpoint(flow_name: str) -> None:
     _flow_debugger.remove_breakpoint(flow_name)
 
 
-def get_execution_trace() -> list[dict[str, Any]]:
+def get_execution_trace() -> TraceData:
     """Get the current execution trace."""
     return _flow_debugger.get_execution_trace()
 
@@ -374,7 +389,7 @@ def export_execution_trace(filepath: str) -> None:
     _flow_debugger.export_trace(filepath)
 
 
-def inspect_flow(flow: Flow[Any, Any]) -> dict[str, Any]:
+def inspect_flow(flow: AnyFlow) -> DebugData:
     """Inspect a flow and return metadata about its structure.
 
     Args:

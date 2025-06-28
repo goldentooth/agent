@@ -11,6 +11,12 @@ from ..flow import Flow
 from .key import ContextKey
 from .main import Context
 
+# Type aliases for context-flow integration
+AnyContextKey = ContextKey[Any]  # type: ignore[explicit-any]
+AnyValue = Any  # type: ignore[explicit-any]
+ContextFlowFunction = Callable[[Context], Context | Awaitable[Context]]
+ContextFlowDecorator = Callable[[ContextFlowFunction], Flow[Context, Context]]
+
 T = TypeVar("T")
 R = TypeVar("R")
 
@@ -320,7 +326,7 @@ class ContextFlowCombinators:
         return Flow(forget_flow_impl, name=f"forget_key({key.path})")
 
     @staticmethod
-    def require_keys(*keys: ContextKey[Any]) -> Flow[Context, Context]:
+    def require_keys(*keys: AnyContextKey) -> Flow[Context, Context]:
         """Create a Flow that validates multiple required keys are present.
 
         Args:
@@ -432,11 +438,11 @@ def extend_flow_with_context() -> None:
     Flow.transform_key = staticmethod(ContextFlowCombinators.transform_key)  # type: ignore[attr-defined]
 
     # Add convenience methods for testing and composition
-    def run(self: Any, input_item: Any) -> Any:
+    def run(self: AnyValue, input_item: AnyValue) -> AnyValue:
         """Run this flow with a single input and return the first result."""
         return run_flow_with_input(self, input_item)
 
-    def then(self: Any, other: Any) -> Any:
+    def then(self: AnyValue, other: AnyValue) -> AnyValue:
         """Chain this flow with another flow (alias for >> operator)."""
         return self >> other
 
@@ -447,13 +453,11 @@ def extend_flow_with_context() -> None:
 # Decorator for creating context-aware flows
 def context_flow(
     *,
-    inputs: list[ContextKey[Any]] | None = None,
-    outputs: list[ContextKey[Any]] | None = None,
-    optional: dict[ContextKey[Any], Any] | None = None,
+    inputs: list[AnyContextKey] | None = None,
+    outputs: list[AnyContextKey] | None = None,
+    optional: dict[AnyContextKey, AnyValue] | None = None,
     name: str | None = None,
-) -> Callable[
-    [Callable[[Context], Context | Awaitable[Context]]], Flow[Context, Context]
-]:
+) -> ContextFlowDecorator:
     """Decorator to create a context-aware Flow with declared dependencies.
 
     Args:

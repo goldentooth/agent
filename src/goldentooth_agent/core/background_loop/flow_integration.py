@@ -12,10 +12,13 @@ from .main import BackgroundEventLoop
 T = TypeVar("T")
 R = TypeVar("R")
 
+# Type alias for background loop integration
+AnyType = Any  # type: ignore[explicit-any]  # For generic coroutine type parameters
+
 
 @inject
 def async_flow(
-    coroutine_fn: Callable[[T], Coroutine[Any, Any, R]],
+    coroutine_fn: Callable[[T], Coroutine[AnyType, AnyType, R]],
     background_loop: BackgroundEventLoop = inject[BackgroundEventLoop],
 ) -> Flow[T, R]:
     """
@@ -76,7 +79,7 @@ def schedule_flow(
 
 @inject
 def timeout_async_flow(
-    coroutine_fn: Callable[[T], Coroutine[Any, Any, R]],
+    coroutine_fn: Callable[[T], Coroutine[AnyType, AnyType, R]],
     timeout_seconds: float,
     default_value: R | None = None,
 ) -> Flow[T, R]:

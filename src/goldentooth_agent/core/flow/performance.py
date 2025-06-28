@@ -15,6 +15,13 @@ from typing import Any
 
 from .main import Flow
 
+# Type aliases for performance monitoring
+PerformanceData = dict[str, Any]  # type: ignore[explicit-any]
+AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
+StatsList = list[Any]  # type: ignore[explicit-any]
+AnyIteratorFactory = Callable[[], AsyncIterator[Any]]  # type: ignore[explicit-any]
+BenchmarkResult = dict[str, Any]  # type: ignore[explicit-any]
+
 
 @dataclass
 class FlowMetrics:
@@ -51,7 +58,7 @@ class FlowMetrics:
             return 0.0
         return self.items_yielded / self.items_processed
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> PerformanceData:
         """Convert metrics to dictionary for serialization."""
         return {
             "name": self.name,
@@ -72,7 +79,7 @@ class PerformanceMonitor:
 
     def __init__(self) -> None:
         self.metrics: dict[str, FlowMetrics] = {}
-        self.global_stats: defaultdict[str, list[Any]] = defaultdict(list)
+        self.global_stats: defaultdict[str, StatsList] = defaultdict(list)
         self._memory_tracking = False
 
     def enable_memory_tracking(self) -> None:
@@ -141,7 +148,7 @@ class PerformanceMonitor:
         # Return empty metrics if not found
         return FlowMetrics(name="unknown", start_time=time.time(), end_time=time.time())
 
-    def get_summary_stats(self) -> dict[str, Any]:
+    def get_summary_stats(self) -> PerformanceData:
         """Get summary statistics across all monitored flows."""
         if not self.global_stats["duration_ms"]:
             return {"message": "No metrics collected yet"}
@@ -183,7 +190,7 @@ _performance_monitor = PerformanceMonitor()
 
 def monitored_stream(
     monitor_name: str | None = None,
-) -> Callable[[Callable[[], Flow[Any, Any]]], Flow[Any, Any]]:
+) -> Callable[[Callable[[], AnyFlow]], AnyFlow]:
     """Decorator to add performance monitoring to a Flow.
 
     Args:
@@ -198,11 +205,11 @@ def monitored_stream(
             return Flow(...)
     """
 
-    def decorator(flow_factory: Callable[[], Flow[Any, Any]]) -> Flow[Any, Any]:
+    def decorator(flow_factory: Callable[[], AnyFlow]) -> AnyFlow:
         flow = flow_factory()
         name = monitor_name or flow.name
 
-        async def _monitored_flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
+        async def _monitored_flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:  # type: ignore[explicit-any]
             metrics_id = _performance_monitor.start_monitoring(name)
 
             try:
@@ -228,7 +235,7 @@ def monitored_stream(
     return decorator
 
 
-def performance_stream() -> Flow[Any, Any]:
+def performance_stream() -> AnyFlow:
     """Create a flow that adds performance monitoring to the pipeline.
 
     This combinator automatically tracks timing, throughput, and memory usage
@@ -238,7 +245,7 @@ def performance_stream() -> Flow[Any, Any]:
         A flow that monitors performance and passes items through unchanged.
     """
 
-    async def _flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
+    async def _flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:  # type: ignore[explicit-any]
         metrics_id = _performance_monitor.start_monitoring("performance_stream")
 
         try:
@@ -257,8 +264,8 @@ def performance_stream() -> Flow[Any, Any]:
 
 
 def benchmark_stream(iterations: int = 100, warmup_iterations: int = 10) -> Callable[
-    [Flow[Any, Any]],
-    Callable[[Callable[[], AsyncIterator[Any]]], Awaitable[dict[str, Any]]],
+    [AnyFlow],
+    Callable[[AnyIteratorFactory], Awaitable[BenchmarkResult]],
 ]:
     """Benchmark a Flow's performance over multiple iterations.
 
@@ -276,11 +283,11 @@ def benchmark_stream(iterations: int = 100, warmup_iterations: int = 10) -> Call
     """
 
     def benchmark_func(
-        flow: Flow[Any, Any]
-    ) -> Callable[[Callable[[], AsyncIterator[Any]]], Awaitable[dict[str, Any]]]:
+        flow: AnyFlow,
+    ) -> Callable[[AnyIteratorFactory], Awaitable[BenchmarkResult]]:
         async def run_benchmark(
-            test_stream_factory: Callable[[], AsyncIterator[Any]]
-        ) -> dict[str, Any]:
+            test_stream_factory: AnyIteratorFactory,
+        ) -> BenchmarkResult:
             """Run the benchmark with a test stream factory."""
             durations = []
 
@@ -344,7 +351,7 @@ def enable_memory_tracking() -> None:
     _performance_monitor.enable_memory_tracking()
 
 
-def get_performance_summary() -> dict[str, Any]:
+def get_performance_summary() -> PerformanceData:
     """Get summary of all performance metrics."""
     return _performance_monitor.get_summary_stats()
 

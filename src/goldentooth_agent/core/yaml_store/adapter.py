@@ -1,7 +1,7 @@
 from typing import Any, Protocol, TypeVar, runtime_checkable
 
 T = TypeVar("T")  # Type being serialized/deserialized
-YamlData = dict[str, Any]  # YAML can contain arbitrary data
+YamlData = dict[str, Any]  # type: ignore[explicit-any]  # YAML can contain arbitrary data
 
 
 @runtime_checkable

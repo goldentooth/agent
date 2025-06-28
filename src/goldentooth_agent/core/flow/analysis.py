@@ -13,6 +13,17 @@ from typing import Any
 
 from .main import Flow
 
+# Type aliases for flow analysis
+FlowMetadata = dict[str, Any]  # type: ignore[explicit-any]
+AnalysisData = dict[str, Any]  # type: ignore[explicit-any]
+PatternData = dict[str, Any]  # type: ignore[explicit-any]
+OptimizationData = dict[str, Any]  # type: ignore[explicit-any]
+AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
+FlowList = list[AnyFlow]
+PatternList = list[PatternData]
+OptimizationList = list[OptimizationData]
+FlowRegistry = dict[str, AnyFlow]
+
 
 @dataclass
 class FlowNode:
@@ -22,12 +33,12 @@ class FlowNode:
     name: str
     flow_type: str
     description: str | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: FlowMetadata = field(default_factory=dict)
     inputs: list[str] = field(default_factory=list)
     outputs: list[str] = field(default_factory=list)
     complexity_score: int = 1
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> AnalysisData:
         """Convert node to dictionary representation."""
         return {
             "id": self.id,
@@ -48,9 +59,9 @@ class FlowEdge:
     source_id: str
     target_id: str
     edge_type: str = "data_flow"
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: FlowMetadata = field(default_factory=dict)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> AnalysisData:
         """Convert edge to dictionary representation."""
         return {
             "source_id": self.source_id,
@@ -184,7 +195,7 @@ class FlowGraph:
 
         return cycles
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> AnalysisData:
         """Convert graph to dictionary representation."""
         return {
             "nodes": {node_id: node.to_dict() for node_id, node in self.nodes.items()},
@@ -207,14 +218,14 @@ class FlowAnalyzer:
 
     def __init__(self) -> None:
         self.node_id_counter = 0
-        self.flow_registry: dict[str, Flow[Any, Any]] = {}
+        self.flow_registry: FlowRegistry = {}
 
     def _generate_node_id(self) -> str:
         """Generate a unique node ID."""
         self.node_id_counter += 1
         return f"node_{self.node_id_counter}"
 
-    def _get_flow_signature(self, flow: Flow[Any, Any]) -> str:
+    def _get_flow_signature(self, flow: AnyFlow) -> str:
         """Generate a signature for a flow based on its properties."""
         components = [flow.name, str(type(flow)), str(getattr(flow, "metadata", {}))]
         signature = hashlib.md5(
@@ -222,7 +233,7 @@ class FlowAnalyzer:
         ).hexdigest()[:8]
         return signature
 
-    def analyze_flow(self, flow: Flow[Any, Any]) -> FlowGraph:
+    def analyze_flow(self, flow: AnyFlow) -> FlowGraph:
         """Analyze a single Flow and return its graph representation."""
         graph = FlowGraph()
 
@@ -236,7 +247,7 @@ class FlowAnalyzer:
 
         return graph
 
-    def analyze_composition(self, flows: list[Flow[Any, Any]]) -> FlowGraph:
+    def analyze_composition(self, flows: FlowList) -> FlowGraph:
         """Analyze a composition of multiple flows."""
         graph = FlowGraph()
 
@@ -264,7 +275,7 @@ class FlowAnalyzer:
 
         return graph
 
-    def _create_flow_node(self, flow: Flow[Any, Any], node_id: str) -> FlowNode:
+    def _create_flow_node(self, flow: AnyFlow, node_id: str) -> FlowNode:
         """Create a FlowNode from a Flow object."""
         flow_type = self._categorize_flow_type(flow)
         complexity = self._calculate_complexity(flow)
@@ -282,7 +293,7 @@ class FlowAnalyzer:
             },
         )
 
-    def _categorize_flow_type(self, flow: Flow[Any, Any]) -> str:
+    def _categorize_flow_type(self, flow: AnyFlow) -> str:
         """Categorize the type of flow based on its name and characteristics."""
         name = flow.name.lower()
 
@@ -307,7 +318,7 @@ class FlowAnalyzer:
         else:
             return "utility"
 
-    def _calculate_complexity(self, flow: Flow[Any, Any]) -> int:
+    def _calculate_complexity(self, flow: AnyFlow) -> int:
         """Calculate complexity score for a flow."""
         base_complexity = 1
         name = flow.name.lower()
@@ -324,7 +335,7 @@ class FlowAnalyzer:
 
         return base_complexity
 
-    def _extract_description(self, flow: Flow[Any, Any]) -> str | None:
+    def _extract_description(self, flow: AnyFlow) -> str | None:
         """Extract description from flow function docstring."""
         if hasattr(flow, "_flow") and hasattr(flow._flow, "__doc__"):
             docstring = flow._flow.__doc__
@@ -333,7 +344,7 @@ class FlowAnalyzer:
                 return str(docstring.strip().split("\n")[0])
         return None
 
-    def detect_patterns(self, graph: FlowGraph) -> list[dict[str, Any]]:
+    def detect_patterns(self, graph: FlowGraph) -> PatternList:
         """Detect common patterns in the flow graph."""
         patterns = []
 
@@ -359,7 +370,7 @@ class FlowAnalyzer:
 
         return patterns
 
-    def _detect_map_filter_pattern(self, graph: FlowGraph) -> dict[str, Any] | None:
+    def _detect_map_filter_pattern(self, graph: FlowGraph) -> PatternData | None:
         """Detect map-filter sequential pattern."""
         for edge in graph.edges:
             source_node = graph.nodes.get(edge.source_id)
@@ -379,7 +390,7 @@ class FlowAnalyzer:
                 }
         return None
 
-    def _detect_fan_out_pattern(self, graph: FlowGraph) -> dict[str, Any] | None:
+    def _detect_fan_out_pattern(self, graph: FlowGraph) -> PatternData | None:
         """Detect fan-out pattern (one node with multiple outputs)."""
         for node_id, node in graph.nodes.items():
             outgoing_edges = [edge for edge in graph.edges if edge.source_id == node_id]
@@ -393,7 +404,7 @@ class FlowAnalyzer:
                 }
         return None
 
-    def _detect_pipeline_pattern(self, graph: FlowGraph) -> dict[str, Any] | None:
+    def _detect_pipeline_pattern(self, graph: FlowGraph) -> PatternData | None:
         """Detect linear pipeline pattern."""
         if len(graph.entry_points) == 1 and len(graph.exit_points) == 1:
             critical_path = graph.get_critical_path()
@@ -407,7 +418,7 @@ class FlowAnalyzer:
                 }
         return None
 
-    def _detect_error_handling_pattern(self, graph: FlowGraph) -> dict[str, Any] | None:
+    def _detect_error_handling_pattern(self, graph: FlowGraph) -> PatternData | None:
         """Detect error handling patterns."""
         error_handling_nodes = [
             node for node in graph.nodes.values() if node.flow_type == "error_handling"
@@ -422,9 +433,7 @@ class FlowAnalyzer:
             }
         return None
 
-    def generate_optimization_suggestions(
-        self, graph: FlowGraph
-    ) -> list[dict[str, Any]]:
+    def generate_optimization_suggestions(self, graph: FlowGraph) -> OptimizationList:
         """Generate optimization suggestions for the flow graph."""
         suggestions = []
 
@@ -512,22 +521,22 @@ class FlowAnalyzer:
 _flow_analyzer = FlowAnalyzer()
 
 
-def analyze_flow(flow: Flow[Any, Any]) -> FlowGraph:
+def analyze_flow(flow: AnyFlow) -> FlowGraph:
     """Analyze a single Flow and return its graph representation."""
     return _flow_analyzer.analyze_flow(flow)
 
 
-def analyze_flow_composition(flows: list[Flow[Any, Any]]) -> FlowGraph:
+def analyze_flow_composition(flows: FlowList) -> FlowGraph:
     """Analyze a composition of multiple flows."""
     return _flow_analyzer.analyze_composition(flows)
 
 
-def detect_flow_patterns(graph: FlowGraph) -> list[dict[str, Any]]:
+def detect_flow_patterns(graph: FlowGraph) -> PatternList:
     """Detect common patterns in a flow graph."""
     return _flow_analyzer.detect_patterns(graph)
 
 
-def generate_flow_optimizations(graph: FlowGraph) -> list[dict[str, Any]]:
+def generate_flow_optimizations(graph: FlowGraph) -> OptimizationList:
     """Generate optimization suggestions for a flow graph."""
     return _flow_analyzer.generate_optimization_suggestions(graph)
 
