@@ -13,3 +13,4 @@
 11. Devise a detailed plan to incorporate the successful and effective patterns from the smolcode project.
 12. Incorporate some method of checking dependencies automatically for upstream security alerts.
 13. Write a command or GHA workflow to bump the version in the pyproject.toml file.
+14. Move to recharacterize this project; remember that it's not a general-purpose agent framework, it's a lulzy toy for playing with my cluster.
