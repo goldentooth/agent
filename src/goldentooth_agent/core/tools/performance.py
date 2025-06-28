@@ -6,8 +6,10 @@ import asyncio
 import functools
 import time
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
+from contextlib import asynccontextmanager
 from typing import Any, TypeVar
+from collections.abc import AsyncGenerator
 
 import httpx
 
@@ -15,9 +17,16 @@ import httpx
 T = TypeVar("T")
 R = TypeVar("R")
 
-# Global HTTP client with connection pooling
-_http_client: httpx.AsyncClient | None = None
+# Enhanced HTTP client management with multiple pools
+_http_clients: dict[str, httpx.AsyncClient] = {}
 _http_client_lock = asyncio.Lock()
+_default_pool_config = {
+    "timeout": 30.0,
+    "max_keepalive_connections": 20,
+    "max_connections": 100,
+    "keepalive_expiry": 30.0,
+}
+_pool_configs: dict[str, dict[str, Any]] = {}
 
 # Simple memory cache
 _cache: dict[str, tuple[Any, float, float]] = {}  # key -> (value, timestamp, ttl)
@@ -25,35 +34,41 @@ _cache_stats: defaultdict[str, int] = defaultdict(int)
 _cache_lock = asyncio.Lock()
 
 
-async def get_http_client() -> httpx.AsyncClient:
-    """Get a shared HTTP client with connection pooling."""
-    global _http_client
-
+async def get_http_client(pool_name: str = "default") -> httpx.AsyncClient:
+    """Get a shared HTTP client with connection pooling for a specific pool."""
     async with _http_client_lock:
-        if _http_client is None:
-            # Create client with optimized settings
-            _http_client = httpx.AsyncClient(
-                timeout=30.0,
+        if pool_name not in _http_clients:
+            # Get pool configuration
+            pool_config = _pool_configs.get(pool_name, _default_pool_config)
+
+            # Create client with pool-specific settings
+            _http_clients[pool_name] = httpx.AsyncClient(
+                timeout=pool_config["timeout"],
                 limits=httpx.Limits(
-                    max_keepalive_connections=20,
-                    max_connections=100,
-                    keepalive_expiry=30.0,
+                    max_keepalive_connections=pool_config["max_keepalive_connections"],
+                    max_connections=pool_config["max_connections"],
+                    keepalive_expiry=pool_config["keepalive_expiry"],
                 ),
                 follow_redirects=True,
                 # Note: http2=True requires h2 package, disabled for now
             )
 
-    return _http_client
+    return _http_clients[pool_name]
 
 
-async def close_http_client() -> None:
-    """Close the shared HTTP client."""
-    global _http_client
-
+async def close_http_client(pool_name: str | None = None) -> None:
+    """Close HTTP clients for a specific pool or all pools."""
     async with _http_client_lock:
-        if _http_client is not None:
-            await _http_client.aclose()
-            _http_client = None
+        if pool_name:
+            # Close specific pool
+            if pool_name in _http_clients:
+                await _http_clients[pool_name].aclose()
+                del _http_clients[pool_name]
+        else:
+            # Close all pools
+            for client in _http_clients.values():
+                await client.aclose()
+            _http_clients.clear()
 
 
 def cache_key(*args: Any, **kwargs: Any) -> str:
@@ -340,7 +355,110 @@ async def warmup_http_client() -> None:
             pass
 
 
+def configure_http_pool(
+    pool_name: str,
+    timeout: float = 30.0,
+    max_keepalive_connections: int = 20,
+    max_connections: int = 100,
+    keepalive_expiry: float = 30.0,
+) -> None:
+    """Configure HTTP client pool settings."""
+    _pool_configs[pool_name] = {
+        "timeout": timeout,
+        "max_keepalive_connections": max_keepalive_connections,
+        "max_connections": max_connections,
+        "keepalive_expiry": keepalive_expiry,
+    }
+
+
+@asynccontextmanager
+async def http_client_context(
+    pool_name: str = "default",
+) -> AsyncGenerator[httpx.AsyncClient]:
+    """Context manager for HTTP client lifecycle."""
+    client = await get_http_client(pool_name)
+    try:
+        yield client
+    finally:
+        # Client cleanup is handled by the global pool manager
+        pass
+
+
+class ResourcePool:
+    """Generic resource pool with lifecycle management."""
+
+    def __init__(self, max_size: int = 10, idle_timeout: float = 300.0):
+        self.max_size = max_size
+        self.idle_timeout = idle_timeout
+        self._pool: list[tuple[Any, float]] = []  # (resource, last_used)
+        self._lock = asyncio.Lock()
+        self._created_count = 0
+
+    async def acquire(self, factory: Callable[[], Coroutine[Any, Any, Any]]) -> Any:
+        """Acquire a resource from the pool or create new one."""
+        async with self._lock:
+            now = time.time()
+
+            # Remove expired resources
+            self._pool = [
+                (resource, last_used)
+                for resource, last_used in self._pool
+                if now - last_used < self.idle_timeout
+            ]
+
+            # Try to get existing resource
+            if self._pool:
+                resource, _ = self._pool.pop(0)
+                return resource
+
+            # Create new resource if under limit
+            if self._created_count < self.max_size:
+                self._created_count += 1
+                return await factory()
+
+            # Wait and retry if pool is full
+            await asyncio.sleep(0.1)
+            return await self.acquire(factory)
+
+    async def release(self, resource: Any) -> None:
+        """Release a resource back to the pool."""
+        async with self._lock:
+            self._pool.append((resource, time.time()))
+
+    async def close(self) -> None:
+        """Close all resources in the pool."""
+        async with self._lock:
+            for resource, _ in self._pool:
+                if hasattr(resource, "aclose"):
+                    await resource.aclose()
+                elif hasattr(resource, "close"):
+                    resource.close()
+            self._pool.clear()
+            self._created_count = 0
+
+
+# Global resource pools
+_resource_pools: dict[str, ResourcePool] = {}
+_resource_pool_lock = asyncio.Lock()
+
+
+async def get_resource_pool(
+    name: str, max_size: int = 10, idle_timeout: float = 300.0
+) -> ResourcePool:
+    """Get or create a resource pool."""
+    async with _resource_pool_lock:
+        if name not in _resource_pools:
+            _resource_pools[name] = ResourcePool(max_size, idle_timeout)
+        return _resource_pools[name]
+
+
 async def cleanup_performance_resources() -> None:
     """Clean up performance-related resources."""
     await close_http_client()
     await clear_cache()
+
+    # Clean up resource pools
+    async with _resource_pool_lock:
+        for pool in _resource_pools.values():
+            await pool.close()
+        _resource_pools.clear()

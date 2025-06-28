@@ -7,7 +7,7 @@ import os
 import platform
 import subprocess
 import time
-from typing import Any, Union
+from typing import Any
 
 import psutil
 from pydantic import Field
@@ -53,7 +53,7 @@ async def process_execute_implementation(
 
     try:
         # Prepare command
-        cmd: Union[str, list[str]]
+        cmd: str | list[str]
         if input_data.shell:
             cmd_str = input_data.command
             if input_data.args:
