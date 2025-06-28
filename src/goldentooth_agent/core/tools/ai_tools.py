@@ -347,6 +347,10 @@ async def text_summary_implementation(
                 error="No sentences found meeting minimum length requirement",
             )
 
+        # Initialize variables for scope
+        summary_sentences: list[str] = []
+        selected_bullet_sentences: list[str] = []
+
         # Simple extractive summarization
         if input_data.summary_type == "extractive":
             # Score sentences based on word frequency and position
@@ -389,7 +393,7 @@ async def text_summary_implementation(
 
         elif input_data.summary_type == "bullet_points":
             # Create bullet point summary
-            sentence_scores = []
+            sentence_scores: list[tuple[float, str]] = []
             for sentence in sentences:
                 sentence_words = re.findall(r"\b\w+\b", sentence.lower())
                 if len(sentence_words) < 3:  # Skip very short sentences
@@ -404,12 +408,12 @@ async def text_summary_implementation(
                 sentence_scores.append((score, sentence))
 
             sentence_scores.sort(reverse=True)
-            selected_sentences = [
+            selected_bullet_sentences = [
                 sentence for _, sentence in sentence_scores[: input_data.max_sentences]
             ]
 
             summary = "\n".join(
-                f"• {sentence.strip()}" for sentence in selected_sentences
+                f"• {sentence.strip()}" for sentence in selected_bullet_sentences
             )
 
         else:
@@ -430,7 +434,7 @@ async def text_summary_implementation(
         sentences_used = (
             len(summary_sentences)
             if input_data.summary_type == "extractive"
-            else len(selected_sentences)
+            else len(selected_bullet_sentences)
         )
 
         # Extract key phrases from summary

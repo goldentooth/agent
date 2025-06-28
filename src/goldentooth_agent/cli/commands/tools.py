@@ -3,7 +3,7 @@ import json
 import math
 import sys
 from collections.abc import AsyncIterator
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 import typer
 from antidote import inject
@@ -28,31 +28,31 @@ from goldentooth_agent.core.tools import (
 app = typer.Typer()
 
 # Type aliases for CLI flexibility
-ToolInputData = Any  # type: ignore[explicit-any]  # Input can be any JSON-serializable data
+ToolInputData = Any  # Input can be any JSON-serializable data
 ToolOutputData = FlowIOSchema  # Tool output is always a FlowIOSchema
 
 
 # Tool implementations - using the examples as reference
-class CalculatorInput(FlowIOSchema):  # type: ignore[explicit-any]
+class CalculatorInput(FlowIOSchema):
     """Input schema for calculator tool."""
 
     expression: str
 
 
-class CalculatorOutput(FlowIOSchema):  # type: ignore[explicit-any]
+class CalculatorOutput(FlowIOSchema):
     """Output schema for calculator tool."""
 
     result: str
     expression: str
 
 
-class EchoInput(FlowIOSchema):  # type: ignore[explicit-any]
+class EchoInput(FlowIOSchema):
     """Input schema for echo tool."""
 
     message: str
 
 
-class EchoOutput(FlowIOSchema):  # type: ignore[explicit-any]
+class EchoOutput(FlowIOSchema):
     """Output schema for echo tool."""
 
     echoed_message: str
@@ -265,11 +265,15 @@ def run_tool(
             else:
                 # Tool-specific text output
                 if tool_name == "calculator":
-                    calculator_result = result
-                    print(calculator_result.result)  # type: ignore[attr-defined]  # CalculatorOutput has result
+                    if isinstance(result, CalculatorOutput):
+                        print(result.result)  # CalculatorOutput has result
+                    else:
+                        print(result.model_dump())
                 elif tool_name == "echo":
-                    echo_result = result
-                    print(echo_result.echoed_message)  # type: ignore[attr-defined]  # EchoOutput has echoed_message
+                    if isinstance(result, EchoOutput):
+                        print(result.echoed_message)  # EchoOutput has echoed_message
+                    else:
+                        print(result.model_dump())
                 else:
                     # Generic output - print all fields
                     for field, value in result.model_dump().items():
@@ -304,7 +308,9 @@ async def run_tool_async(
             results.append(output_data)
 
         if results:
-            return results[-1]  # type: ignore[no-any-return]  # FlowTool guarantees FlowIOSchema output
+            return cast(
+                FlowIOSchema, results[-1]
+            )  # FlowTool guarantees FlowIOSchema output
         else:
             raise RuntimeError("Tool produced no output")
 

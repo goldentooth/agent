@@ -7,7 +7,7 @@ import os
 import platform
 import subprocess
 import time
-from typing import Any
+from typing import Any, Union
 
 import psutil
 from pydantic import Field
@@ -53,10 +53,12 @@ async def process_execute_implementation(
 
     try:
         # Prepare command
+        cmd: Union[str, list[str]]
         if input_data.shell:
-            cmd = input_data.command
+            cmd_str = input_data.command
             if input_data.args:
-                cmd += " " + " ".join(input_data.args)
+                cmd_str += " " + " ".join(input_data.args)
+            cmd = cmd_str
         else:
             cmd = [input_data.command] + input_data.args
 
@@ -84,7 +86,7 @@ async def process_execute_implementation(
         try:
             process = (
                 await asyncio.create_subprocess_exec(
-                    *cmd if not input_data.shell else [],
+                    *cmd if not input_data.shell else [],  # type: ignore[misc,redundant-expr]
                     shell=input_data.shell,
                     stdout=subprocess.PIPE if input_data.capture_output else None,
                     stderr=subprocess.PIPE if input_data.capture_output else None,

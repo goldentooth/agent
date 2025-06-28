@@ -10,12 +10,12 @@ from ..flow import Flow
 from .schema import FlowIOSchema
 
 # Type aliases for instructor integration
-LLMClient = Any  # type: ignore[explicit-any]  # Various LLM clients (OpenAI, Anthropic, etc.)
-MessageData = dict[str, Any]  # type: ignore[explicit-any]  # LLM message format
-FieldDefaults = dict[str, Any]  # type: ignore[explicit-any]  # Default values for model fields
-CompletionMetadata = dict[str, Any]  # type: ignore[explicit-any]  # LLM completion metadata
-FlowKwargs = Any  # type: ignore[explicit-any]  # Additional flow arguments
-MockResponse = Any  # type: ignore[explicit-any]  # Mock response can be any schema type
+LLMClient = Any  # Various LLM clients (OpenAI, Anthropic, etc.)
+MessageData = dict[str, Any]  # LLM message format
+FieldDefaults = dict[str, Any]  # Default values for model fields
+CompletionMetadata = dict[str, Any]  # LLM completion metadata
+FlowKwargs = Any  # Additional flow arguments
+MockResponse = Any  # Mock response can be any schema type
 
 T = TypeVar("T", bound=FlowIOSchema)
 R = TypeVar("R", bound=FlowIOSchema)
@@ -60,7 +60,7 @@ class MockLLMClient:
             ValueError: If no mock response is configured for the response model
         """
         if response_model in self.mock_responses:
-            return self.mock_responses[response_model]  # type: ignore[no-any-return]
+            return self.mock_responses[response_model]
 
         # Try to create a default instance if possible
         try:
@@ -254,7 +254,7 @@ class InstructorFlow:
                 max_retries=self.max_retries,
             )
 
-            return response  # type: ignore[no-any-return]
+            return response
 
         except Exception as e:
             raise ValueError(f"LLM completion failed: {e}") from e

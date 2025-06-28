@@ -14,11 +14,11 @@ from typing import Any
 from .main import Flow
 
 # Type aliases for flow analysis
-FlowMetadata = dict[str, Any]  # type: ignore[explicit-any]
-AnalysisData = dict[str, Any]  # type: ignore[explicit-any]
-PatternData = dict[str, Any]  # type: ignore[explicit-any]
-OptimizationData = dict[str, Any]  # type: ignore[explicit-any]
-AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
+FlowMetadata = dict[str, Any]
+AnalysisData = dict[str, Any]
+PatternData = dict[str, Any]
+OptimizationData = dict[str, Any]
+AnyFlow = Flow[Any, Any]
 FlowList = list[AnyFlow]
 PatternList = list[PatternData]
 OptimizationList = list[OptimizationData]

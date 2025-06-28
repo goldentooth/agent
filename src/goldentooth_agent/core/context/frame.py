@@ -4,8 +4,8 @@ import copy
 from typing import Any
 
 # Type alias for context data - contexts can store any type of value
-ContextData = dict[str, Any]  # type: ignore[explicit-any]
-ContextValue = Any  # type: ignore[explicit-any]
+ContextData = dict[str, Any]
+ContextValue = Any
 
 
 class ContextFrame:

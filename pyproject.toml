@@ -51,6 +51,7 @@ black = "^24.10.0"
 isort = "^5.13.2"
 ruff = "^0.8.4"
 bandit = "^1.7.10"
+types-aiofiles = "^24.1.0.20250606"
 
 [tool.poe.tasks]
 test = "pytest tests/"

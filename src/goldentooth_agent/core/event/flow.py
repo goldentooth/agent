@@ -127,14 +127,14 @@ class AsyncEventFlow(EventFlow[T]):
 
 
 # Type aliases for event handling (after class definitions)
-AnyEventHandler = Callable[[Any], Any]  # type: ignore[explicit-any]
-AnyAwaitableEventHandler = Callable[[Any], Awaitable[Any]]  # type: ignore[explicit-any]
-AnyEventFlow = EventFlow[Any]  # type: ignore[explicit-any]
-AnyAsyncEventFlow = AsyncEventFlow[Any]  # type: ignore[explicit-any]
-AnySyncEventFlow = SyncEventFlow[Any]  # type: ignore[explicit-any]
-AnyFlow = Flow[None, Any]  # type: ignore[explicit-any]
-AnyTransformer = Callable[[Any], Any]  # type: ignore[explicit-any]
-AnyTransformFlow = Flow[None, Any]  # type: ignore[explicit-any]
+AnyEventHandler = Callable[[Any], Any]
+AnyAwaitableEventHandler = Callable[[Any], Awaitable[Any]]
+AnyEventFlow = EventFlow[Any]
+AnyAsyncEventFlow = AsyncEventFlow[Any]
+AnySyncEventFlow = SyncEventFlow[Any]
+AnyFlow = Flow[None, Any]
+AnyTransformer = Callable[[Any], Any]
+AnyTransformFlow = Flow[None, Any]
 
 
 # Flow derivative functions for common event patterns
@@ -275,7 +275,7 @@ def event_transform(
     # Get the base event flow and apply transformation
     base_flow = event_flow.as_flow()
 
-    async def _transform_stream(_: AsyncIterator[None]) -> AsyncIterator[Any]:  # type: ignore[explicit-any]
+    async def _transform_stream(_: AsyncIterator[None]) -> AsyncIterator[Any]:
         """Transform events with the given function."""
 
         # Start with an empty stream since we don't consume input

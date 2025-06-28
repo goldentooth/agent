@@ -10,13 +10,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from ..context import Context, ContextKey
 
 # Type aliases for schema system
-ContextData = dict[str, Any]  # type: ignore[explicit-any]  # Context can store arbitrary data
-AnyType = type[Any]  # type: ignore[explicit-any]  # For type casting in generic contexts
+ContextData = dict[str, Any]  # Context can store arbitrary data
+AnyType = type[Any]  # For type casting in generic contexts
 
 T = TypeVar("T", bound="FlowIOSchema")
 
 
-class FlowIOSchema(BaseModel):  # type: ignore[explicit-any]
+class FlowIOSchema(BaseModel):
     """Base schema for all Flow-based agent interactions with context integration."""
 
     model_config = ConfigDict(
@@ -98,7 +98,7 @@ class FlowIOSchema(BaseModel):  # type: ignore[explicit-any]
         return cls(**field_values)
 
 
-class AgentInput(FlowIOSchema):  # type: ignore[explicit-any]
+class AgentInput(FlowIOSchema):
     """Standard input for agent flows."""
 
     message: str = Field(..., description="Input message")
@@ -107,7 +107,7 @@ class AgentInput(FlowIOSchema):  # type: ignore[explicit-any]
     )
 
 
-class AgentOutput(FlowIOSchema):  # type: ignore[explicit-any]
+class AgentOutput(FlowIOSchema):
     """Standard output for agent flows."""
 
     response: str = Field(..., description="Agent response")

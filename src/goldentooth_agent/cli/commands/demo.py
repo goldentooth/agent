@@ -17,6 +17,7 @@ from rich.table import Table
 from goldentooth_agent.cli.commands.agents import get_available_agents
 from goldentooth_agent.cli.commands.flow import get_available_flows
 from goldentooth_agent.core.context import Context
+from goldentooth_agent.core.flow_agent import AgentInput
 
 app = typer.Typer()
 
@@ -468,16 +469,21 @@ async def demo_agent_interaction(console: Console) -> None:
         console.print(f"\n[blue]Message {i}:[/blue] {message}")
 
         # Create input using the agent's input schema
-        agent_input = echo_agent.input_schema(message=message, context_data={})
+        agent_input_data = echo_agent.input_schema.model_validate(
+            {"message": message, "context_data": {}}
+        )
+        agent_input = AgentInput.model_validate(agent_input_data.model_dump())
 
         # Process through agent
         agent_flow = echo_agent.as_flow()
 
-        async def input_stream():
+        async def input_stream() -> AsyncIterator[AgentInput]:
             yield agent_input
 
         async for result in agent_flow(input_stream()):
-            console.print(f"[green]Response:[/green] {result.response}")
+            # Cast result to AgentOutput for type safety
+            if hasattr(result, "response"):
+                console.print(f"[green]Response:[/green] {result.response}")
             if hasattr(result, "metadata") and result.metadata:
                 metadata_str = " | ".join(
                     [f"{k}: {v}" for k, v in result.metadata.items()]

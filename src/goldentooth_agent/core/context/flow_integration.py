@@ -5,15 +5,15 @@ from __future__ import annotations
 import asyncio
 import copy
 from collections.abc import AsyncIterator, Awaitable, Callable
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 from ..flow import Flow
 from .key import ContextKey
 from .main import Context
 
 # Type aliases for context-flow integration
-AnyContextKey = ContextKey[Any]  # type: ignore[explicit-any]
-AnyValue = Any  # type: ignore[explicit-any]
+AnyContextKey = ContextKey[Any]
+AnyValue = Any
 ContextFlowFunction = Callable[[Context], Context | Awaitable[Context]]
 ContextFlowDecorator = Callable[[ContextFlowFunction], Flow[Context, Context]]
 
@@ -88,7 +88,8 @@ class ContextFlowCombinators:
                     raise ContextTypeMismatchError(
                         f"Key '{key.path}' expected {key.type_.__name__}, got {type(value).__name__}"
                     )
-                return value  # type: ignore[return-value]
+                # Type is validated by isinstance check above
+                return cast(T, value)
             except KeyError as e:
                 if default is None:
                     raise MissingRequiredKeyError(
@@ -160,7 +161,8 @@ class ContextFlowCombinators:
                     raise ContextTypeMismatchError(
                         f"Key '{key.path}' expected {key.type_.__name__}, got {type(value).__name__}"
                     )
-                return value  # type: ignore[return-value]
+                # Type is validated by isinstance check above
+                return cast(T, value)
             except KeyError as e:
                 raise MissingRequiredKeyError(
                     f"Required key '{key.path}' not found in context"
@@ -194,7 +196,8 @@ class ContextFlowCombinators:
                     raise ContextTypeMismatchError(
                         f"Key '{key.path}' expected {key.type_.__name__}, got {type(value).__name__}"
                     )
-                return value  # type: ignore[return-value]
+                # Type is validated by isinstance check above
+                return cast(T, value)
             except KeyError:
                 return default
 
@@ -446,8 +449,8 @@ def extend_flow_with_context() -> None:
         """Chain this flow with another flow (alias for >> operator)."""
         return self >> other
 
-    Flow.run = run  # type: ignore[attr-defined]
-    Flow.then = then  # type: ignore[attr-defined]
+    Flow.run = run
+    Flow.then = then
 
 
 # Decorator for creating context-aware flows

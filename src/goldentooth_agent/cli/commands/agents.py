@@ -24,7 +24,7 @@ app = typer.Typer()
 
 # Type aliases for agent management
 AgentRegistry = dict[str, FlowAgent]
-AgentMetadata = dict[str, Any]  # type: ignore[explicit-any]  # Agent metadata can be any type
+AgentMetadata = dict[str, Any]  # Agent metadata can be any type
 
 
 def get_available_agents() -> AgentRegistry:
@@ -61,8 +61,12 @@ def get_agent_metadata(agent_name: str, agent: FlowAgent) -> AgentMetadata:
         "type": "FlowAgent",
         "input_schema": agent.input_schema.__name__,
         "output_schema": agent.output_schema.__name__,
-        "system_flow": agent.system_flow.name if agent.system_flow is not None else "None",  # type: ignore[truthy-bool]
-        "processing_flow": agent.processing_flow.name if agent.processing_flow is not None else "None",  # type: ignore[truthy-bool]
+        "system_flow": (
+            agent.system_flow.name if agent.system_flow is not None else "None"
+        ),
+        "processing_flow": (
+            agent.processing_flow.name if agent.processing_flow is not None else "None"
+        ),
         "model": getattr(agent, "model", "default"),
         "description": get_agent_description(agent_name),
     }
@@ -326,7 +330,7 @@ def test_agent(
 
 
 async def run_agent_async(
-    agent: FlowAgent, input_dict: dict[str, Any], console: Console  # type: ignore[explicit-any]
+    agent: FlowAgent, input_dict: dict[str, Any], console: Console
 ) -> AgentOutput:
     """Run an agent asynchronously."""
     try:
@@ -346,7 +350,13 @@ async def run_agent_async(
             results.append(output_data)
 
         if results:
-            return results[-1]  # type: ignore[return-value]  # FlowAgent guarantees AgentOutput
+            # Cast to AgentOutput since FlowAgent guarantees this type
+            result = results[-1]
+            if isinstance(result, AgentOutput):
+                return result
+            else:
+                # This shouldn't happen with standard agents, but handle gracefully
+                raise RuntimeError(f"Agent returned unexpected type: {type(result)}")
         else:
             raise RuntimeError("Agent produced no output")
 

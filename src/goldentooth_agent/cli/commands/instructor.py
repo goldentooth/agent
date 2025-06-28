@@ -17,6 +17,11 @@ from rich.table import Table
 
 from goldentooth_agent.core.flow_agent import AgentInput, FlowIOSchema
 from goldentooth_agent.examples.instructor import (
+    CodeAnalysis,
+    PersonData,
+    Recipe,
+    SentimentAnalysis,
+    TaskList,
     create_code_reviewer_agent,
     create_data_extractor_agent,
     create_recipe_generator_agent,
@@ -270,7 +275,7 @@ async def run_instructor_agent_async(
             results.append(output_data)
 
         if results:
-            return results[-1]  # type: ignore[no-any-return]
+            return results[-1]  # type: ignore[return-value]
         else:
             raise RuntimeError("Instructor agent produced no output")
 
@@ -296,34 +301,40 @@ def display_structured_result(
         console.print(syntax)
 
         # Show specific highlights based on agent type
-        if agent_type == "sentiment" and hasattr(result, "sentiment"):
+        if agent_type == "sentiment" and isinstance(result, SentimentAnalysis):
             sentiment_color = {
                 "positive": "green",
                 "negative": "red",
                 "neutral": "yellow",
-            }.get(
-                result.sentiment, "white"
-            )  # type: ignore[attr-defined]
+            }.get(result.sentiment, "white")
             console.print(
-                f"\\n[bold]Quick Summary:[/bold] [{sentiment_color}]{result.sentiment.upper()}[/{sentiment_color}] "  # type: ignore[attr-defined]
-                f"(confidence: {result.confidence:.1%})"  # type: ignore[attr-defined]
+                f"\\n[bold]Quick Summary:[/bold] [{sentiment_color}]{result.sentiment.upper()}[/{sentiment_color}] "
+                f"(confidence: {result.confidence:.1%})"
             )
 
-        elif agent_type == "planner" and hasattr(result, "tasks"):
-            console.print(f"\\n[bold]Quick Summary:[/bold] {len(result.tasks)} tasks planned")  # type: ignore[attr-defined]
-
-        elif agent_type == "reviewer" and hasattr(result, "overall_quality"):
-            quality_color = "green" if result.overall_quality >= 7 else "yellow" if result.overall_quality >= 4 else "red"  # type: ignore[attr-defined]
+        elif agent_type == "planner" and isinstance(result, TaskList):
             console.print(
-                f"\\n[bold]Quick Summary:[/bold] Quality score [{quality_color}]{result.overall_quality}/10[/{quality_color}]"  # type: ignore[attr-defined]
+                f"\\n[bold]Quick Summary:[/bold] {len(result.tasks)} tasks planned"
             )
 
-        elif agent_type == "extractor" and hasattr(result, "name"):
-            console.print(f"\\n[bold]Quick Summary:[/bold] Extracted data for {result.name}")  # type: ignore[attr-defined]
-
-        elif agent_type == "chef" and hasattr(result, "name"):
+        elif agent_type == "reviewer" and isinstance(result, CodeAnalysis):
+            quality_color = (
+                "green"
+                if result.overall_quality >= 7
+                else "yellow" if result.overall_quality >= 4 else "red"
+            )
             console.print(
-                f"\\n[bold]Quick Summary:[/bold] {result.name} ({result.servings} servings, {result.difficulty})"  # type: ignore[attr-defined]
+                f"\\n[bold]Quick Summary:[/bold] Quality score [{quality_color}]{result.overall_quality}/10[/{quality_color}]"
+            )
+
+        elif agent_type == "extractor" and isinstance(result, PersonData):
+            console.print(
+                f"\\n[bold]Quick Summary:[/bold] Extracted data for {result.name}"
+            )
+
+        elif agent_type == "chef" and isinstance(result, Recipe):
+            console.print(
+                f"\\n[bold]Quick Summary:[/bold] {result.name} ({result.servings} servings, {result.difficulty})"
             )
 
     except Exception as e:

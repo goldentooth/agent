@@ -10,10 +10,10 @@ from ..flow import Flow
 from .schema import FlowIOSchema
 
 # Type aliases for tool system
-AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]  # Flexible flow types for tool conversion
-AnyAgent = Any  # type: ignore[explicit-any]  # Agent type (avoid forward reference)
-AnyInput = Any  # type: ignore[explicit-any]  # Flexible input for tool pipeline
-AnyOutput = Any  # type: ignore[explicit-any]  # Flexible output for tool pipeline
+AnyFlow = Flow[Any, Any]  # Flexible flow types for tool conversion
+AnyAgent = Any  # Agent type (avoid forward reference)
+AnyInput = Any  # Flexible input for tool pipeline
+AnyOutput = Any  # Flexible output for tool pipeline
 
 T = TypeVar("T", bound=FlowIOSchema)
 R = TypeVar("R", bound=FlowIOSchema)

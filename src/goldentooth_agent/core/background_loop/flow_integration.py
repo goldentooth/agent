@@ -13,7 +13,7 @@ T = TypeVar("T")
 R = TypeVar("R")
 
 # Type alias for background loop integration
-AnyType = Any  # type: ignore[explicit-any]  # For generic coroutine type parameters
+AnyType = Any  # For generic coroutine type parameters
 
 
 @inject

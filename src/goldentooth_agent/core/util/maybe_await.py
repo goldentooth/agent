@@ -1,11 +1,11 @@
 import inspect
 from collections.abc import Callable
-from typing import TypeVar
+from typing import TypeVar, cast
 
 T = TypeVar("T")
 
 
-async def maybe_await(func: Callable[..., T], *args: object, **kwargs: object) -> T:  # type: ignore[explicit-any]
+async def maybe_await(func: Callable[..., T], *args: object, **kwargs: object) -> T:
     """Call a function and conditionally await its result if it returns a coroutine.
 
     This utility enables uniform handling of both synchronous and asynchronous functions
@@ -29,5 +29,6 @@ async def maybe_await(func: Callable[..., T], *args: object, **kwargs: object) -
         raise ValueError(f"Expected a callable, got {type(func).__name__}")
     result = func(*args, **kwargs)
     if inspect.iscoroutine(result):
-        return await result  # type: ignore[no-any-return]
-    return result
+        awaited_result = await result
+        return cast(T, awaited_result)
+    return result  # type: ignore[return-value]

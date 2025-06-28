@@ -19,16 +19,16 @@ from .exceptions import FlowConfigurationError
 from .main import Flow
 
 # Type aliases for health monitoring
-HealthMetadata = dict[str, Any]  # type: ignore[explicit-any]
-HealthData = dict[str, Any]  # type: ignore[explicit-any]
-ConfigData = dict[str, Any]  # type: ignore[explicit-any]
-ConfigSchema = dict[str, Any]  # type: ignore[explicit-any]
-ValidatorRegistry = dict[str, Callable[[Any], bool]]  # type: ignore[explicit-any]
-AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
-AnyValue = Any  # type: ignore[explicit-any]
-AnyValidator = Callable[[Any], bool]  # type: ignore[explicit-any]
-HealthCheckIterator = AsyncIterator[Any]  # type: ignore[explicit-any]
-HealthCheckStream = Flow[Any, Any]  # type: ignore[explicit-any]
+HealthMetadata = dict[str, Any]
+HealthData = dict[str, Any]
+ConfigData = dict[str, Any]
+ConfigSchema = dict[str, Any]
+ValidatorRegistry = dict[str, Callable[[Any], bool]]
+AnyFlow = Flow[Any, Any]
+AnyValue = Any
+AnyValidator = Callable[[Any], bool]
+HealthCheckIterator = AsyncIterator[Any]
+HealthCheckStream = Flow[Any, Any]
 
 
 class HealthStatus(Enum):

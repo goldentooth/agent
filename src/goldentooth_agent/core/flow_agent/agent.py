@@ -10,7 +10,7 @@ from ..flow import Flow
 from .schema import FlowIOSchema
 
 # Type alias for agent system
-LLMClient = Any  # type: ignore[explicit-any]  # Various LLM clients (OpenAI, Anthropic, etc.)
+LLMClient = Any  # Various LLM clients (OpenAI, Anthropic, etc.)
 
 
 class FlowAgent:

@@ -14,7 +14,7 @@ from ..context.flow_integration import ContextFlowCombinators
 from ..flow import Flow
 
 # Type alias for trampoline system
-AnyItem = Any  # type: ignore[explicit-any]  # Items can be of any type in trampoline
+AnyItem = Any  # Items can be of any type in trampoline
 
 
 async def _async_iter_from_item(item: AnyItem) -> AsyncIterator[AnyItem]:

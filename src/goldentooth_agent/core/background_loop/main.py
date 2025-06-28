@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 # Type alias for coroutines - we don't use send/yield types
-AnyCoroutine = Coroutine[Any, Any, T]  # type: ignore[explicit-any]
+AnyCoroutine = Coroutine[Any, Any, T]
 
 
 @injectable(factory_method="create")

@@ -5,7 +5,7 @@ import json
 import re
 import time
 from collections.abc import Callable, Iterator
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 from weakref import WeakSet
 
 from pyee import EventEmitter
@@ -20,20 +20,20 @@ from .history_tracker import ContextChangeEvent, HistoryTracker
 from .snapshot_manager import SnapshotManager
 
 # Type aliases for context system
-ContextValue = Any  # type: ignore[explicit-any]
-ContextData = dict[str, Any]  # type: ignore[explicit-any]
-ContextDiff = dict[str, tuple[Any, Any]]  # type: ignore[explicit-any]
-ComputedFunction = Callable[["Context"], Any]  # type: ignore[explicit-any]
-TransformFunction = Callable[[Any], Any]  # type: ignore[explicit-any]
-ValuePredicate = Callable[[Any], bool]  # type: ignore[explicit-any]
+ContextValue = Any
+ContextData = dict[str, Any]
+ContextDiff = dict[str, tuple[Any, Any]]
+ComputedFunction = Callable[["Context"], Any]
+TransformFunction = Callable[[Any], Any]
+ValuePredicate = Callable[[Any], bool]
 SyncEventRegistry = dict[str, SyncEventFlow[ContextValue]]
 AsyncEventRegistry = dict[str, AsyncEventFlow[ContextValue]]
-AnyFlow = Flow[None, Any]  # type: ignore[explicit-any]
-GlobalChangeData = dict[str, Any]  # type: ignore[explicit-any]
+AnyFlow = Flow[None, Any]
+GlobalChangeData = dict[str, Any]
 SyncGlobalEventFlow = SyncEventFlow[GlobalChangeData]
 AsyncGlobalEventFlow = AsyncEventFlow[GlobalChangeData]
 GlobalChangeFlow = Flow[None, GlobalChangeData]
-FlattenedData = dict[str, Any]  # type: ignore[explicit-any]
+FlattenedData = dict[str, Any]
 
 T = TypeVar("T")
 
@@ -206,12 +206,14 @@ class Context:
         """Get the value for a key, searching through all frames and computed properties."""
         # Check if it's a computed property first
         if key in self._computed_properties:
-            return self._computed_properties[key].compute(self)  # type: ignore[no-any-return]
+            computed_value = self._computed_properties[key].compute(self)
+            return cast(T, computed_value)
 
         # Search through frames
         for frame in reversed(self.frames):
             if key in frame:
-                return frame[key]  # type: ignore[no-any-return]
+                frame_value = frame[key]
+                return cast(T, frame_value)
         return default
 
     def __getitem__(self, key: str) -> ContextValue:

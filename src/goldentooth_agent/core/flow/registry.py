@@ -13,8 +13,8 @@ Input = TypeVar("Input")
 Output = TypeVar("Output")
 
 # Type aliases for generic flow storage
-AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
-FlowInfo = dict[str, Any]  # type: ignore[explicit-any]
+AnyFlow = Flow[Any, Any]
+FlowInfo = dict[str, Any]
 
 
 class FlowRegistry:

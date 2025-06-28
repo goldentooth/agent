@@ -10,7 +10,7 @@ from ..flow import Flow, filter_stream, flat_map_stream, map_stream
 from .main import Paths
 
 # Type aliases for paths flow integration
-AnyInput = Any  # type: ignore[explicit-any]  # Input type doesn't matter for path operations
+AnyInput = Any  # Input type doesn't matter for path operations
 
 T = TypeVar("T")
 

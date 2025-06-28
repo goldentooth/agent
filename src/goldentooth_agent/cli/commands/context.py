@@ -15,8 +15,8 @@ from rich.tree import Tree
 from goldentooth_agent.core.context import Context
 
 # Type aliases to handle legitimate Any usage
-ContextValue = Any  # type: ignore[explicit-any]  # Context values can be any type
-ParsedValue = Any  # type: ignore[explicit-any]  # Parsed values can be any type
+ContextValue = Any  # Context values can be any type
+ParsedValue = Any  # Parsed values can be any type
 
 app = typer.Typer()
 

@@ -18,9 +18,9 @@ from goldentooth_agent.core.flow import Flow
 app = typer.Typer()
 
 # Type aliases for flow system flexibility
-FlowType = Flow[Any, Any]  # type: ignore[explicit-any]  # Flows can handle any input/output types
-StreamData = Any  # type: ignore[explicit-any]  # Stream data can be any type
-InputData = dict[str, Any]  # type: ignore[explicit-any]  # JSON input data
+FlowType = Flow[Any, Any]  # Flows can handle any input/output types
+StreamData = Any  # Stream data can be any type
+InputData = dict[str, Any]  # JSON input data
 
 
 def get_available_flows() -> dict[str, FlowType]:

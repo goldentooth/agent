@@ -16,11 +16,11 @@ from typing import Any
 from .main import Flow
 
 # Type aliases for performance monitoring
-PerformanceData = dict[str, Any]  # type: ignore[explicit-any]
-AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
-StatsList = list[Any]  # type: ignore[explicit-any]
-AnyIteratorFactory = Callable[[], AsyncIterator[Any]]  # type: ignore[explicit-any]
-BenchmarkResult = dict[str, Any]  # type: ignore[explicit-any]
+PerformanceData = dict[str, Any]
+AnyFlow = Flow[Any, Any]
+StatsList = list[Any]
+AnyIteratorFactory = Callable[[], AsyncIterator[Any]]
+BenchmarkResult = dict[str, Any]
 
 
 @dataclass
@@ -209,7 +209,7 @@ def monitored_stream(
         flow = flow_factory()
         name = monitor_name or flow.name
 
-        async def _monitored_flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:  # type: ignore[explicit-any]
+        async def _monitored_flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
             metrics_id = _performance_monitor.start_monitoring(name)
 
             try:
@@ -245,7 +245,7 @@ def performance_stream() -> AnyFlow:
         A flow that monitors performance and passes items through unchanged.
     """
 
-    async def _flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:  # type: ignore[explicit-any]
+    async def _flow(stream: AsyncIterator[Any]) -> AsyncIterator[Any]:
         metrics_id = _performance_monitor.start_monitoring("performance_stream")
 
         try:

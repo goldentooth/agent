@@ -123,7 +123,7 @@ class ClaudeFlowClient(LLMClient):
                 max_tokens=max_tokens,
                 **kwargs,
             )
-            return response  # type: ignore[no-any-return]
+            return response
         except Exception as e:
             raise ValueError(f"Claude completion failed: {e}") from e
 
@@ -175,7 +175,7 @@ class ClaudeFlowClient(LLMClient):
             else:
                 # Create non-streaming response
                 response = await self._client.messages.create(**claude_params)
-                return response.content[0].text  # type: ignore[attr-defined,no-any-return]
+                return response.content[0].text  # type: ignore[no-any-return]
         except Exception as e:
             raise ValueError(f"Claude chat completion failed: {e}") from e
 
@@ -238,9 +238,9 @@ def create_claude_agent(
                 system_msg = context.get("system_prompt", default=None)
 
                 # Get response from Claude
-                claude_kwargs = {}
+                claude_kwargs: dict[str, Any] = {}
                 if system_msg:
-                    claude_kwargs["system"] = system_msg
+                    claude_kwargs["system"] = system_msg  # type: ignore[unreachable]
 
                 response_text = await claude_client.create_chat_completion(
                     messages=messages,

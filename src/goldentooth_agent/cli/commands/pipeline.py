@@ -6,7 +6,7 @@ import asyncio
 import json
 import time
 from collections.abc import AsyncIterator
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 import typer
 from antidote import inject
@@ -131,7 +131,7 @@ class Pipeline:
     def _resolve_path(self, context: dict[str, Any], path: str) -> Any:
         """Resolve a dot-notation path in the context."""
         parts = path.split(".")
-        current = context
+        current: Any = context
 
         for part in parts:
             if isinstance(current, dict) and part in current:
@@ -161,7 +161,7 @@ class Pipeline:
             results.append(output_data)
 
         if results:
-            return results[-1]
+            return cast(FlowIOSchema, results[-1])
         else:
             raise RuntimeError("Tool produced no output")
 

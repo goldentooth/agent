@@ -21,7 +21,7 @@ _http_client_lock = asyncio.Lock()
 
 # Simple memory cache
 _cache: dict[str, tuple[Any, float, float]] = {}  # key -> (value, timestamp, ttl)
-_cache_stats = defaultdict(int)
+_cache_stats: defaultdict[str, int] = defaultdict(int)
 _cache_lock = asyncio.Lock()
 
 
@@ -128,7 +128,9 @@ async def get_cache_stats() -> dict[str, Any]:
         return stats
 
 
-def async_cache(ttl: float = 300.0, use_args: bool = True, use_kwargs: bool = True):
+def async_cache(
+    ttl: float = 300.0, use_args: bool = True, use_kwargs: bool = True
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for caching async function results."""
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -160,16 +162,18 @@ def async_cache(ttl: float = 300.0, use_args: bool = True, use_kwargs: bool = Tr
     return decorator
 
 
-def batch_processor(batch_size: int = 10, timeout: float = 1.0):
+def batch_processor(
+    batch_size: int = 10, timeout: float = 1.0
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for batching async operations."""
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-        pending_items: list[tuple[Any, asyncio.Future]] = []
+        pending_items: list[tuple[Any, asyncio.Future[Any]]] = []
         process_lock = asyncio.Lock()
 
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
-            future: asyncio.Future = asyncio.Future()
+            future: asyncio.Future[Any] = asyncio.Future()
 
             async with process_lock:
                 pending_items.append((args, future))
@@ -267,7 +271,9 @@ class PerformanceMonitor:
 
             return stats
 
-    def timed(self, operation: str):
+    def timed(
+        self, operation: str
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         """Decorator for timing operations."""
 
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -290,7 +296,9 @@ class PerformanceMonitor:
 performance_monitor = PerformanceMonitor()
 
 
-def parallel_execute(max_concurrent: int = 10):
+def parallel_execute(
+    max_concurrent: int = 10,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator for limiting concurrent executions."""
     semaphore = asyncio.Semaphore(max_concurrent)
 

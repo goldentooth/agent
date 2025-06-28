@@ -19,12 +19,12 @@ from .exceptions import FlowError, FlowExecutionError
 from .main import Flow
 
 # Type aliases for debugging
-DebugMetadata = dict[str, Any]  # type: ignore[explicit-any]
-DebugData = dict[str, Any]  # type: ignore[explicit-any]
+DebugMetadata = dict[str, Any]
+DebugData = dict[str, Any]
 TraceData = list[DebugData]
-AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
-AnyItem = Any  # type: ignore[explicit-any]
-ItemCondition = Callable[[Any], bool]  # type: ignore[explicit-any]
+AnyFlow = Flow[Any, Any]
+AnyItem = Any
+ItemCondition = Callable[[Any], bool]
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
@@ -60,7 +60,7 @@ class FlowExecutionContext:
 
 
 # Breakpoint-related aliases (after FlowExecutionContext is defined)
-BreakpointCondition = Callable[[Any, FlowExecutionContext], bool]  # type: ignore[explicit-any]
+BreakpointCondition = Callable[[Any, FlowExecutionContext], bool]
 BreakpointRegistry = dict[str, BreakpointCondition]
 
 

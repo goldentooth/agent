@@ -24,11 +24,11 @@ B = TypeVar("B")
 C = TypeVar("C")
 
 # Type aliases for common patterns
-AnyCallable = Callable[..., Any]  # type: ignore[explicit-any]
-AnyFlow = Flow[Any, Any]  # type: ignore[explicit-any]
-AnyTask = asyncio.Task[Any]  # type: ignore[explicit-any]
-AnyQueue = asyncio.Queue[Any]  # type: ignore[explicit-any]
-AnyValue = Any  # type: ignore[explicit-any]
+AnyCallable = Callable[..., Any]
+AnyFlow = Flow[Any, Any]
+AnyTask = asyncio.Task[Any]
+AnyQueue = asyncio.Queue[Any]
+AnyValue = Any
 
 # Sentinel object for stream termination
 _STREAM_END = object()

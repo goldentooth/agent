@@ -3,13 +3,22 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from typing import Any
 
 from goldentooth_agent.core.context import Context
 from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow_agent import AgentInput, FlowAgent
 from goldentooth_agent.core.llm import ClaudeFlowClient
 
-from .schemas import CodeAnalysis, PersonData, Recipe, SentimentAnalysis, TaskList
+from .schemas import (
+    CodeAnalysis,
+    Difficulty,
+    PersonData,
+    Recipe,
+    Sentiment,
+    SentimentAnalysis,
+    TaskList,
+)
 
 
 def create_data_extractor_agent(
@@ -51,9 +60,9 @@ def create_data_extractor_agent(
                     }
                 ]
 
-                kwargs = {}
+                kwargs: dict[str, Any] = {}
                 if system_msg:
-                    kwargs["system"] = system_msg
+                    kwargs["system"] = system_msg  # type: ignore[unreachable]
 
                 result = await claude_client.create_completion(
                     response_model=PersonData,
@@ -61,7 +70,11 @@ def create_data_extractor_agent(
                     **kwargs,
                 )
 
-                yield result.to_context(context)
+                # Ensure we have the correct type (not streaming)
+                if isinstance(result, PersonData):
+                    yield result.to_context(context)
+                else:
+                    raise RuntimeError("Unexpected streaming response")
 
             except Exception as e:
                 error_result = PersonData(
@@ -118,9 +131,9 @@ def create_sentiment_analyzer_agent(
                     }
                 ]
 
-                kwargs = {}
+                kwargs: dict[str, Any] = {}
                 if system_msg:
-                    kwargs["system"] = system_msg
+                    kwargs["system"] = system_msg  # type: ignore[unreachable]
 
                 result = await claude_client.create_completion(
                     response_model=SentimentAnalysis,
@@ -128,12 +141,16 @@ def create_sentiment_analyzer_agent(
                     **kwargs,
                 )
 
-                yield result.to_context(context)
+                # Ensure we have the correct type (not streaming)
+                if isinstance(result, SentimentAnalysis):
+                    yield result.to_context(context)
+                else:
+                    raise RuntimeError("Unexpected streaming response")
 
             except Exception as e:
                 error_result = SentimentAnalysis(
                     text=input_data.message,
-                    sentiment="neutral",
+                    sentiment=Sentiment.NEUTRAL,
                     confidence=0.0,
                     reasoning=f"Error occurred: {str(e)}",
                 )
@@ -187,9 +204,9 @@ def create_task_planner_agent(
                     }
                 ]
 
-                kwargs = {}
+                kwargs: dict[str, Any] = {}
                 if system_msg:
-                    kwargs["system"] = system_msg
+                    kwargs["system"] = system_msg  # type: ignore[unreachable]
 
                 result = await claude_client.create_completion(
                     response_model=TaskList,
@@ -197,7 +214,11 @@ def create_task_planner_agent(
                     **kwargs,
                 )
 
-                yield result.to_context(context)
+                # Ensure we have the correct type (not streaming)
+                if isinstance(result, TaskList):
+                    yield result.to_context(context)
+                else:
+                    raise RuntimeError("Unexpected streaming response")
 
             except Exception:
                 error_result = TaskList(
@@ -256,9 +277,9 @@ def create_code_reviewer_agent(
                     }
                 ]
 
-                kwargs = {}
+                kwargs: dict[str, Any] = {}
                 if system_msg:
-                    kwargs["system"] = system_msg
+                    kwargs["system"] = system_msg  # type: ignore[unreachable]
 
                 result = await claude_client.create_completion(
                     response_model=CodeAnalysis,
@@ -266,7 +287,11 @@ def create_code_reviewer_agent(
                     **kwargs,
                 )
 
-                yield result.to_context(context)
+                # Ensure we have the correct type (not streaming)
+                if isinstance(result, CodeAnalysis):
+                    yield result.to_context(context)
+                else:
+                    raise RuntimeError("Unexpected streaming response")
 
             except Exception as e:
                 error_result = CodeAnalysis(
@@ -324,9 +349,9 @@ def create_recipe_generator_agent(
                     }
                 ]
 
-                kwargs = {}
+                kwargs: dict[str, Any] = {}
                 if system_msg:
-                    kwargs["system"] = system_msg
+                    kwargs["system"] = system_msg  # type: ignore[unreachable]
 
                 result = await claude_client.create_completion(
                     response_model=Recipe,
@@ -334,13 +359,17 @@ def create_recipe_generator_agent(
                     **kwargs,
                 )
 
-                yield result.to_context(context)
+                # Ensure we have the correct type (not streaming)
+                if isinstance(result, Recipe):
+                    yield result.to_context(context)
+                else:
+                    raise RuntimeError("Unexpected streaming response")
 
             except Exception as e:
                 error_result = Recipe(
                     name="Error Recipe",
                     description=f"Error: {str(e)}",
-                    difficulty="beginner",
+                    difficulty=Difficulty.BEGINNER,
                     prep_time="0 min",
                     cook_time="0 min",
                     servings=1,

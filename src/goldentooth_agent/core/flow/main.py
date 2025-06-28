@@ -9,7 +9,7 @@ Output = TypeVar("Output")
 Newput = TypeVar("Newput")
 
 # Type alias for flow metadata
-FlowMetadata = dict[str, Any]  # type: ignore[explicit-any]
+FlowMetadata = dict[str, Any]
 
 
 class Flow(Generic[Input, Output]):

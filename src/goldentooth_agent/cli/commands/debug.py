@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import sys
 import time
 from collections.abc import AsyncIterator
 from typing import Annotated, Any
@@ -20,7 +19,7 @@ from goldentooth_agent.cli.commands.tools import get_available_tools
 app = typer.Typer()
 
 # Type aliases for debug system
-HealthStatus = dict[str, Any]  # type: ignore[explicit-any]  # Health data can be any type
+HealthStatus = dict[str, Any]  # Health data can be any type
 
 
 # More specific type for trace data to avoid union-attr errors
@@ -84,13 +83,10 @@ def system_health(
                     with open(export, "w") as f:
                         f.write(output)
                     console.print(
-                        f"[green]✓[/green] Health report exported to {export}",
-                        file=sys.stderr,
+                        f"[green]✓[/green] Health report exported to {export}"
                     )
                 except Exception as e:
-                    console.print(
-                        f"[red]Error writing to file: {e}[/red]", file=sys.stderr
-                    )
+                    console.print(f"[red]Error writing to file: {e}[/red]")
                     raise typer.Exit(1)
             else:
                 print(output)
@@ -211,7 +207,7 @@ def profile_performance(
 
 def run_health_checks(component: str | None, console: Console) -> HealthStatus:
     """Run comprehensive health checks."""
-    health_data = {
+    health_data: HealthStatus = {
         "timestamp": time.time(),
         "overall_status": "healthy",
         "components": {},
@@ -577,7 +573,7 @@ def run_performance_profiling(
     iterations: int,
     input_data: str | None,
     console: Console,
-) -> dict[str, Any]:  # type: ignore[explicit-any]
+) -> dict[str, Any]:
     """Run performance profiling."""
     # This is a simplified profiling implementation
     # In a real system, you'd use proper profiling tools
@@ -653,7 +649,7 @@ def run_performance_profiling(
     }
 
 
-def display_profile_results(console: Console, profile_data: dict[str, Any]) -> None:  # type: ignore[explicit-any]
+def display_profile_results(console: Console, profile_data: dict[str, Any]) -> None:
     """Display performance profiling results."""
     console.print()
     console.print(
