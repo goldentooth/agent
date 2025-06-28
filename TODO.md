@@ -12,3 +12,4 @@
 10. Create commands to accurately construct directory tree representations in markdown for injection into root- and submodule-level README.md files.
 11. Devise a detailed plan to incorporate the successful and effective patterns from the smolcode project.
 12. Incorporate some method of checking dependencies automatically for upstream security alerts.
+13. Write a command or GHA workflow to bump the version in the pyproject.toml file.
