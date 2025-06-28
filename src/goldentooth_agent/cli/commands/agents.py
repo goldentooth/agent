@@ -15,6 +15,10 @@ from rich.table import Table
 from goldentooth_agent.cli.commands.chat import create_echo_agent
 from goldentooth_agent.core.flow_agent import AgentOutput, FlowAgent, FlowIOSchema
 from goldentooth_agent.core.llm import create_claude_agent
+from goldentooth_agent.examples.instructor import (
+    create_data_extractor_agent,
+    create_sentiment_analyzer_agent,
+)
 
 app = typer.Typer()
 
@@ -39,6 +43,14 @@ def get_available_agents() -> AgentRegistry:
         # Claude not available (missing API key), skip silently
         pass
 
+    # Try to add Instructor agents if available
+    try:
+        agents["sentiment"] = create_sentiment_analyzer_agent()
+        agents["extractor"] = create_data_extractor_agent()
+    except ValueError:
+        # Instructor agents not available, skip silently
+        pass
+
     return agents
 
 
@@ -61,6 +73,8 @@ def get_agent_description(agent_name: str) -> str:
     descriptions = {
         "echo": "Simple echo agent that returns user input with metadata",
         "claude": "AI agent powered by Anthropic's Claude models",
+        "sentiment": "Structured sentiment analysis with confidence scores",
+        "extractor": "Extract structured person data from text",
     }
     return descriptions.get(agent_name, "Custom agent implementation")
 

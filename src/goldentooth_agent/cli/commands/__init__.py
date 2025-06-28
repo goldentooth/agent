@@ -1,4 +1,4 @@
-from . import agents, chat, context, debug, demo, flow, pipeline, tools
+from . import agents, chat, context, debug, demo, flow, instructor, pipeline, tools
 
 __all__ = [
     "chat",
@@ -9,4 +9,5 @@ __all__ = [
     "debug",
     "demo",
     "pipeline",
+    "instructor",
 ]

@@ -22,3 +22,8 @@ app.add_typer(
 app.add_typer(
     commands.pipeline.app, name="pipeline", help="Execute and manage tool pipelines."
 )
+app.add_typer(
+    commands.instructor.app,
+    name="instructor",
+    help="Structured output with Instructor.",
+)
