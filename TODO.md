@@ -14,3 +14,5 @@
 12. Incorporate some method of checking dependencies automatically for upstream security alerts.
 13. Write a command or GHA workflow to bump the version in the pyproject.toml file.
 14. Move to recharacterize this project; remember that it's not a general-purpose agent framework, it's a lulzy toy for playing with my cluster.
+15. Create a command to retrieve the content of a given core module, grab its README.md file, grab its tests if specified, and use it as contextual information for a question to the agent.
+16. Establish reasonable defaults for CLI commands without subcommands.
