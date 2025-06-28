@@ -12,6 +12,18 @@ from rich.panel import Panel
 from rich.table import Table
 
 from goldentooth_agent.core.flow_agent import FlowIOSchema, FlowTool
+from goldentooth_agent.core.tools import (
+    FileReadTool,
+    FileWriteTool,
+    HttpRequestTool,
+    JsonApiTool,
+    JsonProcessTool,
+    ProcessExecuteTool,
+    SystemInfoTool,
+    TextAnalysisTool,
+    TextSummaryTool,
+    WebScrapeTool,
+)
 
 app = typer.Typer()
 
@@ -83,6 +95,7 @@ def echo_implementation(input_data: EchoInput) -> EchoOutput:
 def get_available_tools() -> dict[str, FlowTool]:
     """Get a registry of available tools."""
     return {
+        # Basic tools
         "calculator": FlowTool(
             name="calculator",
             input_schema=CalculatorInput,
@@ -97,6 +110,20 @@ def get_available_tools() -> dict[str, FlowTool]:
             implementation=echo_implementation,
             description="Echo tool that returns the input message",
         ),
+        # Web tools
+        "http_request": HttpRequestTool,
+        "web_scrape": WebScrapeTool,
+        "json_api": JsonApiTool,
+        # File tools
+        "file_read": FileReadTool,
+        "file_write": FileWriteTool,
+        "json_process": JsonProcessTool,
+        # AI tools
+        "text_analysis": TextAnalysisTool,
+        "text_summary": TextSummaryTool,
+        # System tools
+        "process_execute": ProcessExecuteTool,
+        "system_info": SystemInfoTool,
     }
 
 

@@ -33,7 +33,7 @@ class TraceStep:
 
 
 class TraceDataDict:
-    def __init__(self):
+    def __init__(self) -> None:
         self.data = {
             "timestamp": 0.0,
             "type": "",
