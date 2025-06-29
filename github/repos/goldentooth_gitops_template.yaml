@@ -1,0 +1,23 @@
+clone_url: https://github.com/goldentooth/gitops-template.git
+created_at: '2024-03-09T21:22:59+00:00'
+default_branch: main
+description: A template for my GitOps repositories.
+forks: 0
+full_name: goldentooth/gitops-template
+id: goldentooth/gitops-template
+is_archived: false
+is_fork: false
+is_private: false
+language: null
+languages: []
+last_synced: '2025-06-28T19:24:22.503431'
+name: gitops-template
+open_issues: 0
+priority: medium
+pushed_at: '2025-05-05T20:14:56+00:00'
+rag_include: true
+size_kb: 2
+stars: 0
+topics: []
+updated_at: '2025-05-05T20:15:00+00:00'
+url: https://github.com/goldentooth/gitops-template

@@ -1,0 +1,25 @@
+clone_url: https://github.com/goldentooth/flood.git
+created_at: '2025-05-21T22:47:32+00:00'
+default_branch: main
+description: A little Rust app for sending a bunch of HTTP requests as fast as possible.
+forks: 0
+full_name: goldentooth/flood
+id: goldentooth/flood
+is_archived: false
+is_fork: false
+is_private: false
+language: Rust
+languages:
+- Rust
+- Dockerfile
+last_synced: '2025-06-28T19:24:32.484971'
+name: flood
+open_issues: 0
+priority: medium
+pushed_at: '2025-05-22T01:02:29+00:00'
+rag_include: true
+size_kb: 28
+stars: 0
+topics: []
+updated_at: '2025-05-22T01:02:32+00:00'
+url: https://github.com/goldentooth/flood

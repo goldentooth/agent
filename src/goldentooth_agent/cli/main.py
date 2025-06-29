@@ -29,7 +29,7 @@ app.add_typer(
 )
 app.add_typer(
     commands.docs.app,
-    name="docs", 
+    name="docs",
     help="Manage knowledge base documents and embeddings.",
 )
 app.add_typer(

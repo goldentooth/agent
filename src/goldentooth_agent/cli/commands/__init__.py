@@ -1,4 +1,18 @@
-from . import agents, chat, context, debug, demo, docs, flow, git_sync, github, instructor, pipeline, setup, tools
+from . import (
+    agents,
+    chat,
+    context,
+    debug,
+    demo,
+    docs,
+    flow,
+    git_sync,
+    github,
+    instructor,
+    pipeline,
+    setup,
+    tools,
+)
 
 __all__ = [
     "chat",

@@ -564,7 +564,7 @@ class TestRateLimitPerformance:
 
         # Wait for cleanup
         await asyncio.sleep(0.2)
-        
+
         # Force cleanup of expired entries
         await store.force_cleanup()
 

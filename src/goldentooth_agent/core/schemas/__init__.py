@@ -4,7 +4,7 @@ from .notes import NoteAdapter
 
 __all__ = [
     "GitHubOrgAdapter",
-    "GitHubRepoAdapter", 
+    "GitHubRepoAdapter",
     "GoldentoothNodeAdapter",
     "GoldentoothServiceAdapter",
     "NoteAdapter",
