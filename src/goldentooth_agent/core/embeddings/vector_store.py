@@ -4,11 +4,13 @@ import json
 import sqlite3
 import struct
 import zlib
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import numpy as np
+import sqlite_vec
 from antidote import inject, injectable
 
 from ..paths import Paths
@@ -32,21 +34,38 @@ class VectorStore:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.metadata_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # Initialize state
+        self._vec_available = False
+
         # Initialize database and metadata
         self._init_database()
         self._init_metadata()
 
+    def _get_connection(self) -> sqlite3.Connection:
+        """Get a database connection with sqlite-vec loaded if available."""
+        conn = sqlite3.connect(self.db_path)
+        conn.enable_load_extension(True)
+        try:
+            sqlite_vec.load(conn)
+            self._vec_available = True
+        except Exception:
+            self._vec_available = False
+        return conn
+
     def _init_database(self) -> None:
-        """Initialize the SQLite database with vec0 extension."""
-        with sqlite3.connect(self.db_path) as conn:
-            # Enable vec0 extension
+        """Initialize the SQLite database with sqlite-vec extension."""
+        with self._get_connection() as conn:
+            # Enable extension loading
             conn.enable_load_extension(True)
+
+            # Load sqlite-vec extension
             try:
-                # Try to load sqlite-vec extension
-                conn.load_extension("vec0")
-            except sqlite3.OperationalError:
+                sqlite_vec.load(conn)
+                self._vec_available = True
+            except Exception:
                 # If extension loading fails, continue without it
                 # The vec0 table creation will fail gracefully
+                self._vec_available = False
                 pass
 
             # Create documents table for metadata
@@ -65,6 +84,48 @@ class VectorStore:
             """
             )
 
+            # Create chunks table for chunk metadata and relationships
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS chunks (
+                    chunk_id TEXT PRIMARY KEY,
+                    parent_document_id TEXT NOT NULL,
+                    parent_store_type TEXT NOT NULL,
+                    chunk_type TEXT NOT NULL,
+                    chunk_index INTEGER NOT NULL,
+                    title TEXT,
+                    content TEXT NOT NULL,
+                    size_chars INTEGER NOT NULL,
+                    start_position INTEGER,
+                    end_position INTEGER,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    FOREIGN KEY (parent_store_type, parent_document_id)
+                        REFERENCES documents(store_type, document_id) ON DELETE CASCADE
+                )
+            """
+            )
+
+            # Create chunk relationships table
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS chunk_relationships (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    source_chunk_id TEXT NOT NULL,
+                    target_chunk_id TEXT NOT NULL,
+                    relationship_type TEXT NOT NULL,
+                    strength REAL NOT NULL,
+                    strength_category TEXT,
+                    metadata TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    UNIQUE(source_chunk_id, target_chunk_id, relationship_type),
+                    FOREIGN KEY (source_chunk_id) REFERENCES chunks(chunk_id) ON DELETE CASCADE,
+                    FOREIGN KEY (target_chunk_id) REFERENCES chunks(chunk_id) ON DELETE CASCADE
+                )
+            """
+            )
+
             # Create vec0 virtual table for embeddings
             try:
                 conn.execute(
@@ -74,7 +135,9 @@ class VectorStore:
                         +doc_id TEXT,
                         +store_type TEXT,
                         +document_id TEXT,
-                        +content_preview TEXT
+                        +content_preview TEXT,
+                        +chunk_id TEXT,
+                        +is_chunk INTEGER DEFAULT 0
                     )
                 """
                 )
@@ -92,10 +155,32 @@ class VectorStore:
                         document_id TEXT NOT NULL,
                         content_preview TEXT,
                         embedding BLOB,
+                        chunk_id TEXT,
+                        is_chunk INTEGER DEFAULT 0,
                         created_at TEXT NOT NULL
                     )
                 """
                 )
+
+            # Migrate existing fallback table if needed
+            try:
+                # Check if chunk columns exist in fallback table
+                cursor = conn.execute("PRAGMA table_info(embeddings_fallback)")
+                columns = [row[1] for row in cursor.fetchall()]
+
+                if "chunk_id" not in columns:
+                    conn.execute(
+                        "ALTER TABLE embeddings_fallback ADD COLUMN chunk_id TEXT"
+                    )
+
+                if "is_chunk" not in columns:
+                    conn.execute(
+                        "ALTER TABLE embeddings_fallback ADD COLUMN is_chunk INTEGER DEFAULT 0"
+                    )
+
+            except sqlite3.OperationalError:
+                # Table doesn't exist yet, that's fine
+                pass
 
             # Create indexes
             conn.execute(
@@ -108,6 +193,42 @@ class VectorStore:
                 """
                 CREATE INDEX IF NOT EXISTS idx_documents_updated
                 ON documents(updated_at)
+            """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_chunks_parent
+                ON chunks(parent_store_type, parent_document_id)
+            """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_chunks_type
+                ON chunks(chunk_type)
+            """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_relationships_source
+                ON chunk_relationships(source_chunk_id)
+            """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_relationships_target
+                ON chunk_relationships(target_chunk_id)
+            """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_relationships_type
+                ON chunk_relationships(relationship_type)
+            """
+            )
+            conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_relationships_strength
+                ON chunk_relationships(strength)
             """
             )
 
@@ -330,7 +451,7 @@ class VectorStore:
         doc_id = f"{store_type}.{document_id}"
         now = datetime.now().isoformat()
 
-        with sqlite3.connect(self.db_path) as conn:
+        with self._get_connection() as conn:
             # Store document metadata
             conn.execute(
                 """
@@ -354,13 +475,14 @@ class VectorStore:
 
             try:
                 # Try to use vec0 table
+                embedding_bytes = sqlite_vec.serialize_float32(embedding)
                 conn.execute(
                     """
                     INSERT OR REPLACE INTO embeddings (
                         embedding, doc_id, store_type, document_id, content_preview
                     ) VALUES (?, ?, ?, ?, ?)
                 """,
-                    (embedding, doc_id, store_type, document_id, content_preview),
+                    (embedding_bytes, doc_id, store_type, document_id, content_preview),
                 )
             except sqlite3.OperationalError:
                 # Fallback to regular table
@@ -388,11 +510,252 @@ class VectorStore:
 
         return doc_id
 
+    def store_document_chunks(
+        self,
+        store_type: str,
+        document_id: str,
+        chunks: list[Any],  # DocumentChunk objects
+        embeddings: list[list[float]],
+        document_metadata: dict[str, Any] | None = None,
+    ) -> list[str]:
+        """Store document chunks and their embeddings.
+
+        Args:
+            store_type: Type of document store (e.g., "github.repos")
+            document_id: ID of the parent document
+            chunks: List of DocumentChunk objects
+            embeddings: List of embedding vectors for each chunk
+            document_metadata: Additional metadata for the parent document
+
+        Returns:
+            List of chunk IDs that were stored
+        """
+        if len(chunks) != len(embeddings):
+            raise ValueError("Number of chunks must match number of embeddings")
+
+        now = datetime.now().isoformat()
+        stored_chunk_ids = []
+
+        with self._get_connection() as conn:
+            # Store parent document metadata if provided
+            doc_id = f"{store_type}.{document_id}"
+            if document_metadata:
+                conn.execute(
+                    """
+                    INSERT OR REPLACE INTO documents (
+                        id, store_type, document_id, content, metadata, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                    (
+                        doc_id,
+                        store_type,
+                        document_id,
+                        f"Parent document with {len(chunks)} chunks",
+                        str(document_metadata),
+                        now,
+                        now,
+                    ),
+                )
+
+            # Store each chunk
+            for chunk, embedding in zip(chunks, embeddings, strict=False):
+                chunk_metadata = chunk.metadata
+
+                # Store chunk metadata
+                conn.execute(
+                    """
+                    INSERT OR REPLACE INTO chunks (
+                        chunk_id, parent_document_id, parent_store_type,
+                        chunk_type, chunk_index, title, content, size_chars,
+                        start_position, end_position, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                    (
+                        chunk.chunk_id,
+                        document_id,
+                        store_type,
+                        chunk_metadata["chunk_type"],
+                        chunk_metadata["chunk_index"],
+                        chunk_metadata["title"],
+                        chunk.content,
+                        chunk_metadata["size_chars"],
+                        chunk_metadata["start_position"],
+                        chunk_metadata["end_position"],
+                        now,
+                        now,
+                    ),
+                )
+
+                # Store chunk embedding
+                content_preview = (
+                    chunk.content[:200] + "..."
+                    if len(chunk.content) > 200
+                    else chunk.content
+                )
+
+                try:
+                    # Try to use vec0 table
+                    embedding_bytes = sqlite_vec.serialize_float32(embedding)
+                    conn.execute(
+                        """
+                        INSERT OR REPLACE INTO embeddings (
+                            embedding, doc_id, store_type, document_id, content_preview,
+                            chunk_id, is_chunk
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                        (
+                            embedding_bytes,
+                            chunk.chunk_id,  # Use chunk_id as doc_id for chunks
+                            store_type,
+                            document_id,
+                            content_preview,
+                            chunk.chunk_id,
+                            1,  # is_chunk = 1
+                        ),
+                    )
+                except sqlite3.OperationalError:
+                    # Fallback to regular table
+                    embedding_blob = np.array(embedding, dtype=np.float32).tobytes()
+                    conn.execute(
+                        """
+                        INSERT OR REPLACE INTO embeddings_fallback (
+                            doc_id, store_type, document_id, content_preview, embedding,
+                            chunk_id, is_chunk, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                        (
+                            chunk.chunk_id,
+                            store_type,
+                            document_id,
+                            content_preview,
+                            embedding_blob,
+                            chunk.chunk_id,
+                            1,  # is_chunk = 1
+                            now,
+                        ),
+                    )
+
+                # Also save as sidecar file for Git storage
+                self._save_sidecar_embedding(store_type, chunk.chunk_id, embedding)
+                stored_chunk_ids.append(chunk.chunk_id)
+
+            conn.commit()
+
+        return stored_chunk_ids
+
+    def get_document_chunks(
+        self, store_type: str, document_id: str
+    ) -> list[dict[str, Any]]:
+        """Get all chunks for a document.
+
+        Args:
+            store_type: Type of document store
+            document_id: ID of the parent document
+
+        Returns:
+            List of chunk metadata dictionaries
+        """
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                """
+                SELECT chunk_id, chunk_type, chunk_index, title, content,
+                       size_chars, start_position, end_position, created_at, updated_at
+                FROM chunks
+                WHERE parent_store_type = ? AND parent_document_id = ?
+                ORDER BY chunk_index
+            """,
+                (store_type, document_id),
+            )
+
+            chunks = []
+            for row in cursor.fetchall():
+                (
+                    chunk_id,
+                    chunk_type,
+                    chunk_index,
+                    title,
+                    content,
+                    size_chars,
+                    start_pos,
+                    end_pos,
+                    created_at,
+                    updated_at,
+                ) = row
+                chunks.append(
+                    {
+                        "chunk_id": chunk_id,
+                        "chunk_type": chunk_type,
+                        "chunk_index": chunk_index,
+                        "title": title,
+                        "content": content,
+                        "size_chars": size_chars,
+                        "start_position": start_pos,
+                        "end_position": end_pos,
+                        "parent_document_id": document_id,
+                        "parent_store_type": store_type,
+                        "created_at": created_at,
+                        "updated_at": updated_at,
+                    }
+                )
+
+            return chunks
+
+    def delete_document_chunks(self, store_type: str, document_id: str) -> int:
+        """Delete all chunks for a document.
+
+        Args:
+            store_type: Type of document store
+            document_id: ID of the parent document
+
+        Returns:
+            Number of chunks deleted
+        """
+        with self._get_connection() as conn:
+            # Get chunk IDs before deleting
+            cursor = conn.execute(
+                """
+                SELECT chunk_id FROM chunks
+                WHERE parent_store_type = ? AND parent_document_id = ?
+            """,
+                (store_type, document_id),
+            )
+            chunk_ids = [row[0] for row in cursor.fetchall()]
+
+            # Delete chunk embeddings
+            deleted_embeddings = 0
+            for chunk_id in chunk_ids:
+                try:
+                    cursor = conn.execute(
+                        "DELETE FROM embeddings WHERE chunk_id = ?", (chunk_id,)
+                    )
+                    deleted_embeddings += cursor.rowcount
+                except sqlite3.OperationalError:
+                    cursor = conn.execute(
+                        "DELETE FROM embeddings_fallback WHERE chunk_id = ?",
+                        (chunk_id,),
+                    )
+                    deleted_embeddings += cursor.rowcount
+
+            # Delete chunk metadata
+            cursor = conn.execute(
+                """
+                DELETE FROM chunks
+                WHERE parent_store_type = ? AND parent_document_id = ?
+            """,
+                (store_type, document_id),
+            )
+            deleted_chunks = cursor.rowcount
+
+            conn.commit()
+
+            return deleted_chunks
+
     def search_similar(
         self,
         query_embedding: list[float],
         limit: int = 10,
         store_type: str | None = None,
+        include_chunks: bool = True,
     ) -> list[dict[str, Any]]:
         """Search for documents similar to the query embedding.
 
@@ -400,37 +763,59 @@ class VectorStore:
             query_embedding: Query vector
             limit: Maximum number of results
             store_type: Optional filter by store type
+            include_chunks: Whether to include chunks in search results
 
         Returns:
-            List of similar documents with metadata and similarity scores
+            List of similar documents/chunks with metadata and similarity scores
         """
-        with sqlite3.connect(self.db_path) as conn:
+        with self._get_connection() as conn:
             try:
                 # Try vec0 similarity search
+                query_bytes = sqlite_vec.serialize_float32(query_embedding)
+                # Build WHERE clause based on filters
+                where_conditions = []
+                params = [query_bytes]
+
                 if store_type:
+                    where_conditions.append("store_type = ?")
+                    params.append(store_type)
+
+                if not include_chunks:
+                    where_conditions.append("is_chunk = 0")
+
+                where_clause = (
+                    " WHERE " + " AND ".join(where_conditions)
+                    if where_conditions
+                    else ""
+                )
+                params.append(limit)
+
+                if store_type or not include_chunks:
                     cursor = conn.execute(
-                        """
+                        f"""
                         SELECT
                             doc_id, store_type, document_id, content_preview,
-                            distance
+                            chunk_id, is_chunk,
+                            vec_distance_cosine(embedding, ?) as distance
                         FROM embeddings
-                        WHERE store_type = ?
-                        ORDER BY embedding <-> ?
+                        {where_clause}
+                        ORDER BY distance
                         LIMIT ?
                     """,
-                        (store_type, query_embedding, limit),
+                        params,
                     )
                 else:
                     cursor = conn.execute(
                         """
                         SELECT
                             doc_id, store_type, document_id, content_preview,
-                            distance
+                            chunk_id, is_chunk,
+                            vec_distance_cosine(embedding, ?) as distance
                         FROM embeddings
-                        ORDER BY embedding <-> ?
+                        ORDER BY distance
                         LIMIT ?
                     """,
-                        (query_embedding, limit),
+                        (query_bytes, limit),
                     )
 
                 results = cursor.fetchall()
@@ -438,41 +823,90 @@ class VectorStore:
                 # Convert to result format
                 similar_docs = []
                 for row in results:
-                    doc_id, store_type, document_id, content_preview, distance = row
+                    (
+                        doc_id,
+                        store_type,
+                        document_id,
+                        content_preview,
+                        chunk_id,
+                        is_chunk,
+                        distance,
+                    ) = row
 
-                    # Get full document metadata
-                    doc_cursor = conn.execute(
-                        """
-                        SELECT content, metadata, created_at, updated_at
-                        FROM documents WHERE id = ?
-                    """,
-                        (doc_id,),
-                    )
-                    doc_row = doc_cursor.fetchone()
+                    result_item = {
+                        "doc_id": doc_id,
+                        "store_type": store_type,
+                        "document_id": document_id,
+                        "content_preview": content_preview,
+                        "similarity_score": 1.0
+                        - distance,  # Convert distance to similarity
+                        "is_chunk": bool(is_chunk),
+                        "chunk_id": chunk_id,
+                    }
 
-                    if doc_row:
-                        content, metadata, created_at, updated_at = doc_row
-                        similar_docs.append(
-                            {
-                                "doc_id": doc_id,
-                                "store_type": store_type,
-                                "document_id": document_id,
-                                "content": content,
-                                "content_preview": content_preview,
-                                "metadata": metadata,
-                                "similarity_score": 1.0
-                                - distance,  # Convert distance to similarity
-                                "created_at": created_at,
-                                "updated_at": updated_at,
-                            }
+                    if is_chunk and chunk_id:
+                        # Get chunk metadata
+                        chunk_cursor = conn.execute(
+                            """
+                            SELECT chunk_type, chunk_index, title, content, size_chars,
+                                   created_at, updated_at
+                            FROM chunks WHERE chunk_id = ?
+                        """,
+                            (chunk_id,),
                         )
+                        chunk_row = chunk_cursor.fetchone()
+
+                        if chunk_row:
+                            (
+                                chunk_type,
+                                chunk_index,
+                                title,
+                                content,
+                                size_chars,
+                                created_at,
+                                updated_at,
+                            ) = chunk_row
+                            result_item.update(
+                                {
+                                    "content": content,
+                                    "chunk_type": chunk_type,
+                                    "chunk_index": chunk_index,
+                                    "chunk_title": title,
+                                    "size_chars": size_chars,
+                                    "created_at": created_at,
+                                    "updated_at": updated_at,
+                                }
+                            )
+                    else:
+                        # Get full document metadata
+                        doc_cursor = conn.execute(
+                            """
+                            SELECT content, metadata, created_at, updated_at
+                            FROM documents WHERE id = ?
+                        """,
+                            (doc_id,),
+                        )
+                        doc_row = doc_cursor.fetchone()
+
+                        if doc_row:
+                            content, metadata, created_at, updated_at = doc_row
+                            result_item.update(
+                                {
+                                    "content": content,
+                                    "metadata": metadata,
+                                    "created_at": created_at,
+                                    "updated_at": updated_at,
+                                }
+                            )
+
+                    similar_docs.append(result_item)
 
                 return similar_docs
 
             except sqlite3.OperationalError:
                 # Fallback to manual cosine similarity calculation
                 return self._fallback_similarity_search(
-                    query_embedding, limit, store_type, conn
+                    query_embedding, limit, store_type, conn, include_chunks
                 )
 
     def _fallback_similarity_search(
@@ -481,32 +915,48 @@ class VectorStore:
         limit: int,
         store_type: str | None,
         conn: sqlite3.Connection,
+        include_chunks: bool = True,
     ) -> list[dict[str, Any]]:
         """Fallback similarity search using manual cosine similarity."""
         query_vector = np.array(query_embedding, dtype=np.float32)
 
         # Get all embeddings
+        where_conditions = []
+        params = []
+
         if store_type:
-            cursor = conn.execute(
-                """
-                SELECT doc_id, store_type, document_id, content_preview, embedding
-                FROM embeddings_fallback
-                WHERE store_type = ?
-            """,
-                (store_type,),
-            )
-        else:
-            cursor = conn.execute(
-                """
-                SELECT doc_id, store_type, document_id, content_preview, embedding
-                FROM embeddings_fallback
-            """
-            )
+            where_conditions.append("store_type = ?")
+            params.append(store_type)
+
+        if not include_chunks:
+            where_conditions.append("is_chunk = 0")
+
+        where_clause = (
+            " WHERE " + " AND ".join(where_conditions) if where_conditions else ""
+        )
+
+        cursor = conn.execute(
+            f"""
+            SELECT doc_id, store_type, document_id, content_preview, embedding,
+                   chunk_id, is_chunk
+            FROM embeddings_fallback
+            {where_clause}
+        """,
+            params,
+        )
 
         similarities = []
 
         for row in cursor.fetchall():
-            doc_id, store_type, document_id, content_preview, embedding_blob = row
+            (
+                doc_id,
+                store_type,
+                document_id,
+                content_preview,
+                embedding_blob,
+                chunk_id,
+                is_chunk,
+            ) = row
 
             # Deserialize embedding
             embedding_vector = np.frombuffer(embedding_blob, dtype=np.float32)
@@ -517,40 +967,98 @@ class VectorStore:
             )
 
             similarities.append(
-                (similarity, doc_id, store_type, document_id, content_preview)
+                (
+                    similarity,
+                    doc_id,
+                    store_type,
+                    document_id,
+                    content_preview,
+                    chunk_id,
+                    is_chunk,
+                )
             )
 
         # Sort by similarity and take top results
         similarities.sort(key=lambda x: x[0], reverse=True)
         top_results = similarities[:limit]
 
-        # Get full document metadata for top results
+        # Get full document/chunk metadata for top results
         similar_docs = []
-        for similarity, doc_id, store_type, document_id, content_preview in top_results:
-            doc_cursor = conn.execute(
-                """
-                SELECT content, metadata, created_at, updated_at
-                FROM documents WHERE id = ?
-            """,
-                (doc_id,),
-            )
-            doc_row = doc_cursor.fetchone()
+        for (
+            similarity,
+            doc_id,
+            store_type,
+            document_id,
+            content_preview,
+            chunk_id,
+            is_chunk,
+        ) in top_results:
+            result_item = {
+                "doc_id": doc_id,
+                "store_type": store_type,
+                "document_id": document_id,
+                "content_preview": content_preview,
+                "similarity_score": float(similarity),
+                "is_chunk": bool(is_chunk),
+                "chunk_id": chunk_id,
+            }
 
-            if doc_row:
-                content, metadata, created_at, updated_at = doc_row
-                similar_docs.append(
-                    {
-                        "doc_id": doc_id,
-                        "store_type": store_type,
-                        "document_id": document_id,
-                        "content": content,
-                        "content_preview": content_preview,
-                        "metadata": metadata,
-                        "similarity_score": float(similarity),
-                        "created_at": created_at,
-                        "updated_at": updated_at,
-                    }
+            if is_chunk and chunk_id:
+                # Get chunk metadata
+                chunk_cursor = conn.execute(
+                    """
+                    SELECT chunk_type, chunk_index, title, content, size_chars,
+                           created_at, updated_at
+                    FROM chunks WHERE chunk_id = ?
+                """,
+                    (chunk_id,),
                 )
+                chunk_row = chunk_cursor.fetchone()
+
+                if chunk_row:
+                    (
+                        chunk_type,
+                        chunk_index,
+                        title,
+                        content,
+                        size_chars,
+                        created_at,
+                        updated_at,
+                    ) = chunk_row
+                    result_item.update(
+                        {
+                            "content": content,
+                            "chunk_type": chunk_type,
+                            "chunk_index": chunk_index,
+                            "chunk_title": title,
+                            "size_chars": size_chars,
+                            "created_at": created_at,
+                            "updated_at": updated_at,
+                        }
+                    )
+            else:
+                # Get full document metadata
+                doc_cursor = conn.execute(
+                    """
+                    SELECT content, metadata, created_at, updated_at
+                    FROM documents WHERE id = ?
+                """,
+                    (doc_id,),
+                )
+                doc_row = doc_cursor.fetchone()
+
+                if doc_row:
+                    content, metadata, created_at, updated_at = doc_row
+                    result_item.update(
+                        {
+                            "content": content,
+                            "metadata": metadata,
+                            "created_at": created_at,
+                            "updated_at": updated_at,
+                        }
+                    )
+
+            similar_docs.append(result_item)
 
         return similar_docs
 
@@ -563,7 +1071,7 @@ class VectorStore:
         Returns:
             Document data or None if not found
         """
-        with sqlite3.connect(self.db_path) as conn:
+        with self._get_connection() as conn:
             cursor = conn.execute(
                 """
                 SELECT store_type, document_id, content, metadata, created_at, updated_at
@@ -596,7 +1104,7 @@ class VectorStore:
         Returns:
             True if document was deleted, False if not found
         """
-        with sqlite3.connect(self.db_path) as conn:
+        with self._get_connection() as conn:
             # Delete from both tables
             cursor1 = conn.execute("DELETE FROM documents WHERE id = ?", (doc_id,))
 
@@ -625,7 +1133,7 @@ class VectorStore:
         Returns:
             List of document metadata
         """
-        with sqlite3.connect(self.db_path) as conn:
+        with self._get_connection() as conn:
             query = "SELECT id, store_type, document_id, created_at, updated_at FROM documents"
             params: list[str | int] = []
 
@@ -662,10 +1170,14 @@ class VectorStore:
         Returns:
             Dictionary with store statistics
         """
-        with sqlite3.connect(self.db_path) as conn:
+        with self._get_connection() as conn:
             # Count total documents
             cursor = conn.execute("SELECT COUNT(*) FROM documents")
             total_docs = cursor.fetchone()[0]
+
+            # Count total chunks
+            cursor = conn.execute("SELECT COUNT(*) FROM chunks")
+            total_chunks = cursor.fetchone()[0]
 
             # Count by store type
             cursor = conn.execute(
@@ -677,16 +1189,77 @@ class VectorStore:
             )
             by_store_type = dict(cursor.fetchall())
 
+            # Count chunks by store type
+            cursor = conn.execute(
+                """
+                SELECT parent_store_type, COUNT(*)
+                FROM chunks
+                GROUP BY parent_store_type
+            """
+            )
+            chunks_by_store_type = dict(cursor.fetchall())
+
+            # Count chunks by type
+            cursor = conn.execute(
+                """
+                SELECT chunk_type, COUNT(*)
+                FROM chunks
+                GROUP BY chunk_type
+            """
+            )
+            chunks_by_type = dict(cursor.fetchall())
+
             # Check if using vec0 or fallback
             try:
                 conn.execute("SELECT COUNT(*) FROM embeddings")
                 embedding_engine = "sqlite-vec (vec0)"
+
+                # Count embeddings by type
+                cursor = conn.execute(
+                    """
+                    SELECT is_chunk, COUNT(*)
+                    FROM embeddings
+                    GROUP BY is_chunk
+                """
+                )
+                embedding_counts = {
+                    "documents": 0,
+                    "chunks": 0,
+                }
+                for is_chunk, count in cursor.fetchall():
+                    if is_chunk:
+                        embedding_counts["chunks"] = count
+                    else:
+                        embedding_counts["documents"] = count
+
             except sqlite3.OperationalError:
                 embedding_engine = "fallback (numpy)"
 
+                # Count embeddings by type in fallback table
+                cursor = conn.execute(
+                    """
+                    SELECT is_chunk, COUNT(*)
+                    FROM embeddings_fallback
+                    GROUP BY is_chunk
+                """
+                )
+                embedding_counts = {
+                    "documents": 0,
+                    "chunks": 0,
+                }
+                for is_chunk, count in cursor.fetchall():
+                    if is_chunk:
+                        embedding_counts["chunks"] = count
+                    else:
+                        embedding_counts["documents"] = count
+
             return {
                 "total_documents": total_docs,
+                "total_chunks": total_chunks,
                 "by_store_type": by_store_type,
+                "chunks_by_store_type": chunks_by_store_type,
+                "chunks_by_type": chunks_by_type,
+                "embedding_counts": embedding_counts,
                 "embedding_engine": embedding_engine,
                 "database_path": str(self.db_path),
                 "metadata_path": str(self.metadata_path),
@@ -725,7 +1298,7 @@ class VectorStore:
         created_files = []
         errors = []
 
-        with sqlite3.connect(self.db_path) as conn:
+        with self._get_connection() as conn:
             cursor = conn.execute(
                 """
                 SELECT store_type, document_id
@@ -766,7 +1339,7 @@ class VectorStore:
         """
         doc_id = f"{store_type}.{document_id}"
 
-        with sqlite3.connect(self.db_path) as conn:
+        with self._get_connection() as conn:
             # Try vec0 table first
             try:
                 cursor = conn.execute(
@@ -805,3 +1378,374 @@ class VectorStore:
             return json.loads(self.metadata_path.read_text())
         except (FileNotFoundError, json.JSONDecodeError):
             return {"embeddings": {}}
+
+    # Chunk Relationship Methods
+
+    def store_chunk_relationships(self, relationships: list[dict[str, Any]]) -> int:
+        """Store chunk relationships in the database.
+
+        Args:
+            relationships: List of relationship dictionaries with keys:
+                - source_chunk_id: ID of source chunk
+                - target_chunk_id: ID of target chunk
+                - relationship_type: Type of relationship
+                - strength: Relationship strength (0.0-1.0)
+                - strength_category: Optional category (weak/moderate/strong)
+                - metadata: Optional metadata dict
+
+        Returns:
+            Number of relationships stored
+        """
+        stored_count = 0
+        current_time = datetime.now().isoformat()
+
+        with self._get_connection() as conn:
+            for rel in relationships:
+                try:
+                    # Convert metadata to JSON string
+                    metadata_json = json.dumps(rel.get("metadata", {}))
+
+                    # Insert or update relationship
+                    conn.execute(
+                        """
+                        INSERT OR REPLACE INTO chunk_relationships
+                        (source_chunk_id, target_chunk_id, relationship_type,
+                         strength, strength_category, metadata, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            rel["source_chunk_id"],
+                            rel["target_chunk_id"],
+                            rel["relationship_type"],
+                            rel["strength"],
+                            rel.get("strength_category"),
+                            metadata_json,
+                            current_time,
+                            current_time,
+                        ),
+                    )
+                    stored_count += 1
+                except sqlite3.Error as e:
+                    print(f"Error storing relationship: {e}")
+                    continue
+
+            conn.commit()
+
+        return stored_count
+
+    def get_chunk_relationships(
+        self,
+        chunk_id: str = None,
+        relationship_types: list[str] = None,
+        min_strength: float = 0.0,
+        limit: int = None,
+    ) -> list[dict[str, Any]]:
+        """Get chunk relationships from the database.
+
+        Args:
+            chunk_id: Optional chunk ID to filter relationships for
+            relationship_types: Optional list of relationship types to filter
+            min_strength: Minimum relationship strength to include
+            limit: Optional limit on number of results
+
+        Returns:
+            List of relationship dictionaries
+        """
+        query = """
+            SELECT source_chunk_id, target_chunk_id, relationship_type,
+                   strength, strength_category, metadata, created_at, updated_at
+            FROM chunk_relationships
+            WHERE strength >= ?
+        """
+        params = [min_strength]
+
+        # Add chunk ID filter
+        if chunk_id:
+            query += " AND (source_chunk_id = ? OR target_chunk_id = ?)"
+            params.extend([chunk_id, chunk_id])
+
+        # Add relationship type filter
+        if relationship_types:
+            placeholders = ",".join("?" for _ in relationship_types)
+            query += f" AND relationship_type IN ({placeholders})"
+            params.extend(relationship_types)
+
+        # Add ordering and limit
+        query += " ORDER BY strength DESC"
+        if limit:
+            query += " LIMIT ?"
+            params.append(limit)
+
+        relationships = []
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(query, params)
+            for row in cursor.fetchall():
+                try:
+                    metadata = json.loads(row[5]) if row[5] else {}
+                except json.JSONDecodeError:
+                    metadata = {}
+
+                relationships.append(
+                    {
+                        "source_chunk_id": row[0],
+                        "target_chunk_id": row[1],
+                        "relationship_type": row[2],
+                        "strength": row[3],
+                        "strength_category": row[4],
+                        "metadata": metadata,
+                        "created_at": row[6],
+                        "updated_at": row[7],
+                    }
+                )
+
+        return relationships
+
+    def get_related_chunks(
+        self,
+        chunk_id: str,
+        max_related: int = 10,
+        min_strength: float = 0.5,
+        relationship_types: list[str] = None,
+    ) -> list[dict[str, Any]]:
+        """Get chunks related to a specific chunk.
+
+        Args:
+            chunk_id: ID of the chunk to find relationships for
+            max_related: Maximum number of related chunks to return
+            min_strength: Minimum relationship strength to include
+            relationship_types: Optional list of relationship types to filter
+
+        Returns:
+            List of related chunks with relationship metadata
+        """
+        relationships = self.get_chunk_relationships(
+            chunk_id=chunk_id,
+            relationship_types=relationship_types,
+            min_strength=min_strength,
+            limit=max_related * 2,  # Get extra to filter properly
+        )
+
+        related_chunks = []
+        seen_chunks = set()
+
+        for rel in relationships:
+            # Determine which chunk is the related one
+            related_chunk_id = None
+            if rel["source_chunk_id"] == chunk_id:
+                related_chunk_id = rel["target_chunk_id"]
+            elif rel["target_chunk_id"] == chunk_id:
+                related_chunk_id = rel["source_chunk_id"]
+
+            # Skip if we've already seen this chunk
+            if related_chunk_id and related_chunk_id not in seen_chunks:
+                seen_chunks.add(related_chunk_id)
+
+                # Get chunk details
+                chunk_details = self.get_document_chunks(
+                    "", "", chunk_id=related_chunk_id
+                )
+                if chunk_details:
+                    chunk_info = chunk_details[0]
+                    chunk_info["relationship_type"] = rel["relationship_type"]
+                    chunk_info["relationship_strength"] = rel["strength"]
+                    chunk_info["relationship_metadata"] = rel["metadata"]
+                    related_chunks.append(chunk_info)
+
+                # Stop if we've reached the limit
+                if len(related_chunks) >= max_related:
+                    break
+
+        return related_chunks
+
+    def delete_chunk_relationships(
+        self,
+        chunk_id: str = None,
+        relationship_type: str = None,
+    ) -> int:
+        """Delete chunk relationships.
+
+        Args:
+            chunk_id: Optional chunk ID to delete relationships for
+            relationship_type: Optional relationship type to delete
+
+        Returns:
+            Number of relationships deleted
+        """
+        if not chunk_id and not relationship_type:
+            # Delete all relationships
+            query = "DELETE FROM chunk_relationships"
+            params = []
+        elif chunk_id and not relationship_type:
+            # Delete all relationships for a chunk
+            query = "DELETE FROM chunk_relationships WHERE source_chunk_id = ? OR target_chunk_id = ?"
+            params = [chunk_id, chunk_id]
+        elif not chunk_id and relationship_type:
+            # Delete all relationships of a specific type
+            query = "DELETE FROM chunk_relationships WHERE relationship_type = ?"
+            params = [relationship_type]
+        else:
+            # Delete specific chunk relationships of a specific type
+            query = """
+                DELETE FROM chunk_relationships
+                WHERE (source_chunk_id = ? OR target_chunk_id = ?)
+                AND relationship_type = ?
+            """
+            params = [chunk_id, chunk_id, relationship_type]
+
+        with self._get_connection() as conn:
+            cursor = conn.execute(query, params)
+            deleted_count = cursor.rowcount
+            conn.commit()
+
+        return deleted_count
+
+    def get_relationship_stats(self) -> dict[str, Any]:
+        """Get statistics about chunk relationships.
+
+        Returns:
+            Dictionary with relationship statistics
+        """
+        stats = {
+            "total_relationships": 0,
+            "relationships_by_type": {},
+            "relationships_by_strength_category": {},
+            "average_strength": 0.0,
+            "most_connected_chunks": [],
+        }
+
+        with self._get_connection() as conn:
+            # Total relationships
+            cursor = conn.execute("SELECT COUNT(*) FROM chunk_relationships")
+            stats["total_relationships"] = cursor.fetchone()[0]
+
+            # Relationships by type
+            cursor = conn.execute(
+                """
+                SELECT relationship_type, COUNT(*)
+                FROM chunk_relationships
+                GROUP BY relationship_type
+            """
+            )
+            stats["relationships_by_type"] = dict(cursor.fetchall())
+
+            # Relationships by strength category
+            cursor = conn.execute(
+                """
+                SELECT strength_category, COUNT(*)
+                FROM chunk_relationships
+                WHERE strength_category IS NOT NULL
+                GROUP BY strength_category
+            """
+            )
+            stats["relationships_by_strength_category"] = dict(cursor.fetchall())
+
+            # Average strength
+            cursor = conn.execute("SELECT AVG(strength) FROM chunk_relationships")
+            avg_strength = cursor.fetchone()[0]
+            stats["average_strength"] = float(avg_strength) if avg_strength else 0.0
+
+            # Most connected chunks
+            cursor = conn.execute(
+                """
+                SELECT chunk_id, connection_count FROM (
+                    SELECT source_chunk_id as chunk_id, COUNT(*) as connection_count
+                    FROM chunk_relationships
+                    GROUP BY source_chunk_id
+                    UNION ALL
+                    SELECT target_chunk_id as chunk_id, COUNT(*) as connection_count
+                    FROM chunk_relationships
+                    GROUP BY target_chunk_id
+                )
+                GROUP BY chunk_id
+                ORDER BY SUM(connection_count) DESC
+                LIMIT 10
+            """
+            )
+            stats["most_connected_chunks"] = [
+                {"chunk_id": row[0], "connection_count": row[1]}
+                for row in cursor.fetchall()
+            ]
+
+        return stats
+
+    def analyze_chunk_network(self) -> dict[str, Any]:
+        """Analyze the chunk relationship network structure.
+
+        Returns:
+            Dictionary with network analysis results
+        """
+        relationships = self.get_chunk_relationships()
+
+        if not relationships:
+            return {
+                "node_count": 0,
+                "edge_count": 0,
+                "components": 0,
+                "density": 0.0,
+                "clustering_coefficient": 0.0,
+            }
+
+        # Build adjacency lists
+        nodes = set()
+        adjacency = defaultdict(set)
+
+        for rel in relationships:
+            source = rel["source_chunk_id"]
+            target = rel["target_chunk_id"]
+            nodes.add(source)
+            nodes.add(target)
+            adjacency[source].add(target)
+            adjacency[target].add(source)  # Undirected graph
+
+        node_count = len(nodes)
+        edge_count = len(relationships)
+
+        # Calculate density
+        max_edges = node_count * (node_count - 1) // 2
+        density = edge_count / max_edges if max_edges > 0 else 0.0
+
+        # Count connected components (simplified)
+        visited = set()
+        components = 0
+
+        def dfs(node):
+            if node in visited:
+                return
+            visited.add(node)
+            for neighbor in adjacency[node]:
+                dfs(neighbor)
+
+        for node in nodes:
+            if node not in visited:
+                dfs(node)
+                components += 1
+
+        # Simple clustering coefficient estimate
+        clustering_coefficient = 0.0
+        if node_count > 2:
+            total_clustering = 0.0
+            for node in nodes:
+                neighbors = adjacency[node]
+                if len(neighbors) > 1:
+                    # Count triangles
+                    triangles = 0
+                    for n1 in neighbors:
+                        for n2 in neighbors:
+                            if n1 != n2 and n2 in adjacency[n1]:
+                                triangles += 1
+                    # Local clustering coefficient
+                    possible_triangles = len(neighbors) * (len(neighbors) - 1)
+                    if possible_triangles > 0:
+                        total_clustering += triangles / possible_triangles
+
+            clustering_coefficient = total_clustering / node_count
+
+        return {
+            "node_count": node_count,
+            "edge_count": edge_count,
+            "components": components,
+            "density": density,
+            "clustering_coefficient": clustering_coefficient,
+            "avg_degree": (2 * edge_count) / node_count if node_count > 0 else 0.0,
+        }

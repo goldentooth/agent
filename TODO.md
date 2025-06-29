@@ -23,3 +23,4 @@
 21. Start thinking about integrating Goldentooth Agent with the Terraform repository specifically. We want to be able to maintain a human-readable and machine-readable graph of the infrastructure in that repository and use that to update the README, etc.
 22. Start thinking about integrating Goldentooth Agent with the Ansible repository specifically. We can use this to figure out ways of describing the infrastructure, service catalog, inventory, etc and summarize that in READMEs, etc.
 23. Start thinking about integrating Goldentooth Agent with the Clog. We can use that to get a good picture of the journey thusfar, formulate longer-term strategies for the cluster, document things as we go, and so forth.
+24. Can we integrate asciinema or something similar to easily create screen recordings of command execution?

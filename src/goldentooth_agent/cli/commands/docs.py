@@ -242,20 +242,147 @@ def show_stats() -> None:
             vector_table.add_column("Value", style="green")
 
             vector_table.add_row(
-                "Total Embeddings", str(vector_stats["total_documents"])
+                "Total Documents", str(vector_stats["total_documents"])
             )
+            vector_table.add_row("Total Chunks", str(vector_stats["total_chunks"]))
             vector_table.add_row("Embedding Engine", vector_stats["embedding_engine"])
             vector_table.add_row("Database Path", vector_stats["database_path"])
+            vector_table.add_row("Sidecar Files", str(vector_stats["sidecar_files"]))
 
-            # Add per-store-type embedding counts
-            for store_type, count in vector_stats["by_store_type"].items():
-                vector_table.add_row(f"  {store_type}", str(count))
+            # Add embedding counts
+            if "embedding_counts" in vector_stats:
+                embedding_counts = vector_stats["embedding_counts"]
+                vector_table.add_row(
+                    "Document Embeddings", str(embedding_counts.get("documents", 0))
+                )
+                vector_table.add_row(
+                    "Chunk Embeddings", str(embedding_counts.get("chunks", 0))
+                )
 
             console.print(vector_table)
+
+            # Chunk statistics table if there are chunks
+            if vector_stats["total_chunks"] > 0:
+                chunk_table = Table(title="Chunk Statistics")
+                chunk_table.add_column("Store Type", style="cyan")
+                chunk_table.add_column("Chunks", style="green")
+
+                for store_type, count in vector_stats.get(
+                    "chunks_by_store_type", {}
+                ).items():
+                    chunk_table.add_row(store_type, str(count))
+
+                console.print(chunk_table)
+
+                # Chunk type distribution
+                if vector_stats.get("chunks_by_type"):
+                    chunk_type_table = Table(title="Chunk Type Distribution")
+                    chunk_type_table.add_column("Chunk Type", style="cyan")
+                    chunk_type_table.add_column("Count", style="green")
+
+                    for chunk_type, count in vector_stats["chunks_by_type"].items():
+                        chunk_type_table.add_row(chunk_type, str(count))
+
+                    console.print(chunk_type_table)
 
         except Exception as e:
             console.print(f"[red]Error showing stats: {e}[/red]")
             raise typer.Exit(1) from None
+
+    handle()
+
+
+@app.command("chunks")
+def show_document_chunks(
+    store_type: str = typer.Argument(
+        ..., help="Store type (e.g., github.repos, notes)"
+    ),
+    document_id: str = typer.Argument(..., help="Document ID"),
+    show_content: bool = typer.Option(
+        False, "--content", help="Show full content of each chunk"
+    ),
+):
+    """Show chunk information for a specific document."""
+
+    @inject
+    def handle(rag_service: RAGService = inject.me()) -> None:
+        """Handle the chunks command."""
+
+        async def chunks_async() -> None:
+            try:
+                with console.status(
+                    f"[bold green]Getting chunks for {store_type}/{document_id}..."
+                ):
+                    result = await rag_service.get_document_chunks_info(
+                        document_id, store_type
+                    )
+
+                if result.get("error"):
+                    console.print(f"[red]Error: {result['message']}[/red]")
+                    raise typer.Exit(1)
+
+                # Display chunk information
+                console.print(
+                    f"[bold green]Chunks for {store_type}/{document_id}:[/bold green]"
+                )
+
+                if result["total_chunks"] == 0:
+                    console.print(f"[yellow]{result['message']}[/yellow]")
+                    return
+
+                # Summary information
+                console.print(
+                    f"[cyan]Total chunks: {result['total_chunks']} | "
+                    f"Total characters: {result['total_characters']}[/cyan]"
+                )
+
+                # Chunk type distribution
+                if result["chunk_types"]:
+                    type_str = ", ".join(
+                        f"{ctype}({count})"
+                        for ctype, count in result["chunk_types"].items()
+                    )
+                    console.print(f"[dim]Chunk types: {type_str}[/dim]")
+
+                console.print()
+
+                # Display each chunk
+                chunks_table = Table()
+                chunks_table.add_column("Index", style="blue")
+                chunks_table.add_column("Type", style="cyan")
+                chunks_table.add_column("Title", style="green")
+                chunks_table.add_column("Size", style="yellow")
+                if show_content:
+                    chunks_table.add_column("Content", style="dim", max_width=50)
+
+                for chunk in result["chunks"]:
+                    content_preview = ""
+                    if show_content:
+                        content = chunk["content"]
+                        content_preview = (
+                            content[:100] + "..." if len(content) > 100 else content
+                        )
+
+                    row_data = [
+                        str(chunk["chunk_index"]),
+                        chunk["chunk_type"],
+                        chunk["title"] or "[dim]No title[/dim]",
+                        f"{chunk['size_chars']} chars",
+                    ]
+
+                    if show_content:
+                        row_data.append(content_preview)
+
+                    chunks_table.add_row(*row_data)
+
+                console.print(chunks_table)
+
+            except Exception as e:
+                console.print(f"[red]Error: {e}[/red]")
+                raise typer.Exit(1) from None
+
+        # Run the async process
+        asyncio.run(chunks_async())
 
     handle()
 
@@ -354,6 +481,9 @@ def embed_documents(
     dry_run: bool = typer.Option(
         False, "--dry-run", help="Show what would be embedded without doing it"
     ),
+    use_chunks: bool = typer.Option(
+        True, "--chunks/--no-chunks", help="Use intelligent chunking for documents"
+    ),
 ):
     """Embed documents into the vector store for RAG."""
 
@@ -385,12 +515,13 @@ def embed_documents(
                     return
 
                 console.print(
-                    f"[cyan]Processing {total_docs} documents for embedding...[/cyan]"
+                    f"[cyan]Processing {total_docs} documents for embedding{'with chunking' if use_chunks else ''}...[/cyan]"
                 )
 
                 processed = 0
                 skipped = 0
                 errors = 0
+                total_chunks_created = 0
 
                 for store_name, doc_ids in docs_to_process.items():
                     for doc_id in doc_ids:
@@ -398,8 +529,11 @@ def embed_documents(
                             # Check if already embedded (unless force)
                             vector_doc_id = f"{store_name}.{doc_id}"
                             existing = vector_store.get_document(vector_doc_id)
+                            existing_chunks = vector_store.get_document_chunks(
+                                store_name, doc_id
+                            )
 
-                            if existing and not force:
+                            if (existing or existing_chunks) and not force:
                                 console.print(
                                     f"  [dim]Skipping {store_name}/{doc_id} (already embedded)[/dim]"
                                 )
@@ -407,8 +541,9 @@ def embed_documents(
                                 continue
 
                             if dry_run:
+                                action = "chunk and embed" if use_chunks else "embed"
                                 console.print(
-                                    f"  [blue]Would embed {store_name}/{doc_id}[/blue]"
+                                    f"  [blue]Would {action} {store_name}/{doc_id}[/blue]"
                                 )
                                 processed += 1
                                 continue
@@ -436,24 +571,60 @@ def embed_documents(
                                 errors += 1
                                 continue
 
-                            # Create embedding
-                            console.print(
-                                f"  [green]Embedding {store_name}/{doc_id}...[/green]"
-                            )
-                            embedding_result = (
-                                await embeddings_service.create_document_embedding(
-                                    doc_data
+                            # Decide whether to use chunking
+                            should_chunk = (
+                                use_chunks
+                                and embeddings_service.should_use_chunking(
+                                    store_name, doc_data
                                 )
                             )
 
-                            # Store in vector database
-                            vector_store.store_document(
-                                store_name,
-                                doc_id,
-                                embedding_result["text_content"],
-                                embedding_result["embedding"],
-                                embedding_result["metadata"],
-                            )
+                            if should_chunk:
+                                # Use chunking approach
+                                console.print(
+                                    f"  [green]Chunking and embedding {store_name}/{doc_id}...[/green]"
+                                )
+
+                                # Delete any existing chunks first
+                                vector_store.delete_document_chunks(store_name, doc_id)
+
+                                # Create chunks and embeddings
+                                chunk_result = await embeddings_service.create_document_chunks_with_embeddings(
+                                    store_name, doc_id, doc_data
+                                )
+
+                                # Store chunks in vector database
+                                stored_chunk_ids = vector_store.store_document_chunks(
+                                    store_name,
+                                    doc_id,
+                                    chunk_result["chunks"],
+                                    chunk_result["embeddings"],
+                                    chunk_result["metadata"],
+                                )
+
+                                total_chunks_created += len(stored_chunk_ids)
+                                console.print(
+                                    f"    [dim]Created {len(stored_chunk_ids)} chunks[/dim]"
+                                )
+                            else:
+                                # Use traditional full-document embedding
+                                console.print(
+                                    f"  [green]Embedding {store_name}/{doc_id} (full document)...[/green]"
+                                )
+                                embedding_result = (
+                                    await embeddings_service.create_document_embedding(
+                                        doc_data
+                                    )
+                                )
+
+                                # Store in vector database
+                                vector_store.store_document(
+                                    store_name,
+                                    doc_id,
+                                    embedding_result["text_content"],
+                                    embedding_result["embedding"],
+                                    embedding_result["metadata"],
+                                )
 
                             processed += 1
 
@@ -468,6 +639,8 @@ def embed_documents(
                 console.print(f"  Processed: {processed}")
                 console.print(f"  Skipped: {skipped}")
                 console.print(f"  Errors: {errors}")
+                if total_chunks_created > 0:
+                    console.print(f"  Chunks created: {total_chunks_created}")
 
                 if dry_run:
                     console.print(
@@ -521,16 +694,29 @@ def search_documents(
                 table = Table(title=f"Search Results for '{query}'")
                 table.add_column("Score", style="green")
                 table.add_column("Document", style="cyan")
+                table.add_column("Type", style="blue")
                 table.add_column("Preview", style="dim")
 
                 for result in results:
                     score = f"{result['similarity_score']:.3f}"
                     doc_ref = f"{result['store_type']}/{result['document_id']}"
+
+                    # Add chunk information if this is a chunk
+                    if result.get("is_chunk", False):
+                        chunk_type = result.get("chunk_type", "unknown")
+                        chunk_title = result.get("chunk_title", "")
+                        doc_ref += f"#{result.get('chunk_id', 'unknown')}"
+                        type_info = f"Chunk ({chunk_type})"
+                        if chunk_title:
+                            type_info += f": {chunk_title}"
+                    else:
+                        type_info = "Document"
+
                     preview = result["content_preview"][:100]
                     if len(result["content_preview"]) > 100:
                         preview += "..."
 
-                    table.add_row(score, doc_ref, preview)
+                    table.add_row(score, doc_ref, type_info, preview)
 
                 console.print(table)
 
@@ -540,6 +726,198 @@ def search_documents(
 
         # Run the async search process
         asyncio.run(search_async())
+
+    handle()
+
+
+@app.command("chunk-search")
+def search_chunks_by_type(
+    chunk_types: str = typer.Argument(
+        ...,
+        help="Chunk types to search for (comma-separated, e.g., 'repo_core,note_section')",
+    ),
+    question: str | None = typer.Option(
+        None,
+        "--question",
+        "-q",
+        help="Optional question for semantic similarity search",
+    ),
+    max_results: int = typer.Option(
+        10, "--max-results", "-m", help="Maximum number of chunks to return"
+    ),
+    store_type: str | None = typer.Option(
+        None, "--type", "-t", help="Filter by store type"
+    ),
+):
+    """Search for chunks of specific types, optionally with semantic similarity."""
+
+    @inject
+    def handle(rag_service: RAGService = inject.me()) -> None:
+        """Handle the chunk-search command."""
+
+        async def chunk_search_async() -> None:
+            try:
+                # Parse chunk types
+                parsed_chunk_types = [ct.strip() for ct in chunk_types.split(",")]
+                console.print(
+                    f"[cyan]Searching for chunk types: {', '.join(parsed_chunk_types)}[/cyan]"
+                )
+
+                if question:
+                    console.print(f"[cyan]Question: {question}[/cyan]")
+
+                with console.status("[bold green]Searching chunks..."):
+                    result = await rag_service.search_chunks_by_type(
+                        chunk_types=parsed_chunk_types,
+                        question=question,
+                        max_results=max_results,
+                        store_type=store_type,
+                    )
+
+                if result.get("error"):
+                    console.print(f"[red]Error: {result['error_message']}[/red]")
+                    raise typer.Exit(1)
+
+                # Display results
+                chunks = result["chunks"]
+                if not chunks:
+                    console.print(
+                        f"[yellow]No chunks found for types: {', '.join(parsed_chunk_types)}[/yellow]"
+                    )
+                    if result.get("message"):
+                        console.print(f"[dim]{result['message']}[/dim]")
+                    return
+
+                console.print(f"[green]Found {result['total_found']} chunks[/green]")
+                console.print(f"[dim]Search method: {result['search_method']}[/dim]\n")
+
+                # Display chunks in a table
+                table = Table(title=f"Chunks of Type: {', '.join(parsed_chunk_types)}")
+                table.add_column("Score", style="green")
+                table.add_column("Document", style="cyan")
+                table.add_column("Chunk", style="blue")
+                table.add_column("Title", style="yellow")
+                table.add_column("Preview", style="dim")
+
+                for chunk in chunks:
+                    score = f"{chunk['similarity_score']:.3f}" if question else "N/A"
+                    doc_ref = f"{chunk['store_type']}/{chunk['document_id']}"
+                    chunk_ref = f"#{chunk.get('chunk_id', 'unknown')}"
+                    chunk_title = chunk.get("chunk_title", "Untitled")
+
+                    preview = chunk.get("content", "")[:100]
+                    if len(chunk.get("content", "")) > 100:
+                        preview += "..."
+
+                    table.add_row(score, doc_ref, chunk_ref, chunk_title, preview)
+
+                console.print(table)
+
+            except Exception as e:
+                console.print(f"[red]Error: {e}[/red]")
+                raise typer.Exit(1) from None
+
+        # Run the async search process
+        asyncio.run(chunk_search_async())
+
+    handle()
+
+
+@app.command("chunk-summary")
+def show_chunk_summary(
+    store_type: str = typer.Argument(
+        ..., help="Store type (e.g., github.repos, notes)"
+    ),
+    document_id: str = typer.Argument(..., help="Document ID"),
+    show_previews: bool = typer.Option(
+        False, "--previews", help="Show content previews for each chunk"
+    ),
+):
+    """Get a detailed summary of all chunks for a specific document."""
+
+    @inject
+    def handle(rag_service: RAGService = inject.me()) -> None:
+        """Handle the chunk-summary command."""
+
+        async def chunk_summary_async() -> None:
+            try:
+                with console.status(
+                    f"[bold green]Getting chunk summary for {store_type}/{document_id}..."
+                ):
+                    result = await rag_service.get_document_chunk_summary(
+                        store_type=store_type,
+                        document_id=document_id,
+                        include_content_preview=show_previews,
+                    )
+
+                if result.get("error"):
+                    console.print(f"[red]Error: {result['error_message']}[/red]")
+                    raise typer.Exit(1)
+
+                # Display summary
+                console.print(
+                    f"[bold green]Chunk Summary for {store_type}/{document_id}:[/bold green]"
+                )
+
+                if not result["has_chunks"]:
+                    console.print(
+                        f"[yellow]{result.get('message', 'No chunks available')}[/yellow]"
+                    )
+                    return
+
+                # Overview statistics
+                console.print(f"[cyan]Total chunks: {result['total_chunks']}[/cyan]")
+                console.print(
+                    f"[cyan]Total characters: {result['total_characters']}[/cyan]"
+                )
+                console.print(
+                    f"[cyan]Average chunk size: {result['avg_chunk_size']} chars[/cyan]"
+                )
+
+                # Chunk type distribution
+                if result["chunk_types"]:
+                    type_distribution = ", ".join(
+                        f"{ctype}({count})"
+                        for ctype, count in result["chunk_types"].items()
+                    )
+                    console.print(f"[dim]Chunk types: {type_distribution}[/dim]")
+
+                console.print()
+
+                # Detailed chunk list
+                table = Table()
+                table.add_column("Index", style="blue")
+                table.add_column("Type", style="cyan")
+                table.add_column("ID", style="yellow")
+                table.add_column("Title", style="green")
+                table.add_column("Size", style="magenta")
+                if show_previews:
+                    table.add_column("Preview", style="dim", max_width=40)
+
+                for chunk in result["chunks"]:
+                    row_data = [
+                        str(chunk["chunk_index"]),
+                        chunk["chunk_type"],
+                        chunk["chunk_id"].split(".")[
+                            -1
+                        ],  # Show just the last part of ID
+                        chunk["title"] or "[dim]No title[/dim]",
+                        f"{chunk['size_chars']} chars",
+                    ]
+
+                    if show_previews and "content_preview" in chunk:
+                        row_data.append(chunk["content_preview"])
+
+                    table.add_row(*row_data)
+
+                console.print(table)
+
+            except Exception as e:
+                console.print(f"[red]Error: {e}[/red]")
+                raise typer.Exit(1) from None
+
+        # Run the async process
+        asyncio.run(chunk_summary_async())
 
     handle()
 
@@ -556,10 +934,20 @@ def ask_question(
         None, "--type", "-t", help="Filter by store type"
     ),
     threshold: float = typer.Option(
-        0.1, "--threshold", help="Similarity threshold (0.0-1.0)"
+        0.01, "--threshold", help="Similarity threshold (0.0-1.0)"
     ),
     show_sources: bool = typer.Option(
         True, "--show-sources/--no-sources", help="Show source documents"
+    ),
+    chunk_types: str | None = typer.Option(
+        None,
+        "--chunk-types",
+        help="Filter to specific chunk types (comma-separated, e.g., 'repo_core,note_section')",
+    ),
+    prioritize_chunks: bool = typer.Option(
+        False,
+        "--prioritize-chunks",
+        help="Prioritize chunks over full documents in ranking",
     ),
 ):
     """Ask a question and get an AI-powered answer using RAG."""
@@ -572,6 +960,17 @@ def ask_question(
             try:
                 console.print(f"[cyan]Question: {question}[/cyan]\n")
 
+                # Parse chunk types if provided
+                parsed_chunk_types = None
+                if chunk_types:
+                    parsed_chunk_types = [ct.strip() for ct in chunk_types.split(",")]
+                    console.print(
+                        f"[dim]Filtering to chunk types: {', '.join(parsed_chunk_types)}[/dim]"
+                    )
+
+                if prioritize_chunks:
+                    console.print("[dim]Prioritizing chunks over full documents[/dim]")
+
                 with console.status("[bold green]Thinking..."):
                     result = await rag_service.query(
                         question=question,
@@ -579,6 +978,8 @@ def ask_question(
                         store_type=store_type,
                         include_metadata=show_sources,
                         similarity_threshold=threshold,
+                        chunk_types=parsed_chunk_types,
+                        prioritize_chunks=prioritize_chunks,
                     )
 
                 # Display the answer
@@ -594,6 +995,18 @@ def ask_question(
                     for i, doc in enumerate(result["retrieved_documents"], 1):
                         score = doc["similarity_score"]
                         doc_ref = f"{doc['store_type']}/{doc['document_id']}"
+
+                        # Add chunk information if this is a chunk
+                        if doc.get("is_chunk", False):
+                            chunk_type = doc.get("chunk_type", "unknown")
+                            chunk_title = doc.get("chunk_title", "")
+                            doc_ref += f"#{doc.get('chunk_id', 'unknown')}"
+                            chunk_info = f" ({chunk_type}"
+                            if chunk_title:
+                                chunk_info += f": {chunk_title}"
+                            chunk_info += ")"
+                            doc_ref += chunk_info
+
                         preview = doc["content_preview"][:100]
                         if len(doc["content_preview"]) > 100:
                             preview += "..."
@@ -606,9 +1019,20 @@ def ask_question(
                 # Display metadata
                 metadata = result["metadata"]
                 if not metadata.get("error"):
-                    console.print(
-                        f"\n[dim]Retrieved {metadata['documents_found']} documents, used {metadata['documents_used']}[/dim]"
-                    )
+                    info_parts = [
+                        f"Retrieved {metadata['documents_found']} documents, used {metadata['documents_used']}"
+                    ]
+
+                    if metadata.get("chunks_used", 0) > 0:
+                        info_parts.append(f"chunks: {metadata['chunks_used']}")
+                    if metadata.get("full_docs_used", 0) > 0:
+                        info_parts.append(f"full docs: {metadata['full_docs_used']}")
+
+                    if metadata.get("chunk_types_found"):
+                        chunk_types_str = ", ".join(metadata["chunk_types_found"])
+                        info_parts.append(f"chunk types: {chunk_types_str}")
+
+                    console.print(f"\n[dim]{', '.join(info_parts)}[/dim]")
 
             except Exception as e:
                 console.print(f"[red]Error: {e}[/red]")

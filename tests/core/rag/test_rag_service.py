@@ -79,9 +79,9 @@ class TestRAGService:
         context = self.rag_service._build_context(documents)
 
         # Verify context contains document information
-        assert "Document 1: github.repos/test-repo (similarity: 0.950)" in context
+        assert "Source 1: github.repos/test-repo (similarity: 0.950)" in context
         assert "This is a Python machine learning repository" in context
-        assert "Document 2: notes/deployment-guide (similarity: 0.870)" in context
+        assert "Source 2: notes/deployment-guide (similarity: 0.870)" in context
         assert "Guide for deploying ML models to production" in context
 
     @pytest.mark.asyncio

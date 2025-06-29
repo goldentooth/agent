@@ -7,19 +7,26 @@ from anthropic import AsyncAnthropic
 from antidote import inject, injectable
 
 from ..paths import Paths
+from .document_chunker import DocumentChunk, DocumentChunker
 
 
 @injectable
 class EmbeddingsService:
     """Service for creating and managing document embeddings using Anthropic."""
 
-    def __init__(self, paths: Paths = inject.me()) -> None:
+    def __init__(
+        self,
+        paths: Paths = inject.me(),
+        document_chunker: DocumentChunker = inject.me(),
+    ) -> None:
         """Initialize the embeddings service.
 
         Args:
             paths: Paths service for data directory management
+            document_chunker: Service for chunking documents
         """
         self.paths = paths
+        self.document_chunker = document_chunker
 
         # Initialize Anthropic client for embeddings
         api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -219,3 +226,149 @@ class EmbeddingsService:
             embeddings.append(embedding)
 
         return embeddings
+
+    async def create_document_chunks_with_embeddings(
+        self, store_type: str, document_id: str, document_data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Create chunks for a document and generate embeddings for each chunk.
+
+        Args:
+            store_type: Type of document store (e.g., "github.repos")
+            document_id: ID of the document
+            document_data: Document content dictionary
+
+        Returns:
+            Dictionary with chunks, embeddings, and metadata
+        """
+        # Create chunks using the document chunker
+        chunks = self.document_chunker.chunk_document(
+            store_type, document_id, document_data
+        )
+
+        # Create embeddings for each chunk
+        embeddings = []
+        for chunk in chunks:
+            embedding = await self.create_embedding(chunk.content)
+            embeddings.append(embedding)
+
+        # Get chunk summary
+        chunk_summary = self.document_chunker.get_chunk_summary(chunks)
+
+        # Create overall metadata
+        metadata = {
+            "created_at": datetime.now().isoformat(),
+            "total_chunks": len(chunks),
+            "embedding_method": "claude_semantic_features",
+            "chunking_strategy": "intelligent_by_type",
+            "chunk_summary": chunk_summary,
+        }
+
+        return {
+            "chunks": chunks,
+            "embeddings": embeddings,
+            "metadata": metadata,
+        }
+
+    async def create_chunk_embedding(self, chunk: DocumentChunk) -> dict[str, Any]:
+        """Create an embedding for a single document chunk.
+
+        Args:
+            chunk: Document chunk to embed
+
+        Returns:
+            Dictionary with embedding and metadata
+        """
+        # Create embedding for the chunk content
+        embedding = await self.create_embedding(chunk.content)
+
+        # Create embedding metadata
+        metadata = {
+            "created_at": datetime.now().isoformat(),
+            "chunk_id": chunk.chunk_id,
+            "chunk_type": chunk.metadata["chunk_type"],
+            "chunk_index": chunk.metadata["chunk_index"],
+            "parent_document_id": chunk.metadata["parent_document_id"],
+            "parent_store_type": chunk.metadata["parent_store_type"],
+            "text_length": len(chunk.content),
+            "embedding_dimensions": len(embedding),
+            "embedding_method": "claude_semantic_features",
+        }
+
+        return {
+            "embedding": embedding,
+            "chunk": chunk,
+            "metadata": metadata,
+        }
+
+    def get_embeddable_text_from_chunk(self, chunk: DocumentChunk) -> str:
+        """Extract embeddable text from a document chunk.
+
+        This is primarily the chunk content, but could be enhanced
+        to include contextual information.
+
+        Args:
+            chunk: Document chunk
+
+        Returns:
+            Text content suitable for embedding
+        """
+        # For now, just return the chunk content
+        # In the future, we might want to add context like:
+        # - Parent document information
+        # - Chunk position/type context
+        # - Related chunk information
+        return chunk.content
+
+    async def re_embed_document_with_chunks(
+        self,
+        store_type: str,
+        document_id: str,
+        document_data: dict[str, Any],
+        force_rechunk: bool = False,
+    ) -> dict[str, Any]:
+        """Re-embed a document using chunking, optionally forcing re-chunking.
+
+        Args:
+            store_type: Type of document store
+            document_id: ID of the document
+            document_data: Document content dictionary
+            force_rechunk: Whether to force re-chunking even if chunks exist
+
+        Returns:
+            Dictionary with chunks, embeddings, and metadata
+        """
+        # For now, always create new chunks
+        # In the future, we could check if chunks already exist and are up-to-date
+        return await self.create_document_chunks_with_embeddings(
+            store_type, document_id, document_data
+        )
+
+    def should_use_chunking(
+        self, store_type: str, document_data: dict[str, Any]
+    ) -> bool:
+        """Determine if a document should be chunked based on type and size.
+
+        Args:
+            store_type: Type of document store
+            document_data: Document content dictionary
+
+        Returns:
+            True if document should be chunked, False otherwise
+        """
+        # Extract text content to check size
+        text_content = self._extract_embeddable_text(document_data)
+
+        # Always use chunking for notes (they often have structured content)
+        if store_type == "notes":
+            return True
+
+        # Use chunking for large documents (>1000 characters)
+        if len(text_content) > 1000:
+            return True
+
+        # Use chunking for GitHub repos (they have structured metadata)
+        if store_type == "github.repos":
+            return True
+
+        # Don't chunk small organizations or simple documents
+        return False
