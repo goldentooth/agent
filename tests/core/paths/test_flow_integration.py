@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 import pytest
 
-from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.paths import (
     ensure_parent_dir,
     list_directory_flow,
@@ -18,6 +17,7 @@ from goldentooth_agent.core.paths import (
     resolve_data_path,
     write_config_file,
 )
+from goldentooth_agent.flow_engine import Flow
 
 T = TypeVar("T")
 

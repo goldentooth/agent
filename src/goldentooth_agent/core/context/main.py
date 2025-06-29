@@ -12,7 +12,7 @@ from pyee import EventEmitter
 from pyee.asyncio import AsyncIOEventEmitter
 
 from goldentooth_agent.core.event import AsyncEventFlow, SyncEventFlow
-from goldentooth_agent.core.flow import Flow
+from goldentooth_agent.flow_engine import Flow
 
 from .dependency_graph import DependencyGraph
 from .frame import ContextFrame

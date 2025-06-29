@@ -68,6 +68,7 @@ test-cov = "pytest tests/ --cov=goldentooth_agent"
 test-sanity = "pytest tests/test_sanity.py -v"
 test-maybe-await = "pytest tests/core/util/test_maybe_await.py -v"
 test-core = "pytest tests/core/ -v"
+test-flow-engine = "pytest tests/flow_engine/ -v"
 typecheck = "mypy src/goldentooth_agent --strict --show-error-codes --pretty"
 typecheck-all = "mypy . --strict --show-error-codes --pretty"
 

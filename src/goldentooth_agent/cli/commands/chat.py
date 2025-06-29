@@ -14,14 +14,16 @@ from rich.prompt import Prompt
 from rich.text import Text
 
 from goldentooth_agent.core.context import Context
-from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow_agent import AgentInput, AgentOutput, FlowAgent
 from goldentooth_agent.core.llm import create_claude_agent
+from goldentooth_agent.flow_engine import Flow
 
 app = typer.Typer()
 
 
-async def process_rag_input(rag_agent, question: str, conversation_history: list[dict[str, str]]):
+async def process_rag_input(
+    rag_agent, question: str, conversation_history: list[dict[str, str]]
+):
     """Process input through a RAG agent."""
     return await rag_agent.process_question(
         question=question,
@@ -59,7 +61,7 @@ async def process_agent_input(agent: FlowAgent, input_data: AgentInput) -> Agent
 def create_rag_agent():
     """Create a simplified RAG agent for document-based conversations."""
     from goldentooth_agent.core.rag.simple_rag_agent import create_simple_rag_agent
-    
+
     try:
         return create_simple_rag_agent()
     except Exception as e:
@@ -171,7 +173,7 @@ async def chat_loop(
     agent = None
     rag_agent = None
     conversation_history = []
-    
+
     try:
         if agent_name == "echo":
             agent = create_echo_agent()
@@ -181,11 +183,19 @@ async def chat_loop(
                 rag_agent = create_rag_agent()
                 console.print("[dim]Using RAG agent (document-powered responses)[/dim]")
             except Exception as e:
-                console.print(f"[yellow]RAG agent unavailable: {str(e)[:100]}...[/yellow]")
+                console.print(
+                    f"[yellow]RAG agent unavailable: {str(e)[:100]}...[/yellow]"
+                )
                 console.print("[yellow]To use the RAG agent, ensure you have:[/yellow]")
-                console.print("[yellow]  1. OPENAI_API_KEY environment variable set[/yellow]")
-                console.print("[yellow]  2. ANTHROPIC_API_KEY environment variable set[/yellow]")  
-                console.print("[yellow]  3. Documents loaded in the vector store[/yellow]")
+                console.print(
+                    "[yellow]  1. OPENAI_API_KEY environment variable set[/yellow]"
+                )
+                console.print(
+                    "[yellow]  2. ANTHROPIC_API_KEY environment variable set[/yellow]"
+                )
+                console.print(
+                    "[yellow]  3. Documents loaded in the vector store[/yellow]"
+                )
                 console.print("[yellow]Using echo agent as fallback.[/yellow]")
                 agent = create_echo_agent()
                 rag_agent = None
@@ -201,7 +211,9 @@ async def chat_loop(
             )
     except ValueError as e:
         # If the requested agent fails, fallback to echo
-        console.print(f"[yellow]{agent_name or 'Claude'} unavailable ({e}), using echo agent[/yellow]")
+        console.print(
+            f"[yellow]{agent_name or 'Claude'} unavailable ({e}), using echo agent[/yellow]"
+        )
         agent = create_echo_agent()
         rag_agent = None
     context = Context()
@@ -250,30 +262,42 @@ async def chat_loop(
                         console=console,
                         refresh_per_second=10,
                     ) as live:
-                        result = await process_rag_input(rag_agent, user_input, conversation_history)
-                        live.update(Text(f"[bold blue]RAG Agent[/bold blue]: {result.response}"))
+                        result = await process_rag_input(
+                            rag_agent, user_input, conversation_history
+                        )
+                        live.update(
+                            Text(f"[bold blue]RAG Agent[/bold blue]: {result.response}")
+                        )
                         await asyncio.sleep(0.1)
                 else:
                     with console.status("[dim]🔍 Searching documents...[/dim]"):
-                        result = await process_rag_input(rag_agent, user_input, conversation_history)
-                
+                        result = await process_rag_input(
+                            rag_agent, user_input, conversation_history
+                        )
+
                 console.print(f"[bold blue]RAG Agent[/bold blue]: {result.response}")
-                
+
                 # Show RAG-specific metadata
                 if result.sources:
-                    console.print(f"[dim]Sources: {len(result.sources)} documents | Confidence: {result.confidence:.2f}[/dim]")
-                
+                    console.print(
+                        f"[dim]Sources: {len(result.sources)} documents | Confidence: {result.confidence:.2f}[/dim]"
+                    )
+
                 if result.suggestions:
-                    console.print(f"[dim]Suggestions: {', '.join(result.suggestions[:2])}[/dim]")
-                
+                    console.print(
+                        f"[dim]Suggestions: {', '.join(result.suggestions[:2])}[/dim]"
+                    )
+
                 # Add to conversation history
                 conversation_history.append({"role": "user", "content": user_input})
-                conversation_history.append({"role": "assistant", "content": result.response})
-                
+                conversation_history.append(
+                    {"role": "assistant", "content": result.response}
+                )
+
                 # Keep conversation history manageable
                 if len(conversation_history) > 20:
                     conversation_history = conversation_history[-20:]
-                    
+
             else:
                 # Standard FlowAgent processing
                 if stream_enabled:
@@ -284,7 +308,9 @@ async def chat_loop(
                     ) as live:
                         await asyncio.sleep(0.5)
                         result = await process_agent_input(agent, input_data)
-                        live.update(Text(f"[bold blue]Agent[/bold blue]: {result.response}"))
+                        live.update(
+                            Text(f"[bold blue]Agent[/bold blue]: {result.response}")
+                        )
                         await asyncio.sleep(0.1)
                 else:
                     with console.status("[dim]🤖 Processing...[/dim]"):
@@ -381,7 +407,9 @@ async def process_single_message(
         if agent_name == "echo":
             agent = create_echo_agent()
             # Create input and process
-            input_data = AgentInput(message=message, context_data={"single_message": True})
+            input_data = AgentInput(
+                message=message, context_data={"single_message": True}
+            )
             return await process_agent_input(agent, input_data)
         elif agent_name == "rag":
             try:
@@ -395,12 +423,16 @@ async def process_single_message(
                         "sources": len(rag_result.sources),
                         "confidence": rag_result.confidence,
                         "agent_type": "rag",
-                    }
+                    },
                 )
             except Exception as e:
-                console.print(f"[yellow]RAG agent unavailable ({e}), using echo agent[/yellow]")
+                console.print(
+                    f"[yellow]RAG agent unavailable ({e}), using echo agent[/yellow]"
+                )
                 agent = create_echo_agent()
-                input_data = AgentInput(message=message, context_data={"single_message": True})
+                input_data = AgentInput(
+                    message=message, context_data={"single_message": True}
+                )
                 return await process_agent_input(agent, input_data)
         else:
             # Try to create Claude agent
@@ -409,11 +441,15 @@ async def process_single_message(
                 system_prompt="You are a helpful AI assistant. Be concise and helpful.",
             )
             # Create input and process
-            input_data = AgentInput(message=message, context_data={"single_message": True})
+            input_data = AgentInput(
+                message=message, context_data={"single_message": True}
+            )
             return await process_agent_input(agent, input_data)
     except ValueError as e:
         # If requested agent fails, fallback to echo
-        console.print(f"[yellow]{agent_name or 'Claude'} unavailable ({e}), using echo agent[/yellow]")
+        console.print(
+            f"[yellow]{agent_name or 'Claude'} unavailable ({e}), using echo agent[/yellow]"
+        )
         agent = create_echo_agent()
         input_data = AgentInput(message=message, context_data={"single_message": True})
         return await process_agent_input(agent, input_data)

@@ -11,7 +11,7 @@ from goldentooth_agent.core.background_loop import (
     schedule_flow,
     timeout_async_flow,
 )
-from goldentooth_agent.core.flow import Flow
+from goldentooth_agent.flow_engine import Flow
 
 T = TypeVar("T")
 

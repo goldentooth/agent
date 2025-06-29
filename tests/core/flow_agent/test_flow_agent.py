@@ -3,13 +3,13 @@
 import pytest
 from pydantic import Field
 
-from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow_agent.agent import FlowAgent
 from goldentooth_agent.core.flow_agent.schema import (
     AgentInput,
     AgentOutput,
     FlowIOSchema,
 )
+from goldentooth_agent.flow_engine import Flow
 
 
 # Test schemas

@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from goldentooth_agent.core.flow import (  # Performance monitoring; Debugging; Health monitoring; Analysis
+from goldentooth_agent.flow_engine import (  # Performance monitoring; Debugging; Health monitoring; Analysis
     Flow,
     HealthStatus,
     analyze_flow,
@@ -72,7 +72,7 @@ class TestPerformanceObservability:
     @pytest.mark.asyncio
     async def test_performance_stream_combinator(self):
         """Test performance stream combinator."""
-        from goldentooth_agent.core.flow.combinators import batch_stream, compose
+        from goldentooth_agent.flow_engine.combinators import batch_stream, compose
 
         base_pipeline = (
             Flow.from_iterable(range(50))
@@ -347,7 +347,7 @@ class TestIntegratedObservability:
         """Test a pipeline with comprehensive monitoring."""
 
         # Create a complex pipeline with all observability features
-        from goldentooth_agent.core.flow.combinators import compose
+        from goldentooth_agent.flow_engine.combinators import compose
 
         base_pipeline = (
             Flow.from_iterable(range(20))
@@ -391,7 +391,7 @@ class TestIntegratedObservability:
             except ValueError:
                 return x  # Return original value on error
 
-        from goldentooth_agent.core.flow.combinators import compose
+        from goldentooth_agent.flow_engine.combinators import compose
 
         base_flow = Flow.from_iterable(range(10)).map(safe_transform)
 
@@ -418,7 +418,7 @@ class TestIntegratedObservability:
 
         try:
             # Create a flow with multiple observability features
-            from goldentooth_agent.core.flow.combinators import compose
+            from goldentooth_agent.flow_engine.combinators import compose
 
             base_flow = (
                 Flow.from_iterable(range(10))

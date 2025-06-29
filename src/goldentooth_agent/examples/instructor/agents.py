@@ -6,9 +6,9 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 from goldentooth_agent.core.context import Context
-from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow_agent import AgentInput, FlowAgent
 from goldentooth_agent.core.llm import ClaudeFlowClient
+from goldentooth_agent.flow_engine import Flow
 
 from .schemas import (
     CodeAnalysis,

@@ -118,7 +118,7 @@ class TestHybridSearchEngine:
         assert call_args[1]["limit"] == 10
         assert call_args[1]["store_type"] == "notes"
         assert call_args[1]["include_chunks"] is True
-        assert call_args[1]["similarity_threshold"] == 0.1
+        # Note: similarity_threshold filtering is now done post-search
 
     def test_calculate_corpus_stats(self):
         """Test corpus statistics calculation."""

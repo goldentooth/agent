@@ -9,7 +9,7 @@ from goldentooth_agent.core.context import (
     MissingRequiredKeyError,
     context_flow,
 )
-from goldentooth_agent.core.flow import Flow
+from goldentooth_agent.flow_engine import Flow
 
 
 class TestContextKeySystem:

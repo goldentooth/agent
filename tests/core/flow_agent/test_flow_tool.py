@@ -5,9 +5,9 @@ import asyncio
 import pytest
 from pydantic import Field, ValidationError
 
-from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow_agent.schema import FlowIOSchema
 from goldentooth_agent.core.flow_agent.tool import FlowTool
+from goldentooth_agent.flow_engine import Flow
 
 
 # Test schemas for tools

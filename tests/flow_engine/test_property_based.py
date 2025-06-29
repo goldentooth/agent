@@ -12,7 +12,7 @@ from hypothesis import assume, given
 from hypothesis import strategies as st
 from hypothesis.stateful import RuleBasedStateMachine, initialize, invariant, rule
 
-from goldentooth_agent.core.flow.combinators import (
+from goldentooth_agent.flow_engine.combinators import (
     batch_stream,
     compose,
     distinct_stream,

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from typing import Any
 
@@ -8,7 +9,7 @@ from ..embeddings import EmbeddingsService, OpenAIEmbeddingsService, VectorStore
 from ..embeddings.hybrid_search import HybridSearchEngine
 from ..llm.claude_client import ClaudeFlowClient
 from .chunk_fusion import ChunkFusion
-from .query_expansion import QueryExpansionEngine, QueryExpansion, SearchStrategy
+from .query_expansion import QueryExpansion, QueryExpansionEngine
 
 
 @injectable
@@ -2161,7 +2162,7 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
         auto_reformulate: bool = True,
     ) -> dict[str, Any]:
         """Enhanced query with intelligent expansion, multi-strategy search, and fusion.
-        
+
         Args:
             question: User's question
             max_results: Maximum number of results per strategy
@@ -2171,17 +2172,17 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
             enable_fusion: Whether to use chunk fusion
             expansion_strategies: Number of expansion strategies to try
             auto_reformulate: Whether to auto-reformulate on poor results
-            
+
         Returns:
             Enhanced query results with expansion metadata and fused answers
         """
         try:
             start_time = datetime.now()
-            
+
             # Step 1: Analyze and expand the query
             expansion_result = None
             strategies = []
-            
+
             if enable_expansion:
                 expansion_result = self.query_expansion_engine.expand_query(
                     question,
@@ -2190,44 +2191,50 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     include_related=True,
                     max_expansions=expansion_strategies + 2,
                 )
-                
+
                 strategies = self.query_expansion_engine.create_search_strategies(
                     expansion_result,
                     max_strategies=expansion_strategies,
                 )
             else:
                 # Create single strategy with original query
-                from .query_expansion import SearchStrategy, QueryIntent
-                strategies = [SearchStrategy(
-                    strategy_type="original",
-                    queries=[question],
-                    weights=[1.0],
-                    search_params={"similarity_threshold": 0.1, "max_results": max_results},
-                    expected_intent=QueryIntent.GENERAL,
-                )]
-            
+                from .query_expansion import QueryIntent, SearchStrategy
+
+                strategies = [
+                    SearchStrategy(
+                        strategy_type="original",
+                        queries=[question],
+                        weights=[1.0],
+                        search_params={
+                            "similarity_threshold": 0.1,
+                            "max_results": max_results,
+                        },
+                        expected_intent=QueryIntent.GENERAL,
+                    )
+                ]
+
             # Step 2: Execute multiple search strategies
             strategy_results = []
             all_retrieved_docs = []
-            
+
             for i, strategy in enumerate(strategies):
                 strategy_docs = []
-                
+
                 for j, query in enumerate(strategy.queries):
                     weight = strategy.weights[j] if j < len(strategy.weights) else 0.5
-                    
+
                     # Execute hybrid search for this query
                     # Prepare search params, ensuring no duplicate max_results and mapping parameters
                     search_params = self._map_search_params_for_hybrid_query(
                         strategy.search_params, max_results
                     )
-                    
+
                     search_result = await self.hybrid_query(
                         question=query,
                         store_type=store_type,
                         **search_params,
                     )
-                    
+
                     # Weight and collect results
                     for doc in search_result.get("retrieved_documents", []):
                         doc["strategy_weight"] = weight
@@ -2235,19 +2242,21 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                         doc["query_variant"] = query
                         doc["weighted_score"] = doc.get("hybrid_score", 0) * weight
                         strategy_docs.append(doc)
-                
-                strategy_results.append({
-                    "strategy": strategy.strategy_type,
-                    "queries": strategy.queries,
-                    "results_count": len(strategy_docs),
-                    "docs": strategy_docs,
-                })
-                
+
+                strategy_results.append(
+                    {
+                        "strategy": strategy.strategy_type,
+                        "queries": strategy.queries,
+                        "results_count": len(strategy_docs),
+                        "docs": strategy_docs,
+                    }
+                )
+
                 all_retrieved_docs.extend(strategy_docs)
-            
+
             # Step 3: Merge and deduplicate results
             merged_docs = self._merge_strategy_results(all_retrieved_docs)
-            
+
             # Step 4: Check if reformulation is needed
             if auto_reformulate and len(merged_docs) < 3:
                 reformulated_queries = self.query_expansion_engine.reformulate_query(
@@ -2255,7 +2264,7 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     search_results_count=len(merged_docs),
                     search_quality_score=0.3,  # Low quality due to few results
                 )
-                
+
                 # Try best reformulated query
                 if reformulated_queries:
                     reformulated_result = await self.hybrid_query(
@@ -2263,21 +2272,23 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                         max_results=max_results,
                         store_type=store_type,
                     )
-                    
+
                     for doc in reformulated_result.get("retrieved_documents", []):
                         doc["strategy_type"] = "reformulated"
                         doc["query_variant"] = reformulated_queries[0]
                         doc["weighted_score"] = doc.get("hybrid_score", 0) * 0.8
-                    
-                    merged_docs.extend(reformulated_result.get("retrieved_documents", []))
+
+                    merged_docs.extend(
+                        reformulated_result.get("retrieved_documents", [])
+                    )
                     merged_docs = self._merge_strategy_results(merged_docs)
-            
+
             # Step 5: Apply chunk fusion if enabled
             fused_answers = []
             if enable_fusion and merged_docs:
                 # Convert to SearchResult format for fusion
-                from ..embeddings.models import SearchResult, Chunk
-                
+                from ..embeddings.models import Chunk, SearchResult
+
                 search_results = []
                 for doc in merged_docs:
                     if doc.get("is_chunk", False):
@@ -2289,51 +2300,77 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                             metadata=doc.get("metadata", {}),
                             chunk_type=doc.get("chunk_type", "unknown"),
                         )
-                        
+
                         search_result = SearchResult(
                             chunk=chunk,
-                            relevance_score=doc.get("weighted_score", doc.get("hybrid_score", 0.5)),
+                            relevance_score=doc.get(
+                                "weighted_score", doc.get("hybrid_score", 0.5)
+                            ),
                             metadata={
                                 "strategy_type": doc.get("strategy_type", "unknown"),
                                 "query_variant": doc.get("query_variant", question),
                             },
                         )
                         search_results.append(search_result)
-                
+
                 if len(search_results) >= self.chunk_fusion.min_chunks_for_fusion:
                     fused_answers = self.chunk_fusion.fuse_chunks(
                         search_results=search_results,
                         query=question,
                         max_clusters=3,
                     )
-            
+
             # Step 6: Build enhanced context
             context = self._build_enhanced_context(
                 merged_docs, fused_answers, expansion_result, question
             )
-            
+
             # Step 7: Generate response
             response = ""
             if context != "No relevant context found.":
-                response = await self._generate_enhanced_response(question, context, expansion_result)
-            
+                response = await self._generate_enhanced_response(
+                    question, context, expansion_result
+                )
+
             # Step 8: Prepare comprehensive result
             end_time = datetime.now()
-            
+
             return {
                 "response": response,
                 "context": context,
                 "question": question,
-                "query_expansion": {
-                    "original_query": question,
-                    "expanded_queries": expansion_result.expanded_queries if expansion_result else [question],
-                    "intent": expansion_result.intent.value if expansion_result else "general",
-                    "key_terms": expansion_result.key_terms if expansion_result else [],
-                    "synonyms": expansion_result.synonyms if expansion_result else {},
-                    "related_terms": expansion_result.related_terms if expansion_result else [],
-                    "confidence": expansion_result.confidence if expansion_result else 0.5,
-                    "suggestions": expansion_result.suggestions if expansion_result else [],
-                } if expansion_result else None,
+                "query_expansion": (
+                    {
+                        "original_query": question,
+                        "expanded_queries": (
+                            expansion_result.expanded_queries
+                            if expansion_result
+                            else [question]
+                        ),
+                        "intent": (
+                            expansion_result.intent.value
+                            if expansion_result
+                            else "general"
+                        ),
+                        "key_terms": (
+                            expansion_result.key_terms if expansion_result else []
+                        ),
+                        "synonyms": (
+                            expansion_result.synonyms if expansion_result else {}
+                        ),
+                        "related_terms": (
+                            expansion_result.related_terms if expansion_result else []
+                        ),
+                        "confidence": (
+                            expansion_result.confidence if expansion_result else 0.5
+                        ),
+                        "suggestions": (
+                            expansion_result.suggestions if expansion_result else []
+                        ),
+                    }
+                    if expansion_result
+                    else None
+                ),
                 "search_strategies": [
                     {
                         "strategy": sr["strategy"],
@@ -2359,17 +2396,20 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                 "retrieved_documents": merged_docs,
                 "metadata": {
                     "timestamp": datetime.now().isoformat(),
-                    "processing_time_ms": int((end_time - start_time).total_seconds() * 1000),
+                    "processing_time_ms": int(
+                        (end_time - start_time).total_seconds() * 1000
+                    ),
                     "expansion_enabled": enable_expansion,
                     "fusion_enabled": enable_fusion,
                     "strategies_used": len(strategies),
                     "total_docs_found": len(merged_docs),
                     "fused_answers_count": len(fused_answers),
-                    "reformulation_attempted": auto_reformulate and len(all_retrieved_docs) < 3,
+                    "reformulation_attempted": auto_reformulate
+                    and len(all_retrieved_docs) < 3,
                     "domain_context": domain_context,
                 },
             }
-            
+
         except Exception as e:
             return {
                 "response": f"I encountered an error during enhanced query processing: {str(e)}",
@@ -2386,18 +2426,18 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     "error_type": type(e).__name__,
                 },
             }
-    
+
     async def analyze_query_intelligence(
         self,
         question: str,
         domain_context: str | None = None,
     ) -> dict[str, Any]:
         """Analyze query intelligence and provide enhancement suggestions.
-        
+
         Args:
             question: Query to analyze
             domain_context: Optional domain context
-            
+
         Returns:
             Comprehensive query analysis with suggestions
         """
@@ -2409,20 +2449,22 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                 include_synonyms=True,
                 include_related=True,
             )
-            
+
             # Get quality analysis
-            quality_analysis = self.query_expansion_engine.analyze_query_quality(question)
-            
+            quality_analysis = self.query_expansion_engine.analyze_query_quality(
+                question
+            )
+
             # Get search strategies
             strategies = self.query_expansion_engine.create_search_strategies(expansion)
-            
+
             # Generate reformulations
             reformulations = self.query_expansion_engine.reformulate_query(
                 question,
                 search_results_count=5,  # Simulate moderate results
                 search_quality_score=0.6,  # Simulate moderate quality
             )
-            
+
             return {
                 "original_query": question,
                 "domain_context": domain_context,
@@ -2454,7 +2496,7 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     "analysis_version": "1.0",
                 },
             }
-            
+
         except Exception as e:
             return {
                 "original_query": question,
@@ -2464,26 +2506,32 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     "timestamp": datetime.now().isoformat(),
                 },
             }
-    
+
     def _map_search_params_for_hybrid_query(
         self, strategy_params: dict[str, Any], default_max_results: int
     ) -> dict[str, Any]:
         """Map search strategy parameters to hybrid_query method parameters.
-        
+
         Args:
             strategy_params: Parameters from search strategy
             default_max_results: Default max_results if not in strategy_params
-            
+
         Returns:
             Mapped parameters compatible with hybrid_query method
         """
         # Known hybrid_query parameters
         valid_params = {
-            "max_results", "include_chunks", "semantic_weight", "keyword_weight",
-            "min_semantic_score", "min_keyword_score", "boost_exact_matches", 
-            "boost_title_matches", "explain_results"
+            "max_results",
+            "include_chunks",
+            "semantic_weight",
+            "keyword_weight",
+            "min_semantic_score",
+            "min_keyword_score",
+            "boost_exact_matches",
+            "boost_title_matches",
+            "explain_results",
         }
-        
+
         # Parameter mapping from strategy params to hybrid_query params
         param_mapping = {
             "similarity_threshold": "min_semantic_score",
@@ -2498,12 +2546,14 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
             "prefer_authoritative": "boost_title_matches",  # Map to closest equivalent
             "include_partial_matches": None,  # Not supported, ignore
         }
-        
+
         mapped_params = {}
-        
+
         # Set default max_results
-        mapped_params["max_results"] = strategy_params.get("max_results", default_max_results)
-        
+        mapped_params["max_results"] = strategy_params.get(
+            "max_results", default_max_results
+        )
+
         # Map strategy parameters to hybrid_query parameters
         for strategy_key, strategy_value in strategy_params.items():
             if strategy_key in valid_params:
@@ -2515,26 +2565,28 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                 if mapped_key is not None:
                     mapped_params[mapped_key] = strategy_value
             # Ignore unsupported parameters
-        
+
         return mapped_params
 
-    def _merge_strategy_results(self, all_docs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _merge_strategy_results(
+        self, all_docs: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Merge and deduplicate results from multiple strategies."""
         if not all_docs:
             return []
-        
+
         # Group by document/chunk ID
         doc_groups = defaultdict(list)
-        
+
         for doc in all_docs:
             # Create unique key for deduplication
             if doc.get("is_chunk", False):
                 key = f"chunk_{doc.get('chunk_id', 'unknown')}"
             else:
                 key = f"doc_{doc.get('store_type', 'unknown')}_{doc.get('document_id', 'unknown')}"
-            
+
             doc_groups[key].append(doc)
-        
+
         # Merge duplicate documents by taking best scores
         merged = []
         for docs in doc_groups.values():
@@ -2543,26 +2595,26 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
             else:
                 # Merge multiple versions of same document
                 best_doc = max(docs, key=lambda d: d.get("weighted_score", 0))
-                
+
                 # Combine strategy information
                 strategies = list(set(d.get("strategy_type", "unknown") for d in docs))
                 query_variants = list(set(d.get("query_variant", "") for d in docs))
-                
+
                 best_doc["strategy_types"] = strategies
                 best_doc["query_variants"] = query_variants
                 best_doc["occurrence_count"] = len(docs)
-                
+
                 # Boost score for multiple strategy hits
                 boost = min(0.2, (len(docs) - 1) * 0.05)
                 best_doc["weighted_score"] = best_doc.get("weighted_score", 0) + boost
-                
+
                 merged.append(best_doc)
-        
+
         # Sort by weighted score
         merged.sort(key=lambda d: d.get("weighted_score", 0), reverse=True)
-        
+
         return merged
-    
+
     def _build_enhanced_context(
         self,
         documents: list[dict[str, Any]],
@@ -2573,61 +2625,76 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
         """Build enhanced context with expansion and fusion information."""
         if not documents and not fused_answers:
             return "No relevant context found."
-        
+
         context_parts = []
-        
+
         # Add query enhancement summary
         if expansion:
             context_parts.append("=== Query Analysis ===")
             context_parts.append(f"Intent: {expansion.intent.value.title()}")
             context_parts.append(f"Key Terms: {', '.join(expansion.key_terms)}")
             if expansion.related_terms:
-                context_parts.append(f"Related Terms: {', '.join(expansion.related_terms[:5])}")
+                context_parts.append(
+                    f"Related Terms: {', '.join(expansion.related_terms[:5])}"
+                )
             context_parts.append("")
-        
+
         # Add fused answers first (highest priority)
         if fused_answers:
             context_parts.append("=== Synthesized Information ===")
             for i, answer in enumerate(fused_answers, 1):
-                context_parts.append(f"Synthesis {i} (Confidence: {answer.confidence_score:.2f}):")
-                context_parts.append(answer.content[:1000] + "..." if len(answer.content) > 1000 else answer.content)
+                context_parts.append(
+                    f"Synthesis {i} (Confidence: {answer.confidence_score:.2f}):"
+                )
+                context_parts.append(
+                    answer.content[:1000] + "..."
+                    if len(answer.content) > 1000
+                    else answer.content
+                )
                 context_parts.append("")
-        
+
         # Add individual documents grouped by strategy
         strategy_docs = defaultdict(list)
         for doc in documents:
             strategy = doc.get("strategy_type", "unknown")
             strategy_docs[strategy].append(doc)
-        
+
         if strategy_docs:
             context_parts.append("=== Source Documents ===")
-            
+
             for strategy, docs in strategy_docs.items():
                 context_parts.append(f"\n--- From {strategy.title()} Strategy ---")
-                
+
                 for i, doc in enumerate(docs[:5], 1):  # Limit to top 5 per strategy
                     doc_id = doc.get("document_id", "unknown")
                     store_type = doc.get("store_type", "unknown")
                     score = doc.get("weighted_score", 0)
-                    
+
                     if doc.get("is_chunk", False):
                         chunk_title = doc.get("chunk_title", "Untitled")
-                        context_parts.append(f"{i}. {store_type}/{doc_id} - {chunk_title} (Score: {score:.3f})")
+                        context_parts.append(
+                            f"{i}. {store_type}/{doc_id} - {chunk_title} (Score: {score:.3f})"
+                        )
                     else:
-                        context_parts.append(f"{i}. {store_type}/{doc_id} (Score: {score:.3f})")
-                    
+                        context_parts.append(
+                            f"{i}. {store_type}/{doc_id} (Score: {score:.3f})"
+                        )
+
                     # Add query variant if different from original
                     query_variant = doc.get("query_variant", "")
-                    if query_variant and query_variant.lower() != original_question.lower():
-                        context_parts.append(f"   Found via: \"{query_variant}\"")
-                    
+                    if (
+                        query_variant
+                        and query_variant.lower() != original_question.lower()
+                    ):
+                        context_parts.append(f'   Found via: "{query_variant}"')
+
                     content = doc.get("content", "")
                     preview = content[:300] + "..." if len(content) > 300 else content
                     context_parts.append(f"   {preview}")
                     context_parts.append("")
-        
+
         return "\n".join(context_parts)
-    
+
     async def _generate_enhanced_response(
         self,
         question: str,
@@ -2667,12 +2734,16 @@ Provide a well-structured, accurate response that leverages the intelligent sear
                 temperature=0.1,
                 max_tokens=self.claude_client.default_max_tokens,
             )
-            
-            return response if isinstance(response, str) else "Unable to generate enhanced response."
-            
+
+            return (
+                response
+                if isinstance(response, str)
+                else "Unable to generate enhanced response."
+            )
+
         except Exception as e:
             return f"Error generating enhanced response: {str(e)}"
-    
+
     def _generate_query_recommendations(
         self,
         expansion: QueryExpansion,
@@ -2680,22 +2751,26 @@ Provide a well-structured, accurate response that leverages the intelligent sear
     ) -> list[str]:
         """Generate recommendations for query improvement."""
         recommendations = []
-        
+
         # Based on expansion confidence
         if expansion.confidence < 0.6:
-            recommendations.append("Query could be more specific - consider adding technical terms or context")
-        
+            recommendations.append(
+                "Query could be more specific - consider adding technical terms or context"
+            )
+
         # Based on intent detection
         if expansion.intent.value == "general":
-            recommendations.append("Add intent words like 'how to', 'what is', or 'example of' for better results")
-        
+            recommendations.append(
+                "Add intent words like 'how to', 'what is', or 'example of' for better results"
+            )
+
         # Based on quality metrics
         quality = quality_analysis.get("overall_quality", 0)
         if quality < 0.7:
             recommendations.extend(quality_analysis.get("improvements", []))
-        
+
         # Based on available expansions
         if expansion.suggestions:
             recommendations.extend(expansion.suggestions[:2])
-        
+
         return recommendations[:5]  # Limit to top 5

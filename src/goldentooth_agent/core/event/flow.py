@@ -8,7 +8,7 @@ from typing import Any, Generic, TypeVar
 from pyee import EventEmitter
 from pyee.asyncio import AsyncIOEventEmitter
 
-from goldentooth_agent.core.flow import Flow
+from goldentooth_agent.flow_engine import Flow
 
 from .inject import get_async_event_emitter, get_sync_event_emitter
 

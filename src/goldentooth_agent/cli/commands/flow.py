@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from goldentooth_agent.cli.commands.tools import get_available_tools
-from goldentooth_agent.core.flow import Flow
+from goldentooth_agent.flow_engine import Flow
 
 app = typer.Typer()
 

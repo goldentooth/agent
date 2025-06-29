@@ -10,7 +10,7 @@ import pytest
 
 from goldentooth_agent.core.context import Context, ContextFrame
 from goldentooth_agent.core.event.flow import AsyncEventFlow, SyncEventFlow
-from goldentooth_agent.core.flow import Flow
+from goldentooth_agent.flow_engine import Flow
 
 
 class TestContextEventFlowIntegration:

@@ -2,7 +2,7 @@
 
 import pytest
 
-from goldentooth_agent.core.flow import Flow
+from goldentooth_agent.flow_engine import Flow
 
 
 # Shared async stream generators

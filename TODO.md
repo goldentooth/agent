@@ -24,3 +24,5 @@
 22. Start thinking about integrating Goldentooth Agent with the Ansible repository specifically. We can use this to figure out ways of describing the infrastructure, service catalog, inventory, etc and summarize that in READMEs, etc.
 23. Start thinking about integrating Goldentooth Agent with the Clog. We can use that to get a good picture of the journey thusfar, formulate longer-term strategies for the cluster, document things as we go, and so forth.
 24. Can we integrate asciinema or something similar to easily create screen recordings of command execution?
+25. Write a script to run as part of pre-commit hooks to enforce the README.md file maintenance within modules.
+26. I dislike this error: TypeVar "Input" appears only once in generic function signature; Use "object" insteadPylancereportInvalidTypeVarUse. Can we ignore it permanently?

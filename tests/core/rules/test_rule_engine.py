@@ -4,8 +4,8 @@ import asyncio
 
 import pytest
 
-from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.rules import Rule, RuleEngine
+from goldentooth_agent.flow_engine import Flow
 
 
 # Test fixtures - context classes for testing (reused from Rule tests)

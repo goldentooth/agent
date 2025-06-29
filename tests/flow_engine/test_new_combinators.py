@@ -4,8 +4,8 @@ import asyncio
 
 import pytest
 
-from goldentooth_agent.core.flow import Flow
-from goldentooth_agent.core.flow.combinators import (
+from goldentooth_agent.flow_engine import Flow
+from goldentooth_agent.flow_engine.combinators import (
     OnComplete,
     OnError,
     OnNext,
@@ -683,7 +683,7 @@ class TestIntegrationPatterns:
     async def test_pairwise_with_start_with(self):
         """Test pairwise combined with start_with."""
         # Pipeline: start_with -> pairwise
-        from goldentooth_agent.core.flow.combinators import compose
+        from goldentooth_agent.flow_engine.combinators import compose
 
         pipeline = compose(start_with_stream(-1), pairwise_stream())
 
@@ -703,7 +703,7 @@ class TestIntegrationPatterns:
         async def cleanup():
             cleanup_called.append(True)
 
-        from goldentooth_agent.core.flow.combinators import compose
+        from goldentooth_agent.flow_engine.combinators import compose
 
         pipeline = compose(finalize_stream(cleanup), materialize_stream())
 

@@ -6,8 +6,8 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from goldentooth_agent.core.flow import Flow
-from goldentooth_agent.core.flow.combinators import (
+from goldentooth_agent.flow_engine import Flow
+from goldentooth_agent.flow_engine.combinators import (
     batch_stream,
     distinct_stream,
     filter_stream,
@@ -15,7 +15,7 @@ from goldentooth_agent.core.flow.combinators import (
     memoize_stream,
     parallel_stream,
 )
-from goldentooth_agent.core.flow.performance import (
+from goldentooth_agent.flow_engine.performance import (
     benchmark_stream,
     enable_memory_tracking,
     get_performance_monitor,
@@ -236,7 +236,7 @@ class TestPerformanceBenchmarks:
     async def test_composition_performance(self):
         """Benchmark complex flow composition performance."""
         # Create a complex pipeline using available methods
-        from goldentooth_agent.core.flow.combinators import batch_stream
+        from goldentooth_agent.flow_engine.combinators import batch_stream
 
         # Create empty input for from_iterable
         async def empty_stream():

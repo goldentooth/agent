@@ -5,7 +5,7 @@ application patterns with clean exit and restart conditions.
 """
 
 from goldentooth_agent.core.context import Context
-from goldentooth_agent.core.flow import (
+from goldentooth_agent.flow_engine import (
     SHOULD_BREAK_KEY,
     SHOULD_EXIT_KEY,
     SHOULD_SKIP_KEY,

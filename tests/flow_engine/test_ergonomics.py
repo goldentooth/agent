@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 
 import pytest
 
-from goldentooth_agent.core.flow import (  # Registry functionality
+from goldentooth_agent.flow_engine import (  # Registry functionality
     Flow,
     flow_registry,
     get_flow,

@@ -5,7 +5,7 @@ import warnings
 
 import pytest
 
-from goldentooth_agent.core.flow import Flow
+from goldentooth_agent.flow_engine import Flow
 
 # Filter runtime warnings about unclosed async generators during exception handling
 warnings.filterwarnings(

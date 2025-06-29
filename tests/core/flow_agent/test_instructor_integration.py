@@ -4,12 +4,12 @@ import pytest
 from pydantic import BaseModel, Field
 
 from goldentooth_agent.core.context import Context
-from goldentooth_agent.core.flow import Flow
 from goldentooth_agent.core.flow_agent.instructor_integration import (
     InstructorFlow,
     MockLLMClient,
 )
 from goldentooth_agent.core.flow_agent.schema import FlowIOSchema
+from goldentooth_agent.flow_engine import Flow
 
 
 # Test schemas for Instructor integration

@@ -5,7 +5,7 @@ import warnings
 
 import pytest
 
-from goldentooth_agent.core.flow.combinators import (  # New core combinators; Advanced combinators
+from goldentooth_agent.flow_engine.combinators import (  # New core combinators; Advanced combinators
     batch_stream,
     catch_and_continue_stream,
     chain_stream,
@@ -812,7 +812,7 @@ class TestRaceStream:
 
         result_stream = race_flow(single_item())
 
-        from goldentooth_agent.core.flow.exceptions import FlowExecutionError
+        from goldentooth_agent.flow_engine.exceptions import FlowExecutionError
 
         with pytest.raises(FlowExecutionError, match="All flows failed"):
             async for _item in result_stream:
@@ -1175,7 +1175,7 @@ class TestNewCoreCombinators:
         result_stream = guard_positive(input_stream)
 
         values = []
-        from goldentooth_agent.core.flow.exceptions import FlowValidationError
+        from goldentooth_agent.flow_engine.exceptions import FlowValidationError
 
         with pytest.raises(FlowValidationError, match="Must be positive: 0"):
             async for item in result_stream:
@@ -1193,7 +1193,7 @@ class TestNewCoreCombinators:
         result_stream = guard_even(input_stream)
 
         values = []
-        from goldentooth_agent.core.flow.exceptions import FlowValidationError
+        from goldentooth_agent.flow_engine.exceptions import FlowValidationError
 
         with pytest.raises(FlowValidationError, match="Numbers must be even: 1"):
             async for item in result_stream:

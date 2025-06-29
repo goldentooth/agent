@@ -21,7 +21,7 @@ from goldentooth_agent.core.event.flow import (
     event_source,
     event_transform,
 )
-from goldentooth_agent.core.flow.main import Flow
+from goldentooth_agent.flow_engine.main import Flow
 
 
 class TestSyncEventFlow:
