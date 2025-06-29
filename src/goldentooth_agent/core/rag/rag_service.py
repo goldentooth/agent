@@ -7,6 +7,7 @@ from ..document_store import DocumentStore
 from ..embeddings import EmbeddingsService, VectorStore
 from ..embeddings.hybrid_search import HybridSearchEngine
 from ..llm.claude_client import ClaudeFlowClient
+from .chunk_fusion import ChunkFusion
 
 
 @injectable
@@ -20,6 +21,7 @@ class RAGService:
         vector_store: VectorStore = inject.me(),
         claude_client: ClaudeFlowClient | None = None,
         hybrid_search_engine: HybridSearchEngine = inject.me(),
+        chunk_fusion: ChunkFusion | None = None,
     ) -> None:
         """Initialize the RAG service.
 
@@ -29,11 +31,13 @@ class RAGService:
             vector_store: Vector database for similarity search
             claude_client: Claude client for generating responses
             hybrid_search_engine: Hybrid search engine for combining semantic and keyword search
+            chunk_fusion: Chunk fusion engine for multi-chunk answer synthesis
         """
         self.document_store = document_store
         self.embeddings_service = embeddings_service
         self.vector_store = vector_store
         self.hybrid_search_engine = hybrid_search_engine
+        self.chunk_fusion = chunk_fusion or ChunkFusion()
 
         # Initialize Claude client with default settings if not provided
         self.claude_client = claude_client or ClaudeFlowClient(
@@ -1774,3 +1778,369 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                 f"This configuration achieved an average score of {best_config['avg_score']:.3f}",
             ],
         }
+
+    async def query_with_fusion(
+        self,
+        question: str,
+        max_results: int = 10,
+        store_type: str | None = None,
+        semantic_weight: float = 0.7,
+        keyword_weight: float = 0.3,
+        max_clusters: int = 3,
+        fusion_coherence_threshold: float = 0.6,
+        include_unfused: bool = True,
+    ) -> dict[str, Any]:
+        """Execute a hybrid query with intelligent chunk fusion.
+
+        Args:
+            question: Query question
+            max_results: Maximum number of results to retrieve before fusion
+            store_type: Optional filter by document store type
+            semantic_weight: Weight for semantic search (0-1)
+            keyword_weight: Weight for keyword search (0-1)
+            max_clusters: Maximum number of fused answer clusters to create
+            fusion_coherence_threshold: Minimum coherence for chunk clustering
+            include_unfused: Whether to include unfused results as well
+
+        Returns:
+            Dictionary with fused answers, unfused results, and metadata
+        """
+        try:
+            # First perform hybrid search to get relevant chunks
+            hybrid_result = await self.hybrid_query(
+                question=question,
+                max_results=max_results * 2,  # Get more results for fusion
+                store_type=store_type,
+                semantic_weight=semantic_weight,
+                keyword_weight=keyword_weight,
+                include_metadata=True,
+                include_explanations=True,
+            )
+
+            retrieved_docs = hybrid_result.get("retrieved_documents", [])
+
+            if not retrieved_docs:
+                return {
+                    "fused_answers": [],
+                    "unfused_results": [],
+                    "context": "No relevant documents found.",
+                    "metadata": {
+                        "timestamp": datetime.now().isoformat(),
+                        "fusion_attempted": False,
+                        "reason": "No documents retrieved",
+                    },
+                }
+
+            # Convert retrieved documents to SearchResult format for fusion
+            from ..embeddings.models import Chunk, SearchResult
+
+            search_results = []
+            for doc in retrieved_docs:
+                if doc.get("is_chunk", False):
+                    chunk = Chunk(
+                        chunk_id=doc["chunk_id"],
+                        document_id=doc["document_id"],
+                        content=doc["content"],
+                        position=doc.get("chunk_position", 0),
+                        metadata=doc.get("metadata", {}),
+                        chunk_type=doc.get("chunk_type", "unknown"),
+                    )
+
+                    # Use combined score from hybrid search
+                    relevance_score = doc.get(
+                        "combined_score", doc.get("similarity", 0.5)
+                    )
+
+                    search_result = SearchResult(
+                        chunk=chunk,
+                        relevance_score=relevance_score,
+                        metadata={
+                            "search_method": doc.get("search_method", "hybrid"),
+                            "explanation": doc.get("explanation", ""),
+                        },
+                    )
+                    search_results.append(search_result)
+
+            # Attempt chunk fusion if we have enough chunks
+            fused_answers = []
+            if len(search_results) >= self.chunk_fusion.min_chunks_for_fusion:
+                # Configure chunk fusion with custom threshold if provided
+                if fusion_coherence_threshold != self.chunk_fusion.coherence_threshold:
+                    self.chunk_fusion.coherence_threshold = fusion_coherence_threshold
+
+                # Perform fusion
+                fused_answers = self.chunk_fusion.fuse_chunks(
+                    search_results=search_results,
+                    query=question,
+                    max_clusters=max_clusters,
+                )
+
+            # Generate response context from fused answers
+            context_parts = []
+
+            if fused_answers:
+                context_parts.append("=== Synthesized Answers ===\n")
+
+                for i, answer in enumerate(fused_answers, 1):
+                    context_parts.append(
+                        f"Answer {i} (Confidence: {answer.confidence_score:.2f}):"
+                    )
+                    context_parts.append(answer.content)
+
+                    if answer.contradictions:
+                        context_parts.append("\nPotential Contradictions:")
+                        for contradiction in answer.contradictions:
+                            context_parts.append(f"  - {contradiction}")
+
+                    context_parts.append(
+                        f"\nBased on {answer.num_sources} chunks from {len(answer.source_documents)} documents\n"
+                    )
+
+            # Include unfused results if requested
+            unfused_results = []
+            if include_unfused and search_results:
+                # Get chunks that weren't part of any fusion
+                fused_chunk_ids = set()
+                for answer in fused_answers:
+                    fused_chunk_ids.update({c.chunk_id for c in answer.source_chunks})
+
+                unfused_results = [
+                    sr
+                    for sr in search_results
+                    if sr.chunk.chunk_id not in fused_chunk_ids
+                ][:max_results]
+
+                if unfused_results:
+                    context_parts.append("\n=== Additional Relevant Chunks ===\n")
+
+                    for result in unfused_results:
+                        chunk = result.chunk
+                        context_parts.append(
+                            f"[{chunk.chunk_type}] From {chunk.document_id} (Relevance: {result.relevance_score:.2f}):"
+                        )
+                        context_parts.append(
+                            chunk.content[:500] + "..."
+                            if len(chunk.content) > 500
+                            else chunk.content
+                        )
+                        context_parts.append("")
+
+            context = (
+                "\n".join(context_parts)
+                if context_parts
+                else "No relevant context found."
+            )
+
+            # Generate final response
+            response = ""
+            if context != "No relevant context found.":
+                response = await self._generate_response(question, context)
+
+            # Prepare result
+            return {
+                "response": response,
+                "context": context,
+                "fused_answers": [
+                    {
+                        "content": answer.content,
+                        "confidence_score": answer.confidence_score,
+                        "coherence_score": answer.coherence_score,
+                        "completeness_score": answer.completeness_score,
+                        "num_sources": answer.num_sources,
+                        "source_documents": list(answer.source_documents),
+                        "key_points": answer.key_points,
+                        "contradictions": answer.contradictions,
+                        "metadata": answer.metadata,
+                    }
+                    for answer in fused_answers
+                ],
+                "unfused_results": [
+                    {
+                        "chunk_id": result.chunk.chunk_id,
+                        "document_id": result.chunk.document_id,
+                        "content": (
+                            result.chunk.content[:200] + "..."
+                            if len(result.chunk.content) > 200
+                            else result.chunk.content
+                        ),
+                        "relevance_score": result.relevance_score,
+                        "chunk_type": result.chunk.chunk_type,
+                    }
+                    for result in unfused_results
+                ],
+                "metadata": {
+                    "timestamp": datetime.now().isoformat(),
+                    "fusion_attempted": True,
+                    "num_chunks_retrieved": len(search_results),
+                    "num_fused_answers": len(fused_answers),
+                    "num_unfused_results": len(unfused_results),
+                    "fusion_settings": {
+                        "coherence_threshold": fusion_coherence_threshold,
+                        "max_clusters": max_clusters,
+                        "min_chunks_for_fusion": self.chunk_fusion.min_chunks_for_fusion,
+                        "max_chunks_for_fusion": self.chunk_fusion.max_chunks_for_fusion,
+                    },
+                    "search_settings": {
+                        "semantic_weight": semantic_weight,
+                        "keyword_weight": keyword_weight,
+                    },
+                },
+            }
+
+        except Exception as e:
+            return {
+                "response": "",
+                "context": f"Error during fusion query: {str(e)}",
+                "fused_answers": [],
+                "unfused_results": [],
+                "metadata": {
+                    "timestamp": datetime.now().isoformat(),
+                    "error": True,
+                    "error_message": str(e),
+                },
+            }
+
+    async def analyze_fusion_quality(
+        self,
+        question: str,
+        max_results: int = 15,
+        test_configurations: list[dict[str, float]] | None = None,
+    ) -> dict[str, Any]:
+        """Analyze and compare different fusion configurations.
+
+        Args:
+            question: Query question to test
+            max_results: Maximum results per configuration
+            test_configurations: List of fusion configurations to test
+
+        Returns:
+            Analysis of fusion quality across configurations
+        """
+        if test_configurations is None:
+            test_configurations = [
+                {"coherence_threshold": 0.5, "max_clusters": 2},
+                {"coherence_threshold": 0.6, "max_clusters": 3},
+                {"coherence_threshold": 0.7, "max_clusters": 3},
+                {"coherence_threshold": 0.8, "max_clusters": 4},
+            ]
+
+        results = []
+
+        for config in test_configurations:
+            fusion_result = await self.query_with_fusion(
+                question=question,
+                max_results=max_results,
+                fusion_coherence_threshold=config.get("coherence_threshold", 0.6),
+                max_clusters=config.get("max_clusters", 3),
+                include_unfused=True,
+            )
+
+            # Analyze fusion quality
+            fused_answers = fusion_result.get("fused_answers", [])
+
+            quality_metrics = {
+                "configuration": config,
+                "num_fused_answers": len(fused_answers),
+                "avg_confidence": (
+                    sum(a["confidence_score"] for a in fused_answers)
+                    / len(fused_answers)
+                    if fused_answers
+                    else 0
+                ),
+                "avg_coherence": (
+                    sum(a["coherence_score"] for a in fused_answers)
+                    / len(fused_answers)
+                    if fused_answers
+                    else 0
+                ),
+                "avg_completeness": (
+                    sum(a["completeness_score"] for a in fused_answers)
+                    / len(fused_answers)
+                    if fused_answers
+                    else 0
+                ),
+                "total_chunks_used": sum(a["num_sources"] for a in fused_answers),
+                "has_contradictions": any(a["contradictions"] for a in fused_answers),
+                "avg_key_points": (
+                    sum(len(a["key_points"]) for a in fused_answers)
+                    / len(fused_answers)
+                    if fused_answers
+                    else 0
+                ),
+            }
+
+            results.append(
+                {
+                    "configuration": config,
+                    "metrics": quality_metrics,
+                    "fused_answers": fused_answers[
+                        :2
+                    ],  # Include top 2 answers for inspection
+                }
+            )
+
+        # Find best configuration
+        best_config = max(
+            results,
+            key=lambda r: r["metrics"]["avg_confidence"]
+            * r["metrics"]["avg_coherence"],
+        )
+
+        return {
+            "question": question,
+            "configurations_tested": len(test_configurations),
+            "results": results,
+            "best_configuration": best_config["configuration"],
+            "best_metrics": best_config["metrics"],
+            "recommendations": self._generate_fusion_recommendations(results),
+            "metadata": {
+                "timestamp": datetime.now().isoformat(),
+            },
+        }
+
+    def _generate_fusion_recommendations(
+        self, results: list[dict[str, Any]]
+    ) -> list[str]:
+        """Generate recommendations based on fusion analysis results."""
+        recommendations = []
+
+        # Analyze confidence scores
+        confidences = [r["metrics"]["avg_confidence"] for r in results]
+        if max(confidences) < 0.5:
+            recommendations.append(
+                "Consider adjusting coherence threshold lower to allow more chunks to fuse"
+            )
+
+        # Analyze coherence
+        coherences = [r["metrics"]["avg_coherence"] for r in results]
+        if max(coherences) < 0.6:
+            recommendations.append(
+                "Low coherence suggests chunks may be from disparate sources - consider more focused queries"
+            )
+
+        # Analyze completeness
+        completenesses = [r["metrics"]["avg_completeness"] for r in results]
+        if max(completenesses) < 0.7:
+            recommendations.append(
+                "Low completeness scores - consider retrieving more chunks or improving chunk quality"
+            )
+
+        # Check for contradictions
+        has_contradictions = any(r["metrics"]["has_contradictions"] for r in results)
+        if has_contradictions:
+            recommendations.append(
+                "Contradictions detected - review source documents for consistency"
+            )
+
+        # Optimal cluster count
+        cluster_counts = [r["metrics"]["num_fused_answers"] for r in results]
+        if max(cluster_counts) == 1:
+            recommendations.append(
+                "Only single clusters formed - coherence threshold may be too high"
+            )
+        elif max(cluster_counts) > 5:
+            recommendations.append(
+                "Many clusters formed - consider raising coherence threshold for more focused answers"
+            )
+
+        return recommendations
