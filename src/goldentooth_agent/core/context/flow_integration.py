@@ -7,7 +7,8 @@ import copy
 from collections.abc import AsyncIterator, Awaitable, Callable
 from typing import Any, TypeVar, cast
 
-from ..flow import Flow
+from goldentooth_agent.flow_engine import Flow
+
 from .key import ContextKey
 from .main import Context
 

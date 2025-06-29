@@ -3,26 +3,28 @@
 1. Create a command to enter into each `core/` submodule and write a detailed summary of the code therein, including philosophical background, CS theory, interoperation with other libraries, use cases, notes on test coverage, and anything else needed to fully document the module.
 2. Set up Sphinx to generate documentation and integrate it where appropriate into pre-commit hooks, etc.
 3. Add GitHub Actions workflows to run tests in CI/CD.
-4. Create appropriate tools and other mechanisms to ease issue CRUD operations from within the Goldentooth Agent so that e.g. the Agent can create, search, and review existing tickets and act on them as needed.
+4. Create appropriate tools and other mechanisms to ease GitHub issue CRUD operations from within the Goldentooth Agent so that e.g. the Agent can create, search, and review existing tickets and act on them as needed.
 5. Create appropriate tools and other mechanisms to ease searching the codebase, running tests, and performing other tasks needed to effectively query the current codebase along multiple axes.
-6. Create appropriate tools and other mechanisms to create and update statics about test coverage, etc in such a way that we're not hardcoding them into the README.md.
+6. Create appropriate tools and other mechanisms to create and update statics about test coverage, etc in such a way that we're not hardcoding them into the README.md. This should likely be a part of the module-level and repo-level README.meta.yaml files and the `goldentooth-agent dev` command/subcommands.
 7. Create a suite of QA tools that can remedy (without consuming LLM tokens) as much as possible of the most common issues we encounter, e.g. determining the number of, severity of, and extent of current type-checking issues, etc.
 8. Consider refactoring large files into smaller ones where possible to improve code locality.
-9. Create a tool that will review the submodule-level README.md files and combine/re-summarize them after meaningful changes.
-10. Create commands to accurately construct directory tree representations in markdown for injection into root- and submodule-level README.md files.
-11. Devise a detailed plan to incorporate the successful and effective patterns from the smolcode project.
-12. Incorporate some method of checking dependencies automatically for upstream security alerts.
-13. Write a command or GHA workflow to bump the version in the pyproject.toml file.
+9. Create a tool that will review the submodule-level README.meta.yaml and README.md files and combine/re-summarize them after meaningful changes. The README file should be reviewed for potential updates whenever a file in the module is changed.
+10. Create commands to accurately construct directory tree representations in markdown for injection into root- and submodule-level README.md files. Probably just `tree`, maybe something fancier. This should be in the `markdown.meta.yaml` files too.
+11. Devise a detailed plan to incorporate the successful and effective patterns from the smolcode project geared at giving the Goldentooth Agent the ability to code itself when desirable.
+12. Incorporate some method of checking dependencies automatically and manually for upstream security alerts, e.g. `goldentooth-agent dev audit-security` or using Dependabot.
+13. Write a command or GHA workflow to bump the version in the pyproject.toml file, e.g. `goldentooth-agent dev bump-version` or use the bump-version GitHub Action if it supports pyproject.toml (probably does).
 14. Move to recharacterize this project; remember that it's not a general-purpose agent framework, it's a lulzy toy for playing with my cluster.
-15. Create a command to retrieve the content of a given core module, grab its README.md file, grab its tests if specified, and use it as contextual information for a question to the agent.
-16. Establish reasonable defaults for CLI commands without subcommands.
+15. Create a command to retrieve the content of a given core module, grab its README.md file, grab its tests if specified, and use it as contextual information for a question to the agent, e.g. `goldentooth-agent chat --with-dev-module <path>` or `goldentooth-agent dev chat --module <path>` or something else.
+16. Establish reasonable defaults for CLI commands without subcommands so that we don't get unhelpful error messages.
 17. Ensure that tracing support is integrated and that we can step through a complicated pipeline to debug it, with the output being both machine-readable and human-readable.
-18. Can the Agent interact with Claude Code? It would be useful to be able to run certain queries through the Claude Code API (or using my plan, or whatever) and other queries through the metered API key I have.
+18. Can the Agent interact with Claude Code? It would be useful to be able to run certain queries through the Claude Code API (or using my plan, or whatever) and other queries through the metered API key I have. This doesn't appear to be the case with embeddings, but perhaps elsewhere.
 19. Investigate GitHub MCP and other methods of maintaining a developing and ongoing relationship with GitHub and my repositories.
 20. Add functionality to support querying the various other GitHub organizations and repositories I have available, so I can say to investigate some given GitHub project and devise a plan for updating/expanding/improving it, etc.
-21. Start thinking about integrating Goldentooth Agent with the Terraform repository specifically. We want to be able to maintain a human-readable and machine-readable graph of the infrastructure in that repository and use that to update the README, etc.
-22. Start thinking about integrating Goldentooth Agent with the Ansible repository specifically. We can use this to figure out ways of describing the infrastructure, service catalog, inventory, etc and summarize that in READMEs, etc.
-23. Start thinking about integrating Goldentooth Agent with the Clog. We can use that to get a good picture of the journey thusfar, formulate longer-term strategies for the cluster, document things as we go, and so forth.
-24. Can we integrate asciinema or something similar to easily create screen recordings of command execution?
-25. Write a script to run as part of pre-commit hooks to enforce the README.md file maintenance within modules.
+21. Start thinking about integrating Goldentooth Agent with the Terraform repository (https://github.com/goldentooth/terraform/, ~/Projects/goldentooth/terraform) specifically. We want to be able to maintain a human-readable and machine-readable graph of the infrastructure in that repository and use that to update the README, etc.
+22. Start thinking about integrating Goldentooth Agent with the Ansible repository (https://github.com/goldentooth/ansible/, ~/Projects/goldentooth/ansible) specifically. We can use this to figure out ways of describing the infrastructure, service catalog, inventory, etc and summarize that in READMEs, etc.
+23. Start thinking about integrating Goldentooth Agent with the Clog (https://github.com/goldentooth/clog/, https://clog.goldentooth.net/, ~/Projects/goldentooth/clog). We can use that to get a good picture of the journey thusfar, formulate longer-term strategies for the cluster, document things as we go, and so forth, e.g. `goldentooth-agent dev clog...`. Its markdown content should be injected into the RAG.
+24. Can we integrate asciinema or something similar to easily create screen recordings of command execution? e.g. `goldentooth-agent <command> --record=ascii` or `goldentooth-agent record <command>`?
+25. Write a script to run as part of pre-commit hooks to enforce the README.md file maintenance within modules, e.g. `goldentooth dev module readme update <path>`.
 26. I dislike this error: TypeVar "Input" appears only once in generic function signature; Use "object" insteadPylancereportInvalidTypeVarUse. Can we ignore it permanently?
+27. Create a script or command to list functions and classes with missing/low test coverage, e.g. `goldentooth-agent dev module coverage`.
+28. Maintain a README.meta.yaml in each and every module/submodule directory that collects useful information about a given module and that can be updated entirely by executing a script (i.e. without consuming unnecessary extra tokens), e.g. `goldentooth-agent dev module meta check <path>`. This should be used to determine that the README.md file in that module is outdated, e.g. `goldentooth-agent dev module readme check <path>`.

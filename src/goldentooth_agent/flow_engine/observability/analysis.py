@@ -11,7 +11,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
-from .main import Flow
+from ..main import Flow
 
 # Type aliases for flow analysis
 FlowMetadata = dict[str, Any]

@@ -13,7 +13,7 @@ from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from .main import Flow
+from ..main import Flow
 
 # Type aliases for performance monitoring
 PerformanceData = dict[str, Any]

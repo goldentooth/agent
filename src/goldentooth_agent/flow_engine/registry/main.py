@@ -7,7 +7,7 @@ easy discovery and reuse across applications.
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-from .main import Flow
+from ..main import Flow
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")

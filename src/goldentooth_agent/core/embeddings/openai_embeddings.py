@@ -4,7 +4,6 @@ import os
 from datetime import datetime
 from typing import Any
 
-import numpy as np
 from antidote import inject, injectable
 from openai import AsyncOpenAI
 
@@ -60,7 +59,7 @@ class OpenAIEmbeddingsService:
         try:
             # Clean and truncate text if needed
             cleaned_text = self._clean_text_for_embedding(text)
-            
+
             # Create embedding using OpenAI API
             response = await self._client.embeddings.create(
                 model=self.model,
@@ -70,7 +69,7 @@ class OpenAIEmbeddingsService:
 
             # Extract embedding vector
             embedding = response.data[0].embedding
-            
+
             return embedding
 
         except Exception as e:
@@ -87,13 +86,13 @@ class OpenAIEmbeddingsService:
         """
         # Remove excessive whitespace
         cleaned = " ".join(text.split())
-        
+
         # Truncate if too long (OpenAI has token limits)
         # text-embedding-3-small has ~8k token limit, roughly 6k characters
         max_chars = 6000
         if len(cleaned) > max_chars:
             cleaned = cleaned[:max_chars] + "..."
-        
+
         return cleaned
 
     async def create_document_embedding(
@@ -142,7 +141,7 @@ class OpenAIEmbeddingsService:
         # Common fields that contain useful text
         text_fields = [
             "name",
-            "title", 
+            "title",
             "description",
             "content",
             "summary",
@@ -185,7 +184,9 @@ class OpenAIEmbeddingsService:
 
         return combined_text
 
-    async def embed_batch(self, texts: list[str], batch_size: int = 100) -> list[list[float]]:
+    async def embed_batch(
+        self, texts: list[str], batch_size: int = 100
+    ) -> list[list[float]]:
         """Create embeddings for a batch of texts efficiently.
 
         Args:
@@ -196,14 +197,14 @@ class OpenAIEmbeddingsService:
             List of embedding vectors
         """
         embeddings = []
-        
+
         # Process in batches to respect API limits
         for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
-            
+            batch = texts[i : i + batch_size]
+
             # Clean texts
             cleaned_batch = [self._clean_text_for_embedding(text) for text in batch]
-            
+
             try:
                 # Create embeddings for batch
                 response = await self._client.embeddings.create(
@@ -211,12 +212,12 @@ class OpenAIEmbeddingsService:
                     input=cleaned_batch,
                     dimensions=self.dimensions,
                 )
-                
+
                 # Extract embeddings from response
                 batch_embeddings = [data.embedding for data in response.data]
                 embeddings.extend(batch_embeddings)
-                
-            except Exception as e:
+
+            except Exception:
                 # Fall back to individual embedding creation for this batch
                 for text in batch:
                     try:
@@ -249,7 +250,7 @@ class OpenAIEmbeddingsService:
 
         # Prepare texts for batch embedding
         chunk_texts = [chunk.content for chunk in chunks]
-        
+
         # Create embeddings for all chunks in batches
         embeddings = await self.embed_batch(chunk_texts)
 

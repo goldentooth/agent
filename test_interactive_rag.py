@@ -16,10 +16,10 @@ async def test_interactive_rag():
     """Test the RAG system with multiple queries."""
     print("🤖 Testing Simplified RAG System")
     print("=" * 50)
-    
+
     # Create RAG agent
     rag_agent = create_simple_rag_agent()
-    
+
     # Test queries
     test_queries = [
         "What is the Goldentooth Agent?",
@@ -27,25 +27,25 @@ async def test_interactive_rag():
         "Tell me about Python projects",
         "What is the purpose of the terraform repositories?",
     ]
-    
+
     for i, query in enumerate(test_queries, 1):
         print(f"\n🔍 Query {i}: {query}")
         print("-" * 30)
-        
+
         try:
             result = await rag_agent.process_question(query)
-            
+
             print(f"📄 Sources: {len(result.sources)}")
             print(f"🎯 Confidence: {result.confidence}")
             print(f"💬 Response: {result.response[:200]}...")
-            
+
             if result.suggestions:
                 print(f"💡 Suggestions: {', '.join(result.suggestions[:2])}")
-            
+
         except Exception as e:
             print(f"❌ Error: {e}")
-    
-    print(f"\n✅ Interactive test completed!")
+
+    print("\n✅ Interactive test completed!")
 
 
 if __name__ == "__main__":

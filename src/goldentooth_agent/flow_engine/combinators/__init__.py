@@ -15,6 +15,35 @@ During transition, this imports from both legacy file and new submodules.
 # Import everything from legacy file first
 from ..combinators_legacy import *  # noqa: F403
 
+# Advanced operations
+from .advanced import (
+    chain_stream,
+    combine_latest_stream,
+    flat_map_ctx_stream,
+    merge_async_generators,
+    merge_flows,
+    merge_stream,
+    parallel_stream,
+    parallel_stream_successful,
+    race_stream,
+    zip_stream,
+)
+
+# Aggregation operations
+from .aggregation import (
+    batch_stream,
+    buffer_stream,
+    chunk_stream,
+    distinct_stream,
+    expand_stream,
+    finalize_stream,
+    group_by_stream,
+    memoize_stream,
+    pairwise_stream,
+    scan_stream,
+    window_stream,
+)
+
 # Override with new modular implementations
 from .basic import (
     collect_stream,
@@ -30,6 +59,21 @@ from .basic import (
     skip_stream,
     take_stream,
     until_stream,
+)
+
+# Control flow operations
+from .control_flow import (
+    branch_flows,
+    catch_and_continue_stream,
+    chain_flows,
+    circuit_breaker_stream,
+    if_then_stream,
+    recover_stream,
+    retry_stream,
+    switch_stream,
+    tap_stream,
+    then_stream,
+    while_condition_stream,
 )
 
 # Observability

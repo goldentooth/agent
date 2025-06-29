@@ -12,7 +12,7 @@ from typing import Any
 from goldentooth_agent.core.context import Context, ContextKey
 from goldentooth_agent.core.context.flow_integration import ContextFlowCombinators
 
-from .main import Flow
+from .core.flow import Flow
 
 # Type alias for trampoline system
 AnyItem = Any  # Items can be of any type in trampoline

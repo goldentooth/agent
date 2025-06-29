@@ -15,8 +15,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, TypeVar
 
-from .exceptions import FlowError, FlowExecutionError
-from .main import Flow
+from ..exceptions import FlowError, FlowExecutionError
+from ..main import Flow
 
 # Type aliases for debugging
 DebugMetadata = dict[str, Any]

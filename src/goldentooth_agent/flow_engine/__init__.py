@@ -5,19 +5,6 @@ This package provides flow composition and execution capabilities
 for the Goldentooth Agent system.
 """
 
-# Flow analysis and composition tools
-from .analysis import (
-    FlowAnalyzer,
-    FlowEdge,
-    FlowGraph,
-    FlowNode,
-    analyze_flow,
-    analyze_flow_composition,
-    detect_flow_patterns,
-    export_flow_analysis,
-    generate_flow_optimizations,
-    get_flow_analyzer,
-)
 from .combinators import (  # Advanced combinators; New combinators batch 2; Notification classes
     OnComplete,
     OnError,
@@ -82,9 +69,34 @@ from .combinators import (  # Advanced combinators; New combinators batch 2; Not
     window_stream,
     zip_stream,
 )
+from .core.exceptions import (
+    FlowConfigurationError,
+    FlowError,
+    FlowExecutionError,
+    FlowTimeoutError,
+    FlowValidationError,
+)
+from .core.flow import Flow
+
+# Also keep protocol-based integration as fallback
+from .integrations.context_bridge import initialize_context_integration
+
+# Flow analysis and composition tools
+from .observability.analysis import (
+    FlowAnalyzer,
+    FlowEdge,
+    FlowGraph,
+    FlowNode,
+    analyze_flow,
+    analyze_flow_composition,
+    detect_flow_patterns,
+    export_flow_analysis,
+    generate_flow_optimizations,
+    get_flow_analyzer,
+)
 
 # Debugging and introspection
-from .debugging import (
+from .observability.debugging import (
     FlowDebugger,
     FlowExecutionContext,
     add_flow_breakpoint,
@@ -99,16 +111,9 @@ from .debugging import (
     remove_flow_breakpoint,
     traced_flow,
 )
-from .exceptions import (
-    FlowConfigurationError,
-    FlowError,
-    FlowExecutionError,
-    FlowTimeoutError,
-    FlowValidationError,
-)
 
 # Health monitoring and configuration validation
-from .health import (
+from .observability.health import (
     FlowConfigValidator,
     FlowHealthMonitor,
     HealthCheck,
@@ -124,12 +129,8 @@ from .health import (
     validate_flow_configuration,
 )
 
-# Trampoline execution patterns (using protocol-based integration)
-from .integrations.context_bridge import initialize_context_integration
-from .main import Flow
-
 # Performance monitoring
-from .performance import (
+from .observability.performance import (
     FlowMetrics,
     PerformanceMonitor,
     benchmark_stream,
@@ -150,6 +151,15 @@ from .registry import (
     register_flow,
     registered_flow,
     search_flows,
+)
+
+# Trampoline execution patterns
+from .trampoline import (
+    SHOULD_BREAK_KEY,
+    SHOULD_EXIT_KEY,
+    SHOULD_SKIP_KEY,
+    TrampolineFlowCombinators,
+    extend_flow_with_trampoline,
 )
 
 # Initialize context integration if available
@@ -297,13 +307,13 @@ __all__ = [
     "OnNext",
     "OnError",
     "OnComplete",
-    # Trampoline execution patterns (disabled due to circular import with context)
-    # "TrampolineFlowCombinators",
-    # "SHOULD_EXIT_KEY",
-    # "SHOULD_BREAK_KEY",
-    # "SHOULD_SKIP_KEY",
-    # "extend_flow_with_trampoline",
+    # Trampoline execution patterns
+    "TrampolineFlowCombinators",
+    "SHOULD_EXIT_KEY",
+    "SHOULD_BREAK_KEY",
+    "SHOULD_SKIP_KEY",
+    "extend_flow_with_trampoline",
 ]
 
-# Automatically extend Flow with trampoline methods (disabled due to circular import)
-# extend_flow_with_trampoline()
+# Automatically extend Flow with trampoline methods after all imports
+extend_flow_with_trampoline()

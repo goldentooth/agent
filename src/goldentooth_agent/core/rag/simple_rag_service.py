@@ -28,7 +28,7 @@ class SimpleRAGService:
         self.document_store = document_store
         self.embeddings_service = embeddings_service
         self.vector_store = vector_store
-        
+
         # Initialize Claude client with default settings if not provided
         self.claude_client = claude_client or ClaudeFlowClient(
             default_model="claude-3-5-sonnet-20241022",
@@ -57,9 +57,11 @@ class SimpleRAGService:
         """
         try:
             start_time = datetime.now()
-            
+
             # Step 1: Create embedding for the question
-            question_embedding = await self.embeddings_service.create_embedding(question)
+            question_embedding = await self.embeddings_service.create_embedding(
+                question
+            )
 
             # Step 2: Retrieve similar documents/chunks
             retrieved_docs = self.vector_store.search_similar(
@@ -71,27 +73,36 @@ class SimpleRAGService:
 
             # Step 3: Filter by similarity threshold
             filtered_docs = [
-                doc for doc in retrieved_docs 
+                doc
+                for doc in retrieved_docs
                 if doc.get("similarity_score", 0.0) >= similarity_threshold
             ]
 
             # Step 4: Generate answer using Claude
             if filtered_docs:
-                answer = await self._generate_answer_with_context(question, filtered_docs)
+                answer = await self._generate_answer_with_context(
+                    question, filtered_docs
+                )
             else:
                 answer = "I couldn't find relevant information to answer your question. Try rephrasing or asking about something else."
 
             end_time = datetime.now()
-            
+
             return {
                 "answer": answer,
                 "question": question,
                 "retrieved_documents": filtered_docs,
                 "metadata": {
-                    "chunks_found": len([doc for doc in filtered_docs if doc.get("is_chunk", False)]),
-                    "full_docs_found": len([doc for doc in filtered_docs if not doc.get("is_chunk", False)]),
+                    "chunks_found": len(
+                        [doc for doc in filtered_docs if doc.get("is_chunk", False)]
+                    ),
+                    "full_docs_found": len(
+                        [doc for doc in filtered_docs if not doc.get("is_chunk", False)]
+                    ),
                     "query_timestamp": start_time.isoformat(),
-                    "processing_time_ms": int((end_time - start_time).total_seconds() * 1000),
+                    "processing_time_ms": int(
+                        (end_time - start_time).total_seconds() * 1000
+                    ),
                     "similarity_threshold": similarity_threshold,
                     "total_results": len(filtered_docs),
                     "embedding_dimensions": len(question_embedding),
@@ -115,24 +126,26 @@ class SimpleRAGService:
         self, question: str, documents: list[dict[str, Any]]
     ) -> str:
         """Generate an answer using Claude with document context."""
-        
+
         # Build context from retrieved documents
         context_parts = []
         for i, doc in enumerate(documents[:5], 1):  # Limit to top 5 for context
             content = doc.get("content", "")
             doc_id = doc.get("document_id", "unknown")
             similarity = doc.get("similarity_score", 0.0)
-            
+
             # Truncate very long content
             if len(content) > 500:
                 content = content[:500] + "..."
-            
-            context_parts.append(f"Document {i} (ID: {doc_id}, Similarity: {similarity:.3f}):\n{content}")
-        
+
+            context_parts.append(
+                f"Document {i} (ID: {doc_id}, Similarity: {similarity:.3f}):\n{content}"
+            )
+
         context = "\n\n".join(context_parts)
-        
+
         # Create prompt for Claude
-        prompt = f"""Please answer the following question based on the provided document context. 
+        prompt = f"""Please answer the following question based on the provided document context.
 Be helpful and informative, but only use information from the provided context.
 
 Question: {question}
@@ -149,9 +162,9 @@ Answer:"""
                 messages=messages,
                 max_tokens=1000,
             )
-            
+
             return response.strip() if isinstance(response, str) else str(response)
-            
+
         except Exception as e:
             return f"I found relevant documents but encountered an error generating the response: {str(e)}"
 

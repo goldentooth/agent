@@ -5,14 +5,16 @@ import json
 import re
 import time
 from collections.abc import Callable, Iterator
-from typing import Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 from weakref import WeakSet
 
 from pyee import EventEmitter
 from pyee.asyncio import AsyncIOEventEmitter
 
 from goldentooth_agent.core.event import AsyncEventFlow, SyncEventFlow
-from goldentooth_agent.flow_engine import Flow
+
+if TYPE_CHECKING:
+    from goldentooth_agent.flow_engine import Flow
 
 from .dependency_graph import DependencyGraph
 from .frame import ContextFrame
@@ -28,11 +30,13 @@ TransformFunction = Callable[[Any], Any]
 ValuePredicate = Callable[[Any], bool]
 SyncEventRegistry = dict[str, SyncEventFlow[ContextValue]]
 AsyncEventRegistry = dict[str, AsyncEventFlow[ContextValue]]
-AnyFlow = Flow[None, Any]
 GlobalChangeData = dict[str, Any]
 SyncGlobalEventFlow = SyncEventFlow[GlobalChangeData]
 AsyncGlobalEventFlow = AsyncEventFlow[GlobalChangeData]
-GlobalChangeFlow = Flow[None, GlobalChangeData]
+
+# Use string annotations to avoid circular imports
+AnyFlow = "Flow[None, Any]"
+GlobalChangeFlow = "Flow[None, GlobalChangeData]"
 FlattenedData = dict[str, Any]
 
 T = TypeVar("T")
@@ -627,7 +631,7 @@ class Context:
             )
         return self._async_events[key]
 
-    def as_flow(self, key: str, use_async: bool = True) -> AnyFlow:
+    def as_flow(self, key: str, use_async: bool = True) -> Flow[None, Any]:
         """Convert context key changes to a Flow stream.
 
         Args:
@@ -658,7 +662,9 @@ class Context:
         """
         return self._global_async_events
 
-    def global_changes_as_flow(self, use_async: bool = True) -> GlobalChangeFlow:
+    def global_changes_as_flow(
+        self, use_async: bool = True
+    ) -> Flow[None, GlobalChangeData]:
         """Convert all context changes to a Flow stream.
 
         Args:

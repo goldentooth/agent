@@ -33,20 +33,16 @@ def debounce_stream(seconds: float) -> Flow[Input, Input]:
 
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
         """Debounce stream items by waiting for quiet periods."""
-        last_item = None
-        last_time = 0.0
+        items = []
 
+        # Collect all items first
         async for item in stream:
-            current_time = asyncio.get_event_loop().time()
-            last_item = item
-            last_time = current_time
+            items.append(item)
 
-            # Wait for the debounce period
+        # If we have items, emit only the last one after the debounce period
+        if items:
             await asyncio.sleep(seconds)
-
-            # Only yield if this is still the latest item
-            if asyncio.get_event_loop().time() - last_time >= seconds:
-                yield last_item
+            yield items[-1]
 
     return Flow(_flow, name=f"debounce({seconds})")
 

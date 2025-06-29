@@ -15,7 +15,7 @@ from goldentooth_agent.flow_engine.combinators import (
     memoize_stream,
     parallel_stream,
 )
-from goldentooth_agent.flow_engine.performance import (
+from goldentooth_agent.flow_engine.observability.performance import (
     benchmark_stream,
     enable_memory_tracking,
     get_performance_monitor,
