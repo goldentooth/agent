@@ -21,6 +21,14 @@ from goldentooth_agent.core.llm import create_claude_agent
 app = typer.Typer()
 
 
+async def process_rag_input(rag_agent, question: str, conversation_history: list[dict[str, str]]):
+    """Process input through a RAG agent."""
+    return await rag_agent.process_question(
+        question=question,
+        conversation_history=conversation_history,
+    )
+
+
 async def process_agent_input(agent: FlowAgent, input_data: AgentInput) -> AgentOutput:
     """Process input through a FlowAgent using the correct Flow pattern."""
 
@@ -46,6 +54,16 @@ async def process_agent_input(agent: FlowAgent, input_data: AgentInput) -> Agent
             response="No response generated",
             metadata={"error": "No output from agent flow"},
         )
+
+
+def create_rag_agent():
+    """Create a simplified RAG agent for document-based conversations."""
+    from goldentooth_agent.core.rag.simple_rag_agent import create_simple_rag_agent
+    
+    try:
+        return create_simple_rag_agent()
+    except Exception as e:
+        raise ValueError(f"Failed to create RAG agent: {e}") from e
 
 
 def create_echo_agent() -> FlowAgent:
@@ -149,11 +167,28 @@ async def chat_loop(
 ) -> None:
     """Main chat interaction loop."""
 
-    # Create agent - try Claude first, fallback to echo
+    # Create agent - support RAG, Claude, and echo
+    agent = None
+    rag_agent = None
+    conversation_history = []
+    
     try:
         if agent_name == "echo":
             agent = create_echo_agent()
             console.print("[dim]Using echo agent (demonstration mode)[/dim]")
+        elif agent_name == "rag":
+            try:
+                rag_agent = create_rag_agent()
+                console.print("[dim]Using RAG agent (document-powered responses)[/dim]")
+            except Exception as e:
+                console.print(f"[yellow]RAG agent unavailable: {str(e)[:100]}...[/yellow]")
+                console.print("[yellow]To use the RAG agent, ensure you have:[/yellow]")
+                console.print("[yellow]  1. OPENAI_API_KEY environment variable set[/yellow]")
+                console.print("[yellow]  2. ANTHROPIC_API_KEY environment variable set[/yellow]")  
+                console.print("[yellow]  3. Documents loaded in the vector store[/yellow]")
+                console.print("[yellow]Using echo agent as fallback.[/yellow]")
+                agent = create_echo_agent()
+                rag_agent = None
         else:
             # Try to create Claude agent
             agent = create_claude_agent(
@@ -165,9 +200,10 @@ async def chat_loop(
                 f"[dim]Using Claude agent ({model_name or 'claude-3-5-sonnet-20241022'})[/dim]"
             )
     except ValueError as e:
-        # If Claude fails (e.g., missing API key), fallback to echo
-        console.print(f"[yellow]Claude unavailable ({e}), using echo agent[/yellow]")
+        # If the requested agent fails, fallback to echo
+        console.print(f"[yellow]{agent_name or 'Claude'} unavailable ({e}), using echo agent[/yellow]")
         agent = create_echo_agent()
+        rag_agent = None
     context = Context()
 
     # Add session context
@@ -205,36 +241,63 @@ async def chat_loop(
                 },
             )
 
-            # Process with agent using Flow pattern
-            if stream_enabled:
-                # Streaming response (simulated for echo agent)
-                with Live(
-                    Text("🤖 Thinking...", style="dim"),
-                    console=console,
-                    refresh_per_second=10,
-                ) as live:
-                    # Simulate streaming delay
-                    await asyncio.sleep(0.5)
-
-                    result = await process_agent_input(agent, input_data)
-
-                    live.update(
-                        Text(f"[bold blue]Agent[/bold blue]: {result.response}")
-                    )
-                    await asyncio.sleep(0.1)  # Brief pause to show the response
+            # Process with appropriate agent type
+            if rag_agent:
+                # RAG agent processing
+                if stream_enabled:
+                    with Live(
+                        Text("🔍 Searching documents...", style="dim"),
+                        console=console,
+                        refresh_per_second=10,
+                    ) as live:
+                        result = await process_rag_input(rag_agent, user_input, conversation_history)
+                        live.update(Text(f"[bold blue]RAG Agent[/bold blue]: {result.response}"))
+                        await asyncio.sleep(0.1)
+                else:
+                    with console.status("[dim]🔍 Searching documents...[/dim]"):
+                        result = await process_rag_input(rag_agent, user_input, conversation_history)
+                
+                console.print(f"[bold blue]RAG Agent[/bold blue]: {result.response}")
+                
+                # Show RAG-specific metadata
+                if result.sources:
+                    console.print(f"[dim]Sources: {len(result.sources)} documents | Confidence: {result.confidence:.2f}[/dim]")
+                
+                if result.suggestions:
+                    console.print(f"[dim]Suggestions: {', '.join(result.suggestions[:2])}[/dim]")
+                
+                # Add to conversation history
+                conversation_history.append({"role": "user", "content": user_input})
+                conversation_history.append({"role": "assistant", "content": result.response})
+                
+                # Keep conversation history manageable
+                if len(conversation_history) > 20:
+                    conversation_history = conversation_history[-20:]
+                    
             else:
-                # Standard response
-                with console.status("[dim]🤖 Processing...[/dim]"):
-                    result = await process_agent_input(agent, input_data)
+                # Standard FlowAgent processing
+                if stream_enabled:
+                    with Live(
+                        Text("🤖 Thinking...", style="dim"),
+                        console=console,
+                        refresh_per_second=10,
+                    ) as live:
+                        await asyncio.sleep(0.5)
+                        result = await process_agent_input(agent, input_data)
+                        live.update(Text(f"[bold blue]Agent[/bold blue]: {result.response}"))
+                        await asyncio.sleep(0.1)
+                else:
+                    with console.status("[dim]🤖 Processing...[/dim]"):
+                        result = await process_agent_input(agent, input_data)
 
                 console.print(f"[bold blue]Agent[/bold blue]: {result.response}")
 
-            # Show metadata if available
-            if result.metadata:
-                metadata_text = " | ".join(
-                    [f"{k}: {v}" for k, v in result.metadata.items()]
-                )
-                console.print(f"[dim]{metadata_text}[/dim]")
+                # Show standard metadata
+                if result.metadata:
+                    metadata_text = " | ".join(
+                        [f"{k}: {v}" for k, v in result.metadata.items()]
+                    )
+                    console.print(f"[dim]{metadata_text}[/dim]")
 
             console.print()  # Add spacing
 
@@ -313,23 +376,44 @@ async def process_single_message(
 ) -> AgentOutput:
     """Process a single message through an agent."""
 
-    # Create agent - try Claude first, fallback to echo
+    # Create agent - support RAG, Claude, and echo
     try:
         if agent_name == "echo":
             agent = create_echo_agent()
+            # Create input and process
+            input_data = AgentInput(message=message, context_data={"single_message": True})
+            return await process_agent_input(agent, input_data)
+        elif agent_name == "rag":
+            try:
+                rag_agent = create_rag_agent()
+                # Process with RAG agent
+                rag_result = await process_rag_input(rag_agent, message, [])
+                # Convert RAG result to AgentOutput for compatibility
+                return AgentOutput(
+                    response=rag_result.response,
+                    metadata={
+                        "sources": len(rag_result.sources),
+                        "confidence": rag_result.confidence,
+                        "agent_type": "rag",
+                    }
+                )
+            except Exception as e:
+                console.print(f"[yellow]RAG agent unavailable ({e}), using echo agent[/yellow]")
+                agent = create_echo_agent()
+                input_data = AgentInput(message=message, context_data={"single_message": True})
+                return await process_agent_input(agent, input_data)
         else:
             # Try to create Claude agent
             agent = create_claude_agent(
                 name=agent_name or "claude",
                 system_prompt="You are a helpful AI assistant. Be concise and helpful.",
             )
+            # Create input and process
+            input_data = AgentInput(message=message, context_data={"single_message": True})
+            return await process_agent_input(agent, input_data)
     except ValueError as e:
-        # If Claude fails (e.g., missing API key), fallback to echo
-        console.print(f"[yellow]Claude unavailable ({e}), using echo agent[/yellow]")
+        # If requested agent fails, fallback to echo
+        console.print(f"[yellow]{agent_name or 'Claude'} unavailable ({e}), using echo agent[/yellow]")
         agent = create_echo_agent()
-
-    # Create input
-    input_data = AgentInput(message=message, context_data={"single_message": True})
-
-    # Process and return result
-    return await process_agent_input(agent, input_data)
+        input_data = AgentInput(message=message, context_data={"single_message": True})
+        return await process_agent_input(agent, input_data)

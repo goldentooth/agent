@@ -210,8 +210,13 @@ class HybridSearchEngine:
                 limit=limit,
                 store_type=store_type,
                 include_chunks=include_chunks,
-                similarity_threshold=min_score,
             )
+            
+            # Filter results by similarity threshold
+            results = [
+                result for result in results 
+                if result.get("similarity_score", 0.0) >= min_score
+            ]
 
             # Add search method metadata
             for result in results:
@@ -405,11 +410,10 @@ class HybridSearchEngine:
         try:
             # Get all documents
             documents = self.vector_store.search_similar(
-                [0.0] * 768,  # Dummy embedding
+                [0.0] * 1536,  # Dummy embedding (OpenAI text-embedding-3-small dimensions)
                 limit=10000,  # Large limit to get all documents
                 store_type=store_type,
                 include_chunks=include_chunks,
-                similarity_threshold=0.0,
             )
 
             # Build corpus

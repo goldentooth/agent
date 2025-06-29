@@ -131,7 +131,7 @@ class VectorStore:
                 conn.execute(
                     """
                     CREATE VIRTUAL TABLE IF NOT EXISTS embeddings USING vec0(
-                        embedding float[768],
+                        embedding float[1536],
                         +doc_id TEXT,
                         +store_type TEXT,
                         +document_id TEXT,
