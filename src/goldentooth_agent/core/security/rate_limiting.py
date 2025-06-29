@@ -375,7 +375,7 @@ async def check_rate_limit(key: str) -> RateLimitResult:
 
 def rate_limit_decorator(
     config: RateLimitConfig, key_func: Callable[..., str] | None = None
-) -> Callable[[Callable], Callable]:
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """Decorator to apply rate limiting to async functions."""
     # Create limiter once per decorator instance
     limiter = create_rate_limiter(config)

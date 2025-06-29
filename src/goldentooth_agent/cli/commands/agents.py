@@ -225,7 +225,7 @@ def run_agent(
                 input_dict = json.loads(input_data)
             except json.JSONDecodeError as e:
                 console.print(f"[red]Error: Invalid JSON input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
         elif message:
             # Message shortcut
             input_dict = {"message": message}
@@ -245,7 +245,7 @@ def run_agent(
                     input_dict = {"message": stdin_data}
             except Exception as e:
                 console.print(f"[red]Error reading input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         # Run the agent
         try:
@@ -261,7 +261,7 @@ def run_agent(
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -295,7 +295,7 @@ def test_agent(
                 test_input = json.loads(input_data)
             except json.JSONDecodeError as e:
                 console.print(f"[red]Error: Invalid JSON input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
         else:
             # Default test inputs for different agents
             if agent_name == "echo":
@@ -324,7 +324,7 @@ def test_agent(
         except Exception as e:
             console.print("[bold red]✗ Test Failed[/bold red]")
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 

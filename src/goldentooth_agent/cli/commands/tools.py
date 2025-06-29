@@ -221,7 +221,7 @@ def run_tool(
                 input_dict = json.loads(input_data)
             except json.JSONDecodeError as e:
                 console.print(f"[red]Error: Invalid JSON input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
         elif tool_name == "calculator" and expression:
             # Calculator-specific shortcut
             input_dict = {"expression": expression}
@@ -249,10 +249,10 @@ def run_tool(
                         console.print(
                             f"[red]Error: Invalid input format for tool '{tool_name}'[/red]"
                         )
-                        raise typer.Exit(1)
+                        raise typer.Exit(1) from None
             except Exception as e:
                 console.print(f"[red]Error reading input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         # Run the tool
         try:
@@ -282,7 +282,7 @@ def run_tool(
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 

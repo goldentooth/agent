@@ -155,7 +155,7 @@ def run_instructor_agent(
                 message = input_dict.get("message", "")
             except json.JSONDecodeError as e:
                 console.print(f"[red]Error: Invalid JSON input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
         elif text:
             message = text
         else:
@@ -168,7 +168,7 @@ def run_instructor_agent(
                 message = stdin_data
             except Exception as e:
                 console.print(f"[red]Error reading input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         # Run the instructor agent
         try:
@@ -186,7 +186,7 @@ def run_instructor_agent(
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -275,7 +275,7 @@ async def run_instructor_agent_async(
             results.append(output_data)
 
         if results:
-            return results[-1]  # type: ignore[return-value]
+            return results[-1]
         else:
             raise RuntimeError("Instructor agent produced no output")
 

@@ -328,7 +328,7 @@ Last updated: {datetime.now().isoformat()}
                     )
                 else:
                     commit_hash = commit_message = commit_date = None
-            except:
+            except Exception:
                 commit_hash = commit_message = commit_date = None
 
             # Check for remote
@@ -344,7 +344,7 @@ Last updated: {datetime.now().isoformat()}
                     if remote_result.returncode == 0
                     else None
                 )
-            except:
+            except Exception:
                 remote_url = None
 
             return {

@@ -31,4 +31,4 @@ async def maybe_await(func: Callable[..., T], *args: object, **kwargs: object) -
     if inspect.iscoroutine(result):
         awaited_result = await result
         return cast(T, awaited_result)
-    return result  # type: ignore[return-value]
+    return result

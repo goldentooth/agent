@@ -387,7 +387,7 @@ class TestSecretManager:
         assert retrieved.metadata is not None  # Should create default metadata
 
     def test_list_secrets(self):
-        config = SecretConfig(store_type="memory")
+        config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
 
         secrets = ["secret1", "secret2", "secret3"]
@@ -400,7 +400,7 @@ class TestSecretManager:
             assert secret in listed_secrets
 
     def test_delete_secret(self):
-        config = SecretConfig(store_type="memory")
+        config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
 
         secret_name = "delete_test"
@@ -419,7 +419,7 @@ class TestSecretManager:
             manager.get_secret(secret_name)
 
     def test_secret_exists(self):
-        config = SecretConfig(store_type="memory")
+        config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
 
         secret_name = "exists_test"
@@ -434,11 +434,11 @@ class TestSecretManager:
         assert manager.secret_exists(secret_name)
 
     def test_get_secret_metadata(self):
-        config = SecretConfig(store_type="memory")
+        config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
 
         metadata = SecretMetadata(
-            secret_type="database_password",
+            secret_type="password",
             description="Main database password",
             tags=["database", "production"],
         )
@@ -447,12 +447,12 @@ class TestSecretManager:
 
         retrieved_metadata = manager.get_secret_metadata("db_password")
 
-        assert retrieved_metadata.secret_type == "database_password"
+        assert retrieved_metadata.secret_type == "password"
         assert retrieved_metadata.description == "Main database password"
         assert "database" in retrieved_metadata.tags
 
     def test_update_secret_metadata(self):
-        config = SecretConfig(store_type="memory")
+        config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
 
         original_metadata = SecretMetadata(
@@ -479,7 +479,7 @@ class TestSecretRotation:
     """Test secret rotation functionality."""
 
     def test_rotate_secret(self):
-        config = SecretConfig(store_type="memory")
+        config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
 
         original_value = "original_secret"
@@ -501,7 +501,7 @@ class TestSecretRotation:
     def test_find_secrets_needing_rotation(self):
         from datetime import datetime, timedelta
 
-        config = SecretConfig(store_type="memory")
+        config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
 
         # Create secrets with different rotation needs
@@ -643,7 +643,7 @@ class TestErrorHandling:
             provider.decrypt("invalid_encrypted_data")
 
     def test_secret_manager_error_propagation(self):
-        config = SecretConfig(store_type="memory")
+        config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
 
         # Test getting non-existent secret

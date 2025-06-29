@@ -8,12 +8,11 @@ import json
 import pickle
 import time
 from collections import OrderedDict, defaultdict
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, TypeVar
-from collections.abc import AsyncGenerator
 
 from ..flow_agent import FlowIOSchema
 
@@ -33,7 +32,7 @@ class CacheStrategy(Enum):
 class CacheMetrics:
     """Track cache performance metrics."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.hits = 0
         self.misses = 0
         self.evictions = 0
@@ -363,10 +362,10 @@ class SmartCacheDecorator:
                 return cached_value
 
             # Execute function
-            start_time = time.time()
+            # start_time = time.time()  # Timing not used currently
             try:
                 result = await func(*args, **kwargs)
-                computation_time = time.time() - start_time
+                # computation_time = time.time() - start_time  # Unused for now
 
                 # Cache result
                 await self.cache.set(cache_key, result, self.ttl)
@@ -379,7 +378,9 @@ class SmartCacheDecorator:
 
         return wrapper
 
-    def _generate_key(self, func: Callable, args: tuple, kwargs: dict) -> str:
+    def _generate_key(
+        self, func: Callable[..., Any], args: tuple[Any, ...], kwargs: dict[str, Any]
+    ) -> str:
         """Generate cache key from function and arguments."""
         key_parts = [func.__name__]
 
@@ -388,7 +389,7 @@ class SmartCacheDecorator:
             if hasattr(arg, "model_dump"):
                 # Pydantic models
                 key_parts.append(json.dumps(arg.model_dump(), sort_keys=True))
-            elif isinstance(arg, (str, int, float, bool)):
+            elif isinstance(arg, str | int | float | bool):
                 key_parts.append(str(arg))
             else:
                 # Use hash for complex objects
@@ -430,17 +431,23 @@ llm_cache = IntelligentCache(
 
 
 # Convenience decorators
-def cached_flow(ttl: float | None = None, cache: IntelligentCache | None = None):
+def cached_flow(
+    ttl: float | None = None, cache: IntelligentCache | None = None
+) -> SmartCacheDecorator:
     """Decorator for caching Flow operations."""
     return SmartCacheDecorator(cache or flow_cache, ttl)
 
 
-def cached_tool(ttl: float | None = None, cache: IntelligentCache | None = None):
+def cached_tool(
+    ttl: float | None = None, cache: IntelligentCache | None = None
+) -> SmartCacheDecorator:
     """Decorator for caching tool operations."""
     return SmartCacheDecorator(cache or tool_cache, ttl)
 
 
-def cached_llm(ttl: float | None = None, cache: IntelligentCache | None = None):
+def cached_llm(
+    ttl: float | None = None, cache: IntelligentCache | None = None
+) -> SmartCacheDecorator:
     """Decorator for caching LLM operations."""
     return SmartCacheDecorator(cache or llm_cache, ttl)
 

@@ -79,7 +79,7 @@ def list_flows() -> None:
         table.add_column("Type", style="green")
         table.add_column("Description", style="blue")
 
-        for name, flow in flows.items():
+        for name, _ in flows.items():
             if name in ["calculator", "echo"]:
                 flow_type = "Tool Flow"
                 description = f"Flow version of {name} tool"
@@ -146,7 +146,7 @@ def exec_flow(
                 input_dict = json.loads(input_data)
             except json.JSONDecodeError as e:
                 console.print(f"[red]Error: Invalid JSON input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
         else:
             # Try to read from stdin
             try:
@@ -160,10 +160,10 @@ def exec_flow(
                     input_dict = json.loads(stdin_data)
                 except json.JSONDecodeError as e:
                     console.print(f"[red]Error: Invalid JSON input: {e}[/red]")
-                    raise typer.Exit(1)
+                    raise typer.Exit(1) from None
             except Exception as e:
                 console.print(f"[red]Error reading input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         # Run the flow
         try:
@@ -200,7 +200,7 @@ def exec_flow(
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 

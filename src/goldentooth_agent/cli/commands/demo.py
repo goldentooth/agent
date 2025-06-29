@@ -207,7 +207,7 @@ def demo_stream_processing(console: Console, interactive: bool) -> None:
     table.add_column("Flow", style="cyan")
     table.add_column("Purpose", style="green")
 
-    for name, flow in flows.items():
+    for name, _ in flows.items():
         purpose = {
             "calculator": "Mathematical computations",
             "echo": "Message echoing with metadata",
@@ -248,9 +248,11 @@ async def demo_live_stream_processing(console: Console) -> None:
         task = progress.add_task("Processing expressions...", total=len(expressions))
 
         for expr in expressions:
-            # Create input stream
-            async def input_stream() -> AsyncIterator[dict[str, str]]:
-                yield {"expression": expr}
+            # Create input stream (capture expr in closure)
+            async def input_stream(
+                expression: str = expr,
+            ) -> AsyncIterator[dict[str, str]]:
+                yield {"expression": expression}
 
             # Process through flow
             async for result in calculator_flow(input_stream()):
@@ -285,8 +287,10 @@ async def demo_live_error_handling(console: Console) -> None:
     for expr in expressions:
         try:
 
-            async def input_stream() -> AsyncIterator[dict[str, str]]:
-                yield {"expression": expr}
+            async def input_stream(
+                expression: str = expr,
+            ) -> AsyncIterator[dict[str, str]]:
+                yield {"expression": expression}
 
             console.print(f"\n[blue]Input:[/blue] {expr}")
 
@@ -438,7 +442,7 @@ def demo_agent_basics(console: Console, interactive: bool) -> None:
     table.add_column("Type", style="green")
     table.add_column("Description", style="blue")
 
-    for name, agent in agents.items():
+    for name, _ in agents.items():
         table.add_row(
             name, "FlowAgent", "Simple echo agent that returns user input with metadata"
         )
@@ -477,8 +481,10 @@ async def demo_agent_interaction(console: Console) -> None:
         # Process through agent
         agent_flow = echo_agent.as_flow()
 
-        async def input_stream() -> AsyncIterator[AgentInput]:
-            yield agent_input
+        async def input_stream(
+            input_data: AgentInput = agent_input,
+        ) -> AsyncIterator[AgentInput]:
+            yield input_data
 
         async for result in agent_flow(input_stream()):
             # Cast result to AgentOutput for type safety

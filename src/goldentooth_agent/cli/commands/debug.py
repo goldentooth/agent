@@ -87,7 +87,7 @@ def system_health(
                     )
                 except Exception as e:
                     console.print(f"[red]Error writing to file: {e}[/red]")
-                    raise typer.Exit(1)
+                    raise typer.Exit(1) from None
             else:
                 print(output)
         else:
@@ -103,7 +103,7 @@ def system_health(
                     )
                 except Exception as e:
                     console.print(f"[red]Error writing to file: {e}[/red]")
-                    raise typer.Exit(1)
+                    raise typer.Exit(1) from None
 
     handle()
 
@@ -153,7 +153,7 @@ def trace_execution(
             display_trace_results(console, trace_data, verbose)
         except Exception as e:
             console.print(f"[red]Trace execution failed: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -200,7 +200,7 @@ def profile_performance(
 
         except Exception as e:
             console.print(f"[red]Profiling failed: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -592,7 +592,7 @@ def run_performance_profiling(
             f"Profiling {iterations} iterations...", total=iterations
         )
 
-        for i in range(iterations):
+        for _ in range(iterations):
             start_time = time.time()
             try:
                 # Simulate command execution timing

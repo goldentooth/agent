@@ -200,7 +200,7 @@ class InputValidator:
             return value
 
         # Depth validation
-        if current_depth > self.config.max_dict_depth:
+        if current_depth >= self.config.max_dict_depth:
             raise ValidationError(
                 f"Dictionary nesting exceeds maximum depth ({self.config.max_dict_depth})",
                 validation_type="depth_limit",
@@ -410,18 +410,24 @@ def validate_url(url: str, config: SecurityConfig | None = None) -> str:
             "Invalid URL format", validation_type="url_format", input_value=url
         ) from e
 
-    # Check for malformed URLs by validating basic structure
-    if not parsed.scheme or not parsed.netloc:
+    # Check for missing scheme
+    if not parsed.scheme:
         raise ValidationError(
             "Invalid URL format", validation_type="url_format", input_value=url
         )
 
-    # Validate scheme
+    # Validate scheme first
     if parsed.scheme.lower() not in config.allowed_url_schemes:
         raise ValidationError(
             f"Invalid URL scheme: {parsed.scheme}",
             validation_type="url_scheme",
             input_value=url,
+        )
+
+    # Check for missing netloc (only for schemes that require it)
+    if not parsed.netloc and parsed.scheme.lower() in ["http", "https", "ftp"]:
+        raise ValidationError(
+            "Invalid URL format", validation_type="url_format", input_value=url
         )
 
     # Check blocked domains

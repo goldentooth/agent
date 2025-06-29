@@ -86,7 +86,7 @@ async def process_execute_implementation(
         try:
             process = (
                 await asyncio.create_subprocess_exec(
-                    *cmd if not input_data.shell else [],  # type: ignore[misc,redundant-expr]
+                    *cmd if not input_data.shell else [],
                     shell=input_data.shell,
                     stdout=subprocess.PIPE if input_data.capture_output else None,
                     stderr=subprocess.PIPE if input_data.capture_output else None,
@@ -96,7 +96,7 @@ async def process_execute_implementation(
                 )
                 if not input_data.shell
                 else await asyncio.create_subprocess_shell(
-                    cmd,
+                    cmd if isinstance(cmd, str) else " ".join(cmd),
                     stdout=subprocess.PIPE if input_data.capture_output else None,
                     stderr=subprocess.PIPE if input_data.capture_output else None,
                     stdin=subprocess.PIPE if input_data.input_data else None,
@@ -368,7 +368,7 @@ ProcessExecuteTool = FlowTool(
     name="process_execute",
     input_schema=ProcessExecuteInput,
     output_schema=ProcessExecuteOutput,
-    implementation=process_execute_implementation,
+    implementation=process_execute_implementation,  # type: ignore[arg-type]
     description="Execute system processes with timeout control, environment setup, and output capture",
 )
 
@@ -376,6 +376,6 @@ SystemInfoTool = FlowTool(
     name="system_info",
     input_schema=SystemInfoInput,
     output_schema=SystemInfoOutput,
-    implementation=system_info_implementation,
+    implementation=system_info_implementation,  # type: ignore[arg-type]
     description="Collect comprehensive system information including CPU, memory, disk, and network stats",
 )

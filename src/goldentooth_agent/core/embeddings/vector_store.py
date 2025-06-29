@@ -627,7 +627,7 @@ class VectorStore:
         """
         with sqlite3.connect(self.db_path) as conn:
             query = "SELECT id, store_type, document_id, created_at, updated_at FROM documents"
-            params = []
+            params: list[str | int] = []
 
             if store_type:
                 query += " WHERE store_type = ?"

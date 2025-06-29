@@ -91,7 +91,7 @@ def list_documents(
 
         except Exception as e:
             console.print(f"[red]Error listing documents: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -173,13 +173,13 @@ def show_document(
 
         except Exception as e:
             console.print(f"[red]Error showing document: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
 
 @app.command("paths")
-def show_paths():
+def show_paths() -> None:
     """Show file system paths for document stores."""
 
     @inject
@@ -201,13 +201,13 @@ def show_paths():
 
         except Exception as e:
             console.print(f"[red]Error showing paths: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
 
 @app.command("stats")
-def show_stats():
+def show_stats() -> None:
     """Show statistics about the document store and vector database."""
 
     @inject
@@ -255,7 +255,7 @@ def show_stats():
 
         except Exception as e:
             console.print(f"[red]Error showing stats: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -338,7 +338,7 @@ def manage_sidecar_files(
 
         except Exception as e:
             console.print(f"[red]Error managing sidecar files: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -365,7 +365,7 @@ def embed_documents(
     ) -> None:
         """Handle the embed command."""
 
-        async def embed_async():
+        async def embed_async() -> None:
             try:
                 all_docs = document_store.list_all_documents()
 
@@ -476,7 +476,7 @@ def embed_documents(
 
             except Exception as e:
                 console.print(f"[red]Error during embedding: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         # Run the async embedding process
         asyncio.run(embed_async())
@@ -501,7 +501,7 @@ def search_documents(
     ) -> None:
         """Handle the search command."""
 
-        async def search_async():
+        async def search_async() -> None:
             try:
                 console.print(f"[cyan]Searching for: '{query}'[/cyan]")
 
@@ -536,7 +536,7 @@ def search_documents(
 
             except Exception as e:
                 console.print(f"[red]Error during search: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         # Run the async search process
         asyncio.run(search_async())
@@ -568,7 +568,7 @@ def ask_question(
     def handle(rag_service: RAGService = inject.me()) -> None:
         """Handle the ask command."""
 
-        async def ask_async():
+        async def ask_async() -> None:
             try:
                 console.print(f"[cyan]Question: {question}[/cyan]\n")
 
@@ -612,7 +612,7 @@ def ask_question(
 
             except Exception as e:
                 console.print(f"[red]Error: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         # Run the async ask process
         asyncio.run(ask_async())
@@ -633,7 +633,7 @@ def summarize_knowledge_base(
     def handle(rag_service: RAGService = inject.me()) -> None:
         """Handle the summarize command."""
 
-        async def summarize_async():
+        async def summarize_async() -> None:
             try:
                 with console.status("[bold green]Analyzing knowledge base..."):
                     result = await rag_service.summarize_documents(
@@ -659,7 +659,7 @@ def summarize_knowledge_base(
 
             except Exception as e:
                 console.print(f"[red]Error: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         # Run the async summarize process
         asyncio.run(summarize_async())
@@ -680,7 +680,7 @@ def get_document_insights(
     def handle(rag_service: RAGService = inject.me()) -> None:
         """Handle the insights command."""
 
-        async def insights_async():
+        async def insights_async() -> None:
             try:
                 with console.status(
                     f"[bold green]Analyzing {store_type}/{document_id}..."
@@ -708,7 +708,7 @@ def get_document_insights(
 
             except Exception as e:
                 console.print(f"[red]Error: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         # Run the async insights process
         asyncio.run(insights_async())

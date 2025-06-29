@@ -22,7 +22,7 @@ def sync_organization(
     embed: bool = typer.Option(
         True, "--embed/--no-embed", help="Embed documents after sync"
     ),
-):
+) -> None:
     """Sync a GitHub organization and its repositories."""
 
     @inject
@@ -55,7 +55,7 @@ def sync_organization(
             if embed:
                 console.print("[cyan]Embedding documents...[/cyan]")
 
-                async def embed_docs():
+                async def embed_docs() -> None:
                     # Embed organization
                     org_doc = github_client.document_store.github_orgs.load(org_name)
                     org_embedding = await embeddings_service.create_document_embedding(
@@ -109,7 +109,7 @@ def sync_organization(
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -125,7 +125,7 @@ def sync_user_repos(
     embed: bool = typer.Option(
         True, "--embed/--no-embed", help="Embed documents after sync"
     ),
-):
+) -> None:
     """Sync repositories for a user (or authenticated user)."""
 
     @inject
@@ -159,7 +159,7 @@ def sync_user_repos(
             if embed and result["repos_synced"] > 0:
                 console.print("[cyan]Embedding repositories...[/cyan]")
 
-                async def embed_repos():
+                async def embed_repos() -> None:
                     embedded_count = 0
                     repo_ids = github_client.document_store.github_repos.list()
 
@@ -211,13 +211,13 @@ def sync_user_repos(
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
 
 @app.command("list-orgs")
-def list_user_organizations():
+def list_user_organizations() -> None:
     """List organizations for the authenticated user."""
 
     @inject
@@ -255,13 +255,13 @@ def list_user_organizations():
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
 
 @app.command("rate-limit")
-def show_rate_limit():
+def show_rate_limit() -> None:
     """Show GitHub API rate limit status."""
 
     @inject
@@ -314,13 +314,13 @@ def show_rate_limit():
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
 
 @app.command("status")
-def show_github_status():
+def show_github_status() -> None:
     """Show status of synced GitHub data."""
 
     @inject
@@ -367,6 +367,6 @@ def show_github_status():
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()

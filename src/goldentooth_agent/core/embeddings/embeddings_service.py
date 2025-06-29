@@ -75,7 +75,9 @@ class EmbeddingsService:
         except Exception as e:
             raise ValueError(f"Failed to create embedding: {e}") from e
 
-    def _text_to_vector(self, text: str, dimensions: int = 768) -> np.ndarray:
+    def _text_to_vector(
+        self, text: str, dimensions: int = 768
+    ) -> np.ndarray[Any, np.dtype[np.float32]]:
         """Convert text to a basic vector representation.
 
         This is a simple hash-based approach. In production, you'd want

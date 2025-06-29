@@ -43,8 +43,8 @@ class HttpRequestOutput(FlowIOSchema):
     error: str | None = Field(default=None, description="Error message if failed")
 
 
-@performance_monitor.timed("http_request")  # type: ignore[misc]
-@async_cache(ttl=300.0)  # type: ignore[misc] # Cache for 5 minutes
+@performance_monitor.timed("http_request")
+@async_cache(ttl=300.0)
 async def http_request_implementation(
     input_data: HttpRequestInput,
 ) -> HttpRequestOutput:
@@ -181,7 +181,7 @@ async def web_scrape_implementation(input_data: WebScrapeInput) -> WebScrapeOutp
         soup = BeautifulSoup(http_result.content, "html.parser")
 
         # Extract title
-        title = soup.title.string.strip() if soup.title and soup.title.string else None  # type: ignore[union-attr]
+        title = soup.title.string.strip() if soup.title and soup.title.string else None
 
         # Extract text content
         text_content = ""
@@ -202,7 +202,7 @@ async def web_scrape_implementation(input_data: WebScrapeInput) -> WebScrapeOutp
             for link in soup.find_all("a", href=True):
                 href = link["href"]  # type: ignore[index]
                 # Convert relative URLs to absolute
-                absolute_url = urljoin(base_url, str(href))  # type: ignore[arg-type]
+                absolute_url = urljoin(base_url, str(href))
                 if absolute_url not in links:
                     links.append(absolute_url)
 
@@ -213,7 +213,7 @@ async def web_scrape_implementation(input_data: WebScrapeInput) -> WebScrapeOutp
             for img in soup.find_all("img", src=True):
                 src = img["src"]  # type: ignore[index]
                 # Convert relative URLs to absolute
-                absolute_url = urljoin(base_url, str(src))  # type: ignore[arg-type]
+                absolute_url = urljoin(base_url, str(src))
                 if absolute_url not in images:
                     images.append(absolute_url)
 
@@ -247,8 +247,8 @@ async def web_scrape_implementation(input_data: WebScrapeInput) -> WebScrapeOutp
             url=str(input_data.url),
             title=title,
             text_content=text_content,
-            links=links,  # type: ignore[arg-type]
-            images=images,  # type: ignore[arg-type]
+            links=links,
+            images=images,
             selected_elements=selected_elements,
             metadata=metadata,  # type: ignore[arg-type]
             success=True,

@@ -135,7 +135,7 @@ def chat(
             console.print("\n[yellow]Chat session ended.[/yellow]")
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -282,7 +282,7 @@ def send(
                 console.print(
                     "[red]Error: No message provided and failed to read from stdin[/red]"
                 )
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
 
         if not input_text:
             console.print("[red]Error: Empty message provided[/red]")
@@ -303,7 +303,7 @@ def send(
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
@@ -327,7 +327,6 @@ async def process_single_message(
         # If Claude fails (e.g., missing API key), fallback to echo
         console.print(f"[yellow]Claude unavailable ({e}), using echo agent[/yellow]")
         agent = create_echo_agent()
-    context = Context()
 
     # Create input
     input_data = AgentInput(message=message, context_data={"single_message": True})

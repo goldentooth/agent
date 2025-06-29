@@ -70,6 +70,15 @@ from .system_tools import ProcessExecuteTool, SystemInfoTool
 from .web_tools import HttpRequestTool, JsonApiTool, WebScrapeTool
 
 __all__ = [
+    # Module imports
+    "ai_tools",
+    "cache",
+    "file_tools",
+    "parallel",
+    "performance",
+    "streaming",
+    "system_tools",
+    "web_tools",
     # Web Tools
     "HttpRequestTool",
     "WebScrapeTool",

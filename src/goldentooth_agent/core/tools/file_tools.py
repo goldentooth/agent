@@ -400,7 +400,7 @@ FileReadTool = FlowTool(
     name="file_read",
     input_schema=FileReadInput,
     output_schema=FileReadOutput,
-    implementation=file_read_implementation,
+    implementation=file_read_implementation,  # type: ignore[arg-type]
     description="Read file content with encoding detection, size limits, and binary support",
 )
 
@@ -408,7 +408,7 @@ FileWriteTool = FlowTool(
     name="file_write",
     input_schema=FileWriteInput,
     output_schema=FileWriteOutput,
-    implementation=file_write_implementation,
+    implementation=file_write_implementation,  # type: ignore[arg-type]
     description="Write content to files with directory creation and append support",
 )
 
@@ -416,6 +416,6 @@ JsonProcessTool = FlowTool(
     name="json_process",
     input_schema=JsonProcessInput,
     output_schema=JsonProcessOutput,
-    implementation=json_process_implementation,
+    implementation=json_process_implementation,  # type: ignore[arg-type]
     description="Process JSON data with parsing, validation, extraction, and transformation",
 )

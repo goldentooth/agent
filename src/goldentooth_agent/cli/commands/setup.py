@@ -23,7 +23,7 @@ def initialize_system(
     embed: bool = typer.Option(
         True, "--embed/--no-embed", help="Embed sample data after installation"
     ),
-):
+) -> None:
     """Initialize the Goldentooth Agent system with sample data."""
 
     @inject
@@ -67,7 +67,7 @@ def initialize_system(
                 if embed and result["total_installed"] > 0:
                     console.print("[cyan]Embedding sample documents...[/cyan]")
 
-                    async def embed_all_sample_data():
+                    async def embed_all_sample_data() -> int:
                         embedded_count = 0
 
                         # Embed GitHub organizations
@@ -162,13 +162,13 @@ def initialize_system(
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 
 
 @app.command("status")
-def show_system_status():
+def show_system_status() -> None:
     """Show overall system status and configuration."""
 
     @inject
@@ -248,6 +248,6 @@ def show_system_status():
 
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()

@@ -14,7 +14,7 @@ import time
 from typing import Any
 
 from goldentooth_agent.core.flow_agent import FlowIOSchema
-from goldentooth_agent.core.tools import (  # Performance monitoring; HTTP client pooling; Streaming; Parallel execution; Intelligent caching; Tools
+from goldentooth_agent.core.tools import (  # Performance monitoring; HTTP client pooling; Streaming; Parallel execution; Intelligent caching; Tools; performance_monitor,  # Not used in this demo
     CacheStrategy,
     FlowParallelExecutor,
     IntelligentCache,
@@ -25,7 +25,6 @@ from goldentooth_agent.core.tools import (  # Performance monitoring; HTTP clien
     configure_http_pool,
     get_all_cache_stats,
     get_http_client,
-    performance_monitor,
 )
 
 
@@ -228,7 +227,7 @@ async def demo_intelligent_caching():
         await expensive_operation(item)
 
     miss_time = time.time() - start_time
-    miss_stats = await cache.get_stats()
+    # miss_stats = await cache.get_stats()  # Stats not used in this demo
 
     # Second pass - cache hits
     print("⚡ Second pass (cache hits)...")
@@ -329,7 +328,7 @@ async def demo_combined_optimization():
 
     # Get comprehensive stats
     cache_stats = await get_all_cache_stats()
-    performance_stats = await performance_monitor.get_stats()
+    # performance_stats = await performance_monitor.get_stats()  # Stats not used in output
     parallel_stats = await parallel_executor.get_performance_stats()
 
     print(f"✅ Completed {len(results)} complex operations in {total_time:.2f}s")

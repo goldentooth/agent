@@ -58,7 +58,7 @@ def inspect_context(
                     console.print(
                         f"[dim]Available keys: {', '.join(available_keys)}[/dim]"
                     )
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
         else:
             # Inspect entire context
             show_context_overview(console, context, format, show_history, show_computed)
@@ -139,7 +139,7 @@ def export_context(
                 console.print(f"[green]✓[/green] Context exported to {output}")
             except Exception as e:
                 console.print(f"[red]Error writing to file: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
         else:
             print(export_data)
 
@@ -176,7 +176,7 @@ def show_key_details(
 ) -> None:
     """Show details for a specific context key."""
     if format == "json":
-        if isinstance(value, (dict, list)):
+        if isinstance(value, dict | list):
             print(json.dumps(value, indent=2))
         else:
             print(json.dumps({"key": key, "value": value}, indent=2))
@@ -192,7 +192,7 @@ def show_key_details(
             )
         )
 
-        if isinstance(value, (dict, list)):
+        if isinstance(value, dict | list):
             syntax = Syntax(json.dumps(value, indent=2), "json", theme="monokai")
             console.print(syntax)
         else:
@@ -237,7 +237,7 @@ def show_context_overview(
             value_type = type(value).__name__
 
             # Create value preview
-            if isinstance(value, (dict, list)):
+            if isinstance(value, dict | list):
                 preview = json.dumps(value)  # type: ignore[unreachable]  # False positive
             else:
                 preview = str(value)

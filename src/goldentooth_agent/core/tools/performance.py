@@ -6,10 +6,9 @@ import asyncio
 import functools
 import time
 from collections import defaultdict
-from collections.abc import Callable, Coroutine
+from collections.abc import AsyncGenerator, Callable, Coroutine
 from contextlib import asynccontextmanager
 from typing import Any, TypeVar
-from collections.abc import AsyncGenerator
 
 import httpx
 
@@ -206,8 +205,8 @@ def batch_processor(
             return await future
 
         async def _process_batch(
-            batch_func: Callable,
-            items: list[tuple[Any, asyncio.Future]],
+            batch_func: Callable[..., Any],
+            items: list[tuple[Any, asyncio.Future[Any]]],
             batch_timeout: float,
         ) -> None:
             """Process a batch of items."""
@@ -243,7 +242,7 @@ def batch_processor(
 class PerformanceMonitor:
     """Monitor performance metrics for tools and operations."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.metrics: dict[str, list[float]] = defaultdict(list)
         self.counters: dict[str, int] = defaultdict(int)
         self.lock = asyncio.Lock()

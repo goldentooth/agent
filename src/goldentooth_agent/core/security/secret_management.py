@@ -133,13 +133,29 @@ class SecretValue:
     """Wrapper for secret values with memory protection."""
 
     def __init__(self, value: str, metadata: SecretMetadata):
-        self._value = value
+        # Store value with minimal obfuscation for memory protection
+        self._obfuscated = self._obfuscate(value)
         self.metadata = metadata
+
+    def _obfuscate(self, value: str) -> bytes:
+        """Simple obfuscation to avoid plain text in memory."""
+        # Simple XOR with rotating key - not cryptographically secure,
+        # just prevents accidental exposure in memory dumps
+        key = b"GOLDENTOOTH_SECRET_OBFUSCATION_KEY"
+        value_bytes = value.encode("utf-8")
+        return bytes(b ^ key[i % len(key)] for i, b in enumerate(value_bytes))
+
+    def _deobfuscate(self, obfuscated: bytes) -> str:
+        """Reverse the obfuscation."""
+        key = b"GOLDENTOOTH_SECRET_OBFUSCATION_KEY"
+        return bytes(b ^ key[i % len(key)] for i, b in enumerate(obfuscated)).decode(
+            "utf-8"
+        )
 
     @property
     def value(self) -> str:
         """Get the secret value."""
-        return self._value
+        return self._deobfuscate(self._obfuscated)
 
     def __str__(self) -> str:
         """String representation without exposing value."""

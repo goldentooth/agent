@@ -104,7 +104,7 @@ class TestTokenBucketLimiter:
         key = "test_user"
 
         # Use up all tokens
-        for i in range(3):
+        for _ in range(3):
             result = await limiter.check_rate_limit(key)
             assert result.allowed is True
 
@@ -170,7 +170,7 @@ class TestSlidingWindowLimiter:
         key = "test_user"
 
         # Use up limit
-        for i in range(5):
+        for _ in range(5):
             result = await limiter.check_rate_limit(key)
             assert result.allowed is True
 
@@ -426,7 +426,7 @@ class TestGlobalRateLimiter:
         key = "shared_state_user"
 
         # Make several requests
-        for i in range(5):
+        for _ in range(5):
             result = await check_rate_limit(key)
             assert result.allowed is True
 

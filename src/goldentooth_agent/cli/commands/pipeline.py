@@ -365,7 +365,7 @@ def run_pipeline(
                 input_dict = json.loads(input_data)
             except json.JSONDecodeError as e:
                 console.print(f"[red]Error: Invalid JSON input: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from None
         else:
             # Default inputs for different pipelines
             if pipeline_name == "web_analysis":
@@ -413,7 +413,7 @@ def run_pipeline(
 
         except Exception as e:
             console.print(f"[red]Pipeline execution failed: {e}[/red]")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from None
 
     handle()
 

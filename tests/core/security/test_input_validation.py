@@ -527,7 +527,7 @@ class TestValidationErrorHandling:
 
         try:
             validator.validate_string("<script>alert('xss')</script>")
-            assert False, "Should have raised ValidationError"
+            raise AssertionError("Should have raised ValidationError")
         except ValidationError as e:
             assert "Potential XSS" in str(e)
             assert hasattr(e, "validation_type")

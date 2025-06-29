@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from antidote import inject, injectable
 
@@ -26,47 +26,47 @@ class DocumentStore:
         self.data_dir = paths.data()
 
         # Initialize stores for each document type
-        self._github_orgs: YamlStore = YamlStore(
+        self._github_orgs: YamlStore[Any] = YamlStore(
             self.data_dir / "github" / "orgs", GitHubOrgAdapter
         )
-        self._github_repos: YamlStore = YamlStore(
+        self._github_repos: YamlStore[Any] = YamlStore(
             self.data_dir / "github" / "repos", GitHubRepoAdapter
         )
-        self._goldentooth_nodes: YamlStore = YamlStore(
+        self._goldentooth_nodes: YamlStore[Any] = YamlStore(
             self.data_dir / "goldentooth" / "nodes", GoldentoothNodeAdapter
         )
-        self._goldentooth_services: YamlStore = YamlStore(
+        self._goldentooth_services: YamlStore[Any] = YamlStore(
             self.data_dir / "goldentooth" / "services", GoldentoothServiceAdapter
         )
-        self._notes: YamlStore = YamlStore(self.data_dir / "notes", NoteAdapter)
+        self._notes: YamlStore[Any] = YamlStore(self.data_dir / "notes", NoteAdapter)
 
     # GitHub Organization Management
     @property
-    def github_orgs(self) -> YamlStore:
+    def github_orgs(self) -> YamlStore[Any]:
         """Access to GitHub organizations store."""
         return self._github_orgs
 
     # GitHub Repository Management
     @property
-    def github_repos(self) -> YamlStore:
+    def github_repos(self) -> YamlStore[Any]:
         """Access to GitHub repositories store."""
         return self._github_repos
 
     # Goldentooth Node Management
     @property
-    def goldentooth_nodes(self) -> YamlStore:
+    def goldentooth_nodes(self) -> YamlStore[Any]:
         """Access to Goldentooth nodes store."""
         return self._goldentooth_nodes
 
     # Goldentooth Service Management
     @property
-    def goldentooth_services(self) -> YamlStore:
+    def goldentooth_services(self) -> YamlStore[Any]:
         """Access to Goldentooth services store."""
         return self._goldentooth_services
 
     # Notes Management
     @property
-    def notes(self) -> YamlStore:
+    def notes(self) -> YamlStore[Any]:
         """Access to notes store."""
         return self._notes
 
@@ -154,7 +154,7 @@ class DocumentStore:
         store = self._get_store_by_type(store_type)
         store.delete(document_id)
 
-    def _get_store_by_type(self, store_type: str) -> YamlStore:
+    def _get_store_by_type(self, store_type: str) -> YamlStore[Any]:
         """Get a store instance by its type string.
 
         Args:

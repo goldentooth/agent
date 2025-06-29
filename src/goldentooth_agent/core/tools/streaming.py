@@ -5,10 +5,9 @@ from __future__ import annotations
 import asyncio
 import gc
 import sys
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncGenerator, AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from typing import Any, TypeVar
-from collections.abc import AsyncGenerator
 from weakref import WeakSet
 
 from ..flow_agent import FlowIOSchema
@@ -246,7 +245,9 @@ class StreamProcessor:
         return accumulator
 
     @asynccontextmanager
-    async def managed_stream(self, stream: AsyncIterator[T]):
+    async def managed_stream(
+        self, stream: AsyncIterator[T]
+    ) -> AsyncIterator[AsyncIterator[T]]:
         """Context manager for stream lifecycle with resource cleanup."""
         self._active_streams.add(stream)
         try:
@@ -256,9 +257,9 @@ class StreamProcessor:
                 self._active_streams.discard(stream)
                 # Close stream if it has close method
                 if hasattr(stream, "aclose"):
-                    await stream.aclose()  # type: ignore[attr-defined]
+                    await stream.aclose()
                 elif hasattr(stream, "close"):
-                    stream.close()  # type: ignore[attr-defined]
+                    stream.close()
             except Exception:
                 # Ignore cleanup errors
                 pass
