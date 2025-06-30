@@ -15,8 +15,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any
 
-from ..exceptions import FlowConfigurationError
-from ..main import Flow
+from ..core.exceptions import FlowConfigurationError
+from ..core.flow import Flow
 
 # Type aliases for health monitoring
 HealthMetadata = dict[str, Any]
@@ -95,9 +95,17 @@ class HealthCheck:
 
     async def _execute_check(self) -> bool:
         """Execute the check function and return the result."""
-        async for result in self.check_function():
-            return result
-        return False
+        check_result = self.check_function()
+
+        # Handle both async generators and regular async functions
+        if hasattr(check_result, "__aiter__"):
+            # It's an async generator
+            async for result in check_result:
+                return result
+            return False
+        else:
+            # It's a regular coroutine
+            return await check_result
 
 
 @dataclass
@@ -561,7 +569,11 @@ def health_check_stream(
                     :2
                 ]:  # Limit to 2 checks for performance
                     result = await monitor.run_check(check_name)
-                    if result and result.status == HealthStatus.CRITICAL:
+                    if (
+                        result
+                        and result.critical
+                        and result.status != HealthStatus.HEALTHY
+                    ):
                         raise FlowConfigurationError(
                             f"Critical health check failed: {result.message}"
                         )

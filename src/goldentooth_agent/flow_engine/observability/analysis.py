@@ -11,7 +11,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..main import Flow
+from ..core.flow import Flow
 
 # Type aliases for flow analysis
 FlowMetadata = dict[str, Any]
@@ -461,7 +461,7 @@ class FlowAnalyzer:
 
         # Suggest caching opportunities
         expensive_nodes = [
-            node.id for node in graph.nodes.values() if node.complexity_score > 3
+            node.id for node in graph.nodes.values() if node.complexity_score >= 3
         ]
         if expensive_nodes:
             suggestions.append(

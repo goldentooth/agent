@@ -119,7 +119,7 @@ class TestRAGService:
 
         # Mock embedding service
         self.mock_embeddings_service.create_embedding = AsyncMock(
-            return_value=[0.1] * 768
+            return_value=[0.1] * 1536
         )
 
         # Vector store will return empty results (no documents stored)
@@ -137,7 +137,7 @@ class TestRAGService:
         question = "How do I use this ML library?"
 
         # Mock embedding service
-        query_embedding = [0.1] * 768
+        query_embedding = [0.1] * 1536
         self.mock_embeddings_service.create_embedding = AsyncMock(
             return_value=query_embedding
         )
@@ -147,7 +147,7 @@ class TestRAGService:
             store_type="github.repos",
             document_id="ml-lib",
             content="This is a machine learning library for Python with examples",
-            embedding=[0.1] * 768,  # Similar embedding
+            embedding=[0.1] * 1536,  # Similar embedding
             metadata={"language": "Python"},
         )
 
@@ -178,7 +178,7 @@ class TestRAGService:
 
         # Mock embedding service
         self.mock_embeddings_service.create_embedding = AsyncMock(
-            return_value=[0.5] * 768
+            return_value=[0.5] * 1536
         )
 
         # Test with empty database and high threshold - should return no documents message
@@ -196,14 +196,14 @@ class TestRAGService:
 
         # Mock embedding service
         self.mock_embeddings_service.create_embedding = AsyncMock(
-            return_value=[0.1] * 768
+            return_value=[0.1] * 1536
         )
 
         # Store documents in different stores
         self.vector_store.store_document(
-            "github.repos", "repo1", "Repository content", [0.1] * 768
+            "github.repos", "repo1", "Repository content", [0.1] * 1536
         )
-        self.vector_store.store_document("notes", "note1", "Note content", [0.1] * 768)
+        self.vector_store.store_document("notes", "note1", "Note content", [0.1] * 1536)
 
         # Mock Claude response
         self.mock_claude_client.create_chat_completion = AsyncMock(

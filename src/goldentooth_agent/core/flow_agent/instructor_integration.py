@@ -5,8 +5,9 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import Any, TypeVar
 
+from goldentooth_agent.flow_engine import Flow
+
 from ..context import Context, ContextKey
-from ..flow import Flow
 from .schema import FlowIOSchema
 
 # Type aliases for instructor integration

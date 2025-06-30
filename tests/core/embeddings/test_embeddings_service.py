@@ -67,7 +67,7 @@ class TestEmbeddingsService:
 
         # Verify embedding properties
         assert isinstance(embedding, list)
-        assert len(embedding) == 768  # Default dimensions
+        assert len(embedding) == 1536  # Default dimensions
         assert all(isinstance(x, float) for x in embedding)
 
         # Verify client was called
@@ -248,7 +248,7 @@ class TestEmbeddingsService:
         # Verify embedding
         embedding = result["embedding"]
         assert isinstance(embedding, list)
-        assert len(embedding) == 768
+        assert len(embedding) == 1536
         assert all(isinstance(x, float) for x in embedding)
 
         # Verify text content
@@ -263,7 +263,7 @@ class TestEmbeddingsService:
         assert "text_length" in metadata
         assert "embedding_dimensions" in metadata
         assert "embedding_method" in metadata
-        assert metadata["embedding_dimensions"] == 768
+        assert metadata["embedding_dimensions"] == 1536
         assert metadata["text_length"] == len(text_content)
 
     @patch("goldentooth_agent.core.embeddings.embeddings_service.AsyncAnthropic")
@@ -294,7 +294,7 @@ class TestEmbeddingsService:
         # Verify results
         assert len(embeddings) == 3
         assert all(isinstance(emb, list) for emb in embeddings)
-        assert all(len(emb) == 768 for emb in embeddings)
+        assert all(len(emb) == 1536 for emb in embeddings)
 
         # Verify client was called for each text
         assert mock_client.messages.create.call_count == 3

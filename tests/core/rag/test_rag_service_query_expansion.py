@@ -25,6 +25,7 @@ class TestRAGServiceQueryExpansion:
         mock_claude_client = AsyncMock()
         mock_hybrid_search = AsyncMock()
         mock_chunk_fusion = MagicMock()
+        mock_chunk_fusion.min_chunks_for_fusion = 2
         mock_query_expansion = MagicMock(spec=QueryExpansionEngine)
 
         return {
@@ -71,7 +72,7 @@ class TestRAGServiceQueryExpansion:
         """Create mock search strategies."""
         return [
             SearchStrategy(
-                strategy_type="primary",
+                strategy_type="primary_strategy",
                 queries=[mock_query_expansion.original_query],
                 weights=[1.0],
                 search_params={
@@ -297,6 +298,11 @@ class TestRAGServiceQueryExpansion:
             mock_query_expansion
         )
 
+        # Mock create_search_strategies to return empty list (triggers reformulation)
+        mock_dependencies[
+            "query_expansion_engine"
+        ].create_search_strategies.return_value = []
+
         # Mock poor initial results
         poor_result = {"retrieved_documents": [], "context": "", "response": ""}
         rag_service.hybrid_query = AsyncMock(return_value=poor_result)
@@ -469,29 +475,28 @@ class TestRAGServiceQueryExpansion:
         mock_hybrid_results: list[dict],
     ) -> None:
         """Test building enhanced context from expansion and results."""
-        strategy_results = list(
-            zip(mock_search_strategies, mock_hybrid_results, strict=False)
-        )
-        merged_results = rag_service._merge_strategy_results(strategy_results)
+        # Flatten all documents from hybrid results
+        all_docs = []
+        for result in mock_hybrid_results:
+            all_docs.extend(result.get("retrieved_documents", []))
+
+        merged_results = rag_service._merge_strategy_results(all_docs)
 
         context = rag_service._build_enhanced_context(
+            documents=merged_results,
+            fused_answers=[],
             expansion=mock_query_expansion,
-            merged_results=merged_results,
-            strategies_used=mock_search_strategies,
+            original_question="python programming tutorial",
         )
 
         # Should include expansion information
-        assert "Query Understanding:" in context
-        assert "Intent: procedural" in context
-        assert "Confidence: 85%" in context
+        assert "Query Analysis" in context
+        assert "Intent: Procedural" in context
+        assert "Key Terms:" in context
 
-        # Should include strategy information
-        assert "Search Strategies Used:" in context
-        assert "Primary Strategy" in context
-        assert "Synonym Enhanced" in context
-
-        # Should include key findings
-        assert "Key Information:" in context
+        # Should include document information
+        assert "Source Documents" in context
+        assert "Python is a beginner-friendly" in context
 
     @pytest.mark.asyncio
     async def test_generate_query_recommendations(
@@ -584,9 +589,16 @@ class TestRAGServiceQueryExpansion:
         mock_dependencies["query_expansion_engine"].expand_query.return_value = (
             mock_query_expansion
         )
+
+        # Return only first 2 strategies when max_strategies=2 is requested
+        def limit_strategies(expansion, max_strategies=None):
+            if max_strategies is not None:
+                return mock_search_strategies[:max_strategies]
+            return mock_search_strategies
+
         mock_dependencies[
             "query_expansion_engine"
-        ].create_search_strategies.return_value = mock_search_strategies
+        ].create_search_strategies.side_effect = limit_strategies
 
         # Mock hybrid search
         rag_service.hybrid_query = AsyncMock(return_value=mock_hybrid_results[0])

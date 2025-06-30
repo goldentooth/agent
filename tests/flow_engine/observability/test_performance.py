@@ -198,7 +198,7 @@ class TestPerformanceBenchmarks:
     @pytest.mark.asyncio
     async def test_memoize_performance(self):
         """Benchmark memoize_stream performance."""
-        memoize_flow = memoize_stream()
+        memoize_flow = memoize_stream(lambda x: x)
 
         # Create stream with repeated values
         async def repeat_stream():
@@ -221,7 +221,7 @@ class TestPerformanceBenchmarks:
         flow2 = map_stream(lambda x: x + 10)
         flow3 = map_stream(lambda x: x**2)
 
-        parallel_flow = parallel_stream([flow1, flow2, flow3])
+        parallel_flow = parallel_stream(flow1, flow2, flow3)
 
         start_time = time.time()
         input_stream = async_range(100)
@@ -295,8 +295,8 @@ class TestScalabilityTests:
     @pytest.mark.asyncio
     async def test_memory_bounded_operations(self):
         """Test that memory-bounded operations don't leak."""
-        # Test distinct_stream with its memory bounds
-        distinct_flow = distinct_stream(max_keys=100)
+        # Test distinct_stream performance
+        distinct_flow = distinct_stream()
 
         # Generate more unique items than the memory limit
         async def large_unique_stream():

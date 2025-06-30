@@ -10,8 +10,8 @@ import asyncio
 from collections.abc import AsyncIterator
 from typing import TypeVar
 
-from ..exceptions import FlowTimeoutError
-from ..main import Flow
+from ..core.exceptions import FlowTimeoutError
+from ..core.flow import Flow
 
 Input = TypeVar("Input")
 

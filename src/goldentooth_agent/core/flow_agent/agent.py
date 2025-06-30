@@ -5,8 +5,9 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import Any
 
+from goldentooth_agent.flow_engine import Flow
+
 from ..context import Context
-from ..flow import Flow
 from .schema import FlowIOSchema
 
 # Type alias for agent system

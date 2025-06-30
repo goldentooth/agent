@@ -6,7 +6,8 @@ import asyncio
 from collections.abc import AsyncIterator, Callable
 from typing import Any, TypeVar
 
-from ..flow import Flow
+from goldentooth_agent.flow_engine import Flow
+
 from .schema import FlowIOSchema
 
 # Type aliases for tool system

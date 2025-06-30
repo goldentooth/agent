@@ -7,8 +7,9 @@ from typing import Any
 
 from pydantic import Field
 
+from goldentooth_agent.flow_engine import Flow
+
 from ..context import Context, ContextKey
-from ..flow import Flow
 from ..flow_agent.agent import FlowAgent
 from ..flow_agent.schema import FlowIOSchema
 from .rag_service import RAGService

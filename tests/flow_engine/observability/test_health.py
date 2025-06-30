@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from goldentooth_agent.flow_engine.exceptions import FlowConfigurationError
+from goldentooth_agent.flow_engine.core.exceptions import FlowConfigurationError
 from goldentooth_agent.flow_engine.observability.health import (
     FlowConfigValidator,
     FlowHealthMonitor,

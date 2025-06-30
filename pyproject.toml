@@ -62,6 +62,15 @@ ruff = "^0.8.4"
 bandit = "^1.7.10"
 types-aiofiles = "^24.1.0.20250606"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v"
+# Exclude old directory from test discovery
+norecursedirs = ["old", "*.egg", ".eggs", "dist", "build", ".tox", ".git", "__pycache__"]
+
 [tool.poe.tasks]
 test = "pytest tests/"
 test-cov = "pytest tests/ --cov=goldentooth_agent"

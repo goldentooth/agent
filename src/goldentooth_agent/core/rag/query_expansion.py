@@ -420,11 +420,11 @@ class QueryExpansionEngine:
         # Convert to lowercase
         normalized = query.lower().strip()
 
-        # Remove extra whitespace
-        normalized = re.sub(r"\s+", " ", normalized)
-
         # Remove punctuation except hyphens and periods in technical terms
         normalized = re.sub(r"[^\w\s\-\.]", " ", normalized)
+
+        # Remove extra whitespace (after punctuation removal)
+        normalized = re.sub(r"\s+", " ", normalized)
 
         return normalized
 

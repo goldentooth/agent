@@ -11,10 +11,10 @@
 9. Create a tool that will review the submodule-level README.meta.yaml and README.md files and combine/re-summarize them after meaningful changes. The README file should be reviewed for potential updates whenever a file in the module is changed.
 10. Create commands to accurately construct directory tree representations in markdown for injection into root- and submodule-level README.md files. Probably just `tree`, maybe something fancier. This should be in the `markdown.meta.yaml` files too.
 11. Devise a detailed plan to incorporate the successful and effective patterns from the smolcode project geared at giving the Goldentooth Agent the ability to code itself when desirable.
-12. Incorporate some method of checking dependencies automatically and manually for upstream security alerts, e.g. `goldentooth-agent dev audit-security` or using Dependabot.
+12. Incorporate some method of checking dependencies automatically and manually for upstream security alerts, e.g. `goldentooth-agent dev audit security` or using Dependabot.
 13. Write a command or GHA workflow to bump the version in the pyproject.toml file, e.g. `goldentooth-agent dev bump-version` or use the bump-version GitHub Action if it supports pyproject.toml (probably does).
 14. Move to recharacterize this project; remember that it's not a general-purpose agent framework, it's a lulzy toy for playing with my cluster.
-15. Create a command to retrieve the content of a given core module, grab its README.md file, grab its tests if specified, and use it as contextual information for a question to the agent, e.g. `goldentooth-agent chat --with-dev-module <path>` or `goldentooth-agent dev chat --module <path>` or something else.
+15. Create a command to retrieve the content of a given core module, grab its README.md file, grab its tests if specified, and use it as contextual information for a question to the agent, e.g. `goldentooth-agent dev chat --path <path>`.
 16. Establish reasonable defaults for CLI commands without subcommands so that we don't get unhelpful error messages.
 17. Ensure that tracing support is integrated and that we can step through a complicated pipeline to debug it, with the output being both machine-readable and human-readable.
 18. Can the Agent interact with Claude Code? It would be useful to be able to run certain queries through the Claude Code API (or using my plan, or whatever) and other queries through the metered API key I have. This doesn't appear to be the case with embeddings, but perhaps elsewhere.
@@ -28,3 +28,6 @@
 26. I dislike this error: TypeVar "Input" appears only once in generic function signature; Use "object" insteadPylancereportInvalidTypeVarUse. Can we ignore it permanently?
 27. Create a script or command to list functions and classes with missing/low test coverage, e.g. `goldentooth-agent dev module coverage`.
 28. Maintain a README.meta.yaml in each and every module/submodule directory that collects useful information about a given module and that can be updated entirely by executing a script (i.e. without consuming unnecessary extra tokens), e.g. `goldentooth-agent dev module meta check <path>`. This should be used to determine that the README.md file in that module is outdated, e.g. `goldentooth-agent dev module readme check <path>`.
+29. Create a command that will retrieve the .py files in the codebase that have been touched least recently within the codebase and perform a deep audit of them, evaluating whether they should be refactored or otherwise improved, etc. After the file has been updated, a comment should be added to the foot of the document mentioning the date and indicating that the file was touched on that date. The command might be `goldentooth-agent dev audit stale-files` or something.
+30. Can Sphinx be integrated as a RAG source?
+31.

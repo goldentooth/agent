@@ -75,10 +75,10 @@ class TestVectorStoreChunks:
             ),
         ]
 
-        # Create test embeddings (768-dimensional vectors for sqlite-vec compatibility)
+        # Create test embeddings (1536-dimensional vectors for OpenAI compatibility)
         embeddings = [
-            [0.1] * 768,  # Embedding for first chunk
-            [0.2] * 768,  # Embedding for second chunk
+            [0.1] * 1536,  # Embedding for first chunk
+            [0.2] * 1536,  # Embedding for second chunk
         ]
 
         # Store chunks
@@ -120,7 +120,7 @@ class TestVectorStoreChunks:
             ),
         ]
 
-        embeddings = [[0.1] * 768]
+        embeddings = [[0.1] * 1536]
 
         self.vector_store.store_document_chunks(
             store_type="notes",
@@ -189,7 +189,7 @@ class TestVectorStoreChunks:
             ),
         ]
 
-        embeddings = [[0.1] * 768, [0.2] * 768]
+        embeddings = [[0.1] * 1536, [0.2] * 1536]
 
         self.vector_store.store_document_chunks(
             store_type="notes",
@@ -219,7 +219,7 @@ class TestVectorStoreChunks:
             store_type="notes",
             document_id="fulldoc",
             content="This is a full document about testing",
-            embedding=[1.0] + [0.0] * 767,
+            embedding=[1.0] + [0.0] * 1535,
         )
 
         # Store chunks
@@ -245,7 +245,7 @@ class TestVectorStoreChunks:
             ),
         ]
 
-        embeddings = [[0.8] + [0.0] * 767]
+        embeddings = [[0.8] + [0.0] * 1535]
 
         self.vector_store.store_document_chunks(
             store_type="notes",
@@ -255,7 +255,7 @@ class TestVectorStoreChunks:
         )
 
         # Search with chunks included
-        query_embedding = [0.9] + [0.0] * 767
+        query_embedding = [0.9] + [0.0] * 1535
         results = self.vector_store.search_similar(
             query_embedding,
             limit=10,
@@ -289,7 +289,7 @@ class TestVectorStoreChunks:
             store_type="notes",
             document_id="fulldoc",
             content="Full document content",
-            embedding=[1.0] + [0.0] * 767,
+            embedding=[1.0] + [0.0] * 1535,
         )
 
         chunks = [
@@ -318,19 +318,19 @@ class TestVectorStoreChunks:
             store_type="notes",
             document_id="chunkdoc",
             chunks=chunks,
-            embeddings=[[0.5] + [0.1] * 767],  # More different vector
+            embeddings=[[0.5] + [0.1] * 1535],  # More different vector
         )
 
         # Search including chunks
         results_with_chunks = self.vector_store.search_similar(
-            [0.9] + [0.0] * 767,
+            [0.9] + [0.0] * 1535,
             limit=10,
             include_chunks=True,
         )
 
         # Search excluding chunks
         results_no_chunks = self.vector_store.search_similar(
-            [0.9] + [0.0] * 767,
+            [0.9] + [0.0] * 1535,
             limit=10,
             include_chunks=False,
         )
@@ -350,7 +350,7 @@ class TestVectorStoreChunks:
             store_type="notes",
             document_id="doc1",
             content="Document 1",
-            embedding=[1.0] + [0.0] * 767,
+            embedding=[1.0] + [0.0] * 1535,
         )
 
         chunks = [
@@ -398,14 +398,14 @@ class TestVectorStoreChunks:
             store_type="notes",
             document_id="doc2",
             chunks=[chunks[0]],
-            embeddings=[[0.8] + [0.0] * 767],
+            embeddings=[[0.8] + [0.0] * 1535],
         )
 
         self.vector_store.store_document_chunks(
             store_type="github.repos",
             document_id="repo1",
             chunks=[chunks[1]],
-            embeddings=[[0.6] + [0.0] * 767],
+            embeddings=[[0.6] + [0.0] * 1535],
         )
 
         # Get stats
@@ -456,7 +456,7 @@ class TestVectorStoreChunks:
             store_type="notes",
             document_id="testdoc",
             chunks=chunks,
-            embeddings=[[0.1] + [0.0] * 767],
+            embeddings=[[0.1] + [0.0] * 1535],
         )
 
         # Check that sidecar file exists
@@ -500,12 +500,12 @@ class TestVectorStoreChunks:
             store_type="notes",
             document_id="searchtest",
             chunks=chunks,
-            embeddings=[[1.0] + [0.0] * 767],
+            embeddings=[[1.0] + [0.0] * 1535],
         )
 
         # Search for the chunk
         results = self.vector_store.search_similar(
-            [1.0] + [0.0] * 767,
+            [1.0] + [0.0] * 1535,
             limit=5,
             include_chunks=True,
         )

@@ -36,8 +36,8 @@ class TestVectorStore:
         store_type = "github.repos"
         document_id = "test/repo"
         content = "This is a test repository for machine learning projects"
-        embedding = [0.1, 0.2, 0.3, 0.4, 0.5] * 154  # 770 dimensions to fit in 768
-        embedding = embedding[:768]  # Truncate to exactly 768
+        embedding = [0.1, 0.2, 0.3, 0.4, 0.5] * 308  # 1540 dimensions to fit in 1536
+        embedding = embedding[:1536]  # Truncate to exactly 1536
         metadata = {"language": "Python", "stars": 100}
 
         # Store document
@@ -63,19 +63,19 @@ class TestVectorStore:
                 "store_type": "github.repos",
                 "document_id": "repo1",
                 "content": "Python machine learning repository",
-                "embedding": [0.1] * 768,
+                "embedding": [0.1] * 1536,
             },
             {
                 "store_type": "github.repos",
                 "document_id": "repo2",
                 "content": "JavaScript web application",
-                "embedding": [0.2] * 768,
+                "embedding": [0.2] * 1536,
             },
             {
                 "store_type": "notes",
                 "document_id": "note1",
                 "content": "Important system configuration notes",
-                "embedding": [0.3] * 768,
+                "embedding": [0.3] * 1536,
             },
         ]
 
@@ -101,9 +101,9 @@ class TestVectorStore:
 
         # Add some documents
         self.vector_store.store_document(
-            "github.repos", "repo1", "Content 1", [0.1] * 768
+            "github.repos", "repo1", "Content 1", [0.1] * 1536
         )
-        self.vector_store.store_document("notes", "note1", "Content 2", [0.2] * 768)
+        self.vector_store.store_document("notes", "note1", "Content 2", [0.2] * 1536)
 
         # List all documents
         all_docs = self.vector_store.list_documents()
@@ -123,7 +123,7 @@ class TestVectorStore:
         # Add multiple documents
         for i in range(5):
             self.vector_store.store_document(
-                "test", f"doc{i}", f"Content {i}", [0.1 * i] * 768
+                "test", f"doc{i}", f"Content {i}", [0.1 * i] * 1536
             )
 
         # List with limit
@@ -139,7 +139,7 @@ class TestVectorStore:
         """Test deleting a document."""
         # Store a document
         doc_id = self.vector_store.store_document(
-            "test", "deleteme", "Content to delete", [0.5] * 768
+            "test", "deleteme", "Content to delete", [0.5] * 1536
         )
 
         # Verify it exists
@@ -164,19 +164,19 @@ class TestVectorStore:
                 "github.repos",
                 "ml-repo",
                 "Machine learning algorithms",
-                [1.0, 0.0] + [0.0] * 766,
+                [1.0, 0.0] + [0.0] * 1534,
             ),
             (
                 "github.repos",
                 "web-repo",
                 "Web development framework",
-                [0.0, 1.0] + [0.0] * 766,
+                [0.0, 1.0] + [0.0] * 1534,
             ),
             (
                 "notes",
                 "ml-note",
                 "Machine learning best practices",
-                [0.9, 0.1] + [0.0] * 766,
+                [0.9, 0.1] + [0.0] * 1534,
             ),
         ]
 
@@ -184,7 +184,7 @@ class TestVectorStore:
             self.vector_store.store_document(store_type, doc_id, content, embedding)
 
         # Search for something similar to machine learning
-        query_embedding = [0.8, 0.2] + [0.0] * 766
+        query_embedding = [0.8, 0.2] + [0.0] * 1534
         results = self.vector_store.search_similar(query_embedding, limit=2)
 
         # Should return results (exact similarity depends on implementation)
@@ -196,12 +196,12 @@ class TestVectorStore:
         """Test similarity search with store type filter."""
         # Store documents in different stores
         self.vector_store.store_document(
-            "github.repos", "repo1", "Repository content", [1.0] * 768
+            "github.repos", "repo1", "Repository content", [1.0] * 1536
         )
-        self.vector_store.store_document("notes", "note1", "Note content", [1.0] * 768)
+        self.vector_store.store_document("notes", "note1", "Note content", [1.0] * 1536)
 
         # Search only in github.repos
-        query_embedding = [1.0] * 768
+        query_embedding = [1.0] * 1536
         repo_results = self.vector_store.search_similar(
             query_embedding, limit=10, store_type="github.repos"
         )
@@ -220,12 +220,12 @@ class TestVectorStore:
 
         # Add some documents
         self.vector_store.store_document(
-            "github.repos", "repo1", "Content 1", [0.1] * 768
+            "github.repos", "repo1", "Content 1", [0.1] * 1536
         )
         self.vector_store.store_document(
-            "github.repos", "repo2", "Content 2", [0.2] * 768
+            "github.repos", "repo2", "Content 2", [0.2] * 1536
         )
-        self.vector_store.store_document("notes", "note1", "Content 3", [0.3] * 768)
+        self.vector_store.store_document("notes", "note1", "Content 3", [0.3] * 1536)
 
         # Check updated stats
         stats = self.vector_store.get_stats()
@@ -240,7 +240,7 @@ class TestVectorStore:
 
         # Store initial document
         original_content = "Original content"
-        original_embedding = [0.1] * 768
+        original_embedding = [0.1] * 1536
 
         doc_id = self.vector_store.store_document(
             store_type, document_id, original_content, original_embedding
@@ -248,7 +248,7 @@ class TestVectorStore:
 
         # Update with new content
         updated_content = "Updated content"
-        updated_embedding = [0.2] * 768
+        updated_embedding = [0.2] * 1536
 
         updated_doc_id = self.vector_store.store_document(
             store_type, document_id, updated_content, updated_embedding
@@ -268,7 +268,7 @@ class TestVectorStore:
     def test_handles_empty_query(self):
         """Test handling of edge cases."""
         # Empty database search
-        results = self.vector_store.search_similar([0.5] * 768, limit=5)
+        results = self.vector_store.search_similar([0.5] * 1536, limit=5)
         assert results == []
 
         # Non-existent document

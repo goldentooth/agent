@@ -11,7 +11,7 @@ from collections import deque
 from collections.abc import AsyncIterator, Callable, Hashable
 from typing import Any, TypeVar
 
-from ..main import Flow
+from ..core.flow import Flow
 from .utils import get_function_name
 
 Input = TypeVar("Input")

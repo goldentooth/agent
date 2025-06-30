@@ -8,12 +8,7 @@ This package provides flow combinators split into focused submodules:
 - aggregation: Aggregation operations (batch, scan, etc.)
 - control_flow: Control flow operations (retry, circuit_breaker, etc.)
 - advanced: Complex operations (parallel, merge, race, etc.)
-
-During transition, this imports from both legacy file and new submodules.
 """
-
-# Import everything from legacy file first
-from ..combinators_legacy import *  # noqa: F403
 
 # Advanced operations
 from .advanced import (

@@ -15,8 +15,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, TypeVar
 
-from ..exceptions import FlowError, FlowExecutionError
-from ..main import Flow
+from ..core.exceptions import FlowError, FlowExecutionError
+from ..core.flow import Flow
 
 # Type aliases for debugging
 DebugMetadata = dict[str, Any]
@@ -429,6 +429,8 @@ async def debug_session(
     try:
         if enable_breakpoints:
             _flow_debugger.enable_debugging()
+        else:
+            _flow_debugger.disable_debugging()
         yield _flow_debugger
     finally:
         _flow_debugger.debug_enabled = old_debug_state

@@ -18,7 +18,7 @@ from goldentooth_agent.flow_engine.combinators.control_flow import (
     then_stream,
     while_condition_stream,
 )
-from goldentooth_agent.flow_engine.exceptions import FlowExecutionError
+from goldentooth_agent.flow_engine.core.exceptions import FlowExecutionError
 
 
 # Helper functions

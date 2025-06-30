@@ -11,7 +11,7 @@ import logging
 from collections.abc import AsyncIterator, Callable
 from typing import Any, TypeVar
 
-from ..main import Flow
+from ..core.flow import Flow
 
 Input = TypeVar("Input")
 

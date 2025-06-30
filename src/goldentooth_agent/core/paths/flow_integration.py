@@ -6,7 +6,13 @@ from typing import Any, TypeVar
 
 from antidote import inject
 
-from ..flow import Flow, filter_stream, flat_map_stream, map_stream
+from goldentooth_agent.flow_engine import (
+    Flow,
+    filter_stream,
+    flat_map_stream,
+    map_stream,
+)
+
 from .main import Paths
 
 # Type aliases for paths flow integration

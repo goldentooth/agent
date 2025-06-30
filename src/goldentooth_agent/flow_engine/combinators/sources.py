@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import Any, TypeVar
 
-from ..main import Flow
+from ..core.flow import Flow
 
 Input = TypeVar("Input")
 A = TypeVar("A")

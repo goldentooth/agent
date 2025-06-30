@@ -127,6 +127,8 @@ class VectorStore:
             )
 
             # Create vec0 virtual table for embeddings
+            # Try to create vec0 table (optimal performance)
+            vec0_available = True
             try:
                 conn.execute(
                     """
@@ -142,25 +144,27 @@ class VectorStore:
                 """
                 )
             except sqlite3.OperationalError as e:
-                # If vec0 is not available, create a regular table as fallback
+                vec0_available = False
                 print(
-                    f"Warning: vec0 extension not available ({e}), using fallback table"
+                    f"Warning: vec0 extension not available ({e}), vec0 table not created"
                 )
-                conn.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS embeddings_fallback (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        doc_id TEXT NOT NULL,
-                        store_type TEXT NOT NULL,
-                        document_id TEXT NOT NULL,
-                        content_preview TEXT,
-                        embedding BLOB,
-                        chunk_id TEXT,
-                        is_chunk INTEGER DEFAULT 0,
-                        created_at TEXT NOT NULL
-                    )
+
+            # Always create fallback table as backup (ensures consistency)
+            conn.execute(
                 """
+                CREATE TABLE IF NOT EXISTS embeddings_fallback (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    doc_id TEXT NOT NULL,
+                    store_type TEXT NOT NULL,
+                    document_id TEXT NOT NULL,
+                    content_preview TEXT,
+                    embedding BLOB,
+                    chunk_id TEXT,
+                    is_chunk INTEGER DEFAULT 0,
+                    created_at TEXT NOT NULL
                 )
+            """
+            )
 
             # Migrate existing fallback table if needed
             try:
@@ -240,7 +244,7 @@ class VectorStore:
             default_metadata = {
                 "version": "1.0",
                 "model": "claude-semantic-features",
-                "dimensions": 768,
+                "dimensions": 1536,
                 "compression": "gzip",
                 "created_at": datetime.now().isoformat(),
                 "embeddings": {},
@@ -393,7 +397,7 @@ class VectorStore:
             metadata = {
                 "version": "1.0",
                 "model": "claude-semantic-features",
-                "dimensions": 768,
+                "dimensions": 1536,
                 "compression": "gzip",
                 "embeddings": {},
             }
@@ -490,8 +494,9 @@ class VectorStore:
                 conn.execute(
                     """
                     INSERT OR REPLACE INTO embeddings_fallback (
-                        doc_id, store_type, document_id, content_preview, embedding, created_at
-                    ) VALUES (?, ?, ?, ?, ?, ?)
+                        doc_id, store_type, document_id, content_preview, embedding,
+                        chunk_id, is_chunk, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                     (
                         doc_id,
@@ -499,6 +504,8 @@ class VectorStore:
                         document_id,
                         content_preview,
                         embedding_blob,
+                        None,  # chunk_id for documents
+                        0,  # is_chunk = False for documents
                         now,
                     ),
                 )
@@ -769,155 +776,117 @@ class VectorStore:
             List of similar documents/chunks with metadata and similarity scores
         """
         with self._get_connection() as conn:
+            all_results = []
+
+            # Try vec0 similarity search first
             try:
-                # Try vec0 similarity search
                 query_bytes = sqlite_vec.serialize_float32(query_embedding)
-                # Build WHERE clause based on filters
-                where_conditions = []
-                params = [query_bytes]
-
-                if store_type:
-                    where_conditions.append("store_type = ?")
-                    params.append(store_type)
-
-                if not include_chunks:
-                    where_conditions.append("is_chunk = 0")
-
-                where_clause = (
-                    " WHERE " + " AND ".join(where_conditions)
-                    if where_conditions
-                    else ""
+                vec0_results = self._search_vec0_table(
+                    conn, query_bytes, limit * 2, store_type, include_chunks
                 )
-                params.append(limit)
-
-                if store_type or not include_chunks:
-                    cursor = conn.execute(
-                        f"""
-                        SELECT
-                            doc_id, store_type, document_id, content_preview,
-                            chunk_id, is_chunk,
-                            vec_distance_cosine(embedding, ?) as distance
-                        FROM embeddings
-                        {where_clause}
-                        ORDER BY distance
-                        LIMIT ?
-                    """,
-                        params,
-                    )
-                else:
-                    cursor = conn.execute(
-                        """
-                        SELECT
-                            doc_id, store_type, document_id, content_preview,
-                            chunk_id, is_chunk,
-                            vec_distance_cosine(embedding, ?) as distance
-                        FROM embeddings
-                        ORDER BY distance
-                        LIMIT ?
-                    """,
-                        (query_bytes, limit),
-                    )
-
-                results = cursor.fetchall()
-
-                # Convert to result format
-                similar_docs = []
-                for row in results:
-                    (
-                        doc_id,
-                        store_type,
-                        document_id,
-                        content_preview,
-                        chunk_id,
-                        is_chunk,
-                        distance,
-                    ) = row
-
-                    result_item = {
-                        "doc_id": doc_id,
-                        "store_type": store_type,
-                        "document_id": document_id,
-                        "content_preview": content_preview,
-                        "similarity_score": 1.0
-                        - distance,  # Convert distance to similarity
-                        "is_chunk": bool(is_chunk),
-                        "chunk_id": chunk_id,
-                    }
-
-                    if is_chunk and chunk_id:
-                        # Get chunk metadata
-                        chunk_cursor = conn.execute(
-                            """
-                            SELECT chunk_type, chunk_index, title, content, size_chars,
-                                   created_at, updated_at
-                            FROM chunks WHERE chunk_id = ?
-                        """,
-                            (chunk_id,),
-                        )
-                        chunk_row = chunk_cursor.fetchone()
-
-                        if chunk_row:
-                            (
-                                chunk_type,
-                                chunk_index,
-                                title,
-                                content,
-                                size_chars,
-                                created_at,
-                                updated_at,
-                            ) = chunk_row
-                            result_item.update(
-                                {
-                                    "content": content,
-                                    "chunk_type": chunk_type,
-                                    "chunk_index": chunk_index,
-                                    "chunk_title": title,
-                                    "size_chars": size_chars,
-                                    "created_at": created_at,
-                                    "updated_at": updated_at,
-                                }
-                            )
-                    else:
-                        # Get full document metadata
-                        doc_cursor = conn.execute(
-                            """
-                            SELECT content, metadata, created_at, updated_at
-                            FROM documents WHERE id = ?
-                        """,
-                            (doc_id,),
-                        )
-                        doc_row = doc_cursor.fetchone()
-
-                        if doc_row:
-                            content, metadata, created_at, updated_at = doc_row
-                            result_item.update(
-                                {
-                                    "content": content,
-                                    "metadata": metadata,
-                                    "created_at": created_at,
-                                    "updated_at": updated_at,
-                                }
-                            )
-
-                    similar_docs.append(result_item)
-
-                return similar_docs
-
+                all_results.extend(vec0_results)
             except sqlite3.OperationalError:
-                # Fallback to manual cosine similarity calculation
-                return self._fallback_similarity_search(
-                    query_embedding, limit, store_type, conn, include_chunks
-                )
+                # vec0 not available, continue without it
+                pass
 
-    def _fallback_similarity_search(
+            # Always search fallback table as well
+            fallback_results = self._search_fallback_table(
+                conn, query_embedding, limit * 2, store_type, include_chunks
+            )
+            all_results.extend(fallback_results)
+
+            # Remove duplicates (same doc_id) - prefer vec0 results
+            seen_doc_ids = set()
+            unique_results = []
+            for result in all_results:
+                doc_id = result["doc_id"]
+                if doc_id not in seen_doc_ids:
+                    seen_doc_ids.add(doc_id)
+                    unique_results.append(result)
+
+            # Sort by similarity score and return top results
+            unique_results.sort(key=lambda x: x["similarity_score"], reverse=True)
+            return unique_results[:limit]
+
+    def _search_vec0_table(
         self,
+        conn: sqlite3.Connection,
+        query_bytes: bytes,
+        limit: int,
+        store_type: str | None,
+        include_chunks: bool,
+    ) -> list[dict[str, Any]]:
+        """Search vec0 table for similar embeddings."""
+        # Build WHERE clause based on filters
+        where_conditions = []
+        params = [query_bytes]
+
+        if store_type:
+            where_conditions.append("store_type = ?")
+            params.append(store_type)
+
+        if not include_chunks:
+            where_conditions.append("is_chunk = 0")
+
+        where_clause = (
+            " WHERE " + " AND ".join(where_conditions) if where_conditions else ""
+        )
+        params.append(limit)
+
+        cursor = conn.execute(
+            f"""
+            SELECT
+                doc_id, store_type, document_id, content_preview,
+                chunk_id, is_chunk,
+                vec_distance_cosine(embedding, ?) as distance
+            FROM embeddings
+            {where_clause}
+            ORDER BY distance
+            LIMIT ?
+        """,
+            params,
+        )
+
+        results = cursor.fetchall()
+
+        # Convert to result format
+        similar_docs = []
+        for row in results:
+            (
+                doc_id,
+                store_type,
+                document_id,
+                content_preview,
+                chunk_id,
+                is_chunk,
+                distance,
+            ) = row
+
+            result_item = {
+                "doc_id": doc_id,
+                "store_type": store_type,
+                "document_id": document_id,
+                "content_preview": content_preview,
+                "similarity_score": 1.0 - distance,  # Convert distance to similarity
+                "is_chunk": bool(is_chunk),
+                "chunk_id": chunk_id,
+            }
+
+            # Add metadata based on whether it's a chunk or document
+            self._add_result_metadata(conn, result_item, is_chunk, chunk_id, doc_id)
+            similar_docs.append(result_item)
+
+        return similar_docs
+
+    def _search_fallback_table(
+        self,
+        conn: sqlite3.Connection,
         query_embedding: list[float],
         limit: int,
         store_type: str | None,
-        conn: sqlite3.Connection,
-        include_chunks: bool = True,
+        include_chunks: bool,
     ) -> list[dict[str, Any]]:
-        """Fallback similarity search using manual cosine similarity."""
+        """Search fallback table for similar embeddings."""
         query_vector = np.array(query_embedding, dtype=np.float32)
 
         # Get all embeddings
@@ -1003,64 +972,75 @@ class VectorStore:
                 "chunk_id": chunk_id,
             }
 
-            if is_chunk and chunk_id:
-                # Get chunk metadata
-                chunk_cursor = conn.execute(
-                    """
-                    SELECT chunk_type, chunk_index, title, content, size_chars,
-                           created_at, updated_at
-                    FROM chunks WHERE chunk_id = ?
-                """,
-                    (chunk_id,),
-                )
-                chunk_row = chunk_cursor.fetchone()
-
-                if chunk_row:
-                    (
-                        chunk_type,
-                        chunk_index,
-                        title,
-                        content,
-                        size_chars,
-                        created_at,
-                        updated_at,
-                    ) = chunk_row
-                    result_item.update(
-                        {
-                            "content": content,
-                            "chunk_type": chunk_type,
-                            "chunk_index": chunk_index,
-                            "chunk_title": title,
-                            "size_chars": size_chars,
-                            "created_at": created_at,
-                            "updated_at": updated_at,
-                        }
-                    )
-            else:
-                # Get full document metadata
-                doc_cursor = conn.execute(
-                    """
-                    SELECT content, metadata, created_at, updated_at
-                    FROM documents WHERE id = ?
-                """,
-                    (doc_id,),
-                )
-                doc_row = doc_cursor.fetchone()
-
-                if doc_row:
-                    content, metadata, created_at, updated_at = doc_row
-                    result_item.update(
-                        {
-                            "content": content,
-                            "metadata": metadata,
-                            "created_at": created_at,
-                            "updated_at": updated_at,
-                        }
-                    )
-
+            # Add metadata based on whether it's a chunk or document
+            self._add_result_metadata(conn, result_item, is_chunk, chunk_id, doc_id)
             similar_docs.append(result_item)
 
         return similar_docs
+
+    def _add_result_metadata(
+        self,
+        conn: sqlite3.Connection,
+        result_item: dict[str, Any],
+        is_chunk: int | bool,
+        chunk_id: str | None,
+        doc_id: str,
+    ) -> None:
+        """Add metadata to a search result item."""
+        if is_chunk and chunk_id:
+            # Get chunk metadata
+            chunk_cursor = conn.execute(
+                """
+                SELECT chunk_type, chunk_index, title, content, size_chars,
+                       created_at, updated_at
+                FROM chunks WHERE chunk_id = ?
+            """,
+                (chunk_id,),
+            )
+            chunk_row = chunk_cursor.fetchone()
+
+            if chunk_row:
+                (
+                    chunk_type,
+                    chunk_index,
+                    title,
+                    content,
+                    size_chars,
+                    created_at,
+                    updated_at,
+                ) = chunk_row
+                result_item.update(
+                    {
+                        "content": content,
+                        "chunk_type": chunk_type,
+                        "chunk_index": chunk_index,
+                        "chunk_title": title,
+                        "size_chars": size_chars,
+                        "created_at": created_at,
+                        "updated_at": updated_at,
+                    }
+                )
+        else:
+            # Get full document metadata
+            doc_cursor = conn.execute(
+                """
+                SELECT content, metadata, created_at, updated_at
+                FROM documents WHERE id = ?
+            """,
+                (doc_id,),
+            )
+            doc_row = doc_cursor.fetchone()
+
+            if doc_row:
+                content, metadata, created_at, updated_at = doc_row
+                result_item.update(
+                    {
+                        "content": content,
+                        "metadata": metadata,
+                        "created_at": created_at,
+                        "updated_at": updated_at,
+                    }
+                )
 
     def get_document(self, doc_id: str) -> dict[str, Any] | None:
         """Get a document by its ID.

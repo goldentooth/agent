@@ -2196,6 +2196,22 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     expansion_result,
                     max_strategies=expansion_strategies,
                 )
+                # If no strategies returned, create a fallback strategy
+                if not strategies:
+                    from .query_expansion import QueryIntent, SearchStrategy
+
+                    strategies = [
+                        SearchStrategy(
+                            strategy_type="fallback",
+                            queries=[question],
+                            weights=[1.0],
+                            search_params={
+                                "similarity_threshold": 0.1,
+                                "max_results": max_results,
+                            },
+                            expected_intent=QueryIntent.GENERAL,
+                        )
+                    ]
             else:
                 # Create single strategy with original query
                 from .query_expansion import QueryIntent, SearchStrategy
@@ -2276,6 +2292,11 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     for doc in reformulated_result.get("retrieved_documents", []):
                         doc["strategy_type"] = "reformulated"
                         doc["query_variant"] = reformulated_queries[0]
+                        # Ensure hybrid_score exists for proper weighted_score calculation
+                        if "hybrid_score" not in doc:
+                            doc["hybrid_score"] = doc.get(
+                                "combined_score", doc.get("similarity_score", 0.5)
+                            )
                         doc["weighted_score"] = doc.get("hybrid_score", 0) * 0.8
 
                     merged_docs.extend(
@@ -2339,7 +2360,7 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                 "response": response,
                 "context": context,
                 "question": question,
-                "query_expansion": (
+                "expanded_query": (
                     {
                         "original_query": question,
                         "expanded_queries": (
@@ -2393,7 +2414,16 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     }
                     for answer in fused_answers
                 ],
-                "retrieved_documents": merged_docs,
+                "merged_results": {
+                    "documents": merged_docs,
+                    "strategy_performance": {
+                        sr["strategy"]: {
+                            "queries": sr["queries"],
+                            "results_count": sr["results_count"],
+                        }
+                        for sr in strategy_results
+                    },
+                },
                 "metadata": {
                     "timestamp": datetime.now().isoformat(),
                     "processing_time_ms": int(
@@ -2415,21 +2445,29 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                 "response": f"I encountered an error during enhanced query processing: {str(e)}",
                 "context": "",
                 "question": question,
-                "query_expansion": None,
+                "expanded_query": None,
                 "search_strategies": [],
                 "fused_answers": [],
-                "retrieved_documents": [],
+                "merged_results": {"documents": [], "strategy_performance": {}},
                 "metadata": {
                     "timestamp": datetime.now().isoformat(),
                     "error": True,
                     "error_message": str(e),
                     "error_type": type(e).__name__,
+                    "expansion_enabled": False,
+                    "fusion_enabled": enable_fusion,
+                    "strategies_used": 0,
+                    "total_docs_found": 0,
+                    "fused_answers_count": 0,
+                    "reformulation_attempted": False,
+                    "domain_context": domain_context,
                 },
             }
 
     async def analyze_query_intelligence(
         self,
         question: str,
+        suggest_alternatives: bool = False,
         domain_context: str | None = None,
     ) -> dict[str, Any]:
         """Analyze query intelligence and provide enhancement suggestions.
@@ -2477,7 +2515,7 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     "expanded_queries": expansion.expanded_queries,
                     "suggestions": expansion.suggestions,
                 },
-                "quality_analysis": quality_analysis,
+                "query_analysis": quality_analysis,
                 "search_strategies": [
                     {
                         "type": strategy.strategy_type,
@@ -2487,8 +2525,8 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                     }
                     for strategy in strategies
                 ],
-                "reformulation_options": reformulations,
-                "recommendations": self._generate_query_recommendations(
+                "alternative_queries": reformulations,
+                "suggestions": self._generate_query_recommendations(
                     expansion, quality_analysis
                 ),
                 "metadata": {
@@ -2747,30 +2785,63 @@ Provide a well-structured, accurate response that leverages the intelligent sear
     def _generate_query_recommendations(
         self,
         expansion: QueryExpansion,
-        quality_analysis: dict[str, Any],
-    ) -> list[str]:
+        quality_analysis: dict[str, Any] | None = None,
+        strategy_performance: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Generate recommendations for query improvement."""
-        recommendations = []
+        query_improvements = []
+        search_strategy = []
+        expansion_quality = []
 
         # Based on expansion confidence
         if expansion.confidence < 0.6:
-            recommendations.append(
+            query_improvements.append(
                 "Query could be more specific - consider adding technical terms or context"
             )
+            expansion_quality.append("Low confidence expansion detected")
 
         # Based on intent detection
         if expansion.intent.value == "general":
-            recommendations.append(
+            query_improvements.append(
                 "Add intent words like 'how to', 'what is', or 'example of' for better results"
             )
 
         # Based on quality metrics
-        quality = quality_analysis.get("overall_quality", 0)
-        if quality < 0.7:
-            recommendations.extend(quality_analysis.get("improvements", []))
+        if quality_analysis:
+            quality = quality_analysis.get("overall_quality", 0)
+            if quality < 0.7:
+                query_improvements.extend(quality_analysis.get("improvements", []))
+                expansion_quality.append(f"Query quality score: {quality:.2f}")
+
+        # Based on strategy performance
+        if strategy_performance:
+            low_performers = [
+                strategy
+                for strategy, perf in strategy_performance.items()
+                if perf.get("num_results", 0) < 2 or perf.get("avg_relevance", 0) < 0.6
+            ]
+            if low_performers:
+                search_strategy.append(
+                    f"Consider refining query - strategies {', '.join(low_performers)} had limited results"
+                )
+
+            high_performers = [
+                strategy
+                for strategy, perf in strategy_performance.items()
+                if perf.get("num_results", 0) >= 5
+                and perf.get("avg_relevance", 0) >= 0.8
+            ]
+            if high_performers:
+                search_strategy.append(
+                    f"Focus on {', '.join(high_performers)} strategies for best results"
+                )
 
         # Based on available expansions
         if expansion.suggestions:
-            recommendations.extend(expansion.suggestions[:2])
+            expansion_quality.extend(expansion.suggestions[:2])
 
-        return recommendations[:5]  # Limit to top 5
+        return {
+            "query_improvements": query_improvements,
+            "search_strategy": search_strategy,
+            "expansion_quality": expansion_quality,
+        }

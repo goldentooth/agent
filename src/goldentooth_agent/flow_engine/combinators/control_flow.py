@@ -12,8 +12,8 @@ from typing import Any, TypeVar
 
 from goldentooth_agent.core.util.maybe_await import maybe_await
 
-from ..exceptions import FlowExecutionError
-from ..main import Flow
+from ..core.exceptions import FlowExecutionError
+from ..core.flow import Flow
 from .utils import get_function_name
 
 Input = TypeVar("Input")

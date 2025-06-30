@@ -19,7 +19,7 @@ from goldentooth_agent.flow_engine.combinators.basic import (
     take_stream,
     until_stream,
 )
-from goldentooth_agent.flow_engine.exceptions import FlowValidationError
+from goldentooth_agent.flow_engine.core.exceptions import FlowValidationError
 
 
 # Helper functions

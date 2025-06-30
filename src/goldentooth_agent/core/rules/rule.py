@@ -2,7 +2,7 @@ from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-from ..flow import Flow
+from goldentooth_agent.flow_engine import Flow
 
 TIn = TypeVar("TIn")
 

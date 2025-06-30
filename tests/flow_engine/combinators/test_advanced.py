@@ -19,7 +19,7 @@ from goldentooth_agent.flow_engine.combinators.advanced import (
     zip_stream,
 )
 from goldentooth_agent.flow_engine.combinators.basic import map_stream
-from goldentooth_agent.flow_engine.exceptions import FlowExecutionError
+from goldentooth_agent.flow_engine.core.exceptions import FlowExecutionError
 
 
 # Helper functions

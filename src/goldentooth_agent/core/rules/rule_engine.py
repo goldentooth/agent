@@ -1,7 +1,8 @@
 from collections.abc import AsyncIterator
 from typing import Generic, TypeVar
 
-from ..flow import Flow
+from goldentooth_agent.flow_engine import Flow
+
 from .rule import Rule
 
 TIn = TypeVar("TIn")

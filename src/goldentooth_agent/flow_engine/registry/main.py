@@ -7,7 +7,7 @@ easy discovery and reuse across applications.
 from collections.abc import Callable
 from typing import Any, TypeVar
 
-from ..main import Flow
+from ..core.flow import Flow
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
@@ -259,9 +259,7 @@ def search_flows(query: str) -> list[str]:
 
 
 # Decorator for registering flows
-def registered_flow(
-    name: str, category: str | None = None
-) -> Callable[[AnyFlow], AnyFlow]:
+def registered_flow(name: str, category: str | None = None) -> Callable[[Any], Any]:
     """Decorator to register a flow in the global registry.
 
     Args:
@@ -273,9 +271,39 @@ def registered_flow(
         @Flow.from_sync_fn
         def process_text(text):
             return text.upper()
+
+        Or with factory functions:
+        @registered_flow("my_flow")
+        def create_flow():
+            return map_stream(lambda x: x + 1)
     """
 
-    def decorator(flow: AnyFlow) -> AnyFlow:
-        return register_flow(name, flow, category)
+    def decorator(flow_or_factory: Any) -> Any:
+        # Check if it's a Flow instance
+        if isinstance(flow_or_factory, Flow):
+            return register_flow(name, flow_or_factory, category)
+
+        # Check if it's a callable that might return a Flow
+        if callable(flow_or_factory):
+            # Call the factory function to get the Flow
+            try:
+                flow = flow_or_factory()
+                if isinstance(flow, Flow):
+                    # Register the Flow and return a function that always returns the same instance
+                    register_flow(name, flow, category)
+
+                    def cached_factory():
+                        return flow
+
+                    return cached_factory
+                else:
+                    # Not a Flow, just register the function itself
+                    return register_flow(name, flow_or_factory, category)
+            except Exception:
+                # If calling fails, register the function itself
+                return register_flow(name, flow_or_factory, category)
+
+        # For anything else, try to register directly
+        return register_flow(name, flow_or_factory, category)
 
     return decorator

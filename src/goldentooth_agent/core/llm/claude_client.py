@@ -9,8 +9,9 @@ from typing import Any, TypeVar
 import instructor
 from anthropic import AsyncAnthropic
 
+from goldentooth_agent.flow_engine import Flow
+
 from ..context import Context
-from ..flow import Flow
 from ..flow_agent import AgentInput, AgentOutput, FlowAgent, FlowIOSchema
 from .base import LLMClient, StreamingResponse
 

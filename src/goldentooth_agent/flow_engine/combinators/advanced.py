@@ -10,8 +10,8 @@ import asyncio
 from collections.abc import AsyncIterator, Callable
 from typing import Any, TypeVar
 
-from ..exceptions import FlowExecutionError
-from ..main import Flow
+from ..core.exceptions import FlowExecutionError
+from ..core.flow import Flow
 from .utils import create_single_item_stream, get_function_name
 
 Input = TypeVar("Input")

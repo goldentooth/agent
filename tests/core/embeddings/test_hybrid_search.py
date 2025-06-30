@@ -70,7 +70,7 @@ class TestHybridSearchEngine:
     async def test_get_semantic_results(self):
         """Test getting semantic search results."""
         # Mock embeddings service
-        self.mock_embeddings_service.create_embedding.return_value = [0.1] * 768
+        self.mock_embeddings_service.create_embedding.return_value = [0.1] * 1536
 
         # Mock vector store results
         mock_results = [

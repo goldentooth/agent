@@ -9,8 +9,8 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Callable
 from typing import TypeVar
 
-from ..exceptions import FlowValidationError
-from ..main import Flow
+from ..core.exceptions import FlowValidationError
+from ..core.flow import Flow
 from .utils import get_function_name
 
 Input = TypeVar("Input")

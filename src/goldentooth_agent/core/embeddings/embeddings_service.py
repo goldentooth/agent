@@ -83,7 +83,7 @@ class EmbeddingsService:
             raise ValueError(f"Failed to create embedding: {e}") from e
 
     def _text_to_vector(
-        self, text: str, dimensions: int = 768
+        self, text: str, dimensions: int = 1536
     ) -> np.ndarray[Any, np.dtype[np.float32]]:
         """Convert text to a basic vector representation.
 
