@@ -498,17 +498,21 @@ class ModuleMetadataGenerator:
         """Find the most specific module directory that contains the given Python file."""
         # Define exclusion patterns (same as in _find_module_directories)
         excluded_dirs = ["old", "tests", "examples", "scripts"]
-        
+
         # Start from the file's directory and walk up to find all module directories
         current_dir = file_path.parent
         most_specific_module = None
 
         while current_dir != current_dir.parent:  # Stop at filesystem root
             # Check if this directory should be excluded
-            if any(f"/{dirname}/" in str(current_dir) or str(current_dir).endswith(f"/{dirname}") for dirname in excluded_dirs):
+            if any(
+                f"/{dirname}/" in str(current_dir)
+                or str(current_dir).endswith(f"/{dirname}")
+                for dirname in excluded_dirs
+            ):
                 current_dir = current_dir.parent
                 continue
-                
+
             # Check if this directory is a Python module
             if self._is_python_module(current_dir):
                 # This is a module directory - keep track of the most specific one
@@ -559,7 +563,10 @@ class ModuleMetadataGenerator:
                         continue
                     # Skip excluded directories
                     excluded_dirs = ["old", "tests", "examples", "scripts"]
-                    if any(f"/{dirname}/" in str(path) or str(path).endswith(f"/{dirname}") for dirname in excluded_dirs):
+                    if any(
+                        f"/{dirname}/" in str(path) or str(path).endswith(f"/{dirname}")
+                        for dirname in excluded_dirs
+                    ):
                         continue
                     module_dirs.append(path)
 
@@ -570,7 +577,10 @@ class ModuleMetadataGenerator:
                 and self._is_python_module(path)
                 and not any(part.startswith(".") for part in path.parts)
                 and path not in module_dirs
-                and not any(f"/{dirname}/" in str(path) or str(path).endswith(f"/{dirname}") for dirname in ["old", "tests", "examples", "scripts"])  # Skip excluded directories
+                and not any(
+                    f"/{dirname}/" in str(path) or str(path).endswith(f"/{dirname}")
+                    for dirname in ["old", "tests", "examples", "scripts"]
+                )  # Skip excluded directories
             ):
                 module_dirs.append(path)
 
