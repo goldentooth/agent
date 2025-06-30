@@ -42,8 +42,16 @@ classes:
 - name: GoldentoothNodeAdapter
   docstring: Adapter for GoldentoothNode YAML serialization.
   methods:
-  - from_dict
-  - to_dict
+  - name: from_dict
+    signature: 'def from_dict(cls, data: dict[str, Any]) -> GoldentoothNode'
+    docstring: Create a GoldentoothNode from dictionary data.
+    first_line: Create a GoldentoothNode from dictionary data
+    public: true
+  - name: to_dict
+    signature: 'def to_dict(cls, id: str, obj: GoldentoothNode) -> dict[str, Any]'
+    docstring: Convert GoldentoothNode to dictionary for YAML serialization.
+    first_line: Convert GoldentoothNode to dictionary for YAML serialization
+    public: true
   public: true
 - name: GoldentoothService
   docstring: Represents a service in the Goldentooth ecosystem.
@@ -52,8 +60,16 @@ classes:
 - name: GoldentoothServiceAdapter
   docstring: Adapter for GoldentoothService YAML serialization.
   methods:
-  - from_dict
-  - to_dict
+  - name: from_dict
+    signature: 'def from_dict(cls, data: dict[str, Any]) -> GoldentoothService'
+    docstring: Create a GoldentoothService from dictionary data.
+    first_line: Create a GoldentoothService from dictionary data
+    public: true
+  - name: to_dict
+    signature: 'def to_dict(cls, id: str, obj: GoldentoothService) -> dict[str, Any]'
+    docstring: Convert GoldentoothService to dictionary for YAML serialization.
+    first_line: Convert GoldentoothService to dictionary for YAML serialization
+    public: true
   public: true
 - name: Note
   docstring: Represents a note or document in the knowledge base.
@@ -62,8 +78,16 @@ classes:
 - name: NoteAdapter
   docstring: Adapter for Note YAML serialization.
   methods:
-  - from_dict
-  - to_dict
+  - name: from_dict
+    signature: 'def from_dict(cls, data: dict[str, Any]) -> Note'
+    docstring: Create a Note from dictionary data.
+    first_line: Create a Note from dictionary data
+    public: true
+  - name: to_dict
+    signature: 'def to_dict(cls, id: str, obj: Note) -> dict[str, Any]'
+    docstring: Convert Note to dictionary for YAML serialization.
+    first_line: Convert Note to dictionary for YAML serialization
+    public: true
   public: true
 - name: GitHubOrg
   docstring: Represents a GitHub organization.
@@ -72,8 +96,16 @@ classes:
 - name: GitHubOrgAdapter
   docstring: Adapter for GitHubOrg YAML serialization.
   methods:
-  - from_dict
-  - to_dict
+  - name: from_dict
+    signature: 'def from_dict(cls, data: dict[str, Any]) -> GitHubOrg'
+    docstring: Create a GitHubOrg from dictionary data.
+    first_line: Create a GitHubOrg from dictionary data
+    public: true
+  - name: to_dict
+    signature: 'def to_dict(cls, id: str, obj: GitHubOrg) -> dict[str, Any]'
+    docstring: Convert GitHubOrg to dictionary for YAML serialization.
+    first_line: Convert GitHubOrg to dictionary for YAML serialization
+    public: true
   public: true
 - name: GitHubRepo
   docstring: Represents a GitHub repository.
@@ -82,6 +114,14 @@ classes:
 - name: GitHubRepoAdapter
   docstring: Adapter for GitHubRepo YAML serialization.
   methods:
-  - from_dict
-  - to_dict
+  - name: from_dict
+    signature: 'def from_dict(cls, data: dict[str, Any]) -> GitHubRepo'
+    docstring: Create a GitHubRepo from dictionary data.
+    first_line: Create a GitHubRepo from dictionary data
+    public: true
+  - name: to_dict
+    signature: 'def to_dict(cls, id: str, obj: GitHubRepo) -> dict[str, Any]'
+    docstring: Convert GitHubRepo to dictionary for YAML serialization.
+    first_line: Convert GitHubRepo to dictionary for YAML serialization
+    public: true
   public: true

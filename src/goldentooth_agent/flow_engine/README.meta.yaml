@@ -177,47 +177,194 @@ classes:
 - name: ContextKeyProtocol
   docstring: Protocol for context keys that can store typed values.
   methods:
-  - name
-  - value_type
+  - name: name
+    signature: def name(self) -> str
+    docstring: The unique name/identifier for this context key.
+    first_line: The unique name/identifier for this context key
+    public: true
+  - name: value_type
+    signature: def value_type(self) -> type[T]
+    docstring: The type of values this key can store.
+    first_line: The type of values this key can store
+    public: true
   public: true
 - name: ContextProtocol
   docstring: Protocol for context objects that can store keyed values.
   methods:
-  - get
-  - set
-  - contains
+  - name: get
+    signature: 'def get(self, key: ContextKeyProtocol[T]) -> T'
+    docstring: Get a value by key.
+    first_line: Get a value by key
+    public: true
+  - name: set
+    signature: 'def set(self, key: ContextKeyProtocol[T], value: T) -> None'
+    docstring: Set a value by key.
+    first_line: Set a value by key
+    public: true
+  - name: contains
+    signature: 'def contains(self, key: ContextKeyProtocol[Any]) -> bool'
+    docstring: Check if key exists in context.
+    first_line: Check if key exists in context
+    public: true
   public: true
 - name: FlowProtocol
   docstring: Protocol for Flow objects to avoid concrete dependencies.
   methods:
-  - name
+  - name: name
+    signature: def name(self) -> str
+    docstring: The name of this flow.
+    first_line: The name of this flow
+    public: true
   public: true
 - name: FlowExtensionRegistry
   docstring: Registry for Flow extensions that can be added without circular imports.
   methods:
-  - register_extension
-  - register_method_extension
-  - register_initialization_hook
-  - get_extension
-  - get_method_extension
-  - extend_flow_class
+  - name: register_extension
+    signature: 'def register_extension(self, name: str, func: ExtensionFunction) ->
+      None'
+    docstring: Register a function extension.
+    first_line: Register a function extension
+    public: true
+  - name: register_method_extension
+    signature: 'def register_method_extension(self, method_name: str, func: ExtensionFunction)
+      -> None'
+    docstring: Register a method extension for Flow classes.
+    first_line: Register a method extension for Flow classes
+    public: true
+  - name: register_initialization_hook
+    signature: 'def register_initialization_hook(self, hook: Callable[[Any], None])
+      -> None'
+    docstring: Register a hook that runs when Flow classes are extended.
+    first_line: Register a hook that runs when Flow classes are extended
+    public: true
+  - name: get_extension
+    signature: 'def get_extension(self, name: str) -> ExtensionFunction | None'
+    docstring: Get a registered extension.
+    first_line: Get a registered extension
+    public: true
+  - name: get_method_extension
+    signature: 'def get_method_extension(self, method_name: str) -> ExtensionFunction
+      | None'
+    docstring: Get a registered method extension.
+    first_line: Get a registered method extension
+    public: true
+  - name: extend_flow_class
+    signature: 'def extend_flow_class(self, flow_class: type) -> None'
+    docstring: Apply all registered extensions to a Flow class.
+    first_line: Apply all registered extensions to a Flow class
+    public: true
   public: true
 - name: TrampolineFlowCombinators
   docstring: Flow combinators for trampoline-style execution patterns.
   methods:
-  - set_should_exit
-  - set_should_break
-  - set_should_skip
-  - check_should_exit
-  - check_should_break
-  - check_should_skip
-  - clear_break_flag
-  - clear_skip_flag
-  - exitable_chain
-  - trampoline
-  - trampoline_chain
-  - conditional_flow
-  - skip_if
+  - name: set_should_exit
+    signature: 'def set_should_exit(value: bool) -> Flow[Context, Context]'
+    docstring: "Create a Flow that sets the exit signal in the context.\n\n      \
+      \  Args:\n            value: Whether to signal exit (default: True)\n\n    \
+      \    Returns:\n            Flow that sets the exit flag and returns updated\
+      \ context"
+    first_line: Create a Flow that sets the exit signal in the context
+    public: true
+  - name: set_should_break
+    signature: 'def set_should_break(value: bool) -> Flow[Context, Context]'
+    docstring: "Create a Flow that sets the break/restart signal in the context.\n\
+      \n        Args:\n            value: Whether to signal break (default: True)\n\
+      \n        Returns:\n            Flow that sets the break flag and returns updated\
+      \ context"
+    first_line: Create a Flow that sets the break/restart signal in the context
+    public: true
+  - name: set_should_skip
+    signature: 'def set_should_skip(value: bool) -> Flow[Context, Context]'
+    docstring: "Create a Flow that sets the skip signal in the context.\n\n      \
+      \  Args:\n            value: Whether to signal skip (default: True)\n\n    \
+      \    Returns:\n            Flow that sets the skip flag and returns updated\
+      \ context"
+    first_line: Create a Flow that sets the skip signal in the context
+    public: true
+  - name: check_should_exit
+    signature: def check_should_exit() -> Flow[Context, bool]
+    docstring: "Create a Flow that checks if exit has been signaled.\n\n        Returns:\n\
+      \            Flow that returns True if exit is signaled, False otherwise"
+    first_line: Create a Flow that checks if exit has been signaled
+    public: true
+  - name: check_should_break
+    signature: def check_should_break() -> Flow[Context, bool]
+    docstring: "Create a Flow that checks if break/restart has been signaled.\n\n\
+      \        Returns:\n            Flow that returns True if break is signaled,\
+      \ False otherwise"
+    first_line: Create a Flow that checks if break/restart has been signaled
+    public: true
+  - name: check_should_skip
+    signature: def check_should_skip() -> Flow[Context, bool]
+    docstring: "Create a Flow that checks if skip has been signaled.\n\n        Returns:\n\
+      \            Flow that returns True if skip is signaled, False otherwise"
+    first_line: Create a Flow that checks if skip has been signaled
+    public: true
+  - name: clear_break_flag
+    signature: def clear_break_flag() -> Flow[Context, Context]
+    docstring: "Create a Flow that clears the break flag.\n\n        Returns:\n  \
+      \          Flow that removes the break flag from context"
+    first_line: Create a Flow that clears the break flag
+    public: true
+  - name: clear_skip_flag
+    signature: def clear_skip_flag() -> Flow[Context, Context]
+    docstring: "Create a Flow that clears the skip flag.\n\n        Returns:\n   \
+      \         Flow that removes the skip flag from context"
+    first_line: Create a Flow that clears the skip flag
+    public: true
+  - name: exitable_chain
+    signature: 'def exitable_chain(*flows: Flow[Context, Context]) -> Flow[Context,
+      Context]'
+    docstring: "Create a Flow that executes a chain of flows with exit/break checking.\n\
+      \n        Executes each flow in sequence, checking for exit or break signals\
+      \ after each.\n        If exit is signaled, stops execution immediately.\n \
+      \       If break is signaled, clears the flag and starts the chain over.\n\n\
+      \        Args:\n            *flows: Sequence of flows to execute\n\n       \
+      \ Returns:\n            Flow that executes the chain with exit/break handling"
+    first_line: Create a Flow that executes a chain of flows with exit/break checking
+    public: true
+  - name: trampoline
+    signature: 'def trampoline(flow: Flow[Context, Context]) -> Flow[Context, Context]'
+    docstring: "Create a Flow that runs another flow in trampoline style until exit.\n\
+      \n        Repeatedly executes the given flow until SHOULD_EXIT is signaled.\n\
+      \        Handles SHOULD_BREAK by restarting the current iteration.\n\n     \
+      \   Args:\n            flow: The flow to execute repeatedly\n\n        Returns:\n\
+      \            Flow that runs the input flow in trampoline style"
+    first_line: Create a Flow that runs another flow in trampoline style until exit
+    public: true
+  - name: trampoline_chain
+    signature: 'def trampoline_chain(*flows: Flow[Context, Context]) -> Flow[Context,
+      Context]'
+    docstring: "Create a Flow that runs a chain of flows in trampoline style.\n\n\
+      \        Combines exitable_chain and trampoline - repeatedly executes the chain\n\
+      \        until exit is signaled, with break/restart support.\n\n        Args:\n\
+      \            *flows: Sequence of flows to execute repeatedly\n\n        Returns:\n\
+      \            Flow that executes the chain in trampoline style"
+    first_line: Create a Flow that runs a chain of flows in trampoline style
+    public: true
+  - name: conditional_flow
+    signature: 'def conditional_flow(condition_flow: Flow[Context, bool], then_flow:
+      Flow[Context, Context], else_flow: Flow[Context, Context] | None) -> Flow[Context,
+      Context]'
+    docstring: "Create a Flow that conditionally executes based on a boolean flow\
+      \ result.\n\n        Args:\n            condition_flow: Flow that returns a\
+      \ boolean condition\n            then_flow: Flow to execute if condition is\
+      \ True\n            else_flow: Optional flow to execute if condition is False\n\
+      \n        Returns:\n            Flow that conditionally executes then_flow or\
+      \ else_flow"
+    first_line: Create a Flow that conditionally executes based on a boolean flow
+      result
+    public: true
+  - name: skip_if
+    signature: 'def skip_if(condition_flow: Flow[Context, bool], target_flow: Flow[Context,
+      Context]) -> Flow[Context, Context]'
+    docstring: "Create a Flow that skips execution of target_flow if condition is\
+      \ True.\n\n        Args:\n            condition_flow: Flow that returns boolean\
+      \ condition\n            target_flow: Flow to potentially skip\n\n        Returns:\n\
+      \            Flow that conditionally executes target_flow"
+    first_line: Create a Flow that skips execution of target_flow if condition is
+      True
+    public: true
   public: true
 functions:
 - name: register_flow_extension

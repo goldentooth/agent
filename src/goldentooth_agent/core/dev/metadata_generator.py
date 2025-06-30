@@ -22,13 +22,24 @@ class MetadataUpdateResult:
 
 
 @dataclass
+class MethodInfo:
+    """Information about a class method."""
+
+    name: str
+    signature: str = ""
+    docstring: str = ""
+    first_line: str = ""
+    public: bool = True
+
+
+@dataclass
 class SymbolInfo:
     """Information about a symbol (class, function, constant)."""
 
     name: str
     docstring: str = ""
     signature: str = ""
-    methods: list[str] = field(default_factory=list)
+    methods: list[MethodInfo] = field(default_factory=list)
     public: bool = True
 
 
@@ -882,6 +893,20 @@ class ModuleMetadataGenerator:
             return node.body[0].value.value.strip()
         return ""
 
+    def _extract_first_line_from_docstring(self, docstring: str) -> str:
+        """Extract the first meaningful line from a docstring."""
+        if not docstring:
+            return ""
+
+        lines = docstring.strip().split("\n")
+        for line in lines:
+            line = line.strip()
+            if line and not line.startswith('"""') and not line.startswith("'''"):
+                # Remove trailing periods and clean up
+                return line.rstrip(".").strip()
+
+        return ""
+
     def _get_function_signature(
         self, node: ast.FunctionDef | ast.AsyncFunctionDef
     ) -> str:
@@ -917,13 +942,25 @@ class ModuleMetadataGenerator:
         async_prefix = "async " if isinstance(node, ast.AsyncFunctionDef) else ""
         return f"{async_prefix}def {node.name}({', '.join(args)}){return_type}"
 
-    def _get_class_methods(self, node: ast.ClassDef) -> list[str]:
-        """Get list of public methods from a class definition."""
+    def _get_class_methods(self, node: ast.ClassDef) -> list[MethodInfo]:
+        """Get list of public methods from a class definition with detailed information."""
         methods = []
         for item in node.body:
             if isinstance(item, ast.FunctionDef | ast.AsyncFunctionDef):
                 if not item.name.startswith("_"):  # Only public methods
-                    methods.append(item.name)
+                    docstring = self._extract_docstring(item)
+                    first_line = self._extract_first_line_from_docstring(docstring)
+                    signature = self._get_function_signature(item)
+
+                    methods.append(
+                        MethodInfo(
+                            name=item.name,
+                            signature=signature,
+                            docstring=docstring,
+                            first_line=first_line,
+                            public=True,
+                        )
+                    )
         return methods
 
     def _is_internal_dependency(self, module_name: str) -> bool:
@@ -1065,7 +1102,16 @@ class ModuleMetadataGenerator:
                 {
                     "name": cls.name,
                     "docstring": cls.docstring,
-                    "methods": cls.methods,
+                    "methods": [
+                        {
+                            "name": method.name,
+                            "signature": method.signature,
+                            "docstring": method.docstring,
+                            "first_line": method.first_line,
+                            "public": method.public,
+                        }
+                        for method in cls.methods
+                    ],
                     "public": cls.public,
                 }
                 for cls in analysis.classes
@@ -1243,7 +1289,32 @@ class ModuleMetadataGenerator:
                     sections.append("")
                     sections.append("**Public Methods:**")
                     for method in methods:
-                        sections.append(f"- `{method}()`")
+                        if isinstance(method, dict):  # New enhanced format
+                            method_name = method.get("name", "")
+                            method_sig = method.get("signature", "")
+                            method_first_line = method.get("first_line", "")
+
+                            if method_sig:
+                                # Use the full signature instead of just name
+                                signature_display = method_sig.replace(
+                                    "def ", ""
+                                ).replace("async def ", "async ")
+                                if method_first_line:
+                                    sections.append(
+                                        f"- `{signature_display}` - {method_first_line}"
+                                    )
+                                else:
+                                    sections.append(f"- `{signature_display}`")
+                            else:
+                                # Fallback to just method name
+                                if method_first_line:
+                                    sections.append(
+                                        f"- `{method_name}()` - {method_first_line}"
+                                    )
+                                else:
+                                    sections.append(f"- `{method_name}()`")
+                        else:  # Legacy format (just strings)
+                            sections.append(f"- `{method}()`")
 
                 sections.append("")
 

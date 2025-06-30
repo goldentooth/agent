@@ -2,10 +2,10 @@ module_name: Dev
 description: Dev module
 complexity: Medium
 file_count: 2
-loc: ~1181
+loc: ~1244
 test_coverage: Medium
-class_count: 4
-function_count: 41
+class_count: 5
+function_count: 42
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies: []
@@ -20,6 +20,7 @@ external_dependencies:
 - yaml
 symbols:
 - MetadataUpdateResult
+- MethodInfo
 - ModuleAnalysis
 - ModuleMetadataGenerator
 - SymbolInfo
@@ -30,6 +31,10 @@ exports:
 classes:
 - name: MetadataUpdateResult
   docstring: Result of a metadata update operation.
+  methods: []
+  public: true
+- name: MethodInfo
+  docstring: Information about a class method.
   methods: []
   public: true
 - name: SymbolInfo
@@ -43,19 +48,90 @@ classes:
 - name: ModuleMetadataGenerator
   docstring: Generates and maintains README.meta.yaml files for Python modules.
   methods:
-  - update_module_metadata
-  - update_all_modules
-  - validate_module_metadata
-  - validate_all_metadata
-  - update_changed_modules
-  - update_for_pre_commit
-  - validate_for_commit
-  - check_metadata_freshness
-  - check_staged_metadata_freshness
-  - generate_commit_message_info
-  - generate_readme_from_metadata
-  - write_readme_from_metadata
-  - update_all_readmes
-  - check_readme_freshness
-  - check_staged_readme_freshness
+  - name: update_module_metadata
+    signature: 'def update_module_metadata(self, module_path: Path, force: bool, dry_run:
+      bool) -> MetadataUpdateResult'
+    docstring: Update README.meta.yaml for a single module.
+    first_line: Update README.meta.yaml for a single module
+    public: true
+  - name: update_all_modules
+    signature: 'def update_all_modules(self, project_root: Path, force: bool, dry_run:
+      bool) -> list[MetadataUpdateResult]'
+    docstring: Update README.meta.yaml for all modules in the project.
+    first_line: Update README.meta.yaml for all modules in the project
+    public: true
+  - name: validate_module_metadata
+    signature: 'def validate_module_metadata(self, module_path: Path) -> list[str]'
+    docstring: Validate README.meta.yaml against actual module content.
+    first_line: Validate README.meta.yaml against actual module content
+    public: true
+  - name: validate_all_metadata
+    signature: 'def validate_all_metadata(self, project_root: Path) -> dict[Path,
+      list[str]]'
+    docstring: Validate all README.meta.yaml files in the project.
+    first_line: Validate all README.meta.yaml files in the project
+    public: true
+  - name: update_changed_modules
+    signature: 'def update_changed_modules(self, project_root: Path, since_commit:
+      str, force: bool, dry_run: bool) -> list[MetadataUpdateResult]'
+    docstring: Update README.meta.yaml for modules that have changed since the specified
+      commit.
+    first_line: Update README.meta.yaml for modules that have changed since the specified
+      commit
+    public: true
+  - name: update_for_pre_commit
+    signature: 'def update_for_pre_commit(self, project_root: Path) -> list[MetadataUpdateResult]'
+    docstring: Update metadata for modules with staged changes (optimized for pre-commit).
+    first_line: Update metadata for modules with staged changes (optimized for pre-commit)
+    public: true
+  - name: validate_for_commit
+    signature: 'def validate_for_commit(self, project_root: Path) -> list[str]'
+    docstring: Validate metadata for modules that will be committed.
+    first_line: Validate metadata for modules that will be committed
+    public: true
+  - name: check_metadata_freshness
+    signature: 'def check_metadata_freshness(self, project_root: Path) -> list[str]'
+    docstring: Check that README.meta.yaml files are newer than their corresponding
+      Python files.
+    first_line: Check that README.meta.yaml files are newer than their corresponding
+      Python files
+    public: true
+  - name: check_staged_metadata_freshness
+    signature: 'def check_staged_metadata_freshness(self, project_root: Path) -> list[str]'
+    docstring: Check metadata freshness only for modules with staged changes.
+    first_line: Check metadata freshness only for modules with staged changes
+    public: true
+  - name: generate_commit_message_info
+    signature: 'def generate_commit_message_info(self, project_root: Path) -> str
+      | None'
+    docstring: Generate information about metadata changes for commit messages.
+    first_line: Generate information about metadata changes for commit messages
+    public: true
+  - name: generate_readme_from_metadata
+    signature: 'def generate_readme_from_metadata(self, module_path: Path) -> str'
+    docstring: Generate README.md content from README.meta.yaml.
+    first_line: Generate README.md content from README.meta.yaml
+    public: true
+  - name: write_readme_from_metadata
+    signature: 'def write_readme_from_metadata(self, module_path: Path) -> bool'
+    docstring: Generate and write README.md from README.meta.yaml.
+    first_line: Generate and write README.md from README.meta.yaml
+    public: true
+  - name: update_all_readmes
+    signature: 'def update_all_readmes(self, project_root: Path) -> list[Path]'
+    docstring: Generate README.md files for all modules that have metadata.
+    first_line: Generate README.md files for all modules that have metadata
+    public: true
+  - name: check_readme_freshness
+    signature: 'def check_readme_freshness(self, project_root: Path) -> list[str]'
+    docstring: Check that README.md files are newer than their corresponding README.meta.yaml
+      files.
+    first_line: Check that README.md files are newer than their corresponding README.meta.yaml
+      files
+    public: true
+  - name: check_staged_readme_freshness
+    signature: 'def check_staged_readme_freshness(self, project_root: Path) -> list[str]'
+    docstring: Check README freshness only for modules with staged changes.
+    first_line: Check README freshness only for modules with staged changes
+    public: true
   public: true

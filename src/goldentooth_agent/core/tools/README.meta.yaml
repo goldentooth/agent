@@ -242,30 +242,94 @@ classes:
 - name: CacheMetrics
   docstring: Track cache performance metrics.
   methods:
-  - hit_rate
-  - avg_access_time
-  - record_hit
-  - record_miss
-  - record_set
-  - record_eviction
-  - record_error
-  - get_stats
+  - name: hit_rate
+    signature: def hit_rate(self) -> float
+    docstring: ''
+    first_line: ''
+    public: true
+  - name: avg_access_time
+    signature: def avg_access_time(self) -> float
+    docstring: ''
+    first_line: ''
+    public: true
+  - name: record_hit
+    signature: 'def record_hit(self, key: str, access_time: float) -> None'
+    docstring: ''
+    first_line: ''
+    public: true
+  - name: record_miss
+    signature: 'def record_miss(self, key: str, computation_time: float) -> None'
+    docstring: ''
+    first_line: ''
+    public: true
+  - name: record_set
+    signature: 'def record_set(self, key: str) -> None'
+    docstring: ''
+    first_line: ''
+    public: true
+  - name: record_eviction
+    signature: 'def record_eviction(self, key: str) -> None'
+    docstring: ''
+    first_line: ''
+    public: true
+  - name: record_error
+    signature: def record_error(self) -> None
+    docstring: ''
+    first_line: ''
+    public: true
+  - name: get_stats
+    signature: def get_stats(self) -> dict[str, Any]
+    docstring: ''
+    first_line: ''
+    public: true
   public: true
 - name: CacheEntry
   docstring: Cache entry with metadata.
   methods:
-  - is_expired
-  - age
-  - touch
+  - name: is_expired
+    signature: def is_expired(self) -> bool
+    docstring: ''
+    first_line: ''
+    public: true
+  - name: age
+    signature: def age(self) -> float
+    docstring: ''
+    first_line: ''
+    public: true
+  - name: touch
+    signature: def touch(self) -> None
+    docstring: ''
+    first_line: ''
+    public: true
   public: true
 - name: IntelligentCache
   docstring: Intelligent cache with adaptive strategies and performance optimization.
   methods:
-  - get
-  - set
-  - delete
-  - clear
-  - get_stats
+  - name: get
+    signature: 'async def get(self, key: str) -> tuple[bool, Any]'
+    docstring: Get value from cache.
+    first_line: Get value from cache
+    public: true
+  - name: set
+    signature: 'async def set(self, key: str, value: Any, ttl: float | None) -> None'
+    docstring: Set value in cache with intelligent eviction.
+    first_line: Set value in cache with intelligent eviction
+    public: true
+  - name: delete
+    signature: 'async def delete(self, key: str) -> bool'
+    docstring: Delete key from cache.
+    first_line: Delete key from cache
+    public: true
+  - name: clear
+    signature: async def clear(self) -> None
+    docstring: Clear entire cache.
+    first_line: Clear entire cache
+    public: true
+  - name: get_stats
+    signature: async def get_stats(self) -> dict[str, Any]
+    docstring: Get comprehensive cache statistics.
+    first_line: Get comprehensive cache statistics
+    public: true
   public: true
 - name: SmartCacheDecorator
   docstring: Smart caching decorator with automatic key generation.
@@ -274,8 +338,18 @@ classes:
 - name: FlowCacheManager
   docstring: Specialized cache manager for Flow operations.
   methods:
-  - cache_flow_result
-  - get_cached_flow_result
+  - name: cache_flow_result
+    signature: 'async def cache_flow_result(self, flow_input: FlowIOSchema, flow_output:
+      FlowIOSchema, flow_name: str, ttl: float | None) -> None'
+    docstring: Cache a flow execution result.
+    first_line: Cache a flow execution result
+    public: true
+  - name: get_cached_flow_result
+    signature: 'async def get_cached_flow_result(self, flow_input: FlowIOSchema, flow_name:
+      str) -> tuple[bool, FlowIOSchema | None]'
+    docstring: Get cached flow result.
+    first_line: Get cached flow result
+    public: true
   public: true
 - name: FileReadInput
   docstring: Input schema for file read tool.
@@ -308,40 +382,120 @@ classes:
 - name: MemoryMonitor
   docstring: Monitor memory usage and trigger cleanup when needed.
   methods:
-  - check_memory
-  - increment_operations
+  - name: check_memory
+    signature: def check_memory(self) -> tuple[bool, int]
+    docstring: Check current memory usage. Returns (should_gc, current_bytes).
+    first_line: Check current memory usage. Returns (should_gc, current_bytes)
+    public: true
+  - name: increment_operations
+    signature: def increment_operations(self) -> bool
+    docstring: Increment operation count and check if GC should run.
+    first_line: Increment operation count and check if GC should run
+    public: true
   public: true
 - name: BackpressureController
   docstring: Control backpressure in streaming operations.
   methods:
-  - acquire
-  - is_under_pressure
+  - name: acquire
+    signature: async def acquire(self) -> AsyncGenerator[None]
+    docstring: Acquire a slot for processing with backpressure control.
+    first_line: Acquire a slot for processing with backpressure control
+    public: true
+  - name: is_under_pressure
+    signature: def is_under_pressure(self) -> bool
+    docstring: Check if system is under backpressure.
+    first_line: Check if system is under backpressure
+    public: true
   public: true
 - name: StreamProcessor
   docstring: Memory-efficient stream processor with automatic resource management.
   methods:
-  - chunk_stream
-  - buffer_stream
-  - map_stream
-  - filter_stream
-  - reduce_stream
-  - managed_stream
-  - get_memory_stats
+  - name: chunk_stream
+    signature: 'async def chunk_stream(self, stream: AsyncIterator[T], chunk_size:
+      int | None) -> AsyncIterator[list[T]]'
+    docstring: Break stream into chunks for batch processing.
+    first_line: Break stream into chunks for batch processing
+    public: true
+  - name: buffer_stream
+    signature: 'async def buffer_stream(self, stream: AsyncIterator[T], buffer_size:
+      int | None) -> AsyncIterator[T]'
+    docstring: Buffer stream with memory-aware backpressure.
+    first_line: Buffer stream with memory-aware backpressure
+    public: true
+  - name: map_stream
+    signature: 'async def map_stream(self, stream: AsyncIterator[T], mapper: Callable[[T],
+      R] | Callable[[T], Callable[[], R]], chunk_size: int | None) -> AsyncIterator[R]'
+    docstring: Apply function to stream with chunked processing.
+    first_line: Apply function to stream with chunked processing
+    public: true
+  - name: filter_stream
+    signature: 'async def filter_stream(self, stream: AsyncIterator[T], predicate:
+      Callable[[T], bool] | Callable[[T], Callable[[], bool]]) -> AsyncIterator[T]'
+    docstring: Filter stream with memory management.
+    first_line: Filter stream with memory management
+    public: true
+  - name: reduce_stream
+    signature: 'async def reduce_stream(self, stream: AsyncIterator[T], reducer: Callable[[R,
+      T], R], initial: R, chunk_size: int | None) -> R'
+    docstring: Reduce stream with chunked processing to manage memory.
+    first_line: Reduce stream with chunked processing to manage memory
+    public: true
+  - name: managed_stream
+    signature: 'async def managed_stream(self, stream: AsyncIterator[T]) -> AsyncIterator[AsyncIterator[T]]'
+    docstring: Context manager for stream lifecycle with resource cleanup.
+    first_line: Context manager for stream lifecycle with resource cleanup
+    public: true
+  - name: get_memory_stats
+    signature: async def get_memory_stats(self) -> dict[str, Any]
+    docstring: Get current memory and performance statistics.
+    first_line: Get current memory and performance statistics
+    public: true
   public: true
 - name: PerformanceMonitor
   docstring: Monitor performance metrics for tools and operations.
   methods:
-  - record_execution_time
-  - increment_counter
-  - get_stats
-  - timed
+  - name: record_execution_time
+    signature: 'async def record_execution_time(self, operation: str, duration: float)
+      -> None'
+    docstring: Record execution time for an operation.
+    first_line: Record execution time for an operation
+    public: true
+  - name: increment_counter
+    signature: 'async def increment_counter(self, counter: str, value: int) -> None'
+    docstring: Increment a counter.
+    first_line: Increment a counter
+    public: true
+  - name: get_stats
+    signature: async def get_stats(self) -> dict[str, Any]
+    docstring: Get performance statistics.
+    first_line: Get performance statistics
+    public: true
+  - name: timed
+    signature: 'def timed(self, operation: str) -> Callable[[Callable[..., Any]],
+      Callable[..., Any]]'
+    docstring: Decorator for timing operations.
+    first_line: Decorator for timing operations
+    public: true
   public: true
 - name: ResourcePool
   docstring: Generic resource pool with lifecycle management.
   methods:
-  - acquire
-  - release
-  - close
+  - name: acquire
+    signature: 'async def acquire(self, factory: Callable[[], Coroutine[Any, Any,
+      Any]]) -> Any'
+    docstring: Acquire a resource from the pool or create new one.
+    first_line: Acquire a resource from the pool or create new one
+    public: true
+  - name: release
+    signature: 'async def release(self, resource: Any) -> None'
+    docstring: Release a resource back to the pool.
+    first_line: Release a resource back to the pool
+    public: true
+  - name: close
+    signature: async def close(self) -> None
+    docstring: Close all resources in the pool.
+    first_line: Close all resources in the pool
+    public: true
   public: true
 - name: ParallelConfig
   docstring: Configuration for parallel execution.
@@ -350,23 +504,67 @@ classes:
 - name: WorkerPool
   docstring: Manage a pool of async workers with lifecycle management.
   methods:
-  - execute_with_worker
-  - get_stats
+  - name: execute_with_worker
+    signature: 'async def execute_with_worker(self, coro: Coroutine[Any, Any, R],
+      worker_id: int | None) -> R'
+    docstring: Execute a coroutine with worker pool management.
+    first_line: Execute a coroutine with worker pool management
+    public: true
+  - name: get_stats
+    signature: async def get_stats(self) -> dict[str, Any]
+    docstring: Get worker pool statistics.
+    first_line: Get worker pool statistics
+    public: true
   public: true
 - name: ParallelExecutor
   docstring: Execute tasks in parallel with advanced batching and error handling.
   methods:
-  - map_parallel
-  - batch_process
-  - pipeline_parallel
-  - parallel_context
-  - get_performance_stats
+  - name: map_parallel
+    signature: 'async def map_parallel(self, items: AsyncIterator[T], mapper: Callable[[T],
+      Coroutine[Any, Any, R]], preserve_order: bool) -> AsyncIterator[R]'
+    docstring: Map function over items in parallel with optional order preservation.
+    first_line: Map function over items in parallel with optional order preservation
+    public: true
+  - name: batch_process
+    signature: 'async def batch_process(self, items: AsyncIterator[T], processor:
+      Callable[[list[T]], Coroutine[Any, Any, list[R]]]) -> AsyncIterator[R]'
+    docstring: Process items in batches for operations that benefit from batching.
+    first_line: Process items in batches for operations that benefit from batching
+    public: true
+  - name: pipeline_parallel
+    signature: 'async def pipeline_parallel(self, stages: list[Callable[[AsyncIterator[Any]],
+      AsyncIterator[Any]]], initial_stream: AsyncIterator[T]) -> AsyncIterator[Any]'
+    docstring: Execute a pipeline of stages in parallel with inter-stage buffering.
+    first_line: Execute a pipeline of stages in parallel with inter-stage buffering
+    public: true
+  - name: parallel_context
+    signature: async def parallel_context(self) -> AsyncGenerator[ParallelExecutor]
+    docstring: Context manager for parallel execution lifecycle.
+    first_line: Context manager for parallel execution lifecycle
+    public: true
+  - name: get_performance_stats
+    signature: async def get_performance_stats(self) -> dict[str, Any]
+    docstring: Get detailed performance statistics.
+    first_line: Get detailed performance statistics
+    public: true
   public: true
 - name: FlowParallelExecutor
   docstring: Specialized parallel executor for Flow operations.
   methods:
-  - parallel_flow_map
-  - parallel_tool_execution
+  - name: parallel_flow_map
+    signature: 'async def parallel_flow_map(self, flow_inputs: AsyncIterator[FlowIOSchema],
+      flow_func: Callable[[FlowIOSchema], Coroutine[Any, Any, FlowIOSchema]], preserve_order:
+      bool) -> AsyncIterator[FlowIOSchema]'
+    docstring: Execute Flow operations in parallel over input stream.
+    first_line: Execute Flow operations in parallel over input stream
+    public: true
+  - name: parallel_tool_execution
+    signature: 'async def parallel_tool_execution(self, tool_inputs: list[tuple[str,
+      FlowIOSchema]], tool_registry: dict[str, Callable[[FlowIOSchema], Coroutine[Any,
+      Any, FlowIOSchema]]]) -> AsyncIterator[tuple[str, FlowIOSchema]]'
+    docstring: Execute multiple tools in parallel.
+    first_line: Execute multiple tools in parallel
+    public: true
   public: true
 - name: TextAnalysisInput
   docstring: Input schema for text analysis tool.

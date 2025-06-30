@@ -51,32 +51,32 @@ Cache eviction strategies.
 Track cache performance metrics.
 
 **Public Methods:**
-- `hit_rate()`
-- `avg_access_time()`
-- `record_hit()`
-- `record_miss()`
-- `record_set()`
-- `record_eviction()`
-- `record_error()`
-- `get_stats()`
+- `hit_rate(self) -> float`
+- `avg_access_time(self) -> float`
+- `record_hit(self, key: str, access_time: float) -> None`
+- `record_miss(self, key: str, computation_time: float) -> None`
+- `record_set(self, key: str) -> None`
+- `record_eviction(self, key: str) -> None`
+- `record_error(self) -> None`
+- `get_stats(self) -> dict[str, Any]`
 
 #### CacheEntry
 Cache entry with metadata.
 
 **Public Methods:**
-- `is_expired()`
-- `age()`
-- `touch()`
+- `is_expired(self) -> bool`
+- `age(self) -> float`
+- `touch(self) -> None`
 
 #### IntelligentCache
 Intelligent cache with adaptive strategies and performance optimization.
 
 **Public Methods:**
-- `get()`
-- `set()`
-- `delete()`
-- `clear()`
-- `get_stats()`
+- `async get(self, key: str) -> tuple[bool, Any]` - Get value from cache
+- `async set(self, key: str, value: Any, ttl: float | None) -> None` - Set value in cache with intelligent eviction
+- `async delete(self, key: str) -> bool` - Delete key from cache
+- `async clear(self) -> None` - Clear entire cache
+- `async get_stats(self) -> dict[str, Any]` - Get comprehensive cache statistics
 
 #### SmartCacheDecorator
 Smart caching decorator with automatic key generation.
@@ -85,8 +85,8 @@ Smart caching decorator with automatic key generation.
 Specialized cache manager for Flow operations.
 
 **Public Methods:**
-- `cache_flow_result()`
-- `get_cached_flow_result()`
+- `async cache_flow_result(self, flow_input: FlowIOSchema, flow_output: FlowIOSchema, flow_name: str, ttl: float | None) -> None` - Cache a flow execution result
+- `async get_cached_flow_result(self, flow_input: FlowIOSchema, flow_name: str) -> tuple[bool, FlowIOSchema | None]` - Get cached flow result
 
 #### FileReadInput
 Input schema for file read tool.
@@ -113,44 +113,44 @@ Configuration for streaming operations.
 Monitor memory usage and trigger cleanup when needed.
 
 **Public Methods:**
-- `check_memory()`
-- `increment_operations()`
+- `check_memory(self) -> tuple[bool, int]` - Check current memory usage. Returns (should_gc, current_bytes)
+- `increment_operations(self) -> bool` - Increment operation count and check if GC should run
 
 #### BackpressureController
 Control backpressure in streaming operations.
 
 **Public Methods:**
-- `acquire()`
-- `is_under_pressure()`
+- `async acquire(self) -> AsyncGenerator[None]` - Acquire a slot for processing with backpressure control
+- `is_under_pressure(self) -> bool` - Check if system is under backpressure
 
 #### StreamProcessor
 Memory-efficient stream processor with automatic resource management.
 
 **Public Methods:**
-- `chunk_stream()`
-- `buffer_stream()`
-- `map_stream()`
-- `filter_stream()`
-- `reduce_stream()`
-- `managed_stream()`
-- `get_memory_stats()`
+- `async chunk_stream(self, stream: AsyncIterator[T], chunk_size: int | None) -> AsyncIterator[list[T]]` - Break stream into chunks for batch processing
+- `async buffer_stream(self, stream: AsyncIterator[T], buffer_size: int | None) -> AsyncIterator[T]` - Buffer stream with memory-aware backpressure
+- `async map_stream(self, stream: AsyncIterator[T], mapper: Callable[[T], R] | Callable[[T], Callable[[], R]], chunk_size: int | None) -> AsyncIterator[R]` - Apply function to stream with chunked processing
+- `async filter_stream(self, stream: AsyncIterator[T], predicate: Callable[[T], bool] | Callable[[T], Callable[[], bool]]) -> AsyncIterator[T]` - Filter stream with memory management
+- `async reduce_stream(self, stream: AsyncIterator[T], reducer: Callable[[R, T], R], initial: R, chunk_size: int | None) -> R` - Reduce stream with chunked processing to manage memory
+- `async managed_stream(self, stream: AsyncIterator[T]) -> AsyncIterator[AsyncIterator[T]]` - Context manager for stream lifecycle with resource cleanup
+- `async get_memory_stats(self) -> dict[str, Any]` - Get current memory and performance statistics
 
 #### PerformanceMonitor
 Monitor performance metrics for tools and operations.
 
 **Public Methods:**
-- `record_execution_time()`
-- `increment_counter()`
-- `get_stats()`
-- `timed()`
+- `async record_execution_time(self, operation: str, duration: float) -> None` - Record execution time for an operation
+- `async increment_counter(self, counter: str, value: int) -> None` - Increment a counter
+- `async get_stats(self) -> dict[str, Any]` - Get performance statistics
+- `timed(self, operation: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]` - Decorator for timing operations
 
 #### ResourcePool
 Generic resource pool with lifecycle management.
 
 **Public Methods:**
-- `acquire()`
-- `release()`
-- `close()`
+- `async acquire(self, factory: Callable[[], Coroutine[Any, Any, Any]]) -> Any` - Acquire a resource from the pool or create new one
+- `async release(self, resource: Any) -> None` - Release a resource back to the pool
+- `async close(self) -> None` - Close all resources in the pool
 
 #### ParallelConfig
 Configuration for parallel execution.
@@ -159,25 +159,25 @@ Configuration for parallel execution.
 Manage a pool of async workers with lifecycle management.
 
 **Public Methods:**
-- `execute_with_worker()`
-- `get_stats()`
+- `async execute_with_worker(self, coro: Coroutine[Any, Any, R], worker_id: int | None) -> R` - Execute a coroutine with worker pool management
+- `async get_stats(self) -> dict[str, Any]` - Get worker pool statistics
 
 #### ParallelExecutor
 Execute tasks in parallel with advanced batching and error handling.
 
 **Public Methods:**
-- `map_parallel()`
-- `batch_process()`
-- `pipeline_parallel()`
-- `parallel_context()`
-- `get_performance_stats()`
+- `async map_parallel(self, items: AsyncIterator[T], mapper: Callable[[T], Coroutine[Any, Any, R]], preserve_order: bool) -> AsyncIterator[R]` - Map function over items in parallel with optional order preservation
+- `async batch_process(self, items: AsyncIterator[T], processor: Callable[[list[T]], Coroutine[Any, Any, list[R]]]) -> AsyncIterator[R]` - Process items in batches for operations that benefit from batching
+- `async pipeline_parallel(self, stages: list[Callable[[AsyncIterator[Any]], AsyncIterator[Any]]], initial_stream: AsyncIterator[T]) -> AsyncIterator[Any]` - Execute a pipeline of stages in parallel with inter-stage buffering
+- `async parallel_context(self) -> AsyncGenerator[ParallelExecutor]` - Context manager for parallel execution lifecycle
+- `async get_performance_stats(self) -> dict[str, Any]` - Get detailed performance statistics
 
 #### FlowParallelExecutor
 Specialized parallel executor for Flow operations.
 
 **Public Methods:**
-- `parallel_flow_map()`
-- `parallel_tool_execution()`
+- `async parallel_flow_map(self, flow_inputs: AsyncIterator[FlowIOSchema], flow_func: Callable[[FlowIOSchema], Coroutine[Any, Any, FlowIOSchema]], preserve_order: bool) -> AsyncIterator[FlowIOSchema]` - Execute Flow operations in parallel over input stream
+- `async parallel_tool_execution(self, tool_inputs: list[tuple[str, FlowIOSchema]], tool_registry: dict[str, Callable[[FlowIOSchema], Coroutine[Any, Any, FlowIOSchema]]]) -> AsyncIterator[tuple[str, FlowIOSchema]]` - Execute multiple tools in parallel
 
 #### TextAnalysisInput
 Input schema for text analysis tool.

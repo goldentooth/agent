@@ -18,20 +18,20 @@ Named Registry module
 Generic registry for name-keyed objects of type T.
 
 **Public Methods:**
-- `set()`
-- `get()`
-- `remove()`
-- `has()`
-- `list_ids()`
-- `all_objects()`
-- `all_items()`
-- `clear()`
+- `set(self, id: str, obj: T) -> None` - Register an object with a given ID
+- `get(self, id: str) -> T` - Retrieve an object by its ID
+- `remove(self, id: str) -> None` - Remove an object by its ID
+- `has(self, id: str) -> bool` - Check if an object with the given ID is registered
+- `list_ids(self) -> list[str]` - List all registered IDs in the registry
+- `all_objects(self) -> list[T]` - Get all registered objects
+- `all_items(self) -> list[tuple[str, T]]` - Get all registered objects as (name, object) pairs
+- `clear(self) -> None` - Clear all entries in the registry
 
 #### Creatable
 Protocol for a class that can be instantiated.
 
 **Public Methods:**
-- `create()`
+- `create(cls) -> Tc` - Create an instance of the class
 
 #### RegisterCallable
 Protocol for a callable that registers an object with a name.

@@ -27,19 +27,87 @@ classes:
 - name: DocumentStore
   docstring: Centralized document store managing all knowledge base YAML documents.
   methods:
-  - github_orgs
-  - github_repos
-  - goldentooth_nodes
-  - goldentooth_services
-  - notes
-  - list_all_documents
-  - get_document_count
-  - get_store_paths
-  - document_exists
-  - get_document_path
-  - delete_document
-  - get_all_document_paths
-  - clear_all_documents
+  - name: github_orgs
+    signature: def github_orgs(self) -> YamlStore[Any]
+    docstring: Access to GitHub organizations store.
+    first_line: Access to GitHub organizations store
+    public: true
+  - name: github_repos
+    signature: def github_repos(self) -> YamlStore[Any]
+    docstring: Access to GitHub repositories store.
+    first_line: Access to GitHub repositories store
+    public: true
+  - name: goldentooth_nodes
+    signature: def goldentooth_nodes(self) -> YamlStore[Any]
+    docstring: Access to Goldentooth nodes store.
+    first_line: Access to Goldentooth nodes store
+    public: true
+  - name: goldentooth_services
+    signature: def goldentooth_services(self) -> YamlStore[Any]
+    docstring: Access to Goldentooth services store.
+    first_line: Access to Goldentooth services store
+    public: true
+  - name: notes
+    signature: def notes(self) -> YamlStore[Any]
+    docstring: Access to notes store.
+    first_line: Access to notes store
+    public: true
+  - name: list_all_documents
+    signature: def list_all_documents(self) -> dict[str, list[str]]
+    docstring: "List all documents across all stores.\n\n        Returns:\n      \
+      \      Dictionary mapping store type to list of document IDs"
+    first_line: List all documents across all stores
+    public: true
+  - name: get_document_count
+    signature: def get_document_count(self) -> dict[str, int]
+    docstring: "Get count of documents in each store.\n\n        Returns:\n      \
+      \      Dictionary mapping store type to document count"
+    first_line: Get count of documents in each store
+    public: true
+  - name: get_store_paths
+    signature: def get_store_paths(self) -> dict[str, Path]
+    docstring: "Get the file system paths for each document store.\n\n        Returns:\n\
+      \            Dictionary mapping store type to directory path"
+    first_line: Get the file system paths for each document store
+    public: true
+  - name: document_exists
+    signature: 'def document_exists(self, store_type: str, document_id: str) -> bool'
+    docstring: "Check if a document exists in a specific store.\n\n        Args:\n\
+      \            store_type: Type of store (e.g., \"github.orgs\", \"notes\")\n\
+      \            document_id: ID of the document\n\n        Returns:\n         \
+      \   True if document exists, False otherwise\n\n        Raises:\n          \
+      \  ValueError: If store_type is invalid"
+    first_line: Check if a document exists in a specific store
+    public: true
+  - name: get_document_path
+    signature: 'def get_document_path(self, store_type: str, document_id: str) ->
+      Path'
+    docstring: "Get the file system path for a specific document.\n\n        Args:\n\
+      \            store_type: Type of store\n            document_id: ID of the document\n\
+      \n        Returns:\n            Path to the YAML file\n\n        Raises:\n \
+      \           ValueError: If store_type is invalid"
+    first_line: Get the file system path for a specific document
+    public: true
+  - name: delete_document
+    signature: 'def delete_document(self, store_type: str, document_id: str) -> None'
+    docstring: "Delete a document from a specific store.\n\n        Args:\n      \
+      \      store_type: Type of store\n            document_id: ID of the document\
+      \ to delete\n\n        Raises:\n            ValueError: If store_type is invalid"
+    first_line: Delete a document from a specific store
+    public: true
+  - name: get_all_document_paths
+    signature: def get_all_document_paths(self) -> list[Path]
+    docstring: "Get paths to all YAML documents across all stores.\n\n        Returns:\n\
+      \            List of paths to all YAML files"
+    first_line: Get paths to all YAML documents across all stores
+    public: true
+  - name: clear_all_documents
+    signature: def clear_all_documents(self) -> dict[str, int]
+    docstring: "Clear all documents from all stores (for testing/reset).\n\n     \
+      \   Returns:\n            Dictionary mapping store type to number of documents\
+      \ deleted"
+    first_line: Clear all documents from all stores (for testing/reset)
+    public: true
   public: true
 constants:
 - name: T

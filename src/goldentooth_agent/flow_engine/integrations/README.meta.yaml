@@ -25,9 +25,22 @@ classes:
 - name: ContextFlowBridge
   docstring: Bridge between Flow Engine and Context system using protocols.
   methods:
-  - ensure_context_keys
-  - get_trampoline_key
-  - register_trampoline_support
+  - name: ensure_context_keys
+    signature: def ensure_context_keys(self) -> None
+    docstring: Lazily create context keys for trampoline functionality.
+    first_line: Lazily create context keys for trampoline functionality
+    public: true
+  - name: get_trampoline_key
+    signature: 'def get_trampoline_key(self, key_name: str) -> ContextKeyProtocol[bool]
+      | None'
+    docstring: Get a trampoline context key by name.
+    first_line: Get a trampoline context key by name
+    public: true
+  - name: register_trampoline_support
+    signature: def register_trampoline_support(self) -> None
+    docstring: Register trampoline functionality with the Flow system.
+    first_line: Register trampoline functionality with the Flow system
+    public: true
   public: true
 functions:
 - name: initialize_context_integration

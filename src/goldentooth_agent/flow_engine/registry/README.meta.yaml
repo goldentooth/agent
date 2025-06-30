@@ -39,15 +39,67 @@ classes:
 - name: FlowRegistry
   docstring: Registry for named flows with discovery and introspection capabilities.
   methods:
-  - register
-  - get
-  - list_flows
-  - list_categories
-  - search
-  - remove
-  - clear
-  - info
-  - print_registry
+  - name: register
+    signature: 'def register(self, name: str, flow: AnyFlow, category: str | None)
+      -> AnyFlow'
+    docstring: "Register a flow with the given name.\n\n        Args:\n          \
+      \  name: Unique name for the flow\n            flow: Flow instance to register\n\
+      \            category: Optional category for organization\n\n        Returns:\n\
+      \            The registered flow (for chaining)"
+    first_line: Register a flow with the given name
+    public: true
+  - name: get
+    signature: 'def get(self, name: str) -> AnyFlow | None'
+    docstring: "Get a flow by name.\n\n        Args:\n            name: Name of the\
+      \ flow to retrieve\n\n        Returns:\n            Flow instance or None if\
+      \ not found"
+    first_line: Get a flow by name
+    public: true
+  - name: list_flows
+    signature: 'def list_flows(self, category: str | None) -> list[str]'
+    docstring: "List all registered flow names.\n\n        Args:\n            category:\
+      \ Optional category to filter by\n\n        Returns:\n            List of flow\
+      \ names"
+    first_line: List all registered flow names
+    public: true
+  - name: list_categories
+    signature: def list_categories(self) -> list[str]
+    docstring: "List all categories.\n\n        Returns:\n            List of category\
+      \ names"
+    first_line: List all categories
+    public: true
+  - name: search
+    signature: 'def search(self, query: str) -> list[str]'
+    docstring: "Search for flows by name or metadata.\n\n        Args:\n         \
+      \   query: Search query (substring match)\n\n        Returns:\n            List\
+      \ of matching flow names"
+    first_line: Search for flows by name or metadata
+    public: true
+  - name: remove
+    signature: 'def remove(self, name: str) -> bool'
+    docstring: "Remove a flow from the registry.\n\n        Args:\n            name:\
+      \ Name of the flow to remove\n\n        Returns:\n            True if removed,\
+      \ False if not found"
+    first_line: Remove a flow from the registry
+    public: true
+  - name: clear
+    signature: 'def clear(self, category: str | None) -> None'
+    docstring: "Clear flows from registry.\n\n        Args:\n            category:\
+      \ Optional category to clear, or None to clear all"
+    first_line: Clear flows from registry
+    public: true
+  - name: info
+    signature: 'def info(self, name: str) -> FlowInfo | None'
+    docstring: "Get detailed information about a flow.\n\n        Args:\n        \
+      \    name: Name of the flow\n\n        Returns:\n            Dictionary with\
+      \ flow information or None if not found"
+    first_line: Get detailed information about a flow
+    public: true
+  - name: print_registry
+    signature: def print_registry(self) -> None
+    docstring: Print a formatted view of the registry.
+    first_line: Print a formatted view of the registry
+    public: true
   public: true
 functions:
 - name: register_flow

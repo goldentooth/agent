@@ -161,30 +161,78 @@ classes:
 - name: FlowNode
   docstring: Represents a node in a Flow composition graph.
   methods:
-  - to_dict
+  - name: to_dict
+    signature: def to_dict(self) -> AnalysisData
+    docstring: Convert node to dictionary representation.
+    first_line: Convert node to dictionary representation
+    public: true
   public: true
 - name: FlowEdge
   docstring: Represents an edge (connection) between Flow nodes.
   methods:
-  - to_dict
+  - name: to_dict
+    signature: def to_dict(self) -> AnalysisData
+    docstring: Convert edge to dictionary representation.
+    first_line: Convert edge to dictionary representation
+    public: true
   public: true
 - name: FlowGraph
   docstring: Represents a complete Flow composition as a directed graph.
   methods:
-  - complexity_score
-  - depth
-  - get_critical_path
-  - find_cycles
-  - to_dict
+  - name: complexity_score
+    signature: def complexity_score(self) -> int
+    docstring: Calculate total complexity score of the graph.
+    first_line: Calculate total complexity score of the graph
+    public: true
+  - name: depth
+    signature: def depth(self) -> int
+    docstring: Calculate maximum depth of the graph.
+    first_line: Calculate maximum depth of the graph
+    public: true
+  - name: get_critical_path
+    signature: def get_critical_path(self) -> list[str]
+    docstring: Find the critical path (longest path) through the graph.
+    first_line: Find the critical path (longest path) through the graph
+    public: true
+  - name: find_cycles
+    signature: def find_cycles(self) -> list[list[str]]
+    docstring: Find cycles in the graph.
+    first_line: Find cycles in the graph
+    public: true
+  - name: to_dict
+    signature: def to_dict(self) -> AnalysisData
+    docstring: Convert graph to dictionary representation.
+    first_line: Convert graph to dictionary representation
+    public: true
   public: true
 - name: FlowAnalyzer
   docstring: Analyzer for Flow compositions and structures.
   methods:
-  - analyze_flow
-  - analyze_composition
-  - detect_patterns
-  - generate_optimization_suggestions
-  - export_analysis
+  - name: analyze_flow
+    signature: 'def analyze_flow(self, flow: AnyFlow) -> FlowGraph'
+    docstring: Analyze a single Flow and return its graph representation.
+    first_line: Analyze a single Flow and return its graph representation
+    public: true
+  - name: analyze_composition
+    signature: 'def analyze_composition(self, flows: FlowList) -> FlowGraph'
+    docstring: Analyze a composition of multiple flows.
+    first_line: Analyze a composition of multiple flows
+    public: true
+  - name: detect_patterns
+    signature: 'def detect_patterns(self, graph: FlowGraph) -> PatternList'
+    docstring: Detect common patterns in the flow graph.
+    first_line: Detect common patterns in the flow graph
+    public: true
+  - name: generate_optimization_suggestions
+    signature: 'def generate_optimization_suggestions(self, graph: FlowGraph) -> OptimizationList'
+    docstring: Generate optimization suggestions for the flow graph.
+    first_line: Generate optimization suggestions for the flow graph
+    public: true
+  - name: export_analysis
+    signature: 'def export_analysis(self, graph: FlowGraph, filepath: str) -> None'
+    docstring: Export comprehensive flow analysis to JSON file.
+    first_line: Export comprehensive flow analysis to JSON file
+    public: true
   public: true
 - name: HealthStatus
   docstring: Health status levels.
@@ -193,84 +241,264 @@ classes:
 - name: HealthCheck
   docstring: Individual health check definition.
   methods:
-  - run
+  - name: run
+    signature: async def run(self) -> HealthCheckResult
+    docstring: Execute the health check.
+    first_line: Execute the health check
+    public: true
   public: true
 - name: HealthCheckResult
   docstring: Result of a health check execution.
   methods:
-  - to_dict
+  - name: to_dict
+    signature: def to_dict(self) -> HealthData
+    docstring: Convert result to dictionary.
+    first_line: Convert result to dictionary
+    public: true
   public: true
 - name: SystemHealth
   docstring: Overall system health status.
   methods:
-  - healthy_checks
-  - warning_checks
-  - critical_checks
-  - to_dict
+  - name: healthy_checks
+    signature: def healthy_checks(self) -> list[HealthCheckResult]
+    docstring: Get all healthy checks.
+    first_line: Get all healthy checks
+    public: true
+  - name: warning_checks
+    signature: def warning_checks(self) -> list[HealthCheckResult]
+    docstring: Get all warning checks.
+    first_line: Get all warning checks
+    public: true
+  - name: critical_checks
+    signature: def critical_checks(self) -> list[HealthCheckResult]
+    docstring: Get all critical checks.
+    first_line: Get all critical checks
+    public: true
+  - name: to_dict
+    signature: def to_dict(self) -> HealthData
+    docstring: Convert to dictionary.
+    first_line: Convert to dictionary
+    public: true
   public: true
 - name: FlowHealthMonitor
   docstring: Health monitoring system for Flow applications.
   methods:
-  - register_check
-  - unregister_check
-  - run_check
-  - run_all_checks
-  - get_health_history
-  - export_health_report
+  - name: register_check
+    signature: 'def register_check(self, name: str, description: str, check_function:
+      Callable[[], AsyncIterator[bool]], timeout_seconds: float, critical: bool, tags:
+      list[str] | None) -> None'
+    docstring: Register a new health check.
+    first_line: Register a new health check
+    public: true
+  - name: unregister_check
+    signature: 'def unregister_check(self, name: str) -> None'
+    docstring: Unregister a health check.
+    first_line: Unregister a health check
+    public: true
+  - name: run_check
+    signature: 'async def run_check(self, name: str) -> HealthCheckResult | None'
+    docstring: Run a specific health check.
+    first_line: Run a specific health check
+    public: true
+  - name: run_all_checks
+    signature: async def run_all_checks(self) -> SystemHealth
+    docstring: Run all enabled health checks.
+    first_line: Run all enabled health checks
+    public: true
+  - name: get_health_history
+    signature: 'def get_health_history(self, hours: int) -> list[SystemHealth]'
+    docstring: Get health check history for the specified number of hours.
+    first_line: Get health check history for the specified number of hours
+    public: true
+  - name: export_health_report
+    signature: 'def export_health_report(self, filepath: str) -> None'
+    docstring: Export health report to JSON file.
+    first_line: Export health report to JSON file
+    public: true
   public: true
 - name: FlowConfigValidator
   docstring: Configuration validation for Flow systems.
   methods:
-  - register_validator
-  - set_config_schema
-  - validate_config
-  - validate_flow_config
+  - name: register_validator
+    signature: 'def register_validator(self, name: str, validator: AnyValidator) ->
+      None'
+    docstring: Register a custom validator.
+    first_line: Register a custom validator
+    public: true
+  - name: set_config_schema
+    signature: 'def set_config_schema(self, schema: ConfigSchema) -> None'
+    docstring: Set the configuration schema for validation.
+    first_line: Set the configuration schema for validation
+    public: true
+  - name: validate_config
+    signature: 'def validate_config(self, config: ConfigData) -> list[str]'
+    docstring: "Validate configuration against the schema.\n\n        Returns:\n \
+      \           List of validation error messages. Empty list if valid."
+    first_line: Validate configuration against the schema
+    public: true
+  - name: validate_flow_config
+    signature: 'def validate_flow_config(self, flow: AnyFlow, config: ConfigData)
+      -> list[str]'
+    docstring: "Validate configuration specific to a Flow.\n\n        Args:\n    \
+      \        flow: The Flow to validate configuration for\n            config: Configuration\
+      \ dictionary\n\n        Returns:\n            List of validation error messages."
+    first_line: Validate configuration specific to a Flow
+    public: true
   public: true
 - name: FlowExecutionContext
   docstring: Context information for a Flow execution.
   methods:
-  - to_dict
+  - name: to_dict
+    signature: def to_dict(self) -> DebugData
+    docstring: Convert context to dictionary for serialization.
+    first_line: Convert context to dictionary for serialization
+    public: true
   public: true
 - name: FlowDebugger
   docstring: Debugging system for Flow executions.
   methods:
-  - enable_debugging
-  - disable_debugging
-  - add_breakpoint
-  - remove_breakpoint
-  - execution_context
-  - check_breakpoint
-  - print_execution_stack
-  - print_item_inspection
-  - get_execution_trace
-  - export_trace
+  - name: enable_debugging
+    signature: def enable_debugging(self) -> None
+    docstring: Enable debugging mode.
+    first_line: Enable debugging mode
+    public: true
+  - name: disable_debugging
+    signature: def disable_debugging(self) -> None
+    docstring: Disable debugging mode.
+    first_line: Disable debugging mode
+    public: true
+  - name: add_breakpoint
+    signature: 'def add_breakpoint(self, flow_name: str, condition: BreakpointCondition)
+      -> None'
+    docstring: "Add a breakpoint for a specific flow.\n\n        Args:\n         \
+      \   flow_name: Name of the flow to break on\n            condition: Function\
+      \ that determines when to break (item, context) -> bool"
+    first_line: Add a breakpoint for a specific flow
+    public: true
+  - name: remove_breakpoint
+    signature: 'def remove_breakpoint(self, flow_name: str) -> None'
+    docstring: Remove a breakpoint for a flow.
+    first_line: Remove a breakpoint for a flow
+    public: true
+  - name: execution_context
+    signature: 'async def execution_context(self, flow_name: str, parent_flow: str
+      | None) -> AsyncGenerator[FlowExecutionContext]'
+    docstring: Context manager for tracking flow execution.
+    first_line: Context manager for tracking flow execution
+    public: true
+  - name: check_breakpoint
+    signature: 'async def check_breakpoint(self, item: AnyItem, context: FlowExecutionContext)
+      -> None'
+    docstring: Check if a breakpoint should trigger.
+    first_line: Check if a breakpoint should trigger
+    public: true
+  - name: print_execution_stack
+    signature: def print_execution_stack(self) -> None
+    docstring: Print the current execution stack.
+    first_line: Print the current execution stack
+    public: true
+  - name: print_item_inspection
+    signature: 'def print_item_inspection(self, item: AnyItem) -> None'
+    docstring: Print detailed inspection of the current item.
+    first_line: Print detailed inspection of the current item
+    public: true
+  - name: get_execution_trace
+    signature: def get_execution_trace(self) -> TraceData
+    docstring: Get the full execution trace.
+    first_line: Get the full execution trace
+    public: true
+  - name: export_trace
+    signature: 'def export_trace(self, filepath: str) -> None'
+    docstring: Export execution trace to a JSON file.
+    first_line: Export execution trace to a JSON file
+    public: true
   public: true
 - name: FlowExecutionErrorWithContext
   docstring: Enhanced flow execution error with debugging context.
   methods:
-  - get_debug_info
-  - print_debug_info
+  - name: get_debug_info
+    signature: def get_debug_info(self) -> DebugData
+    docstring: Get comprehensive debug information.
+    first_line: Get comprehensive debug information
+    public: true
+  - name: print_debug_info
+    signature: def print_debug_info(self) -> None
+    docstring: Print comprehensive debug information.
+    first_line: Print comprehensive debug information
+    public: true
   public: true
 - name: FlowMetrics
   docstring: Metrics collected for a Flow execution.
   methods:
-  - duration_ms
-  - throughput_items_per_sec
-  - yield_rate
-  - to_dict
+  - name: duration_ms
+    signature: def duration_ms(self) -> float
+    docstring: Total execution duration in milliseconds.
+    first_line: Total execution duration in milliseconds
+    public: true
+  - name: throughput_items_per_sec
+    signature: def throughput_items_per_sec(self) -> float
+    docstring: Items processed per second.
+    first_line: Items processed per second
+    public: true
+  - name: yield_rate
+    signature: def yield_rate(self) -> float
+    docstring: Ratio of items yielded to items processed.
+    first_line: Ratio of items yielded to items processed
+    public: true
+  - name: to_dict
+    signature: def to_dict(self) -> PerformanceData
+    docstring: Convert metrics to dictionary for serialization.
+    first_line: Convert metrics to dictionary for serialization
+    public: true
   public: true
 - name: PerformanceMonitor
   docstring: Performance monitoring system for Flow executions.
   methods:
-  - enable_memory_tracking
-  - start_monitoring
-  - record_item_processed
-  - record_item_yielded
-  - record_error
-  - record_memory_usage
-  - finish_monitoring
-  - get_summary_stats
-  - export_metrics
+  - name: enable_memory_tracking
+    signature: def enable_memory_tracking(self) -> None
+    docstring: Enable memory usage tracking (requires psutil).
+    first_line: Enable memory usage tracking (requires psutil)
+    public: true
+  - name: start_monitoring
+    signature: 'def start_monitoring(self, flow_name: str) -> str'
+    docstring: Start monitoring a flow execution.
+    first_line: Start monitoring a flow execution
+    public: true
+  - name: record_item_processed
+    signature: 'def record_item_processed(self, metrics_id: str) -> None'
+    docstring: Record that an item was processed.
+    first_line: Record that an item was processed
+    public: true
+  - name: record_item_yielded
+    signature: 'def record_item_yielded(self, metrics_id: str) -> None'
+    docstring: Record that an item was yielded.
+    first_line: Record that an item was yielded
+    public: true
+  - name: record_error
+    signature: 'def record_error(self, metrics_id: str, error: Exception) -> None'
+    docstring: Record an error during execution.
+    first_line: Record an error during execution
+    public: true
+  - name: record_memory_usage
+    signature: 'def record_memory_usage(self, metrics_id: str) -> None'
+    docstring: Record current memory usage.
+    first_line: Record current memory usage
+    public: true
+  - name: finish_monitoring
+    signature: 'def finish_monitoring(self, metrics_id: str) -> FlowMetrics'
+    docstring: Finish monitoring and return final metrics.
+    first_line: Finish monitoring and return final metrics
+    public: true
+  - name: get_summary_stats
+    signature: def get_summary_stats(self) -> PerformanceData
+    docstring: Get summary statistics across all monitored flows.
+    first_line: Get summary statistics across all monitored flows
+    public: true
+  - name: export_metrics
+    signature: 'def export_metrics(self, filepath: str) -> None'
+    docstring: Export all metrics to a JSON file.
+    first_line: Export all metrics to a JSON file
+    public: true
   public: true
 functions:
 - name: analyze_flow

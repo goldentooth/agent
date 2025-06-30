@@ -48,15 +48,66 @@ classes:
 - name: Paths
   docstring: A class to manage user-specific paths for configuration and data storage.
   methods:
-  - config
-  - data
-  - cache
-  - logs
-  - runtime
-  - get_subdir
-  - ensure_file
-  - app_info
-  - clear_cache
+  - name: config
+    signature: def config(self) -> Path
+    docstring: "Get the user configuration directory, creating it if it doesn't exist.\n\
+      \n        Returns:\n            Path to the configuration directory"
+    first_line: Get the user configuration directory, creating it if it doesn't exist
+    public: true
+  - name: data
+    signature: def data(self) -> Path
+    docstring: "Get the user data directory, creating it if it doesn't exist.\n\n\
+      \        Returns:\n            Path to the data directory"
+    first_line: Get the user data directory, creating it if it doesn't exist
+    public: true
+  - name: cache
+    signature: def cache(self) -> Path
+    docstring: "Get the user cache directory, creating it if it doesn't exist.\n\n\
+      \        Returns:\n            Path to the cache directory"
+    first_line: Get the user cache directory, creating it if it doesn't exist
+    public: true
+  - name: logs
+    signature: def logs(self) -> Path
+    docstring: "Get the user logs directory, creating it if it doesn't exist.\n\n\
+      \        Returns:\n            Path to the logs directory"
+    first_line: Get the user logs directory, creating it if it doesn't exist
+    public: true
+  - name: runtime
+    signature: def runtime(self) -> Path
+    docstring: "Get the user runtime directory, creating it if it doesn't exist.\n\
+      \n        Returns:\n            Path to the runtime directory"
+    first_line: Get the user runtime directory, creating it if it doesn't exist
+    public: true
+  - name: get_subdir
+    signature: 'def get_subdir(self, parent: str, subdir: str) -> Path'
+    docstring: "Get a subdirectory within one of the standard directories.\n\n   \
+      \     Args:\n            parent: Parent directory type ('config', 'data', 'cache',\
+      \ 'logs', 'runtime')\n            subdir: Name of the subdirectory\n\n     \
+      \   Returns:\n            Path to the subdirectory\n\n        Raises:\n    \
+      \        ValueError: If parent is not a valid directory type"
+    first_line: Get a subdirectory within one of the standard directories
+    public: true
+  - name: ensure_file
+    signature: 'def ensure_file(self, parent: str, filename: str, default_content:
+      str) -> Path'
+    docstring: "Ensure a file exists with default content if it doesn't.\n\n     \
+      \   Args:\n            parent: Parent directory type\n            filename:\
+      \ Name of the file\n            default_content: Content to write if file doesn't\
+      \ exist\n\n        Returns:\n            Path to the file"
+    first_line: Ensure a file exists with default content if it doesn't
+    public: true
+  - name: app_info
+    signature: def app_info(self) -> dict[str, str]
+    docstring: "Get application information.\n\n        Returns:\n            Dictionary\
+      \ with app name and author"
+    first_line: Get application information
+    public: true
+  - name: clear_cache
+    signature: def clear_cache(self) -> int
+    docstring: "Clear all files in the cache directory.\n\n        Returns:\n    \
+      \        Number of files removed"
+    first_line: Clear all files in the cache directory
+    public: true
   public: true
 functions:
 - name: path_exists_filter

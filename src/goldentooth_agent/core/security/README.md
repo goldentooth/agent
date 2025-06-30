@@ -24,89 +24,89 @@ Configuration for secret management system.
 Metadata for tracking secret lifecycle and compliance.
 
 **Public Methods:**
-- `is_expired()`
-- `needs_rotation()`
-- `to_dict()`
-- `from_dict()`
+- `is_expired(self, max_age_days: int) -> bool` - Check if secret has exceeded maximum age
+- `needs_rotation(self) -> bool` - Check if secret needs rotation based on policy
+- `to_dict(self) -> dict[str, Any]` - Convert metadata to dictionary for serialization
+- `from_dict(cls, data: dict[str, Any]) -> SecretMetadata` - Create metadata from dictionary
 
 #### SecretValue
 Wrapper for secret values with memory protection.
 
 **Public Methods:**
-- `value()`
+- `value(self) -> str` - Get the secret value
 
 #### EncryptionProvider
 Abstract base class for encryption providers.
 
 **Public Methods:**
-- `encrypt()`
-- `decrypt()`
+- `encrypt(self, plaintext: str) -> str` - Encrypt plaintext and return encrypted string
+- `decrypt(self, encrypted: str) -> str` - Decrypt encrypted string and return plaintext
 
 #### FernetEncryptionProvider
 Fernet symmetric encryption provider using cryptography library.
 
 **Public Methods:**
-- `generate_key()`
-- `encrypt()`
-- `decrypt()`
+- `generate_key() -> bytes` - Generate a new Fernet encryption key
+- `encrypt(self, plaintext: str) -> str` - Encrypt plaintext using Fernet
+- `decrypt(self, encrypted: str) -> str` - Decrypt encrypted string using Fernet
 
 #### PlaintextEncryptionProvider
 No-op encryption provider for testing (DO NOT USE IN PRODUCTION).
 
 **Public Methods:**
-- `encrypt()`
-- `decrypt()`
+- `encrypt(self, plaintext: str) -> str` - Return plaintext unchanged (no encryption)
+- `decrypt(self, encrypted: str) -> str` - Return encrypted string unchanged (no decryption)
 
 #### SecretStore
 Abstract base class for secret storage backends.
 
 **Public Methods:**
-- `store_secret()`
-- `get_secret()`
-- `delete_secret()`
-- `list_secrets()`
+- `store_secret(self, name: str, data: dict[str, Any]) -> None` - Store secret data
+- `get_secret(self, name: str) -> dict[str, Any]` - Retrieve secret data
+- `delete_secret(self, name: str) -> None` - Delete secret
+- `list_secrets(self) -> list[str]` - List all secret names
 
 #### EnvironmentSecretStore
 Store secrets in environment variables (encrypted).
 
 **Public Methods:**
-- `store_secret()`
-- `get_secret()`
-- `delete_secret()`
-- `list_secrets()`
+- `store_secret(self, name: str, data: dict[str, Any]) -> None` - Store secret in environment variable
+- `get_secret(self, name: str) -> dict[str, Any]` - Retrieve secret from environment variable
+- `delete_secret(self, name: str) -> None` - Delete secret from environment
+- `list_secrets(self) -> list[str]` - List all secrets in environment
 
 #### FileSecretStore
 Store secrets in encrypted files.
 
 **Public Methods:**
-- `store_secret()`
-- `get_secret()`
-- `delete_secret()`
-- `list_secrets()`
+- `store_secret(self, name: str, data: dict[str, Any]) -> None` - Store secret in file
+- `get_secret(self, name: str) -> dict[str, Any]` - Retrieve secret from file
+- `delete_secret(self, name: str) -> None` - Delete secret file
+- `list_secrets(self) -> list[str]` - List all secret files
 
 #### InMemorySecretStore
 Store secrets in memory (for testing).
 
 **Public Methods:**
-- `store_secret()`
-- `get_secret()`
-- `delete_secret()`
-- `list_secrets()`
+- `store_secret(self, name: str, data: dict[str, Any]) -> None` - Store secret in memory
+- `get_secret(self, name: str) -> dict[str, Any]` - Retrieve secret from memory
+- `delete_secret(self, name: str) -> None` - Delete secret from memory
+- `list_secrets(self) -> list[str]` - List all secrets in memory
 
 #### SecretManager
 Main secret management class.
 
 **Public Methods:**
-- `store_secret()`
-- `get_secret()`
-- `delete_secret()`
-- `list_secrets()`
-- `secret_exists()`
-- `get_secret_metadata()`
-- `update_secret_metadata()`
-- `rotate_secret()`
-- `find_secrets_needing_rotation()`
-- `find_expired_secrets()`
+- `store_secret(self, name: str, value: str, metadata: SecretMetadata | None) -> None` - Store a secret with encryption and metadata
+- `get_secret(self, name: str) -> SecretValue` - Retrieve and decrypt a secret
+- `delete_secret(self, name: str) -> None` - Delete a secret
+- `list_secrets(self) -> list[str]` - List all secret names
+- `secret_exists(self, name: str) -> bool` - Check if a secret exists
+- `get_secret_metadata(self, name: str) -> SecretMetadata` - Get only the metadata for a secret (without decrypting value)
+- `update_secret_metadata(self, name: str, metadata: SecretMetadata) -> None` - Update metadata for an existing secret
+- `rotate_secret(self, name: str, new_value: str) -> None` - Rotate a secret to a new value
+- `find_secrets_needing_rotation(self) -> list[str]` - Find secrets that need rotation based on policy
+- `find_expired_secrets(self) -> list[str]` - Find secrets that have exceeded maximum age
 
 #### RateLimitError
 Exception raised when rate limit is exceeded.
@@ -121,44 +121,44 @@ Result of a rate limit check.
 Abstract base class for rate limit storage backends.
 
 **Public Methods:**
-- `get()`
-- `set()`
-- `increment()`
-- `delete()`
+- `async get(self, key: str) -> dict[str, Any] | None` - Get data for a key
+- `async set(self, key: str, data: dict[str, Any], ttl: float | None) -> None` - Set data for a key with optional TTL
+- `async increment(self, key: str, ttl: float | None) -> int` - Increment a counter and return new value
+- `async delete(self, key: str) -> None` - Delete a key
 
 #### MemoryRateLimitStore
 In-memory rate limit store with TTL support.
 
 **Public Methods:**
-- `force_cleanup()`
-- `get()`
-- `set()`
-- `increment()`
-- `delete()`
+- `async force_cleanup(self) -> None` - Force cleanup of expired entries
+- `async get(self, key: str) -> dict[str, Any] | None` - Get data for a key
+- `async set(self, key: str, data: dict[str, Any], ttl: float | None) -> None` - Set data for a key with optional TTL
+- `async increment(self, key: str, ttl: float | None) -> int` - Increment a counter and return new value
+- `async delete(self, key: str) -> None` - Delete a key
 
 #### RateLimiter
 Abstract base class for rate limiting algorithms.
 
 **Public Methods:**
-- `check_rate_limit()`
+- `async check_rate_limit(self, key: str) -> RateLimitResult` - Check if request is allowed under rate limit
 
 #### TokenBucketLimiter
 Token bucket rate limiting algorithm.
 
 **Public Methods:**
-- `check_rate_limit()`
+- `async check_rate_limit(self, key: str) -> RateLimitResult` - Check rate limit using token bucket algorithm
 
 #### SlidingWindowLimiter
 Sliding window rate limiting algorithm.
 
 **Public Methods:**
-- `check_rate_limit()`
+- `async check_rate_limit(self, key: str) -> RateLimitResult` - Check rate limit using sliding window algorithm
 
 #### FixedWindowLimiter
 Fixed window rate limiting algorithm.
 
 **Public Methods:**
-- `check_rate_limit()`
+- `async check_rate_limit(self, key: str) -> RateLimitResult` - Check rate limit using fixed window algorithm
 
 #### ValidationError
 Custom validation error with detailed context.
@@ -173,19 +173,19 @@ Configuration for input sanitization.
 Comprehensive input validator with security-focused validation rules.
 
 **Public Methods:**
-- `validate_string()`
-- `validate_list()`
-- `validate_dict()`
-- `validate_any()`
+- `validate_string(self, value: Any) -> Any` - Validate string input with security checks
+- `validate_list(self, value: Any) -> Any` - Validate list input with size limits and recursive validation
+- `validate_dict(self, value: Any, current_depth: int) -> Any` - Validate dictionary input with depth limits and recursive validation
+- `validate_any(self, value: Any, current_depth: int) -> Any` - Validate any input type with appropriate method
 
 #### InputSanitizer
 Input sanitizer for cleaning potentially malicious or dirty input.
 
 **Public Methods:**
-- `sanitize_string()`
-- `sanitize_list()`
-- `sanitize_dict()`
-- `sanitize_any()`
+- `sanitize_string(self, value: Any) -> Any` - Sanitize string input by escaping and normalizing
+- `sanitize_list(self, value: Any) -> Any` - Sanitize list input recursively
+- `sanitize_dict(self, value: Any) -> Any` - Sanitize dictionary input recursively
+- `sanitize_any(self, value: Any) -> Any` - Sanitize any input type with appropriate method
 
 ### Functions
 

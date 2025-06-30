@@ -39,24 +39,80 @@ classes:
 - name: StreamingResponse
   docstring: Protocol for streaming LLM responses.
   methods:
-  - usage
+  - name: usage
+    signature: def usage(self) -> dict[str, Any]
+    docstring: Token usage information.
+    first_line: Token usage information
+    public: true
   public: true
 - name: LLMClient
   docstring: Abstract base class for LLM clients.
   methods:
-  - create_completion
-  - create_chat_completion
+  - name: create_completion
+    signature: 'async def create_completion(self, response_model: type[T], messages:
+      list[dict[str, Any]], model: str, temperature: float, max_tokens: int, stream:
+      bool, **kwargs: Any) -> T | StreamingResponse'
+    docstring: "Create a completion with structured output.\n\n        Args:\n   \
+      \         response_model: Pydantic model for response validation\n         \
+      \   messages: List of message dictionaries\n            model: Model name to\
+      \ use\n            temperature: Sampling temperature\n            max_tokens:\
+      \ Maximum tokens to generate\n            stream: Whether to stream the response\n\
+      \            **kwargs: Additional model-specific parameters\n\n        Returns:\n\
+      \            Validated response model instance or streaming response"
+    first_line: Create a completion with structured output
+    public: true
+  - name: create_chat_completion
+    signature: 'async def create_chat_completion(self, messages: list[dict[str, Any]],
+      model: str, temperature: float, max_tokens: int, stream: bool, **kwargs: Any)
+      -> str | StreamingResponse'
+    docstring: "Create a chat completion without structured output.\n\n        Args:\n\
+      \            messages: List of message dictionaries\n            model: Model\
+      \ name to use\n            temperature: Sampling temperature\n            max_tokens:\
+      \ Maximum tokens to generate\n            stream: Whether to stream the response\n\
+      \            **kwargs: Additional model-specific parameters\n\n        Returns:\n\
+      \            Response text or streaming response"
+    first_line: Create a chat completion without structured output
+    public: true
   public: true
 - name: ClaudeStreamingResponse
   docstring: Wrapper for Claude streaming responses.
   methods:
-  - usage
+  - name: usage
+    signature: def usage(self) -> dict[str, Any]
+    docstring: Token usage information.
+    first_line: Token usage information
+    public: true
   public: true
 - name: ClaudeFlowClient
   docstring: Anthropic Claude client with Flow integration.
   methods:
-  - create_completion
-  - create_chat_completion
+  - name: create_completion
+    signature: 'async def create_completion(self, response_model: type[T], messages:
+      list[dict[str, Any]], model: str | None, temperature: float, max_tokens: int
+      | None, stream: bool, **kwargs: Any) -> T | StreamingResponse'
+    docstring: "Create a completion with structured output using Instructor.\n\n \
+      \       Args:\n            response_model: Pydantic model for response validation\n\
+      \            messages: List of message dictionaries\n            model: Model\
+      \ name (defaults to default_model)\n            temperature: Sampling temperature\n\
+      \            max_tokens: Maximum tokens (defaults to default_max_tokens)\n \
+      \           stream: Whether to stream response (structured output doesn't support\
+      \ streaming)\n            **kwargs: Additional parameters\n\n        Returns:\n\
+      \            Validated response model instance\n\n        Raises:\n        \
+      \    ValueError: If streaming is requested (not supported with structured output)"
+    first_line: Create a completion with structured output using Instructor
+    public: true
+  - name: create_chat_completion
+    signature: 'async def create_chat_completion(self, messages: list[dict[str, Any]],
+      model: str | None, temperature: float, max_tokens: int | None, stream: bool,
+      system: str | None, **kwargs: Any) -> str | StreamingResponse'
+    docstring: "Create a chat completion without structured output.\n\n        Args:\n\
+      \            messages: List of message dictionaries\n            model: Model\
+      \ name (defaults to default_model)\n            temperature: Sampling temperature\n\
+      \            max_tokens: Maximum tokens (defaults to default_max_tokens)\n \
+      \           stream: Whether to stream the response\n            **kwargs: Additional\
+      \ parameters\n\n        Returns:\n            Response text or streaming response"
+    first_line: Create a chat completion without structured output
+    public: true
   public: true
 functions:
 - name: create_claude_agent

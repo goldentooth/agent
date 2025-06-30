@@ -21,7 +21,7 @@ def setup_git_repository(
     remote_url: str | None = typer.Option(
         None, "--remote", "-r", help="Remote repository URL"
     ),
-):
+) -> None:
     """Set up a Git repository for knowledge base data."""
 
     @inject
@@ -59,7 +59,7 @@ def sync_to_git(
     repo_path: str = typer.Argument(..., help="Path to Git repository"),
     message: str | None = typer.Option(None, "--message", "-m", help="Commit message"),
     push: bool = typer.Option(False, "--push", help="Push to remote repository"),
-):
+) -> None:
     """Sync knowledge base data to Git repository."""
 
     @inject
@@ -110,7 +110,7 @@ def sync_to_git(
 @app.command("status")
 def show_git_status(
     repo_path: str = typer.Argument(..., help="Path to Git repository"),
-):
+) -> None:
     """Show Git repository status."""
 
     @inject
@@ -176,7 +176,7 @@ def auto_sync_after_github_sync(
         None, "--org", help="GitHub organization to sync first"
     ),
     push: bool = typer.Option(False, "--push", help="Push to remote after sync"),
-):
+) -> None:
     """Sync GitHub data and automatically commit to Git repository."""
 
     @inject

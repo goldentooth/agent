@@ -18,10 +18,10 @@ Background Loop module
 A class to manage an asyncio event loop in a background thread.
 
 **Public Methods:**
-- `create()`
-- `submit()`
-- `shutdown()`
-- `is_running()`
+- `create(cls) -> BackgroundEventLoop` - Create a new instance of BackgroundEventLoop
+- `submit(self, coroutine: AnyCoroutine[T]) -> Future[T]` - Submit a coroutine to be run in the background event loop
+- `shutdown(self, timeout: float) -> None` - Shutdown the background event loop gracefully
+- `is_running(self) -> bool` - Check if the background event loop is running
 
 ### Functions
 

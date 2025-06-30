@@ -2,7 +2,7 @@ module_name: Commands
 description: Commands module
 complexity: Critical
 file_count: 15
-loc: ~5375
+loc: ~5379
 test_coverage: Medium
 class_count: 8
 function_count: 124
@@ -220,8 +220,18 @@ classes:
 - name: Pipeline
   docstring: Pipeline orchestrator for chaining tools together.
   methods:
-  - add_step
-  - execute
+  - name: add_step
+    signature: 'def add_step(self, tool_name: str, input_mapping: dict[str, str] |
+      None, static_input: dict[str, Any] | None, output_key: str | None) -> Pipeline'
+    docstring: Add a step to the pipeline.
+    first_line: Add a step to the pipeline
+    public: true
+  - name: execute
+    signature: 'async def execute(self, initial_input: dict[str, Any], console: Console
+      | None) -> dict[str, Any]'
+    docstring: Execute the pipeline with the given input.
+    first_line: Execute the pipeline with the given input
+    public: true
   public: true
 functions:
 - name: calculator_implementation
@@ -256,11 +266,11 @@ functions:
   docstring: Run a tool asynchronously.
   public: true
 - name: list_documents
-  signature: 'def list_documents(store_type: str | None, limit: int | None)'
+  signature: 'def list_documents(store_type: str | None, limit: int | None) -> None'
   docstring: List all documents in the knowledge base.
   public: true
 - name: show_document
-  signature: 'def show_document(store_type: str, document_id: str, raw: bool)'
+  signature: 'def show_document(store_type: str, document_id: str, raw: bool) -> None'
   docstring: Show details of a specific document.
   public: true
 - name: show_paths
@@ -273,44 +283,46 @@ functions:
   public: true
 - name: show_document_chunks
   signature: 'def show_document_chunks(store_type: str, document_id: str, show_content:
-    bool)'
+    bool) -> None'
   docstring: Show chunk information for a specific document.
   public: true
 - name: manage_sidecar_files
-  signature: 'def manage_sidecar_files(action: str, show_paths: bool)'
+  signature: 'def manage_sidecar_files(action: str, show_paths: bool) -> None'
   docstring: Manage .emb.gz sidecar embedding files.
   public: true
 - name: embed_documents
   signature: 'def embed_documents(store_type: str | None, force: bool, dry_run: bool,
-    use_chunks: bool)'
+    use_chunks: bool) -> None'
   docstring: Embed documents into the vector store for RAG.
   public: true
 - name: search_documents
-  signature: 'def search_documents(query: str, limit: int, store_type: str | None)'
+  signature: 'def search_documents(query: str, limit: int, store_type: str | None)
+    -> None'
   docstring: Search documents using semantic similarity.
   public: true
 - name: search_chunks_by_type
   signature: 'def search_chunks_by_type(chunk_types: str, question: str | None, max_results:
-    int, store_type: str | None)'
+    int, store_type: str | None) -> None'
   docstring: Search for chunks of specific types, optionally with semantic similarity.
   public: true
 - name: show_chunk_summary
   signature: 'def show_chunk_summary(store_type: str, document_id: str, show_previews:
-    bool)'
+    bool) -> None'
   docstring: Get a detailed summary of all chunks for a specific document.
   public: true
 - name: ask_question
   signature: 'def ask_question(question: str, max_results: int, store_type: str |
     None, threshold: float, show_sources: bool, chunk_types: str | None, prioritize_chunks:
-    bool)'
+    bool) -> None'
   docstring: Ask a question and get an AI-powered answer using RAG.
   public: true
 - name: summarize_knowledge_base
-  signature: 'def summarize_knowledge_base(store_type: str | None, max_docs: int)'
+  signature: 'def summarize_knowledge_base(store_type: str | None, max_docs: int)
+    -> None'
   docstring: Generate an AI summary of the knowledge base contents.
   public: true
 - name: get_document_insights
-  signature: 'def get_document_insights(store_type: str, document_id: str)'
+  signature: 'def get_document_insights(store_type: str, document_id: str) -> None'
   docstring: Get AI-generated insights about a specific document.
   public: true
 - name: get_available_flows
@@ -418,8 +430,8 @@ functions:
   docstring: Show overall system status and configuration.
   public: true
 - name: process_rag_input
-  signature: 'async def process_rag_input(rag_agent, question: str, conversation_history:
-    list[dict[str, str]])'
+  signature: 'async def process_rag_input(rag_agent: SimpleRAGAgent, question: str,
+    conversation_history: list[dict[str, str]]) -> Any'
   docstring: Process input through a RAG agent.
   public: true
 - name: process_agent_input
@@ -428,7 +440,7 @@ functions:
   docstring: Process input through a FlowAgent using the correct Flow pattern.
   public: true
 - name: create_rag_agent
-  signature: def create_rag_agent()
+  signature: def create_rag_agent() -> SimpleRAGAgent
   docstring: Create a simplified RAG agent for document-based conversations.
   public: true
 - name: create_echo_agent
@@ -802,19 +814,21 @@ functions:
   docstring: Run a specific agent scenario.
   public: true
 - name: setup_git_repository
-  signature: 'def setup_git_repository(repo_path: str, remote_url: str | None)'
+  signature: 'def setup_git_repository(repo_path: str, remote_url: str | None) ->
+    None'
   docstring: Set up a Git repository for knowledge base data.
   public: true
 - name: sync_to_git
-  signature: 'def sync_to_git(repo_path: str, message: str | None, push: bool)'
+  signature: 'def sync_to_git(repo_path: str, message: str | None, push: bool) ->
+    None'
   docstring: Sync knowledge base data to Git repository.
   public: true
 - name: show_git_status
-  signature: 'def show_git_status(repo_path: str)'
+  signature: 'def show_git_status(repo_path: str) -> None'
   docstring: Show Git repository status.
   public: true
 - name: auto_sync_after_github_sync
   signature: 'def auto_sync_after_github_sync(repo_path: str, org_name: str | None,
-    push: bool)'
+    push: bool) -> None'
   docstring: Sync GitHub data and automatically commit to Git repository.
   public: true

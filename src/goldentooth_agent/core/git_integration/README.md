@@ -18,9 +18,9 @@ Git Integration module
 Service for syncing knowledge base data to a Git repository.
 
 **Public Methods:**
-- `setup_git_repository()`
-- `sync_to_git()`
-- `get_git_status()`
+- `setup_git_repository(self, repo_path: Path, remote_url: str | None) -> dict[str, Any]` - Set up a Git repository for knowledge base data
+- `sync_to_git(self, repo_path: Path, commit_message: str | None, push_to_remote: bool) -> dict[str, Any]` - Sync current knowledge base data to Git repository
+- `get_git_status(self, repo_path: Path) -> dict[str, Any]` - Get Git repository status
 
 ## Dependencies
 

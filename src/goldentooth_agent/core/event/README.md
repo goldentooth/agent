@@ -18,34 +18,34 @@ Event module
 Base class for Flow-integrated event handling.
 
 **Public Methods:**
-- `emit()`
-- `as_flow()`
+- `emit(self, data: T) -> None` - Emit an event with the given data. To be implemented by subclasses
+- `as_flow(self) -> Flow[None, T]` - Convert this event emitter to a Flow. To be implemented by subclasses
 
 #### SyncEventFlow
 Flow-integrated synchronous event emitter wrapper.
 
 **Public Methods:**
-- `emit()`
-- `on()`
-- `once()`
-- `off()`
-- `remove_all_listeners()`
-- `listeners()`
-- `listener_count()`
-- `as_flow()`
+- `emit(self, data: T) -> None` - Emit a synchronous event with the given data
+- `on(self, handler: Callable[[T], None]) -> None` - Register a synchronous event handler
+- `once(self, handler: Callable[[T], None]) -> None` - Register a one-time synchronous event handler
+- `off(self, handler: Callable[[T], None]) -> None` - Remove a synchronous event handler
+- `remove_all_listeners(self) -> None` - Remove all listeners for this event
+- `listeners(self) -> list[Callable[[T], None]]` - Get all listeners for this event
+- `listener_count(self) -> int` - Get the number of listeners for this event
+- `as_flow(self) -> Flow[None, T]` - Convert this synchronous event emitter to a Flow
 
 #### AsyncEventFlow
 Flow-integrated asynchronous event emitter wrapper.
 
 **Public Methods:**
-- `emit()`
-- `on()`
-- `once()`
-- `off()`
-- `remove_all_listeners()`
-- `listeners()`
-- `listener_count()`
-- `as_flow()`
+- `emit(self, data: T) -> None` - Emit an asynchronous event with the given data
+- `async on(self, handler: AnyEventHandler | AnyAwaitableEventHandler) -> None` - Register an asynchronous event handler
+- `async once(self, handler: AnyEventHandler | AnyAwaitableEventHandler) -> None` - Register a one-time asynchronous event handler
+- `async off(self, handler: AnyEventHandler | AnyAwaitableEventHandler) -> None` - Remove an asynchronous event handler
+- `async remove_all_listeners(self) -> None` - Remove all listeners for this event
+- `listeners(self) -> list[AnyEventHandler]` - Get all listeners for this event
+- `listener_count(self) -> int` - Get the number of listeners for this event
+- `as_flow(self) -> Flow[None, T]` - Convert this asynchronous event emitter to a Flow
 
 ### Functions
 

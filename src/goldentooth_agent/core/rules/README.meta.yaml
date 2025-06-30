@@ -31,9 +31,25 @@ classes:
     \ and processes rules in priority order. It can be converted\n    to a Flow for\
     \ stream processing or used directly for single context evaluation."
   methods:
-  - evaluate
-  - add_rule
-  - as_flow
+  - name: evaluate
+    signature: 'async def evaluate(self, ctx: TIn) -> TIn'
+    docstring: Evaluate the rules against the context and apply actions for matching
+      rules.
+    first_line: Evaluate the rules against the context and apply actions for matching
+      rules
+    public: true
+  - name: add_rule
+    signature: 'def add_rule(self, rule: Rule[TIn]) -> None'
+    docstring: Add a new rule to the rule engine.
+    first_line: Add a new rule to the rule engine
+    public: true
+  - name: as_flow
+    signature: def as_flow(self) -> Flow[TIn, TIn]
+    docstring: Convert the rule engine to a flow that evaluates the rules for each
+      item in a stream.
+    first_line: Convert the rule engine to a flow that evaluates the rules for each
+      item in a stream
+    public: true
   public: true
 - name: Rule
   docstring: "A rule that applies a condition to an input and executes an action if\
@@ -41,6 +57,16 @@ classes:
     \ conditions and apply transformations\n    conditionally. They integrate seamlessly\
     \ with the Flow system for stream processing."
   methods:
-  - apply
-  - as_flow
+  - name: apply
+    signature: 'async def apply(self, ctx: TIn) -> TIn'
+    docstring: Apply the rule to the given context.
+    first_line: Apply the rule to the given context
+    public: true
+  - name: as_flow
+    signature: def as_flow(self) -> Flow[TIn, TIn]
+    docstring: Convert the rule to a flow that applies the rule to each item in a
+      stream.
+    first_line: Convert the rule to a flow that applies the rule to each item in a
+      stream
+    public: true
   public: true

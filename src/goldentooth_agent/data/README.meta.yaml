@@ -1,4 +1,5 @@
 module_name: Data
+description: Data module
 complexity: Low
 file_count: 1
 loc: ~0

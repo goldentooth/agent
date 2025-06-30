@@ -18,15 +18,15 @@ Registry module
 Registry for named flows with discovery and introspection capabilities.
 
 **Public Methods:**
-- `register()`
-- `get()`
-- `list_flows()`
-- `list_categories()`
-- `search()`
-- `remove()`
-- `clear()`
-- `info()`
-- `print_registry()`
+- `register(self, name: str, flow: AnyFlow, category: str | None) -> AnyFlow` - Register a flow with the given name
+- `get(self, name: str) -> AnyFlow | None` - Get a flow by name
+- `list_flows(self, category: str | None) -> list[str]` - List all registered flow names
+- `list_categories(self) -> list[str]` - List all categories
+- `search(self, query: str) -> list[str]` - Search for flows by name or metadata
+- `remove(self, name: str) -> bool` - Remove a flow from the registry
+- `clear(self, category: str | None) -> None` - Clear flows from registry
+- `info(self, name: str) -> FlowInfo | None` - Get detailed information about a flow
+- `print_registry(self) -> None` - Print a formatted view of the registry
 
 ### Functions
 

@@ -6,7 +6,7 @@ Commands module
 
 - **Complexity**: Critical
 - **Files**: 15 Python files
-- **Lines of Code**: ~5375
+- **Lines of Code**: ~5379
 - **Classes**: 8
 - **Functions**: 124
 
@@ -39,8 +39,8 @@ Configuration for a pipeline step.
 Pipeline orchestrator for chaining tools together.
 
 **Public Methods:**
-- `add_step()`
-- `execute()`
+- `add_step(self, tool_name: str, input_mapping: dict[str, str] | None, static_input: dict[str, Any] | None, output_key: str | None) -> Pipeline` - Add a step to the pipeline
+- `async execute(self, initial_input: dict[str, Any], console: Console | None) -> dict[str, Any]` - Execute the pipeline with the given input
 
 ### Functions
 
@@ -62,10 +62,10 @@ Run a specific tool with input data.
 #### `async def run_tool_async(tool: FlowTool, input_dict: dict[str, ToolInputData], console: Console) -> ToolOutputData`
 Run a tool asynchronously.
 
-#### `def list_documents(store_type: str | None, limit: int | None)`
+#### `def list_documents(store_type: str | None, limit: int | None) -> None`
 List all documents in the knowledge base.
 
-#### `def show_document(store_type: str, document_id: str, raw: bool)`
+#### `def show_document(store_type: str, document_id: str, raw: bool) -> None`
 Show details of a specific document.
 
 #### `def show_paths() -> None`
@@ -74,31 +74,31 @@ Show file system paths for document stores.
 #### `def show_stats() -> None`
 Show statistics about the document store and vector database.
 
-#### `def show_document_chunks(store_type: str, document_id: str, show_content: bool)`
+#### `def show_document_chunks(store_type: str, document_id: str, show_content: bool) -> None`
 Show chunk information for a specific document.
 
-#### `def manage_sidecar_files(action: str, show_paths: bool)`
+#### `def manage_sidecar_files(action: str, show_paths: bool) -> None`
 Manage .emb.gz sidecar embedding files.
 
-#### `def embed_documents(store_type: str | None, force: bool, dry_run: bool, use_chunks: bool)`
+#### `def embed_documents(store_type: str | None, force: bool, dry_run: bool, use_chunks: bool) -> None`
 Embed documents into the vector store for RAG.
 
-#### `def search_documents(query: str, limit: int, store_type: str | None)`
+#### `def search_documents(query: str, limit: int, store_type: str | None) -> None`
 Search documents using semantic similarity.
 
-#### `def search_chunks_by_type(chunk_types: str, question: str | None, max_results: int, store_type: str | None)`
+#### `def search_chunks_by_type(chunk_types: str, question: str | None, max_results: int, store_type: str | None) -> None`
 Search for chunks of specific types, optionally with semantic similarity.
 
-#### `def show_chunk_summary(store_type: str, document_id: str, show_previews: bool)`
+#### `def show_chunk_summary(store_type: str, document_id: str, show_previews: bool) -> None`
 Get a detailed summary of all chunks for a specific document.
 
-#### `def ask_question(question: str, max_results: int, store_type: str | None, threshold: float, show_sources: bool, chunk_types: str | None, prioritize_chunks: bool)`
+#### `def ask_question(question: str, max_results: int, store_type: str | None, threshold: float, show_sources: bool, chunk_types: str | None, prioritize_chunks: bool) -> None`
 Ask a question and get an AI-powered answer using RAG.
 
-#### `def summarize_knowledge_base(store_type: str | None, max_docs: int)`
+#### `def summarize_knowledge_base(store_type: str | None, max_docs: int) -> None`
 Generate an AI summary of the knowledge base contents.
 
-#### `def get_document_insights(store_type: str, document_id: str)`
+#### `def get_document_insights(store_type: str, document_id: str) -> None`
 Get AI-generated insights about a specific document.
 
 #### `def get_available_flows() -> dict[str, FlowType]`
@@ -164,13 +164,13 @@ Initialize the Goldentooth Agent system with sample data.
 #### `def show_system_status() -> None`
 Show overall system status and configuration.
 
-#### `async def process_rag_input(rag_agent, question: str, conversation_history: list[dict[str, str]])`
+#### `async def process_rag_input(rag_agent: SimpleRAGAgent, question: str, conversation_history: list[dict[str, str]]) -> Any`
 Process input through a RAG agent.
 
 #### `async def process_agent_input(agent: FlowAgent, input_data: AgentInput) -> AgentOutput`
 Process input through a FlowAgent using the correct Flow pattern.
 
-#### `def create_rag_agent()`
+#### `def create_rag_agent() -> SimpleRAGAgent`
 Create a simplified RAG agent for document-based conversations.
 
 #### `def create_echo_agent() -> FlowAgent`
@@ -379,16 +379,16 @@ Demonstrate agent interaction.
 #### `def run_agent_scenario(console: Console, scenario: str, interactive: bool) -> None`
 Run a specific agent scenario.
 
-#### `def setup_git_repository(repo_path: str, remote_url: str | None)`
+#### `def setup_git_repository(repo_path: str, remote_url: str | None) -> None`
 Set up a Git repository for knowledge base data.
 
-#### `def sync_to_git(repo_path: str, message: str | None, push: bool)`
+#### `def sync_to_git(repo_path: str, message: str | None, push: bool) -> None`
 Sync knowledge base data to Git repository.
 
-#### `def show_git_status(repo_path: str)`
+#### `def show_git_status(repo_path: str) -> None`
 Show Git repository status.
 
-#### `def auto_sync_after_github_sync(repo_path: str, org_name: str | None, push: bool)`
+#### `def auto_sync_after_github_sync(repo_path: str, org_name: str | None, push: bool) -> None`
 Sync GitHub data and automatically commit to Git repository.
 
 ## Dependencies

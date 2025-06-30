@@ -96,80 +96,234 @@ classes:
 - name: SecretMetadata
   docstring: Metadata for tracking secret lifecycle and compliance.
   methods:
-  - is_expired
-  - needs_rotation
-  - to_dict
-  - from_dict
+  - name: is_expired
+    signature: 'def is_expired(self, max_age_days: int) -> bool'
+    docstring: Check if secret has exceeded maximum age.
+    first_line: Check if secret has exceeded maximum age
+    public: true
+  - name: needs_rotation
+    signature: def needs_rotation(self) -> bool
+    docstring: Check if secret needs rotation based on policy.
+    first_line: Check if secret needs rotation based on policy
+    public: true
+  - name: to_dict
+    signature: def to_dict(self) -> dict[str, Any]
+    docstring: Convert metadata to dictionary for serialization.
+    first_line: Convert metadata to dictionary for serialization
+    public: true
+  - name: from_dict
+    signature: 'def from_dict(cls, data: dict[str, Any]) -> SecretMetadata'
+    docstring: Create metadata from dictionary.
+    first_line: Create metadata from dictionary
+    public: true
   public: true
 - name: SecretValue
   docstring: Wrapper for secret values with memory protection.
   methods:
-  - value
+  - name: value
+    signature: def value(self) -> str
+    docstring: Get the secret value.
+    first_line: Get the secret value
+    public: true
   public: true
 - name: EncryptionProvider
   docstring: Abstract base class for encryption providers.
   methods:
-  - encrypt
-  - decrypt
+  - name: encrypt
+    signature: 'def encrypt(self, plaintext: str) -> str'
+    docstring: Encrypt plaintext and return encrypted string.
+    first_line: Encrypt plaintext and return encrypted string
+    public: true
+  - name: decrypt
+    signature: 'def decrypt(self, encrypted: str) -> str'
+    docstring: Decrypt encrypted string and return plaintext.
+    first_line: Decrypt encrypted string and return plaintext
+    public: true
   public: true
 - name: FernetEncryptionProvider
   docstring: Fernet symmetric encryption provider using cryptography library.
   methods:
-  - generate_key
-  - encrypt
-  - decrypt
+  - name: generate_key
+    signature: def generate_key() -> bytes
+    docstring: Generate a new Fernet encryption key.
+    first_line: Generate a new Fernet encryption key
+    public: true
+  - name: encrypt
+    signature: 'def encrypt(self, plaintext: str) -> str'
+    docstring: Encrypt plaintext using Fernet.
+    first_line: Encrypt plaintext using Fernet
+    public: true
+  - name: decrypt
+    signature: 'def decrypt(self, encrypted: str) -> str'
+    docstring: Decrypt encrypted string using Fernet.
+    first_line: Decrypt encrypted string using Fernet
+    public: true
   public: true
 - name: PlaintextEncryptionProvider
   docstring: No-op encryption provider for testing (DO NOT USE IN PRODUCTION).
   methods:
-  - encrypt
-  - decrypt
+  - name: encrypt
+    signature: 'def encrypt(self, plaintext: str) -> str'
+    docstring: Return plaintext unchanged (no encryption).
+    first_line: Return plaintext unchanged (no encryption)
+    public: true
+  - name: decrypt
+    signature: 'def decrypt(self, encrypted: str) -> str'
+    docstring: Return encrypted string unchanged (no decryption).
+    first_line: Return encrypted string unchanged (no decryption)
+    public: true
   public: true
 - name: SecretStore
   docstring: Abstract base class for secret storage backends.
   methods:
-  - store_secret
-  - get_secret
-  - delete_secret
-  - list_secrets
+  - name: store_secret
+    signature: 'def store_secret(self, name: str, data: dict[str, Any]) -> None'
+    docstring: Store secret data.
+    first_line: Store secret data
+    public: true
+  - name: get_secret
+    signature: 'def get_secret(self, name: str) -> dict[str, Any]'
+    docstring: Retrieve secret data.
+    first_line: Retrieve secret data
+    public: true
+  - name: delete_secret
+    signature: 'def delete_secret(self, name: str) -> None'
+    docstring: Delete secret.
+    first_line: Delete secret
+    public: true
+  - name: list_secrets
+    signature: def list_secrets(self) -> list[str]
+    docstring: List all secret names.
+    first_line: List all secret names
+    public: true
   public: true
 - name: EnvironmentSecretStore
   docstring: Store secrets in environment variables (encrypted).
   methods:
-  - store_secret
-  - get_secret
-  - delete_secret
-  - list_secrets
+  - name: store_secret
+    signature: 'def store_secret(self, name: str, data: dict[str, Any]) -> None'
+    docstring: Store secret in environment variable.
+    first_line: Store secret in environment variable
+    public: true
+  - name: get_secret
+    signature: 'def get_secret(self, name: str) -> dict[str, Any]'
+    docstring: Retrieve secret from environment variable.
+    first_line: Retrieve secret from environment variable
+    public: true
+  - name: delete_secret
+    signature: 'def delete_secret(self, name: str) -> None'
+    docstring: Delete secret from environment.
+    first_line: Delete secret from environment
+    public: true
+  - name: list_secrets
+    signature: def list_secrets(self) -> list[str]
+    docstring: List all secrets in environment.
+    first_line: List all secrets in environment
+    public: true
   public: true
 - name: FileSecretStore
   docstring: Store secrets in encrypted files.
   methods:
-  - store_secret
-  - get_secret
-  - delete_secret
-  - list_secrets
+  - name: store_secret
+    signature: 'def store_secret(self, name: str, data: dict[str, Any]) -> None'
+    docstring: Store secret in file.
+    first_line: Store secret in file
+    public: true
+  - name: get_secret
+    signature: 'def get_secret(self, name: str) -> dict[str, Any]'
+    docstring: Retrieve secret from file.
+    first_line: Retrieve secret from file
+    public: true
+  - name: delete_secret
+    signature: 'def delete_secret(self, name: str) -> None'
+    docstring: Delete secret file.
+    first_line: Delete secret file
+    public: true
+  - name: list_secrets
+    signature: def list_secrets(self) -> list[str]
+    docstring: List all secret files.
+    first_line: List all secret files
+    public: true
   public: true
 - name: InMemorySecretStore
   docstring: Store secrets in memory (for testing).
   methods:
-  - store_secret
-  - get_secret
-  - delete_secret
-  - list_secrets
+  - name: store_secret
+    signature: 'def store_secret(self, name: str, data: dict[str, Any]) -> None'
+    docstring: Store secret in memory.
+    first_line: Store secret in memory
+    public: true
+  - name: get_secret
+    signature: 'def get_secret(self, name: str) -> dict[str, Any]'
+    docstring: Retrieve secret from memory.
+    first_line: Retrieve secret from memory
+    public: true
+  - name: delete_secret
+    signature: 'def delete_secret(self, name: str) -> None'
+    docstring: Delete secret from memory.
+    first_line: Delete secret from memory
+    public: true
+  - name: list_secrets
+    signature: def list_secrets(self) -> list[str]
+    docstring: List all secrets in memory.
+    first_line: List all secrets in memory
+    public: true
   public: true
 - name: SecretManager
   docstring: Main secret management class.
   methods:
-  - store_secret
-  - get_secret
-  - delete_secret
-  - list_secrets
-  - secret_exists
-  - get_secret_metadata
-  - update_secret_metadata
-  - rotate_secret
-  - find_secrets_needing_rotation
-  - find_expired_secrets
+  - name: store_secret
+    signature: 'def store_secret(self, name: str, value: str, metadata: SecretMetadata
+      | None) -> None'
+    docstring: Store a secret with encryption and metadata.
+    first_line: Store a secret with encryption and metadata
+    public: true
+  - name: get_secret
+    signature: 'def get_secret(self, name: str) -> SecretValue'
+    docstring: Retrieve and decrypt a secret.
+    first_line: Retrieve and decrypt a secret
+    public: true
+  - name: delete_secret
+    signature: 'def delete_secret(self, name: str) -> None'
+    docstring: Delete a secret.
+    first_line: Delete a secret
+    public: true
+  - name: list_secrets
+    signature: def list_secrets(self) -> list[str]
+    docstring: List all secret names.
+    first_line: List all secret names
+    public: true
+  - name: secret_exists
+    signature: 'def secret_exists(self, name: str) -> bool'
+    docstring: Check if a secret exists.
+    first_line: Check if a secret exists
+    public: true
+  - name: get_secret_metadata
+    signature: 'def get_secret_metadata(self, name: str) -> SecretMetadata'
+    docstring: Get only the metadata for a secret (without decrypting value).
+    first_line: Get only the metadata for a secret (without decrypting value)
+    public: true
+  - name: update_secret_metadata
+    signature: 'def update_secret_metadata(self, name: str, metadata: SecretMetadata)
+      -> None'
+    docstring: Update metadata for an existing secret.
+    first_line: Update metadata for an existing secret
+    public: true
+  - name: rotate_secret
+    signature: 'def rotate_secret(self, name: str, new_value: str) -> None'
+    docstring: Rotate a secret to a new value.
+    first_line: Rotate a secret to a new value
+    public: true
+  - name: find_secrets_needing_rotation
+    signature: def find_secrets_needing_rotation(self) -> list[str]
+    docstring: Find secrets that need rotation based on policy.
+    first_line: Find secrets that need rotation based on policy
+    public: true
+  - name: find_expired_secrets
+    signature: def find_expired_secrets(self) -> list[str]
+    docstring: Find secrets that have exceeded maximum age.
+    first_line: Find secrets that have exceeded maximum age
+    public: true
   public: true
 - name: RateLimitError
   docstring: Exception raised when rate limit is exceeded.
@@ -186,39 +340,93 @@ classes:
 - name: RateLimitStore
   docstring: Abstract base class for rate limit storage backends.
   methods:
-  - get
-  - set
-  - increment
-  - delete
+  - name: get
+    signature: 'async def get(self, key: str) -> dict[str, Any] | None'
+    docstring: Get data for a key.
+    first_line: Get data for a key
+    public: true
+  - name: set
+    signature: 'async def set(self, key: str, data: dict[str, Any], ttl: float | None)
+      -> None'
+    docstring: Set data for a key with optional TTL.
+    first_line: Set data for a key with optional TTL
+    public: true
+  - name: increment
+    signature: 'async def increment(self, key: str, ttl: float | None) -> int'
+    docstring: Increment a counter and return new value.
+    first_line: Increment a counter and return new value
+    public: true
+  - name: delete
+    signature: 'async def delete(self, key: str) -> None'
+    docstring: Delete a key.
+    first_line: Delete a key
+    public: true
   public: true
 - name: MemoryRateLimitStore
   docstring: In-memory rate limit store with TTL support.
   methods:
-  - force_cleanup
-  - get
-  - set
-  - increment
-  - delete
+  - name: force_cleanup
+    signature: async def force_cleanup(self) -> None
+    docstring: Force cleanup of expired entries.
+    first_line: Force cleanup of expired entries
+    public: true
+  - name: get
+    signature: 'async def get(self, key: str) -> dict[str, Any] | None'
+    docstring: Get data for a key.
+    first_line: Get data for a key
+    public: true
+  - name: set
+    signature: 'async def set(self, key: str, data: dict[str, Any], ttl: float | None)
+      -> None'
+    docstring: Set data for a key with optional TTL.
+    first_line: Set data for a key with optional TTL
+    public: true
+  - name: increment
+    signature: 'async def increment(self, key: str, ttl: float | None) -> int'
+    docstring: Increment a counter and return new value.
+    first_line: Increment a counter and return new value
+    public: true
+  - name: delete
+    signature: 'async def delete(self, key: str) -> None'
+    docstring: Delete a key.
+    first_line: Delete a key
+    public: true
   public: true
 - name: RateLimiter
   docstring: Abstract base class for rate limiting algorithms.
   methods:
-  - check_rate_limit
+  - name: check_rate_limit
+    signature: 'async def check_rate_limit(self, key: str) -> RateLimitResult'
+    docstring: Check if request is allowed under rate limit.
+    first_line: Check if request is allowed under rate limit
+    public: true
   public: true
 - name: TokenBucketLimiter
   docstring: Token bucket rate limiting algorithm.
   methods:
-  - check_rate_limit
+  - name: check_rate_limit
+    signature: 'async def check_rate_limit(self, key: str) -> RateLimitResult'
+    docstring: Check rate limit using token bucket algorithm.
+    first_line: Check rate limit using token bucket algorithm
+    public: true
   public: true
 - name: SlidingWindowLimiter
   docstring: Sliding window rate limiting algorithm.
   methods:
-  - check_rate_limit
+  - name: check_rate_limit
+    signature: 'async def check_rate_limit(self, key: str) -> RateLimitResult'
+    docstring: Check rate limit using sliding window algorithm.
+    first_line: Check rate limit using sliding window algorithm
+    public: true
   public: true
 - name: FixedWindowLimiter
   docstring: Fixed window rate limiting algorithm.
   methods:
-  - check_rate_limit
+  - name: check_rate_limit
+    signature: 'async def check_rate_limit(self, key: str) -> RateLimitResult'
+    docstring: Check rate limit using fixed window algorithm.
+    first_line: Check rate limit using fixed window algorithm
+    public: true
   public: true
 - name: ValidationError
   docstring: Custom validation error with detailed context.
@@ -235,18 +443,50 @@ classes:
 - name: InputValidator
   docstring: Comprehensive input validator with security-focused validation rules.
   methods:
-  - validate_string
-  - validate_list
-  - validate_dict
-  - validate_any
+  - name: validate_string
+    signature: 'def validate_string(self, value: Any) -> Any'
+    docstring: Validate string input with security checks.
+    first_line: Validate string input with security checks
+    public: true
+  - name: validate_list
+    signature: 'def validate_list(self, value: Any) -> Any'
+    docstring: Validate list input with size limits and recursive validation.
+    first_line: Validate list input with size limits and recursive validation
+    public: true
+  - name: validate_dict
+    signature: 'def validate_dict(self, value: Any, current_depth: int) -> Any'
+    docstring: Validate dictionary input with depth limits and recursive validation.
+    first_line: Validate dictionary input with depth limits and recursive validation
+    public: true
+  - name: validate_any
+    signature: 'def validate_any(self, value: Any, current_depth: int) -> Any'
+    docstring: Validate any input type with appropriate method.
+    first_line: Validate any input type with appropriate method
+    public: true
   public: true
 - name: InputSanitizer
   docstring: Input sanitizer for cleaning potentially malicious or dirty input.
   methods:
-  - sanitize_string
-  - sanitize_list
-  - sanitize_dict
-  - sanitize_any
+  - name: sanitize_string
+    signature: 'def sanitize_string(self, value: Any) -> Any'
+    docstring: Sanitize string input by escaping and normalizing.
+    first_line: Sanitize string input by escaping and normalizing
+    public: true
+  - name: sanitize_list
+    signature: 'def sanitize_list(self, value: Any) -> Any'
+    docstring: Sanitize list input recursively.
+    first_line: Sanitize list input recursively
+    public: true
+  - name: sanitize_dict
+    signature: 'def sanitize_dict(self, value: Any) -> Any'
+    docstring: Sanitize dictionary input recursively.
+    first_line: Sanitize dictionary input recursively
+    public: true
+  - name: sanitize_any
+    signature: 'def sanitize_any(self, value: Any) -> Any'
+    docstring: Sanitize any input type with appropriate method.
+    first_line: Sanitize any input type with appropriate method
+    public: true
   public: true
 functions:
 - name: create_secret_manager

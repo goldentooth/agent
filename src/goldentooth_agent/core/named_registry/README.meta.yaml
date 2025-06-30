@@ -29,19 +29,55 @@ classes:
 - name: NamedRegistry
   docstring: Generic registry for name-keyed objects of type T.
   methods:
-  - set
-  - get
-  - remove
-  - has
-  - list_ids
-  - all_objects
-  - all_items
-  - clear
+  - name: set
+    signature: 'def set(self, id: str, obj: T) -> None'
+    docstring: Register an object with a given ID.
+    first_line: Register an object with a given ID
+    public: true
+  - name: get
+    signature: 'def get(self, id: str) -> T'
+    docstring: Retrieve an object by its ID.
+    first_line: Retrieve an object by its ID
+    public: true
+  - name: remove
+    signature: 'def remove(self, id: str) -> None'
+    docstring: Remove an object by its ID.
+    first_line: Remove an object by its ID
+    public: true
+  - name: has
+    signature: 'def has(self, id: str) -> bool'
+    docstring: Check if an object with the given ID is registered.
+    first_line: Check if an object with the given ID is registered
+    public: true
+  - name: list_ids
+    signature: def list_ids(self) -> list[str]
+    docstring: List all registered IDs in the registry.
+    first_line: List all registered IDs in the registry
+    public: true
+  - name: all_objects
+    signature: def all_objects(self) -> list[T]
+    docstring: Get all registered objects.
+    first_line: Get all registered objects
+    public: true
+  - name: all_items
+    signature: def all_items(self) -> list[tuple[str, T]]
+    docstring: Get all registered objects as (name, object) pairs.
+    first_line: Get all registered objects as (name, object) pairs
+    public: true
+  - name: clear
+    signature: def clear(self) -> None
+    docstring: Clear all entries in the registry.
+    first_line: Clear all entries in the registry
+    public: true
   public: true
 - name: Creatable
   docstring: Protocol for a class that can be instantiated.
   methods:
-  - create
+  - name: create
+    signature: def create(cls) -> Tc
+    docstring: Create an instance of the class.
+    first_line: Create an instance of the class
+    public: true
   public: true
 - name: RegisterCallable
   docstring: Protocol for a callable that registers an object with a name.

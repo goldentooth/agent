@@ -18,27 +18,27 @@ Llm module
 Protocol for streaming LLM responses.
 
 **Public Methods:**
-- `usage()`
+- `usage(self) -> dict[str, Any]` - Token usage information
 
 #### LLMClient
 Abstract base class for LLM clients.
 
 **Public Methods:**
-- `create_completion()`
-- `create_chat_completion()`
+- `async create_completion(self, response_model: type[T], messages: list[dict[str, Any]], model: str, temperature: float, max_tokens: int, stream: bool, **kwargs: Any) -> T | StreamingResponse` - Create a completion with structured output
+- `async create_chat_completion(self, messages: list[dict[str, Any]], model: str, temperature: float, max_tokens: int, stream: bool, **kwargs: Any) -> str | StreamingResponse` - Create a chat completion without structured output
 
 #### ClaudeStreamingResponse
 Wrapper for Claude streaming responses.
 
 **Public Methods:**
-- `usage()`
+- `usage(self) -> dict[str, Any]` - Token usage information
 
 #### ClaudeFlowClient
 Anthropic Claude client with Flow integration.
 
 **Public Methods:**
-- `create_completion()`
-- `create_chat_completion()`
+- `async create_completion(self, response_model: type[T], messages: list[dict[str, Any]], model: str | None, temperature: float, max_tokens: int | None, stream: bool, **kwargs: Any) -> T | StreamingResponse` - Create a completion with structured output using Instructor
+- `async create_chat_completion(self, messages: list[dict[str, Any]], model: str | None, temperature: float, max_tokens: int | None, stream: bool, system: str | None, **kwargs: Any) -> str | StreamingResponse` - Create a chat completion without structured output
 
 ### Functions
 

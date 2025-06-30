@@ -57,23 +57,202 @@ classes:
 - name: RAGService
   docstring: Retrieval-Augmented Generation service for intelligent document querying.
   methods:
-  - query
-  - get_document_chunks_info
-  - summarize_documents
-  - get_document_insights
-  - search_chunks_by_type
-  - get_document_chunk_summary
-  - compare_chunks
-  - analyze_document_relationships
-  - query_with_relationships
-  - get_chunk_relationship_insights
-  - hybrid_query
-  - compare_search_methods
-  - tune_hybrid_search
-  - query_with_fusion
-  - analyze_fusion_quality
-  - enhanced_query
-  - analyze_query_intelligence
+  - name: query
+    signature: 'async def query(self, question: str, max_results: int, store_type:
+      str | None, include_metadata: bool, similarity_threshold: float, include_chunks:
+      bool, chunk_types: list[str] | None, prioritize_chunks: bool) -> dict[str, Any]'
+    docstring: "Answer a question using RAG with retrieved documents.\n\n        Args:\n\
+      \            question: User's question\n            max_results: Maximum number\
+      \ of documents/chunks to retrieve\n            store_type: Optional filter by\
+      \ document store type\n            include_metadata: Whether to include retrieval\
+      \ metadata in response\n            similarity_threshold: Minimum similarity\
+      \ score for retrieved documents\n            include_chunks: Whether to include\
+      \ chunks in search results\n            chunk_types: Optional filter for specific\
+      \ chunk types (e.g., ['repo_core', 'note_section'])\n            prioritize_chunks:\
+      \ If True, prioritize chunks over full documents in ranking\n\n        Returns:\n\
+      \            Dictionary with answer, retrieved documents/chunks, and metadata"
+    first_line: Answer a question using RAG with retrieved documents
+    public: true
+  - name: get_document_chunks_info
+    signature: 'async def get_document_chunks_info(self, document_id: str, store_type:
+      str) -> dict[str, Any]'
+    docstring: "Get information about the chunks for a specific document.\n\n    \
+      \    Args:\n            document_id: ID of the document\n            store_type:\
+      \ Type of document store\n\n        Returns:\n            Dictionary with chunk\
+      \ information and metadata"
+    first_line: Get information about the chunks for a specific document
+    public: true
+  - name: summarize_documents
+    signature: 'async def summarize_documents(self, store_type: str | None, max_documents:
+      int) -> dict[str, Any]'
+    docstring: "Generate a summary of documents in the knowledge base.\n\n       \
+      \ Args:\n            store_type: Optional filter by document store type\n  \
+      \          max_documents: Maximum number of documents to include in summary\n\
+      \n        Returns:\n            Dictionary with summary and metadata"
+    first_line: Generate a summary of documents in the knowledge base
+    public: true
+  - name: get_document_insights
+    signature: 'async def get_document_insights(self, document_id: str, store_type:
+      str) -> dict[str, Any]'
+    docstring: "Get AI-generated insights about a specific document.\n\n        Args:\n\
+      \            document_id: ID of the document\n            store_type: Type of\
+      \ document store\n\n        Returns:\n            Dictionary with insights and\
+      \ metadata"
+    first_line: Get AI-generated insights about a specific document
+    public: true
+  - name: search_chunks_by_type
+    signature: 'async def search_chunks_by_type(self, chunk_types: list[str], question:
+      str | None, max_results: int, store_type: str | None) -> dict[str, Any]'
+    docstring: "Search for chunks of specific types, optionally with semantic similarity.\n\
+      \n        Args:\n            chunk_types: List of chunk types to search for\
+      \ (e.g., ['repo_core', 'note_section'])\n            question: Optional question\
+      \ for semantic similarity search\n            max_results: Maximum number of\
+      \ chunks to return\n            store_type: Optional filter by document store\
+      \ type\n\n        Returns:\n            Dictionary with found chunks and metadata"
+    first_line: Search for chunks of specific types, optionally with semantic similarity
+    public: true
+  - name: get_document_chunk_summary
+    signature: 'async def get_document_chunk_summary(self, store_type: str, document_id:
+      str, include_content_preview: bool) -> dict[str, Any]'
+    docstring: "Get a summary of all chunks for a specific document.\n\n        Args:\n\
+      \            store_type: Type of document store\n            document_id: ID\
+      \ of the document\n            include_content_preview: Whether to include content\
+      \ previews for each chunk\n\n        Returns:\n            Dictionary with chunk\
+      \ summary and statistics"
+    first_line: Get a summary of all chunks for a specific document
+    public: true
+  - name: compare_chunks
+    signature: 'async def compare_chunks(self, chunk_ids: list[str], comparison_question:
+      str | None) -> dict[str, Any]'
+    docstring: "Compare multiple chunks, optionally with a specific comparison question.\n\
+      \n        Args:\n            chunk_ids: List of chunk IDs to compare\n     \
+      \       comparison_question: Optional question to guide the comparison\n\n \
+      \       Returns:\n            Dictionary with comparison analysis"
+    first_line: Compare multiple chunks, optionally with a specific comparison question
+    public: true
+  - name: analyze_document_relationships
+    signature: 'async def analyze_document_relationships(self, store_type: str, document_id:
+      str, include_cross_document: bool) -> dict[str, Any]'
+    docstring: "Analyze relationships between chunks in documents.\n\n        Args:\n\
+      \            store_type: Optional store type to filter documents\n         \
+      \   document_id: Optional specific document to analyze\n            include_cross_document:\
+      \ Whether to analyze cross-document relationships\n\n        Returns:\n    \
+      \        Dictionary with relationship analysis results"
+    first_line: Analyze relationships between chunks in documents
+    public: true
+  - name: query_with_relationships
+    signature: 'async def query_with_relationships(self, question: str, max_results:
+      int, expand_with_related: bool, relationship_expansion_radius: int, include_relationship_context:
+      bool, **kwargs) -> dict[str, Any]'
+    docstring: "Enhanced query that leverages chunk relationships for better context.\n\
+      \n        Args:\n            question: The question to ask\n            max_results:\
+      \ Maximum number of initial results\n            expand_with_related: Whether\
+      \ to expand results with related chunks\n            relationship_expansion_radius:\
+      \ How many relationship hops to include\n            include_relationship_context:\
+      \ Whether to include relationship info in context\n            **kwargs: Additional\
+      \ arguments passed to base query method\n\n        Returns:\n            Enhanced\
+      \ query results with relationship-aware context"
+    first_line: Enhanced query that leverages chunk relationships for better context
+    public: true
+  - name: get_chunk_relationship_insights
+    signature: 'async def get_chunk_relationship_insights(self, chunk_id: str) ->
+      dict[str, Any]'
+    docstring: "Get insights about a specific chunk's relationships.\n\n        Args:\n\
+      \            chunk_id: ID of the chunk to analyze\n\n        Returns:\n    \
+      \        Dictionary with relationship insights"
+    first_line: Get insights about a specific chunk's relationships
+    public: true
+  - name: hybrid_query
+    signature: 'async def hybrid_query(self, question: str, max_results: int, store_type:
+      str, include_chunks: bool, semantic_weight: float, keyword_weight: float, min_semantic_score:
+      float, min_keyword_score: float, boost_exact_matches: bool, boost_title_matches:
+      bool, explain_results: bool) -> dict[str, Any]'
+    docstring: "Enhanced query using hybrid search (semantic + keyword).\n\n     \
+      \   Args:\n            question: The question to ask\n            max_results:\
+      \ Maximum number of results to return\n            store_type: Optional store\
+      \ type filter\n            include_chunks: Whether to include chunk results\n\
+      \            semantic_weight: Weight for semantic similarity (0.0-1.0)\n   \
+      \         keyword_weight: Weight for keyword scoring (0.0-1.0)\n           \
+      \ min_semantic_score: Minimum semantic similarity threshold\n            min_keyword_score:\
+      \ Minimum keyword score threshold\n            boost_exact_matches: Whether\
+      \ to boost exact phrase matches\n            boost_title_matches: Whether to\
+      \ boost title/metadata matches\n            explain_results: Whether to include\
+      \ detailed scoring explanation\n\n        Returns:\n            Query results\
+      \ with hybrid scoring"
+    first_line: Enhanced query using hybrid search (semantic + keyword)
+    public: true
+  - name: compare_search_methods
+    signature: 'async def compare_search_methods(self, question: str, max_results:
+      int, store_type: str, include_chunks: bool) -> dict[str, Any]'
+    docstring: "Compare results from different search methods.\n\n        Args:\n\
+      \            question: The question to search for\n            max_results:\
+      \ Maximum results per method\n            store_type: Optional store type filter\n\
+      \            include_chunks: Whether to include chunks\n\n        Returns:\n\
+      \            Comparison of semantic, keyword, and hybrid search results"
+    first_line: Compare results from different search methods
+    public: true
+  - name: tune_hybrid_search
+    signature: 'async def tune_hybrid_search(self, test_queries: list[str], semantic_weights:
+      list[float], keyword_weights: list[float]) -> dict[str, Any]'
+    docstring: "Tune hybrid search parameters using test queries.\n\n        Args:\n\
+      \            test_queries: List of test queries to evaluate\n            semantic_weights:\
+      \ List of semantic weights to test\n            keyword_weights: List of keyword\
+      \ weights to test\n\n        Returns:\n            Tuning results and recommendations"
+    first_line: Tune hybrid search parameters using test queries
+    public: true
+  - name: query_with_fusion
+    signature: 'async def query_with_fusion(self, question: str, max_results: int,
+      store_type: str | None, semantic_weight: float, keyword_weight: float, max_clusters:
+      int, fusion_coherence_threshold: float, include_unfused: bool) -> dict[str,
+      Any]'
+    docstring: "Execute a hybrid query with intelligent chunk fusion.\n\n        Args:\n\
+      \            question: Query question\n            max_results: Maximum number\
+      \ of results to retrieve before fusion\n            store_type: Optional filter\
+      \ by document store type\n            semantic_weight: Weight for semantic search\
+      \ (0-1)\n            keyword_weight: Weight for keyword search (0-1)\n     \
+      \       max_clusters: Maximum number of fused answer clusters to create\n  \
+      \          fusion_coherence_threshold: Minimum coherence for chunk clustering\n\
+      \            include_unfused: Whether to include unfused results as well\n\n\
+      \        Returns:\n            Dictionary with fused answers, unfused results,\
+      \ and metadata"
+    first_line: Execute a hybrid query with intelligent chunk fusion
+    public: true
+  - name: analyze_fusion_quality
+    signature: 'async def analyze_fusion_quality(self, question: str, max_results:
+      int, test_configurations: list[dict[str, float]] | None) -> dict[str, Any]'
+    docstring: "Analyze and compare different fusion configurations.\n\n        Args:\n\
+      \            question: Query question to test\n            max_results: Maximum\
+      \ results per configuration\n            test_configurations: List of fusion\
+      \ configurations to test\n\n        Returns:\n            Analysis of fusion\
+      \ quality across configurations"
+    first_line: Analyze and compare different fusion configurations
+    public: true
+  - name: enhanced_query
+    signature: 'async def enhanced_query(self, question: str, max_results: int, store_type:
+      str | None, domain_context: str | None, enable_expansion: bool, enable_fusion:
+      bool, expansion_strategies: int, auto_reformulate: bool) -> dict[str, Any]'
+    docstring: "Enhanced query with intelligent expansion, multi-strategy search,\
+      \ and fusion.\n\n        Args:\n            question: User's question\n    \
+      \        max_results: Maximum number of results per strategy\n            store_type:\
+      \ Optional filter by document store type\n            domain_context: Optional\
+      \ domain context for better expansion\n            enable_expansion: Whether\
+      \ to use query expansion\n            enable_fusion: Whether to use chunk fusion\n\
+      \            expansion_strategies: Number of expansion strategies to try\n \
+      \           auto_reformulate: Whether to auto-reformulate on poor results\n\n\
+      \        Returns:\n            Enhanced query results with expansion metadata\
+      \ and fused answers"
+    first_line: Enhanced query with intelligent expansion, multi-strategy search,
+      and fusion
+    public: true
+  - name: analyze_query_intelligence
+    signature: 'async def analyze_query_intelligence(self, question: str, suggest_alternatives:
+      bool, domain_context: str | None) -> dict[str, Any]'
+    docstring: "Analyze query intelligence and provide enhancement suggestions.\n\n\
+      \        Args:\n            question: Query to analyze\n            domain_context:\
+      \ Optional domain context\n\n        Returns:\n            Comprehensive query\
+      \ analysis with suggestions"
+    first_line: Analyze query intelligence and provide enhancement suggestions
+    public: true
   public: true
 - name: QueryIntent
   docstring: Types of query intents for different search strategies.
@@ -82,38 +261,105 @@ classes:
 - name: QueryExpansion
   docstring: Result of query expansion with enhanced terms and strategies.
   methods:
-  - all_terms
+  - name: all_terms
+    signature: def all_terms(self) -> set[str]
+    docstring: Get all unique terms from expansion.
+    first_line: Get all unique terms from expansion
+    public: true
   public: true
 - name: SearchStrategy
   docstring: Strategy for executing enhanced searches.
   methods:
-  - primary_query
+  - name: primary_query
+    signature: def primary_query(self) -> str
+    docstring: Get the primary query with highest weight.
+    first_line: Get the primary query with highest weight
+    public: true
   public: true
 - name: QueryExpansionEngine
   docstring: Advanced query expansion and semantic understanding engine.
   methods:
-  - expand_query
-  - create_search_strategies
-  - analyze_query_quality
-  - reformulate_query
+  - name: expand_query
+    signature: 'def expand_query(self, query: str, domain_context: str | None, include_synonyms:
+      bool, include_related: bool, max_expansions: int) -> QueryExpansion'
+    docstring: "Expand a query with semantic understanding and enhancement.\n\n  \
+      \      Args:\n            query: Original query string\n            domain_context:\
+      \ Optional domain context (e.g., \"python\", \"kubernetes\")\n            include_synonyms:\
+      \ Whether to include synonym expansions\n            include_related: Whether\
+      \ to include related terms\n            max_expansions: Maximum number of expanded\
+      \ queries to generate\n\n        Returns:\n            QueryExpansion with enhanced\
+      \ queries and metadata"
+    first_line: Expand a query with semantic understanding and enhancement
+    public: true
+  - name: create_search_strategies
+    signature: 'def create_search_strategies(self, expansion: QueryExpansion, max_strategies:
+      int) -> list[SearchStrategy]'
+    docstring: "Create multiple search strategies from query expansion.\n\n      \
+      \  Args:\n            expansion: Query expansion result\n            max_strategies:\
+      \ Maximum number of strategies to create\n\n        Returns:\n            List\
+      \ of search strategies with different approaches"
+    first_line: Create multiple search strategies from query expansion
+    public: true
+  - name: analyze_query_quality
+    signature: 'def analyze_query_quality(self, query: str) -> dict[str, Any]'
+    docstring: "Analyze query quality and provide improvement suggestions.\n\n   \
+      \     Args:\n            query: Query to analyze\n\n        Returns:\n     \
+      \       Quality analysis with scores and suggestions"
+    first_line: Analyze query quality and provide improvement suggestions
+    public: true
+  - name: reformulate_query
+    signature: 'def reformulate_query(self, original_query: str, search_results_count:
+      int, search_quality_score: float) -> list[str]'
+    docstring: "Reformulate query based on search performance.\n\n        Args:\n\
+      \            original_query: Original query that performed poorly\n        \
+      \    search_results_count: Number of results returned\n            search_quality_score:\
+      \ Quality score of returned results\n\n        Returns:\n            List of\
+      \ reformulated queries to try"
+    first_line: Reformulate query based on search performance
+    public: true
   public: true
 - name: ChunkCluster
   docstring: A cluster of related chunks that can be fused together.
   methods:
-  - average_relevance
-  - chunk_ids
+  - name: average_relevance
+    signature: def average_relevance(self) -> float
+    docstring: Get average relevance score across all chunks.
+    first_line: Get average relevance score across all chunks
+    public: true
+  - name: chunk_ids
+    signature: def chunk_ids(self) -> set[str]
+    docstring: Get set of chunk IDs in this cluster.
+    first_line: Get set of chunk IDs in this cluster
+    public: true
   public: true
 - name: FusedAnswer
   docstring: A synthesized answer created from multiple chunks.
   methods:
-  - num_sources
-  - source_documents
+  - name: num_sources
+    signature: def num_sources(self) -> int
+    docstring: Get number of source chunks used.
+    first_line: Get number of source chunks used
+    public: true
+  - name: source_documents
+    signature: def source_documents(self) -> set[str]
+    docstring: Get unique source document IDs.
+    first_line: Get unique source document IDs
+    public: true
   public: true
 - name: ChunkFusion
   docstring: Intelligent chunk fusion for creating comprehensive answers from multiple
     chunks.
   methods:
-  - fuse_chunks
+  - name: fuse_chunks
+    signature: 'def fuse_chunks(self, search_results: list[SearchResult], query: str,
+      max_clusters: int) -> list[FusedAnswer]'
+    docstring: "Fuse multiple chunks into coherent answers.\n\n        Args:\n   \
+      \         search_results: Search results containing chunks to fuse\n       \
+      \     query: Original query for context\n            max_clusters: Maximum number\
+      \ of answer clusters to create\n\n        Returns:\n            List of fused\
+      \ answers sorted by confidence"
+    first_line: Fuse multiple chunks into coherent answers
+    public: true
   public: true
 - name: RAGInput
   docstring: Input schema for RAG agent interactions.
@@ -126,20 +372,63 @@ classes:
 - name: RAGAgent
   docstring: RAG-powered agent using FlowAgent architecture.
   methods:
-  - process_question
-  - as_flow
+  - name: process_question
+    signature: 'async def process_question(self, question: str, conversation_history:
+      list[dict[str, str]] | None, **kwargs: Any) -> RAGOutput'
+    docstring: "Process a question and return a RAG response.\n\n        Args:\n \
+      \           question: User's question\n            conversation_history: Previous\
+      \ conversation messages\n            **kwargs: Additional parameters for RAGInput\n\
+      \n        Returns:\n            RAG response with sources and metadata"
+    first_line: Process a question and return a RAG response
+    public: true
+  - name: as_flow
+    signature: def as_flow(self) -> Flow[RAGInput, RAGOutput]
+    docstring: Convert the RAG agent to a Flow for composition.
+    first_line: Convert the RAG agent to a Flow for composition
+    public: true
   public: true
 - name: SimpleRAGService
   docstring: Simplified RAG service for reliable document-based question answering.
   methods:
-  - query
-  - get_document_count
-  - get_stats
+  - name: query
+    signature: 'async def query(self, question: str, max_results: int, store_type:
+      str | None, similarity_threshold: float, include_chunks: bool) -> dict[str,
+      Any]'
+    docstring: "Answer a question using simple RAG with retrieved documents.\n\n \
+      \       Args:\n            question: User's question\n            max_results:\
+      \ Maximum number of documents/chunks to retrieve\n            store_type: Optional\
+      \ filter by document store type\n            similarity_threshold: Minimum similarity\
+      \ score for retrieved documents\n            include_chunks: Whether to include\
+      \ chunks in search results\n\n        Returns:\n            Dictionary with\
+      \ answer, retrieved documents, and metadata"
+    first_line: Answer a question using simple RAG with retrieved documents
+    public: true
+  - name: get_document_count
+    signature: def get_document_count(self) -> dict[str, int]
+    docstring: Get count of documents in each store.
+    first_line: Get count of documents in each store
+    public: true
+  - name: get_stats
+    signature: def get_stats(self) -> dict[str, Any]
+    docstring: Get statistics about the RAG system.
+    first_line: Get statistics about the RAG system
+    public: true
   public: true
 - name: SimpleRAGAgent
   docstring: Simplified RAG agent for document-based conversations.
   methods:
-  - process_question
+  - name: process_question
+    signature: 'async def process_question(self, question: str, conversation_history:
+      list[dict[str, str]] | None, max_results: int, store_type: str | None) -> dict[str,
+      Any]'
+    docstring: "Process a question using the RAG service.\n\n        Args:\n     \
+      \       question: User's question\n            conversation_history: Previous\
+      \ conversation context (optional)\n            max_results: Maximum number of\
+      \ documents to retrieve\n            store_type: Optional filter by document\
+      \ store type\n\n        Returns:\n            RAG response with answer, sources,\
+      \ and metadata"
+    first_line: Process a question using the RAG service
+    public: true
   public: true
 functions:
 - name: create_simple_rag_agent

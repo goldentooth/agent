@@ -18,51 +18,51 @@ Flow Engine module
 Protocol for context keys that can store typed values.
 
 **Public Methods:**
-- `name()`
-- `value_type()`
+- `name(self) -> str` - The unique name/identifier for this context key
+- `value_type(self) -> type[T]` - The type of values this key can store
 
 #### ContextProtocol
 Protocol for context objects that can store keyed values.
 
 **Public Methods:**
-- `get()`
-- `set()`
-- `contains()`
+- `get(self, key: ContextKeyProtocol[T]) -> T` - Get a value by key
+- `set(self, key: ContextKeyProtocol[T], value: T) -> None` - Set a value by key
+- `contains(self, key: ContextKeyProtocol[Any]) -> bool` - Check if key exists in context
 
 #### FlowProtocol
 Protocol for Flow objects to avoid concrete dependencies.
 
 **Public Methods:**
-- `name()`
+- `name(self) -> str` - The name of this flow
 
 #### FlowExtensionRegistry
 Registry for Flow extensions that can be added without circular imports.
 
 **Public Methods:**
-- `register_extension()`
-- `register_method_extension()`
-- `register_initialization_hook()`
-- `get_extension()`
-- `get_method_extension()`
-- `extend_flow_class()`
+- `register_extension(self, name: str, func: ExtensionFunction) -> None` - Register a function extension
+- `register_method_extension(self, method_name: str, func: ExtensionFunction) -> None` - Register a method extension for Flow classes
+- `register_initialization_hook(self, hook: Callable[[Any], None]) -> None` - Register a hook that runs when Flow classes are extended
+- `get_extension(self, name: str) -> ExtensionFunction | None` - Get a registered extension
+- `get_method_extension(self, method_name: str) -> ExtensionFunction | None` - Get a registered method extension
+- `extend_flow_class(self, flow_class: type) -> None` - Apply all registered extensions to a Flow class
 
 #### TrampolineFlowCombinators
 Flow combinators for trampoline-style execution patterns.
 
 **Public Methods:**
-- `set_should_exit()`
-- `set_should_break()`
-- `set_should_skip()`
-- `check_should_exit()`
-- `check_should_break()`
-- `check_should_skip()`
-- `clear_break_flag()`
-- `clear_skip_flag()`
-- `exitable_chain()`
-- `trampoline()`
-- `trampoline_chain()`
-- `conditional_flow()`
-- `skip_if()`
+- `set_should_exit(value: bool) -> Flow[Context, Context]` - Create a Flow that sets the exit signal in the context
+- `set_should_break(value: bool) -> Flow[Context, Context]` - Create a Flow that sets the break/restart signal in the context
+- `set_should_skip(value: bool) -> Flow[Context, Context]` - Create a Flow that sets the skip signal in the context
+- `check_should_exit() -> Flow[Context, bool]` - Create a Flow that checks if exit has been signaled
+- `check_should_break() -> Flow[Context, bool]` - Create a Flow that checks if break/restart has been signaled
+- `check_should_skip() -> Flow[Context, bool]` - Create a Flow that checks if skip has been signaled
+- `clear_break_flag() -> Flow[Context, Context]` - Create a Flow that clears the break flag
+- `clear_skip_flag() -> Flow[Context, Context]` - Create a Flow that clears the skip flag
+- `exitable_chain(*flows: Flow[Context, Context]) -> Flow[Context, Context]` - Create a Flow that executes a chain of flows with exit/break checking
+- `trampoline(flow: Flow[Context, Context]) -> Flow[Context, Context]` - Create a Flow that runs another flow in trampoline style until exit
+- `trampoline_chain(*flows: Flow[Context, Context]) -> Flow[Context, Context]` - Create a Flow that runs a chain of flows in trampoline style
+- `conditional_flow(condition_flow: Flow[Context, bool], then_flow: Flow[Context, Context], else_flow: Flow[Context, Context] | None) -> Flow[Context, Context]` - Create a Flow that conditionally executes based on a boolean flow result
+- `skip_if(condition_flow: Flow[Context, bool], target_flow: Flow[Context, Context]) -> Flow[Context, Context]` - Create a Flow that skips execution of target_flow if condition is True
 
 ### Functions
 

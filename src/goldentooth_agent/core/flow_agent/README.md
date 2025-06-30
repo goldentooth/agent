@@ -21,7 +21,7 @@ Mock LLM client for testing purposes.
     without requiring actual API calls.
 
 **Public Methods:**
-- `create_completion()`
+- `async create_completion(self, response_model: type[R], messages: list[MessageData], model: str, **kwargs: FlowKwargs) -> R` - Mock completion creation that returns predefined responses
 
 #### InstructorFlow
 Flow-based wrapper for Instructor-powered structured LLM output.
@@ -30,7 +30,7 @@ Flow-based wrapper for Instructor-powered structured LLM output.
     LLM output using Instructor's validation and parsing capabilities.
 
 **Public Methods:**
-- `as_flow()`
+- `as_flow(self) -> Flow[Context, Context]` - Convert InstructorFlow to a composable Flow
 
 #### FlowAgent
 Flow-based agent using functional composition.
@@ -43,7 +43,7 @@ Flow-based agent using functional composition.
     5. Extracts and validates output schemas
 
 **Public Methods:**
-- `as_flow()`
+- `as_flow(self) -> Flow[FlowIOSchema, FlowIOSchema]` - Convert agent to a composable flow
 
 #### FlowTool
 Flow-based tool with agent-like interface.
@@ -52,15 +52,15 @@ Flow-based tool with agent-like interface.
     or converted to agent-compatible interfaces.
 
 **Public Methods:**
-- `as_flow()`
-- `as_agent()`
+- `as_flow(self) -> AnyFlow` - Convert tool to a composable flow
+- `as_agent(self) -> AnyAgent` - Convert tool to an agent-compatible interface
 
 #### FlowIOSchema
 Base schema for all Flow-based agent interactions with context integration.
 
 **Public Methods:**
-- `to_context()`
-- `from_context()`
+- `to_context(self, context: Context) -> Context` - Convert schema to context entries
+- `from_context(cls: type[T], context: Context) -> T` - Extract schema from context
 
 #### AgentInput
 Standard input for agent flows.

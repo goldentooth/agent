@@ -31,23 +31,55 @@ classes:
 - name: YamlStoreAdapter
   docstring: Protocol for classes that can be serialized to and from YAML.
   methods:
-  - from_dict
-  - to_dict
+  - name: from_dict
+    signature: 'def from_dict(cls, data: YamlData) -> T'
+    docstring: Create an instance from a dictionary representation.
+    first_line: Create an instance from a dictionary representation
+    public: true
+  - name: to_dict
+    signature: 'def to_dict(cls, id: str, obj: T) -> YamlData'
+    docstring: Convert the instance to a dictionary representation.
+    first_line: Convert the instance to a dictionary representation
+    public: true
   public: true
 - name: YamlStoreInstaller
   docstring: A generic base class for installing YAML files from an embedded directory
     into a YAML store.
   methods:
-  - install
+  - name: install
+    signature: 'def install(self, overwrite: bool) -> bool'
+    docstring: Install all YAML files from the embedded directory into the store.
+    first_line: Install all YAML files from the embedded directory into the store
+    public: true
   public: true
 - name: YamlStore
   docstring: A generic base class for managing YAML files in a directory.
   methods:
-  - list
-  - load
-  - save
-  - delete
-  - exists
+  - name: list
+    signature: def list(self) -> list[str]
+    docstring: List all available object names in the store.
+    first_line: List all available object names in the store
+    public: true
+  - name: load
+    signature: 'def load(self, id: str) -> T'
+    docstring: Load an object by its ID from the YAML store.
+    first_line: Load an object by its ID from the YAML store
+    public: true
+  - name: save
+    signature: 'def save(self, id: str, obj: T) -> None'
+    docstring: Save an object to the YAML store with the given ID.
+    first_line: Save an object to the YAML store with the given ID
+    public: true
+  - name: delete
+    signature: 'def delete(self, id: str) -> None'
+    docstring: Delete an object by its ID from the YAML store.
+    first_line: Delete an object by its ID from the YAML store
+    public: true
+  - name: exists
+    signature: 'def exists(self, id: str) -> bool'
+    docstring: Check if an object exists in the YAML store by its ID.
+    first_line: Check if an object exists in the YAML store by its ID
+    public: true
   public: true
 constants:
 - name: T

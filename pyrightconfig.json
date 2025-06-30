@@ -1,12 +1,11 @@
 {
   "include": [
-    "src"
+    "src",
+    "tests"
   ],
   "exclude": [
     "**/node_modules",
-    "**/__pycache__",
-    "src/**/*_test.py",
-    "src/**/test_*.py"
+    "**/__pycache__"
   ],
   "reportMissingImports": true,
   "reportMissingTypeStubs": false,
@@ -15,6 +14,24 @@
   "executionEnvironments": [
     {
       "root": "src"
+    },
+    {
+      "root": "tests",
+      "reportPrivateUsage": "none",
+      "reportUnknownArgumentType": "none",
+      "reportUnknownVariableType": "none",
+      "reportUnknownMemberType": "none",
+      "reportUnknownParameterType": "none",
+      "reportUnknownLambdaType": "none",
+      "reportMissingParameterType": "none",
+      "reportMissingTypeArgument": "none",
+      "reportUnnecessaryIsInstance": "none",
+      "reportUnnecessaryCast": "none",
+      "reportUnnecessaryComparison": "none",
+      "reportAssertAlwaysTrue": "none",
+      "reportConstantRedefinition": "none",
+      "reportFunctionMemberAccess": "none",
+      "reportUninitializedInstanceVariable": "none"
     }
   ],
   "typeCheckingMode": "strict",

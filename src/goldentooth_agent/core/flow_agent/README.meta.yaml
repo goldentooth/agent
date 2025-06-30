@@ -69,14 +69,30 @@ classes:
     \ responses for testing the Instructor integration\n    without requiring actual\
     \ API calls."
   methods:
-  - create_completion
+  - name: create_completion
+    signature: 'async def create_completion(self, response_model: type[R], messages:
+      list[MessageData], model: str, **kwargs: FlowKwargs) -> R'
+    docstring: "Mock completion creation that returns predefined responses.\n\n  \
+      \      Args:\n            response_model: The Pydantic model class for the response\n\
+      \            messages: List of message dictionaries\n            model: Model\
+      \ name (ignored in mock)\n            **kwargs: Additional arguments (ignored\
+      \ in mock)\n\n        Returns:\n            Mock response of the specified type\n\
+      \n        Raises:\n            ValueError: If no mock response is configured\
+      \ for the response model"
+    first_line: Mock completion creation that returns predefined responses
+    public: true
   public: true
 - name: InstructorFlow
   docstring: "Flow-based wrapper for Instructor-powered structured LLM output.\n\n\
     \    InstructorFlow integrates with the FlowAgent system to provide structured\n\
     \    LLM output using Instructor's validation and parsing capabilities."
   methods:
-  - as_flow
+  - name: as_flow
+    signature: def as_flow(self) -> Flow[Context, Context]
+    docstring: "Convert InstructorFlow to a composable Flow.\n\n        Returns:\n\
+      \            Flow that processes contexts through structured LLM completion"
+    first_line: Convert InstructorFlow to a composable Flow
+    public: true
   public: true
 - name: FlowAgent
   docstring: "Flow-based agent using functional composition.\n\n    FlowAgent implements\
@@ -85,21 +101,46 @@ classes:
     \    4. Runs processing flow (LLM calls, tool execution, etc.)\n    5. Extracts\
     \ and validates output schemas"
   methods:
-  - as_flow
+  - name: as_flow
+    signature: def as_flow(self) -> Flow[FlowIOSchema, FlowIOSchema]
+    docstring: "Convert agent to a composable flow.\n\n        Returns:\n        \
+      \    Flow that implements the complete agent pipeline"
+    first_line: Convert agent to a composable flow
+    public: true
   public: true
 - name: FlowTool
   docstring: "Flow-based tool with agent-like interface.\n\n    FlowTool provides\
     \ a unified interface for tools that can be used as flows\n    or converted to\
     \ agent-compatible interfaces."
   methods:
-  - as_flow
-  - as_agent
+  - name: as_flow
+    signature: def as_flow(self) -> AnyFlow
+    docstring: "Convert tool to a composable flow.\n\n        Returns:\n         \
+      \   Flow that validates input, runs implementation, and validates output"
+    first_line: Convert tool to a composable flow
+    public: true
+  - name: as_agent
+    signature: def as_agent(self) -> AnyAgent
+    docstring: "Convert tool to an agent-compatible interface.\n\n        Returns:\n\
+      \            FlowAgent that wraps this tool with agent-like behavior"
+    first_line: Convert tool to an agent-compatible interface
+    public: true
   public: true
 - name: FlowIOSchema
   docstring: Base schema for all Flow-based agent interactions with context integration.
   methods:
-  - to_context
-  - from_context
+  - name: to_context
+    signature: 'def to_context(self, context: Context) -> Context'
+    docstring: "Convert schema to context entries.\n\n        Creates context keys\
+      \ for each field in the schema and stores the values."
+    first_line: Convert schema to context entries
+    public: true
+  - name: from_context
+    signature: 'def from_context(cls: type[T], context: Context) -> T'
+    docstring: "Extract schema from context.\n\n        Retrieves values for all schema\
+      \ fields from the context."
+    first_line: Extract schema from context
+    public: true
   public: true
 - name: AgentInput
   docstring: Standard input for agent flows.

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import sys
 from collections.abc import AsyncIterator
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated, Any
 
 import typer
 from antidote import inject
@@ -18,12 +18,17 @@ from goldentooth_agent.core.flow_agent import AgentInput, AgentOutput, FlowAgent
 from goldentooth_agent.core.llm import create_claude_agent
 from goldentooth_agent.flow_engine import Flow
 
+if TYPE_CHECKING:
+    from goldentooth_agent.core.rag.simple_rag_agent import SimpleRAGAgent
+
 app = typer.Typer()
 
 
 async def process_rag_input(
-    rag_agent, question: str, conversation_history: list[dict[str, str]]
-):
+    rag_agent: SimpleRAGAgent,
+    question: str,
+    conversation_history: list[dict[str, str]],
+) -> Any:
     """Process input through a RAG agent."""
     return await rag_agent.process_question(
         question=question,
@@ -58,7 +63,7 @@ async def process_agent_input(agent: FlowAgent, input_data: AgentInput) -> Agent
         )
 
 
-def create_rag_agent():
+def create_rag_agent() -> SimpleRAGAgent:
     """Create a simplified RAG agent for document-based conversations."""
     from goldentooth_agent.core.rag.simple_rag_agent import create_simple_rag_agent
 
@@ -172,7 +177,7 @@ async def chat_loop(
     # Create agent - support RAG, Claude, and echo
     agent = None
     rag_agent = None
-    conversation_history = []
+    conversation_history: list[dict[str, str]] = []
 
     try:
         if agent_name == "echo":

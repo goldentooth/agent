@@ -18,9 +18,9 @@ Integrations module
 Bridge between Flow Engine and Context system using protocols.
 
 **Public Methods:**
-- `ensure_context_keys()`
-- `get_trampoline_key()`
-- `register_trampoline_support()`
+- `ensure_context_keys(self) -> None` - Lazily create context keys for trampoline functionality
+- `get_trampoline_key(self, key_name: str) -> ContextKeyProtocol[bool] | None` - Get a trampoline context key by name
+- `register_trampoline_support(self) -> None` - Register trampoline functionality with the Flow system
 
 ### Functions
 

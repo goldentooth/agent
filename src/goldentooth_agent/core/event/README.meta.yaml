@@ -64,32 +64,107 @@ classes:
 - name: EventFlow
   docstring: Base class for Flow-integrated event handling.
   methods:
-  - emit
-  - as_flow
+  - name: emit
+    signature: 'def emit(self, data: T) -> None'
+    docstring: Emit an event with the given data. To be implemented by subclasses.
+    first_line: Emit an event with the given data. To be implemented by subclasses
+    public: true
+  - name: as_flow
+    signature: def as_flow(self) -> Flow[None, T]
+    docstring: Convert this event emitter to a Flow. To be implemented by subclasses.
+    first_line: Convert this event emitter to a Flow. To be implemented by subclasses
+    public: true
   public: true
 - name: SyncEventFlow
   docstring: Flow-integrated synchronous event emitter wrapper.
   methods:
-  - emit
-  - 'on'
-  - once
-  - 'off'
-  - remove_all_listeners
-  - listeners
-  - listener_count
-  - as_flow
+  - name: emit
+    signature: 'def emit(self, data: T) -> None'
+    docstring: Emit a synchronous event with the given data.
+    first_line: Emit a synchronous event with the given data
+    public: true
+  - name: 'on'
+    signature: 'def on(self, handler: Callable[[T], None]) -> None'
+    docstring: Register a synchronous event handler.
+    first_line: Register a synchronous event handler
+    public: true
+  - name: once
+    signature: 'def once(self, handler: Callable[[T], None]) -> None'
+    docstring: Register a one-time synchronous event handler.
+    first_line: Register a one-time synchronous event handler
+    public: true
+  - name: 'off'
+    signature: 'def off(self, handler: Callable[[T], None]) -> None'
+    docstring: Remove a synchronous event handler.
+    first_line: Remove a synchronous event handler
+    public: true
+  - name: remove_all_listeners
+    signature: def remove_all_listeners(self) -> None
+    docstring: Remove all listeners for this event.
+    first_line: Remove all listeners for this event
+    public: true
+  - name: listeners
+    signature: def listeners(self) -> list[Callable[[T], None]]
+    docstring: Get all listeners for this event.
+    first_line: Get all listeners for this event
+    public: true
+  - name: listener_count
+    signature: def listener_count(self) -> int
+    docstring: Get the number of listeners for this event.
+    first_line: Get the number of listeners for this event
+    public: true
+  - name: as_flow
+    signature: def as_flow(self) -> Flow[None, T]
+    docstring: Convert this synchronous event emitter to a Flow.
+    first_line: Convert this synchronous event emitter to a Flow
+    public: true
   public: true
 - name: AsyncEventFlow
   docstring: Flow-integrated asynchronous event emitter wrapper.
   methods:
-  - emit
-  - 'on'
-  - once
-  - 'off'
-  - remove_all_listeners
-  - listeners
-  - listener_count
-  - as_flow
+  - name: emit
+    signature: 'def emit(self, data: T) -> None'
+    docstring: Emit an asynchronous event with the given data.
+    first_line: Emit an asynchronous event with the given data
+    public: true
+  - name: 'on'
+    signature: 'async def on(self, handler: AnyEventHandler | AnyAwaitableEventHandler)
+      -> None'
+    docstring: Register an asynchronous event handler.
+    first_line: Register an asynchronous event handler
+    public: true
+  - name: once
+    signature: 'async def once(self, handler: AnyEventHandler | AnyAwaitableEventHandler)
+      -> None'
+    docstring: Register a one-time asynchronous event handler.
+    first_line: Register a one-time asynchronous event handler
+    public: true
+  - name: 'off'
+    signature: 'async def off(self, handler: AnyEventHandler | AnyAwaitableEventHandler)
+      -> None'
+    docstring: Remove an asynchronous event handler.
+    first_line: Remove an asynchronous event handler
+    public: true
+  - name: remove_all_listeners
+    signature: async def remove_all_listeners(self) -> None
+    docstring: Remove all listeners for this event.
+    first_line: Remove all listeners for this event
+    public: true
+  - name: listeners
+    signature: def listeners(self) -> list[AnyEventHandler]
+    docstring: Get all listeners for this event.
+    first_line: Get all listeners for this event
+    public: true
+  - name: listener_count
+    signature: def listener_count(self) -> int
+    docstring: Get the number of listeners for this event.
+    first_line: Get the number of listeners for this event
+    public: true
+  - name: as_flow
+    signature: def as_flow(self) -> Flow[None, T]
+    docstring: Convert this asynchronous event emitter to a Flow.
+    first_line: Convert this asynchronous event emitter to a Flow
+    public: true
   public: true
 functions:
 - name: event_source

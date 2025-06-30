@@ -44,10 +44,30 @@ classes:
 - name: BackgroundEventLoop
   docstring: A class to manage an asyncio event loop in a background thread.
   methods:
-  - create
-  - submit
-  - shutdown
-  - is_running
+  - name: create
+    signature: def create(cls) -> BackgroundEventLoop
+    docstring: Create a new instance of BackgroundEventLoop.
+    first_line: Create a new instance of BackgroundEventLoop
+    public: true
+  - name: submit
+    signature: 'def submit(self, coroutine: AnyCoroutine[T]) -> Future[T]'
+    docstring: "Submit a coroutine to be run in the background event loop.\n\n   \
+      \     Args:\n            coroutine: The coroutine to run\n\n        Returns:\n\
+      \            A Future that will contain the result\n\n        Raises:\n    \
+      \        RuntimeError: If the event loop is not running"
+    first_line: Submit a coroutine to be run in the background event loop
+    public: true
+  - name: shutdown
+    signature: 'def shutdown(self, timeout: float) -> None'
+    docstring: "Shutdown the background event loop gracefully.\n\n        Args:\n\
+      \            timeout: Maximum time to wait for shutdown in seconds"
+    first_line: Shutdown the background event loop gracefully
+    public: true
+  - name: is_running
+    signature: def is_running(self) -> bool
+    docstring: Check if the background event loop is running.
+    first_line: Check if the background event loop is running
+    public: true
   public: true
 functions:
 - name: async_flow

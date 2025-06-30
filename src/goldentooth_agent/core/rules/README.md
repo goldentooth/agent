@@ -21,9 +21,9 @@ A rule engine that evaluates a list of rules against a context and applies actio
     to a Flow for stream processing or used directly for single context evaluation.
 
 **Public Methods:**
-- `evaluate()`
-- `add_rule()`
-- `as_flow()`
+- `async evaluate(self, ctx: TIn) -> TIn` - Evaluate the rules against the context and apply actions for matching rules
+- `add_rule(self, rule: Rule[TIn]) -> None` - Add a new rule to the rule engine
+- `as_flow(self) -> Flow[TIn, TIn]` - Convert the rule engine to a flow that evaluates the rules for each item in a stream
 
 #### Rule
 A rule that applies a condition to an input and executes an action if the condition is met.
@@ -32,8 +32,8 @@ A rule that applies a condition to an input and executes an action if the condit
     conditionally. They integrate seamlessly with the Flow system for stream processing.
 
 **Public Methods:**
-- `apply()`
-- `as_flow()`
+- `async apply(self, ctx: TIn) -> TIn` - Apply the rule to the given context
+- `as_flow(self) -> Flow[TIn, TIn]` - Convert the rule to a flow that applies the rule to each item in a stream
 
 ## Dependencies
 

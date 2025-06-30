@@ -94,37 +94,129 @@ classes:
 - name: DependencyGraph
   docstring: Manages dependency relationships between context keys and computed properties.
   methods:
-  - add_dependency
-  - remove_dependency
-  - remove_all_dependencies
-  - get_dependents
-  - has_dependents
-  - get_all_source_keys
-  - clear
-  - get_graph_copy
+  - name: add_dependency
+    signature: 'def add_dependency(self, source_key: str, dependent_key: str) -> None'
+    docstring: "Add a dependency relationship.\n\n        Args:\n            source_key:\
+      \ The key that is depended upon\n            dependent_key: The key that depends\
+      \ on the source"
+    first_line: Add a dependency relationship
+    public: true
+  - name: remove_dependency
+    signature: 'def remove_dependency(self, source_key: str, dependent_key: str) ->
+      None'
+    docstring: "Remove a specific dependency relationship.\n\n        Args:\n    \
+      \        source_key: The key that is depended upon\n            dependent_key:\
+      \ The key that depends on the source"
+    first_line: Remove a specific dependency relationship
+    public: true
+  - name: remove_all_dependencies
+    signature: 'def remove_all_dependencies(self, source_key: str) -> None'
+    docstring: "Remove all dependencies for a source key.\n\n        Args:\n     \
+      \       source_key: The key to remove all dependencies for"
+    first_line: Remove all dependencies for a source key
+    public: true
+  - name: get_dependents
+    signature: 'def get_dependents(self, source_key: str) -> set[str]'
+    docstring: "Get all keys that depend on the given source key.\n\n        Args:\n\
+      \            source_key: The key to get dependents for\n\n        Returns:\n\
+      \            Set of dependent keys"
+    first_line: Get all keys that depend on the given source key
+    public: true
+  - name: has_dependents
+    signature: 'def has_dependents(self, source_key: str) -> bool'
+    docstring: "Check if a source key has any dependents.\n\n        Args:\n     \
+      \       source_key: The key to check\n\n        Returns:\n            True if\
+      \ the key has dependents, False otherwise"
+    first_line: Check if a source key has any dependents
+    public: true
+  - name: get_all_source_keys
+    signature: def get_all_source_keys(self) -> set[str]
+    docstring: "Get all source keys that have dependents.\n\n        Returns:\n  \
+      \          Set of all source keys"
+    first_line: Get all source keys that have dependents
+    public: true
+  - name: clear
+    signature: def clear(self) -> None
+    docstring: Clear the entire dependency graph.
+    first_line: Clear the entire dependency graph
+    public: true
+  - name: get_graph_copy
+    signature: def get_graph_copy(self) -> dict[str, set[str]]
+    docstring: "Get a copy of the internal graph structure.\n\n        Returns:\n\
+      \            Dictionary mapping source keys to sets of dependent keys"
+    first_line: Get a copy of the internal graph structure
+    public: true
   public: true
 - name: ContextKey
   docstring: Class for context keys that can be used to store and retrieve values
     in a context.
   methods:
-  - create
-  - symbol
+  - name: create
+    signature: 'def create(cls, path: str, type_: type[T], description: str) -> ContextKey[T]'
+    docstring: Create a new context key with the specified name, type, and description.
+    first_line: Create a new context key with the specified name, type, and description
+    public: true
+  - name: symbol
+    signature: def symbol(self) -> Symbol
+    docstring: Return a Symbol representation of the context key.
+    first_line: Return a Symbol representation of the context key
+    public: true
   public: true
 - name: Symbol
   docstring: "Represents a symbolic key like 'agent.intent'.\n    You can use Symbol('agent.intent')\
     \ or just strings interchangeably."
   methods:
-  - parts
+  - name: parts
+    signature: def parts(self) -> list[str]
+    docstring: Split the symbol into its parts based on the '.' delimiter.
+    first_line: Split the symbol into its parts based on the '.' delimiter
+    public: true
   public: true
 - name: SnapshotManager
   docstring: Manages snapshots for Context objects.
   methods:
-  - create_snapshot
-  - restore_snapshot
-  - list_snapshots
-  - delete_snapshot
-  - get_snapshot
-  - clear_snapshots
+  - name: create_snapshot
+    signature: 'def create_snapshot(self, context: Context, name: str) -> ContextSnapshot'
+    docstring: "Create a snapshot of the current context state.\n\n        Args:\n\
+      \            context: The context to snapshot\n            name: Name/identifier\
+      \ for the snapshot\n\n        Returns:\n            The created snapshot\n\n\
+      \        Raises:\n            ValueError: If a snapshot with the same name already\
+      \ exists"
+    first_line: Create a snapshot of the current context state
+    public: true
+  - name: restore_snapshot
+    signature: 'def restore_snapshot(self, context: Context, name: str) -> None'
+    docstring: "Restore the context to a previous snapshot state.\n\n        Args:\n\
+      \            context: The context to restore to\n            name: Name of the\
+      \ snapshot to restore\n\n        Raises:\n            KeyError: If snapshot\
+      \ with the given name doesn't exist"
+    first_line: Restore the context to a previous snapshot state
+    public: true
+  - name: list_snapshots
+    signature: def list_snapshots(self) -> dict[str, float]
+    docstring: "List all available snapshots with their timestamps.\n\n        Returns:\n\
+      \            Dictionary mapping snapshot names to their timestamps"
+    first_line: List all available snapshots with their timestamps
+    public: true
+  - name: delete_snapshot
+    signature: 'def delete_snapshot(self, name: str) -> None'
+    docstring: "Delete a snapshot.\n\n        Args:\n            name: Name of the\
+      \ snapshot to delete\n\n        Raises:\n            KeyError: If snapshot doesn't\
+      \ exist"
+    first_line: Delete a snapshot
+    public: true
+  - name: get_snapshot
+    signature: 'def get_snapshot(self, name: str) -> ContextSnapshot'
+    docstring: "Get a specific snapshot.\n\n        Args:\n            name: Name\
+      \ of the snapshot\n\n        Returns:\n            The snapshot\n\n        Raises:\n\
+      \            KeyError: If snapshot doesn't exist"
+    first_line: Get a specific snapshot
+    public: true
+  - name: clear_snapshots
+    signature: def clear_snapshots(self) -> None
+    docstring: Clear all snapshots.
+    first_line: Clear all snapshots
+    public: true
   public: true
 - name: ContextFlowError
   docstring: Base exception for Flow-Context integration errors.
@@ -141,89 +233,460 @@ classes:
 - name: ContextFlowCombinators
   docstring: Flow combinators for context manipulation with type safety.
   methods:
-  - get_key
-  - set_key
-  - require_key
-  - optional_key
-  - move_key
-  - copy_key
-  - forget_key
-  - require_keys
-  - transform_key
+  - name: get_key
+    signature: 'def get_key(key: ContextKey[T], default: T | None) -> Flow[Context,
+      T | None]'
+    docstring: "Create a Flow that extracts a value from a context key.\n\n      \
+      \  Args:\n            key: The context key to extract\n            default:\
+      \ Default value if key is missing (None means raise error)\n\n        Returns:\n\
+      \            Flow that extracts the value or returns default\n\n        Raises:\n\
+      \            MissingRequiredKeyError: If key is missing and no default provided\n\
+      \            ContextTypeMismatchError: If value exists but has wrong type"
+    first_line: Create a Flow that extracts a value from a context key
+    public: true
+  - name: set_key
+    signature: 'def set_key(key: ContextKey[T], value: T) -> Flow[Context, Context]'
+    docstring: "Create a Flow that sets a context key to a specific value.\n\n   \
+      \     Args:\n            key: The context key to set\n            value: The\
+      \ value to set\n\n        Returns:\n            Flow that returns updated context\n\
+      \n        Raises:\n            ContextTypeMismatchError: If value has wrong\
+      \ type"
+    first_line: Create a Flow that sets a context key to a specific value
+    public: true
+  - name: require_key
+    signature: 'def require_key(key: ContextKey[T]) -> Flow[Context, T]'
+    docstring: "Create a Flow that requires a context key to be present and returns\
+      \ its value.\n\n        Args:\n            key: The context key that must be\
+      \ present\n\n        Returns:\n            Flow that returns the key's value\n\
+      \n        Raises:\n            MissingRequiredKeyError: If key is missing\n\
+      \            ContextTypeMismatchError: If value has wrong type"
+    first_line: Create a Flow that requires a context key to be present and returns
+      its value
+    public: true
+  - name: optional_key
+    signature: 'def optional_key(key: ContextKey[T], default: T) -> Flow[Context,
+      T]'
+    docstring: "Create a Flow that gets an optional context key with a default value.\n\
+      \n        Args:\n            key: The context key to get\n            default:\
+      \ Default value if key is missing\n\n        Returns:\n            Flow that\
+      \ returns the key's value or default\n\n        Raises:\n            ContextTypeMismatchError:\
+      \ If value exists but has wrong type"
+    first_line: Create a Flow that gets an optional context key with a default value
+    public: true
+  - name: move_key
+    signature: 'def move_key(source: ContextKey[T], destination: ContextKey[T]) ->
+      Flow[Context, Context]'
+    docstring: "Create a Flow that moves a value from one context key to another.\n\
+      \n        Args:\n            source: The source context key\n            destination:\
+      \ The destination context key\n\n        Returns:\n            Flow that returns\
+      \ updated context with value moved\n\n        Raises:\n            MissingRequiredKeyError:\
+      \ If source key is missing\n            ContextTypeMismatchError: If source\
+      \ value has wrong type"
+    first_line: Create a Flow that moves a value from one context key to another
+    public: true
+  - name: copy_key
+    signature: 'def copy_key(source: ContextKey[T], destination: ContextKey[T]) ->
+      Flow[Context, Context]'
+    docstring: "Create a Flow that copies a value from one context key to another.\n\
+      \n        Args:\n            source: The source context key\n            destination:\
+      \ The destination context key\n\n        Returns:\n            Flow that returns\
+      \ updated context with value copied\n\n        Raises:\n            MissingRequiredKeyError:\
+      \ If source key is missing\n            ContextTypeMismatchError: If source\
+      \ value has wrong type"
+    first_line: Create a Flow that copies a value from one context key to another
+    public: true
+  - name: forget_key
+    signature: 'def forget_key(key: ContextKey[T]) -> Flow[Context, Context]'
+    docstring: "Create a Flow that removes a key from the context.\n\n        Args:\n\
+      \            key: The context key to remove\n\n        Returns:\n          \
+      \  Flow that returns updated context with key removed"
+    first_line: Create a Flow that removes a key from the context
+    public: true
+  - name: require_keys
+    signature: 'def require_keys(*keys: AnyContextKey) -> Flow[Context, Context]'
+    docstring: "Create a Flow that validates multiple required keys are present.\n\
+      \n        Args:\n            keys: The context keys that must be present\n\n\
+      \        Returns:\n            Flow that returns the same context if all keys\
+      \ are present\n\n        Raises:\n            MissingRequiredKeyError: If any\
+      \ key is missing\n            ContextTypeMismatchError: If any value has wrong\
+      \ type"
+    first_line: Create a Flow that validates multiple required keys are present
+    public: true
+  - name: transform_key
+    signature: 'def transform_key(key: ContextKey[T], transform_fn: Callable[[T],
+      R], result_key: ContextKey[R] | None) -> Flow[Context, Context | R]'
+    docstring: "Create a Flow that transforms a context key's value.\n\n        Args:\n\
+      \            key: The context key to transform\n            transform_fn: Function\
+      \ to transform the value\n            result_key: Optional key to store result\
+      \ in context\n\n        Returns:\n            Flow that returns transformed\
+      \ value or updated context\n\n        Raises:\n            MissingRequiredKeyError:\
+      \ If key is missing\n            ContextTypeMismatchError: If value has wrong\
+      \ type"
+    first_line: Create a Flow that transforms a context key's value
+    public: true
   public: true
 - name: ContextFrame
   docstring: A single layer of the context stack, representing local bindings.
   methods:
-  - copy
+  - name: copy
+    signature: def copy(self) -> ContextFrame
+    docstring: Create a copy of this context frame.
+    first_line: Create a copy of this context frame
+    public: true
   public: true
 - name: ContextSnapshot
   docstring: Represents a snapshot of context state at a specific point in time.
   methods:
-  - restore_to
+  - name: restore_to
+    signature: 'def restore_to(self, context: Context) -> None'
+    docstring: "Restore this snapshot to the given context.\n\n        Args:\n   \
+      \         context: The context to restore to"
+    first_line: Restore this snapshot to the given context
+    public: true
   public: true
 - name: ComputedProperty
   docstring: Represents a computed property that automatically updates when its dependencies
     change.
   methods:
-  - compute
-  - invalidate
-  - subscribe
-  - notify_change
+  - name: compute
+    signature: 'def compute(self, context: Context) -> ContextValue'
+    docstring: Compute the property value for the given context.
+    first_line: Compute the property value for the given context
+    public: true
+  - name: invalidate
+    signature: def invalidate(self) -> None
+    docstring: Invalidate the cached value, requiring recomputation.
+    first_line: Invalidate the cached value, requiring recomputation
+    public: true
+  - name: subscribe
+    signature: 'def subscribe(self, context: Context) -> None'
+    docstring: Subscribe a context to this computed property for dependency tracking.
+    first_line: Subscribe a context to this computed property for dependency tracking
+    public: true
+  - name: notify_change
+    signature: def notify_change(self) -> None
+    docstring: Notify all subscribed contexts that this property may have changed.
+    first_line: Notify all subscribed contexts that this property may have changed
+    public: true
   public: true
 - name: Transformation
   docstring: Represents a value transformation applied to context keys.
   methods:
-  - apply
+  - name: apply
+    signature: 'def apply(self, value: ContextValue) -> ContextValue'
+    docstring: Apply the transformation to a value.
+    first_line: Apply the transformation to a value
+    public: true
   public: true
 - name: Context
   docstring: A layered, reactive, symbolic context with scoped access and EventFlow
     integration.
   methods:
-  - get
-  - set
-  - push_layer
-  - pop_layer
-  - fork
-  - fork_with_history
-  - merge
-  - diff
-  - deep_diff
-  - create_snapshot
-  - restore_snapshot
-  - list_snapshots
-  - delete_snapshot
-  - get_change_history
-  - clear_history
-  - get_history_size
-  - set_max_history_size
-  - rollback_to_timestamp
-  - get_snapshots
-  - replay_changes_since
-  - keys
-  - subscribe_sync
-  - subscribe_async
-  - as_flow
-  - global_changes_sync
-  - global_changes_async
-  - global_changes_as_flow
-  - dump
-  - add_computed_property
-  - remove_computed_property
-  - add_transformation
-  - remove_transformations
-  - get_computed_value
-  - is_computed_property
-  - computed_properties
-  - transformations
-  - query
-  - find_keys
-  - find_values
-  - filter_by_type
-  - search
-  - get_nested
-  - set_nested
-  - has_nested
-  - flatten
+  - name: get
+    signature: 'def get(self, key: str, default: T | None) -> T | None'
+    docstring: Get the value for a key, searching through all frames and computed
+      properties.
+    first_line: Get the value for a key, searching through all frames and computed
+      properties
+    public: true
+  - name: set
+    signature: 'def set(self, key: str, value: ContextValue) -> None'
+    docstring: Set a value for a key in the current frame and notify subscribers/emit
+      events.
+    first_line: Set a value for a key in the current frame and notify subscribers/emit
+      events
+    public: true
+  - name: push_layer
+    signature: def push_layer(self) -> None
+    docstring: Push a new layer onto the context stack.
+    first_line: Push a new layer onto the context stack
+    public: true
+  - name: pop_layer
+    signature: def pop_layer(self) -> None
+    docstring: Pop the top layer from the context stack.
+    first_line: Pop the top layer from the context stack
+    public: true
+  - name: fork
+    signature: def fork(self) -> Context
+    docstring: Create a fork of the current context with copies of the frames, computed
+      properties, and transformations.
+    first_line: Create a fork of the current context with copies of the frames, computed
+      properties, and transformations
+    public: true
+  - name: fork_with_history
+    signature: def fork_with_history(self) -> Context
+    docstring: "Create a fork of the current context that includes history and snapshots.\n\
+      \n        Returns:\n            Forked context with preserved history and snapshots"
+    first_line: Create a fork of the current context that includes history and snapshots
+    public: true
+  - name: merge
+    signature: 'def merge(self, other: Context) -> Context'
+    docstring: Merge another context into this one, updating frames.
+    first_line: Merge another context into this one, updating frames
+    public: true
+  - name: diff
+    signature: 'def diff(self, other: Context) -> ContextDiff'
+    docstring: Compute the differences between this context and another.
+    first_line: Compute the differences between this context and another
+    public: true
+  - name: deep_diff
+    signature: 'def deep_diff(self, other: Context, delimiter: str) -> ContextDiff'
+    docstring: "Compute deep differences including nested values.\n\n        Args:\n\
+      \            other: Other context to compare with\n            delimiter: Delimiter\
+      \ for nested paths\n\n        Returns:\n            Dictionary of differences\
+      \ with nested paths as keys"
+    first_line: Compute deep differences including nested values
+    public: true
+  - name: create_snapshot
+    signature: 'def create_snapshot(self, name: str) -> ContextSnapshot'
+    docstring: "Create a snapshot of the current context state.\n\n        Args:\n\
+      \            name: Name/identifier for the snapshot\n\n        Returns:\n  \
+      \          The created snapshot\n\n        Raises:\n            ValueError:\
+      \ If a snapshot with the same name already exists"
+    first_line: Create a snapshot of the current context state
+    public: true
+  - name: restore_snapshot
+    signature: 'def restore_snapshot(self, name: str) -> None'
+    docstring: "Restore the context to a previous snapshot state.\n\n        Args:\n\
+      \            name: Name of the snapshot to restore\n\n        Raises:\n    \
+      \        KeyError: If snapshot with the given name doesn't exist"
+    first_line: Restore the context to a previous snapshot state
+    public: true
+  - name: list_snapshots
+    signature: def list_snapshots(self) -> dict[str, float]
+    docstring: "List all available snapshots with their timestamps.\n\n        Returns:\n\
+      \            Dictionary mapping snapshot names to their timestamps"
+    first_line: List all available snapshots with their timestamps
+    public: true
+  - name: delete_snapshot
+    signature: 'def delete_snapshot(self, name: str) -> None'
+    docstring: "Delete a snapshot.\n\n        Args:\n            name: Name of the\
+      \ snapshot to delete\n\n        Raises:\n            KeyError: If snapshot with\
+      \ the given name doesn't exist"
+    first_line: Delete a snapshot
+    public: true
+  - name: get_change_history
+    signature: 'def get_change_history(self, limit: int | None, since: float | None)
+      -> list[ContextChangeEvent]'
+    docstring: "Get the change history for this context.\n\n        Args:\n      \
+      \      limit: Maximum number of events to return (most recent first)\n     \
+      \       since: Only return events after this timestamp\n\n        Returns:\n\
+      \            List of change events"
+    first_line: Get the change history for this context
+    public: true
+  - name: clear_history
+    signature: def clear_history(self) -> None
+    docstring: Clear the change history.
+    first_line: Clear the change history
+    public: true
+  - name: get_history_size
+    signature: def get_history_size(self) -> int
+    docstring: Get the current size of the change history.
+    first_line: Get the current size of the change history
+    public: true
+  - name: set_max_history_size
+    signature: 'def set_max_history_size(self, size: int) -> None'
+    docstring: "Set the maximum history size.\n\n        Args:\n            size:\
+      \ Maximum number of change events to keep"
+    first_line: Set the maximum history size
+    public: true
+  - name: rollback_to_timestamp
+    signature: 'def rollback_to_timestamp(self, timestamp: float) -> None'
+    docstring: "Rollback context to state at a specific timestamp.\n\n        This\
+      \ creates a snapshot of the current state first, then attempts to\n        reconstruct\
+      \ the context state at the given timestamp by replaying history.\n\n       \
+      \ Args:\n            timestamp: Target timestamp to rollback to\n\n        Raises:\n\
+      \            ValueError: If timestamp is in the future or no history available"
+    first_line: Rollback context to state at a specific timestamp
+    public: true
+  - name: get_snapshots
+    signature: def get_snapshots(self) -> dict[str, ContextSnapshot]
+    docstring: "Get all snapshots (returns a copy).\n\n        Returns:\n        \
+      \    Dictionary of snapshot names to snapshot objects"
+    first_line: Get all snapshots (returns a copy)
+    public: true
+  - name: replay_changes_since
+    signature: 'def replay_changes_since(self, timestamp: float) -> list[ContextChangeEvent]'
+    docstring: "Get all changes that occurred since a specific timestamp.\n\n    \
+      \    Args:\n            timestamp: Timestamp to get changes since\n\n      \
+      \  Returns:\n            List of change events in chronological order"
+    first_line: Get all changes that occurred since a specific timestamp
+    public: true
+  - name: keys
+    signature: def keys(self) -> Iterator[str]
+    docstring: Yield all unique keys from the context, including computed properties.
+    first_line: Yield all unique keys from the context, including computed properties
+    public: true
+  - name: subscribe_sync
+    signature: 'def subscribe_sync(self, key: str) -> SyncEventFlow[ContextValue]'
+    docstring: "Get a synchronous EventFlow for changes to a specific key.\n\n   \
+      \     Args:\n            key: The context key to watch for changes\n\n     \
+      \   Returns:\n            SyncEventFlow that emits new values when the key changes"
+    first_line: Get a synchronous EventFlow for changes to a specific key
+    public: true
+  - name: subscribe_async
+    signature: 'def subscribe_async(self, key: str) -> AsyncEventFlow[ContextValue]'
+    docstring: "Get an asynchronous EventFlow for changes to a specific key.\n\n \
+      \       Args:\n            key: The context key to watch for changes\n\n   \
+      \     Returns:\n            AsyncEventFlow that emits new values when the key\
+      \ changes"
+    first_line: Get an asynchronous EventFlow for changes to a specific key
+    public: true
+  - name: as_flow
+    signature: 'def as_flow(self, key: str, use_async: bool) -> Flow[None, Any]'
+    docstring: "Convert context key changes to a Flow stream.\n\n        Args:\n \
+      \           key: The context key to watch for changes\n            use_async:\
+      \ Whether to use async or sync event flow\n\n        Returns:\n            Flow\
+      \ that yields new values when the key changes"
+    first_line: Convert context key changes to a Flow stream
+    public: true
+  - name: global_changes_sync
+    signature: def global_changes_sync(self) -> SyncGlobalEventFlow
+    docstring: "Get a synchronous EventFlow for all context changes.\n\n        Returns:\n\
+      \            SyncEventFlow that emits change data for any key modification"
+    first_line: Get a synchronous EventFlow for all context changes
+    public: true
+  - name: global_changes_async
+    signature: def global_changes_async(self) -> AsyncGlobalEventFlow
+    docstring: "Get an asynchronous EventFlow for all context changes.\n\n       \
+      \ Returns:\n            AsyncEventFlow that emits change data for any key modification"
+    first_line: Get an asynchronous EventFlow for all context changes
+    public: true
+  - name: global_changes_as_flow
+    signature: 'def global_changes_as_flow(self, use_async: bool) -> Flow[None, GlobalChangeData]'
+    docstring: "Convert all context changes to a Flow stream.\n\n        Args:\n \
+      \           use_async: Whether to use async or sync event flow\n\n        Returns:\n\
+      \            Flow that yields change data for any key modification"
+    first_line: Convert all context changes to a Flow stream
+    public: true
+  - name: dump
+    signature: def dump(self) -> str
+    docstring: Dump the context as a JSON string, merging all frames.
+    first_line: Dump the context as a JSON string, merging all frames
+    public: true
+  - name: add_computed_property
+    signature: 'def add_computed_property(self, key: str, func: ComputedFunction,
+      dependencies: list[str] | None) -> None'
+    docstring: "Add a computed property to the context.\n\n        Args:\n       \
+      \     key: The key where the computed value will be accessible\n           \
+      \ func: Function that computes the value, takes Context as parameter\n     \
+      \       dependencies: List of context keys this property depends on"
+    first_line: Add a computed property to the context
+    public: true
+  - name: remove_computed_property
+    signature: 'def remove_computed_property(self, key: str) -> None'
+    docstring: Remove a computed property from the context.
+    first_line: Remove a computed property from the context
+    public: true
+  - name: add_transformation
+    signature: 'def add_transformation(self, key: str, func: TransformFunction) ->
+      None'
+    docstring: "Add a value transformation for a specific key.\n\n        Args:\n\
+      \            key: The context key to apply transformation to\n            func:\
+      \ Function that transforms the value"
+    first_line: Add a value transformation for a specific key
+    public: true
+  - name: remove_transformations
+    signature: 'def remove_transformations(self, key: str) -> None'
+    docstring: Remove all transformations for a specific key.
+    first_line: Remove all transformations for a specific key
+    public: true
+  - name: get_computed_value
+    signature: 'def get_computed_value(self, key: str) -> ContextValue'
+    docstring: "Get the value of a computed property.\n\n        Args:\n         \
+      \   key: The computed property key\n\n        Returns:\n            The computed\
+      \ value\n\n        Raises:\n            KeyError: If the key is not a computed\
+      \ property"
+    first_line: Get the value of a computed property
+    public: true
+  - name: is_computed_property
+    signature: 'def is_computed_property(self, key: str) -> bool'
+    docstring: Check if a key represents a computed property.
+    first_line: Check if a key represents a computed property
+    public: true
+  - name: computed_properties
+    signature: def computed_properties(self) -> dict[str, ComputedProperty]
+    docstring: Get all computed properties in this context.
+    first_line: Get all computed properties in this context
+    public: true
+  - name: transformations
+    signature: def transformations(self) -> dict[str, list[Transformation]]
+    docstring: Get all transformations in this context.
+    first_line: Get all transformations in this context
+    public: true
+  - name: query
+    signature: 'def query(self, pattern: str | None, key_filter: Callable[[str], bool]
+      | None, value_filter: ValuePredicate | None, include_computed: bool) -> ContextData'
+    docstring: "Query context data with various filtering options.\n\n        Args:\n\
+      \            pattern: Regex pattern to match against keys\n            key_filter:\
+      \ Function to filter keys\n            value_filter: Function to filter values\n\
+      \            include_computed: Whether to include computed properties in results\n\
+      \n        Returns:\n            Dictionary of filtered key-value pairs"
+    first_line: Query context data with various filtering options
+    public: true
+  - name: find_keys
+    signature: 'def find_keys(self, pattern: str) -> list[str]'
+    docstring: "Find all keys matching a regex pattern.\n\n        Args:\n       \
+      \     pattern: Regex pattern to match against keys\n\n        Returns:\n   \
+      \         List of matching keys"
+    first_line: Find all keys matching a regex pattern
+    public: true
+  - name: find_values
+    signature: 'def find_values(self, predicate: ValuePredicate) -> ContextData'
+    docstring: "Find all key-value pairs where the value matches a predicate.\n\n\
+      \        Args:\n            predicate: Function that returns True for matching\
+      \ values\n\n        Returns:\n            Dictionary of matching key-value pairs"
+    first_line: Find all key-value pairs where the value matches a predicate
+    public: true
+  - name: filter_by_type
+    signature: 'def filter_by_type(self, value_type: type) -> ContextData'
+    docstring: "Filter context entries by value type.\n\n        Args:\n         \
+      \   value_type: Type to filter by\n\n        Returns:\n            Dictionary\
+      \ of entries with values of the specified type"
+    first_line: Filter context entries by value type
+    public: true
+  - name: search
+    signature: 'def search(self, search_term: str, case_sensitive: bool) -> ContextData'
+    docstring: "Search for keys or values containing a term.\n\n        Args:\n  \
+      \          search_term: Term to search for\n            case_sensitive: Whether\
+      \ search should be case sensitive\n\n        Returns:\n            Dictionary\
+      \ of matching key-value pairs"
+    first_line: Search for keys or values containing a term
+    public: true
+  - name: get_nested
+    signature: 'def get_nested(self, path: str, delimiter: str) -> ContextValue'
+    docstring: "Get a nested value using dot notation or custom delimiter.\n\n   \
+      \     Args:\n            path: Dot-separated path to the value (e.g., \"user.profile.name\"\
+      )\n            delimiter: Path delimiter (default: \".\")\n\n        Returns:\n\
+      \            The nested value\n\n        Raises:\n            KeyError: If any\
+      \ part of the path is not found"
+    first_line: Get a nested value using dot notation or custom delimiter
+    public: true
+  - name: set_nested
+    signature: 'def set_nested(self, path: str, value: ContextValue, delimiter: str,
+      create_missing: bool) -> None'
+    docstring: "Set a nested value using dot notation or custom delimiter.\n\n   \
+      \     Args:\n            path: Dot-separated path to set (e.g., \"user.profile.name\"\
+      )\n            value: Value to set\n            delimiter: Path delimiter (default:\
+      \ \".\")\n            create_missing: Whether to create missing intermediate\
+      \ dictionaries"
+    first_line: Set a nested value using dot notation or custom delimiter
+    public: true
+  - name: has_nested
+    signature: 'def has_nested(self, path: str, delimiter: str) -> bool'
+    docstring: "Check if a nested path exists.\n\n        Args:\n            path:\
+      \ Dot-separated path to check\n            delimiter: Path delimiter (default:\
+      \ \".\")\n\n        Returns:\n            True if path exists, False otherwise"
+    first_line: Check if a nested path exists
+    public: true
+  - name: flatten
+    signature: 'def flatten(self, delimiter: str, max_depth: int | None) -> FlattenedData'
+    docstring: "Flatten nested dictionaries into dot-separated keys.\n\n        Args:\n\
+      \            delimiter: Delimiter to use for flattened keys\n            max_depth:\
+      \ Maximum depth to flatten (None for unlimited)\n\n        Returns:\n      \
+      \      Flattened dictionary"
+    first_line: Flatten nested dictionaries into dot-separated keys
+    public: true
   public: true
 - name: ContextChangeEvent
   docstring: Represents a single change event in context history.
@@ -232,14 +695,61 @@ classes:
 - name: HistoryTracker
   docstring: Tracks change history for Context objects.
   methods:
-  - record_change
-  - get_history
-  - clear_history
-  - get_history_size
-  - set_max_history_size
-  - replay_changes_since
-  - get_changes_to_reverse
-  - get_all_history
+  - name: record_change
+    signature: 'def record_change(self, key: str, old_value: TrackedValue, new_value:
+      TrackedValue, context_id: int) -> None'
+    docstring: "Record a change event in the history.\n\n        Args:\n         \
+      \   key: The key that changed\n            old_value: Previous value\n     \
+      \       new_value: New value\n            context_id: ID of the context that\
+      \ changed"
+    first_line: Record a change event in the history
+    public: true
+  - name: get_history
+    signature: 'def get_history(self, limit: int | None, since: float | None) -> list[ContextChangeEvent]'
+    docstring: "Get the change history.\n\n        Args:\n            limit: Maximum\
+      \ number of events to return (most recent first)\n            since: Only return\
+      \ events after this timestamp\n\n        Returns:\n            List of change\
+      \ events"
+    first_line: Get the change history
+    public: true
+  - name: clear_history
+    signature: def clear_history(self) -> None
+    docstring: Clear the change history.
+    first_line: Clear the change history
+    public: true
+  - name: get_history_size
+    signature: def get_history_size(self) -> int
+    docstring: Get the current size of the change history.
+    first_line: Get the current size of the change history
+    public: true
+  - name: set_max_history_size
+    signature: 'def set_max_history_size(self, size: int) -> None'
+    docstring: "Set the maximum history size.\n\n        Args:\n            size:\
+      \ Maximum number of change events to keep\n\n        Raises:\n            ValueError:\
+      \ If size is negative"
+    first_line: Set the maximum history size
+    public: true
+  - name: replay_changes_since
+    signature: 'def replay_changes_since(self, timestamp: float) -> list[ContextChangeEvent]'
+    docstring: "Get all changes that occurred since a specific timestamp.\n\n    \
+      \    Args:\n            timestamp: Timestamp to get changes since\n\n      \
+      \  Returns:\n            List of change events in chronological order"
+    first_line: Get all changes that occurred since a specific timestamp
+    public: true
+  - name: get_changes_to_reverse
+    signature: 'def get_changes_to_reverse(self, timestamp: float) -> list[ContextChangeEvent]'
+    docstring: "Get changes that need to be reversed for rollback to a timestamp.\n\
+      \n        Args:\n            timestamp: Target timestamp to rollback to\n\n\
+      \        Returns:\n            List of change events in reverse chronological\
+      \ order (most recent first)"
+    first_line: Get changes that need to be reversed for rollback to a timestamp
+    public: true
+  - name: get_all_history
+    signature: def get_all_history(self) -> list[ContextChangeEvent]
+    docstring: "Get all history without filtering or reversing.\n\n        Returns:\n\
+      \            List of all change events in chronological order"
+    first_line: Get all history without filtering or reversing
+    public: true
   public: true
 functions:
 - name: context_key

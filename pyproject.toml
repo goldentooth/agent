@@ -278,6 +278,13 @@ ignore = [
     "E731",    # lambda assignment (useful for test helpers)
     "UP038",   # old-style isinstance (not critical in tests)
     "RUF100",  # unused noqa (test code can be messy)
+    "S101",    # assert statements (tests use asserts)
+    "S106",    # hardcoded passwords (test data can be hardcoded)
+    "S608",    # SQL injection (tests often use hardcoded SQL)
+    "PLR0913", # too many arguments (test functions often need many fixtures)
+    "PLR0915", # too many statements (test functions can be long)
+    "B904",    # exception chaining (not always needed in tests)
+    "F401",    # unused imports (tests often import for side effects)
 ]
 # Also relax standards for example scripts and test scripts in root
 "test_*.py" = ["E402", "F841", "B007"]

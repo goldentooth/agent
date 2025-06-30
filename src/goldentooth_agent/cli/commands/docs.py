@@ -24,7 +24,7 @@ def list_documents(
     limit: int | None = typer.Option(
         None, "--limit", "-l", help="Limit number of results"
     ),
-):
+) -> None:
     """List all documents in the knowledge base."""
 
     @inject
@@ -103,7 +103,7 @@ def show_document(
     ),
     document_id: str = typer.Argument(..., help="Document ID"),
     raw: bool = typer.Option(False, "--raw", help="Show raw YAML content"),
-):
+) -> None:
     """Show details of a specific document."""
 
     @inject
@@ -301,7 +301,7 @@ def show_document_chunks(
     show_content: bool = typer.Option(
         False, "--content", help="Show full content of each chunk"
     ),
-):
+) -> None:
     """Show chunk information for a specific document."""
 
     @inject
@@ -391,7 +391,7 @@ def show_document_chunks(
 def manage_sidecar_files(
     action: str = typer.Argument(..., help="Action: sync, status, or clean"),
     show_paths: bool = typer.Option(False, "--paths", help="Show file paths"),
-):
+) -> None:
     """Manage .emb.gz sidecar embedding files."""
 
     @inject
@@ -484,7 +484,7 @@ def embed_documents(
     use_chunks: bool = typer.Option(
         True, "--chunks/--no-chunks", help="Use intelligent chunking for documents"
     ),
-):
+) -> None:
     """Embed documents into the vector store for RAG."""
 
     @inject
@@ -664,7 +664,7 @@ def search_documents(
     store_type: str | None = typer.Option(
         None, "--type", "-t", help="Filter by store type"
     ),
-):
+) -> None:
     """Search documents using semantic similarity."""
 
     @inject
@@ -748,7 +748,7 @@ def search_chunks_by_type(
     store_type: str | None = typer.Option(
         None, "--type", "-t", help="Filter by store type"
     ),
-):
+) -> None:
     """Search for chunks of specific types, optionally with semantic similarity."""
 
     @inject
@@ -832,7 +832,7 @@ def show_chunk_summary(
     show_previews: bool = typer.Option(
         False, "--previews", help="Show content previews for each chunk"
     ),
-):
+) -> None:
     """Get a detailed summary of all chunks for a specific document."""
 
     @inject
@@ -949,7 +949,7 @@ def ask_question(
         "--prioritize-chunks",
         help="Prioritize chunks over full documents in ranking",
     ),
-):
+) -> None:
     """Ask a question and get an AI-powered answer using RAG."""
 
     @inject
@@ -1050,7 +1050,7 @@ def summarize_knowledge_base(
         None, "--type", "-t", help="Summarize specific store type"
     ),
     max_docs: int = typer.Option(20, "--max-docs", help="Maximum documents to analyze"),
-):
+) -> None:
     """Generate an AI summary of the knowledge base contents."""
 
     @inject
@@ -1097,7 +1097,7 @@ def get_document_insights(
         ..., help="Store type (e.g., github.repos, notes)"
     ),
     document_id: str = typer.Argument(..., help="Document ID"),
-):
+) -> None:
     """Get AI-generated insights about a specific document."""
 
     @inject

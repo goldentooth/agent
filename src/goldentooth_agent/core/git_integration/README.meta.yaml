@@ -28,7 +28,29 @@ classes:
 - name: GitDataSync
   docstring: Service for syncing knowledge base data to a Git repository.
   methods:
-  - setup_git_repository
-  - sync_to_git
-  - get_git_status
+  - name: setup_git_repository
+    signature: 'def setup_git_repository(self, repo_path: Path, remote_url: str |
+      None) -> dict[str, Any]'
+    docstring: "Set up a Git repository for knowledge base data.\n\n        Args:\n\
+      \            repo_path: Path where the Git repository should be created\n  \
+      \          remote_url: Optional remote repository URL\n\n        Returns:\n\
+      \            Dictionary with setup results"
+    first_line: Set up a Git repository for knowledge base data
+    public: true
+  - name: sync_to_git
+    signature: 'def sync_to_git(self, repo_path: Path, commit_message: str | None,
+      push_to_remote: bool) -> dict[str, Any]'
+    docstring: "Sync current knowledge base data to Git repository.\n\n        Args:\n\
+      \            repo_path: Path to the Git repository\n            commit_message:\
+      \ Custom commit message\n            push_to_remote: Whether to push to remote\
+      \ repository\n\n        Returns:\n            Dictionary with sync results"
+    first_line: Sync current knowledge base data to Git repository
+    public: true
+  - name: get_git_status
+    signature: 'def get_git_status(self, repo_path: Path) -> dict[str, Any]'
+    docstring: "Get Git repository status.\n\n        Args:\n            repo_path:\
+      \ Path to Git repository\n\n        Returns:\n            Dictionary with Git\
+      \ status information"
+    first_line: Get Git repository status
+    public: true
   public: true

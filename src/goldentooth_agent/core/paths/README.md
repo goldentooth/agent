@@ -18,15 +18,15 @@ Paths module
 A class to manage user-specific paths for configuration and data storage.
 
 **Public Methods:**
-- `config()`
-- `data()`
-- `cache()`
-- `logs()`
-- `runtime()`
-- `get_subdir()`
-- `ensure_file()`
-- `app_info()`
-- `clear_cache()`
+- `config(self) -> Path` - Get the user configuration directory, creating it if it doesn't exist
+- `data(self) -> Path` - Get the user data directory, creating it if it doesn't exist
+- `cache(self) -> Path` - Get the user cache directory, creating it if it doesn't exist
+- `logs(self) -> Path` - Get the user logs directory, creating it if it doesn't exist
+- `runtime(self) -> Path` - Get the user runtime directory, creating it if it doesn't exist
+- `get_subdir(self, parent: str, subdir: str) -> Path` - Get a subdirectory within one of the standard directories
+- `ensure_file(self, parent: str, filename: str, default_content: str) -> Path` - Ensure a file exists with default content if it doesn't
+- `app_info(self) -> dict[str, str]` - Get application information
+- `clear_cache(self) -> int` - Clear all files in the cache directory
 
 ### Functions
 
