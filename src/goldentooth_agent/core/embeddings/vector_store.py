@@ -843,7 +843,7 @@ class VectorStore:
             {where_clause}
             ORDER BY distance
             LIMIT ?
-        """,
+        """,  # nosec B608 - where_clause built from safe parameterized conditions
             params,
         )
 
@@ -910,7 +910,7 @@ class VectorStore:
                    chunk_id, is_chunk
             FROM embeddings_fallback
             {where_clause}
-        """,
+        """,  # nosec B608 - where_clause built from safe parameterized conditions
             params,
         )
 

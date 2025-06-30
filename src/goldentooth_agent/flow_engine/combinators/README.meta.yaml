@@ -2,7 +2,7 @@ module_name: Combinators
 description: Combinators module
 complexity: High
 file_count: 9
-loc: ~1535
+loc: ~1608
 test_coverage: Medium
 class_count: 4
 function_count: 66
@@ -43,6 +43,7 @@ symbols:
 - Output
 - STREAM_END
 - StreamNotification
+- __all__
 - batch_stream
 - branch_flows
 - buffer_stream

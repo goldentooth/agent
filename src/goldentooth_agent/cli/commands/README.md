@@ -6,9 +6,9 @@ Commands module
 
 - **Complexity**: Critical
 - **Files**: 15 Python files
-- **Lines of Code**: ~5315
+- **Lines of Code**: ~5375
 - **Classes**: 8
-- **Functions**: 123
+- **Functions**: 124
 
 ## API Reference
 
@@ -300,6 +300,9 @@ Validate README.meta.yaml files against actual module content.
 
 #### `def generate_readme(module_path: Annotated[str | None, typer.Argument(help='Path to the module directory (optional - generates all if not provided)')], project_root: Annotated[str | None, typer.Option('--root', '-r', help='Project root directory (defaults to current, used when generating all)')]) -> None`
 Generate README.md from README.meta.yaml for a specific module or all modules.
+
+#### `def generate_readme_for_commit(project_root: Annotated[str | None, typer.Option('--root', '-r', help='Project root directory (defaults to current)')]) -> None`
+Generate README.md files for modules with staged changes (pre-commit hook).
 
 #### `def check_readme_freshness(project_root: Annotated[str | None, typer.Option('--root', '-r', help='Project root directory (defaults to current)')], staged_only: Annotated[bool, typer.Option('--staged-only', '-s', help='Only check modules with staged changes')]) -> None`
 Check that README.md files are newer than their README.meta.yaml files.

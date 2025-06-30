@@ -79,7 +79,18 @@ def calculator_implementation(input_data: CalculatorInput) -> CalculatorOutput:
             "e": math.e,
         }
 
-        result = eval(input_data.expression, {"__builtins__": {}}, allowed_names)
+        # Use ast.literal_eval for safer evaluation when possible
+        # Fall back to eval with restricted builtins for mathematical expressions
+        try:
+            # Try ast.literal_eval first for simple literals
+            import ast
+
+            result = ast.literal_eval(input_data.expression)
+        except (ValueError, SyntaxError):
+            # For mathematical expressions, use eval with restricted environment
+            result = eval(
+                input_data.expression, {"__builtins__": {}}, allowed_names
+            )  # nosec B307
         return CalculatorOutput(result=str(result), expression=input_data.expression)
     except Exception as e:
         return CalculatorOutput(

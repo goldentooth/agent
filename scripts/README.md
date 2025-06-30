@@ -6,7 +6,7 @@ Scripts module
 
 - **Complexity**: High
 - **Files**: 7 Python files
-- **Lines of Code**: ~1098
+- **Lines of Code**: ~1100
 - **Classes**: 0
 - **Functions**: 18
 

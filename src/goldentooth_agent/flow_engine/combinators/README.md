@@ -6,7 +6,7 @@ Combinators module
 
 - **Complexity**: High
 - **Files**: 9 Python files
-- **Lines of Code**: ~1535
+- **Lines of Code**: ~1608
 - **Classes**: 4
 - **Functions**: 66
 

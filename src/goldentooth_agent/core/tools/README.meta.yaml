@@ -2,7 +2,7 @@ module_name: Tools
 description: Tools module
 complexity: Critical
 file_count: 9
-loc: ~2932
+loc: ~2936
 test_coverage: Medium
 class_count: 36
 function_count: 102

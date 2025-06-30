@@ -2,7 +2,7 @@ module_name: Scripts
 description: Scripts module
 complexity: High
 file_count: 7
-loc: ~1098
+loc: ~1100
 test_coverage: Medium
 class_count: 0
 function_count: 18

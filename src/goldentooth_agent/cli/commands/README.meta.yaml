@@ -2,10 +2,10 @@ module_name: Commands
 description: Commands module
 complexity: Critical
 file_count: 15
-loc: ~5315
+loc: ~5375
 test_coverage: Medium
 class_count: 8
-function_count: 123
+function_count: 124
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies:
@@ -102,6 +102,7 @@ symbols:
 - export_context
 - export_context_as_json
 - generate_readme
+- generate_readme_for_commit
 - get_agent_description
 - get_agent_metadata
 - get_available_agents
@@ -670,6 +671,12 @@ functions:
     (defaults to current, used when generating all)'')]) -> None'
   docstring: Generate README.md from README.meta.yaml for a specific module or all
     modules.
+  public: true
+- name: generate_readme_for_commit
+  signature: 'def generate_readme_for_commit(project_root: Annotated[str | None, typer.Option(''--root'',
+    ''-r'', help=''Project root directory (defaults to current)'')]) -> None'
+  docstring: Generate README.md files for modules with staged changes (pre-commit
+    hook).
   public: true
 - name: check_readme_freshness
   signature: 'def check_readme_freshness(project_root: Annotated[str | None, typer.Option(''--root'',

@@ -41,15 +41,19 @@ async def get_http_client(pool_name: str = "default") -> httpx.AsyncClient:
             pool_config = _pool_configs.get(pool_name, _default_pool_config)
 
             # Create client with pool-specific settings
-            _http_clients[pool_name] = httpx.AsyncClient(
-                timeout=pool_config["timeout"],
-                limits=httpx.Limits(
-                    max_keepalive_connections=pool_config["max_keepalive_connections"],
-                    max_connections=pool_config["max_connections"],
-                    keepalive_expiry=pool_config["keepalive_expiry"],
-                ),
-                follow_redirects=True,
-                # Note: http2=True requires h2 package, disabled for now
+            _http_clients[pool_name] = (
+                httpx.AsyncClient(  # nosec B113 - timeout is explicitly set
+                    timeout=pool_config["timeout"],
+                    limits=httpx.Limits(
+                        max_keepalive_connections=pool_config[
+                            "max_keepalive_connections"
+                        ],
+                        max_connections=pool_config["max_connections"],
+                        keepalive_expiry=pool_config["keepalive_expiry"],
+                    ),
+                    follow_redirects=True,
+                    # Note: http2=True requires h2 package, disabled for now
+                )
             )
 
     return _http_clients[pool_name]

@@ -371,7 +371,10 @@ def run_pipeline(
             if pipeline_name == "web_analysis":
                 input_dict = {"url": "https://httpbin.org/html"}
             elif pipeline_name == "system_monitor":
-                input_dict = {"output_file": "/tmp/system_info.json"}
+                import tempfile
+
+                temp_dir = tempfile.gettempdir()
+                input_dict = {"output_file": f"{temp_dir}/system_info.json"}
             else:
                 input_dict = {}
 

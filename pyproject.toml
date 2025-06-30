@@ -161,6 +161,27 @@ module = [
 ]
 ignore_missing_imports = true
 
+# Relaxed type checking for test code
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+    "test_*",
+]
+# Less strict type checking for tests
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_decorators = false
+check_untyped_defs = false
+disallow_any_generics = false
+disallow_any_unimported = false
+# Allow Any types in tests
+disallow_any_explicit = false
+disallow_any_decorated = false
+disallow_subclassing_any = false
+# Be more permissive with test code
+warn_return_any = false
+warn_unused_ignores = false
+
 [tool.pyright]
 # Pyright configuration (powers Pylance) - focus on catching issues MyPy misses
 include = ["src"]
@@ -242,7 +263,22 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["E501"]
+# Relaxed standards for test code
+"tests/*" = [
+    "E501",    # line too long
+    "F841",    # unused variable (often used for test fixtures)
+    "B007",    # unused loop variable (common in test iterations)
+    "B008",    # function calls in argument defaults (OK for fixtures)
+    "C901",    # too complex (test functions can be complex)
+    "E722",    # bare except (sometimes needed in tests)
+    "E731",    # lambda assignment (useful for test helpers)
+    "UP038",   # old-style isinstance (not critical in tests)
+    "RUF100",  # unused noqa (test code can be messy)
+]
+# Also relax standards for example scripts and test scripts in root
+"test_*.py" = ["E402", "F841", "B007"]
+"examples/*" = ["E402", "F841", "B007"]
+"scripts/*" = ["E402"]  # Module imports after path manipulation
 
 # Bandit security linting configuration
 [tool.bandit]

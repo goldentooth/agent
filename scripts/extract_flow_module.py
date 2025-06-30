@@ -260,7 +260,7 @@ def extract_module(source_module: str, target_package: str):
 
     # Step 5: Move tests to match new structure
     print("📋 Moving tests...")
-    tests_moved = move_tests(source_module, target_package)
+    move_tests(source_module, target_package)
 
     # Step 6: Test the extraction
     print("🧪 Testing extraction...")

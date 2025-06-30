@@ -457,7 +457,7 @@ class ModuleMetadataGenerator:
             # Fall back to all modules if git command fails
             return self._find_module_directories(project_root)
 
-        return sorted(list(changed_modules))
+        return sorted(changed_modules)
 
     def _get_staged_python_modules(self, project_root: Path) -> list[Path]:
         """Get Python modules with staged changes."""
@@ -492,7 +492,7 @@ class ModuleMetadataGenerator:
         except subprocess.CalledProcessError:
             return []
 
-        return sorted(list(staged_modules))
+        return sorted(staged_modules)
 
     def _find_module_directory_for_file(self, file_path: Path) -> Path | None:
         """Find the most specific module directory that contains the given Python file."""
@@ -684,7 +684,7 @@ class ModuleMetadataGenerator:
         type_aliases = set()
         internal_deps = set()
         external_deps = set()
-        re_exported_symbols = set()  # Symbols imported and re-exported
+        # Note: re-exported symbols tracking removed as unused
 
         # Enhanced symbol information
         detailed_classes: list[SymbolInfo] = []
@@ -692,7 +692,7 @@ class ModuleMetadataGenerator:
         detailed_constants: list[SymbolInfo] = []
 
         # First pass: collect all module-level definitions and imports
-        module_level_nodes = [node for node in tree.body]
+        module_level_nodes = list(tree.body)
         imported_names = set()  # Track what we import for re-export detection
 
         for node in module_level_nodes:
@@ -714,7 +714,7 @@ class ModuleMetadataGenerator:
 
                 # Also count methods within classes as functions
                 for class_node in node.body:
-                    if isinstance(class_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    if isinstance(class_node, ast.FunctionDef | ast.AsyncFunctionDef):
                         # Don't add to defined_symbols as these aren't module-level
                         # but do count them as functions for metrics
                         functions.add(f"{node.name}.{class_node.name}")
@@ -767,7 +767,7 @@ class ModuleMetadataGenerator:
                                     constant_value = repr(node.value.s)
                                 elif isinstance(node.value, ast.Num):  # Python < 3.8
                                     constant_value = repr(node.value.n)
-                            except:
+                            except Exception:
                                 constant_value = (
                                     ast.unparse(node.value)
                                     if hasattr(ast, "unparse")
@@ -853,7 +853,7 @@ class ModuleMetadataGenerator:
     def _is_type_alias_assignment(self, node: ast.Assign) -> bool:
         """Check if an assignment is likely a type alias."""
         if not isinstance(
-            node.value, (ast.Name, ast.Subscript, ast.Attribute, ast.Constant)
+            node.value, ast.Name | ast.Subscript | ast.Attribute | ast.Constant
         ):
             return False
 
@@ -869,7 +869,7 @@ class ModuleMetadataGenerator:
     def _extract_docstring(self, node: ast.AST) -> str:
         """Extract docstring from an AST node."""
         if (
-            isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+            isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef)
             and node.body
             and isinstance(node.body[0], ast.Expr)
             and isinstance(node.body[0].value, ast.Constant)
@@ -917,7 +917,7 @@ class ModuleMetadataGenerator:
         """Get list of public methods from a class definition."""
         methods = []
         for item in node.body:
-            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if isinstance(item, ast.FunctionDef | ast.AsyncFunctionDef):
                 if not item.name.startswith("_"):  # Only public methods
                     methods.append(item.name)
         return methods
@@ -976,7 +976,7 @@ class ModuleMetadataGenerator:
 
                 # Module-level definitions are also implicit exports
                 elif isinstance(
-                    node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+                    node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef
                 ):
                     if not node.name.startswith("_"):  # Don't include private symbols
                         exports.add(node.name)

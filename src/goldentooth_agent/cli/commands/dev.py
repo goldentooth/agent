@@ -71,7 +71,7 @@ def update_module_metadata(
 
         except Exception as e:
             typer.echo(f"Error updating metadata: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()
 
@@ -126,7 +126,7 @@ def update_all_modules(
 
         except Exception as e:
             typer.echo(f"Error updating modules: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()
 
@@ -201,7 +201,7 @@ def update_changed_modules(
 
         except Exception as e:
             typer.echo(f"Error updating changed modules: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()
 
@@ -246,7 +246,7 @@ def pre_commit_update(
 
         except Exception as e:
             typer.echo(f"Error updating metadata for pre-commit: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()
 
@@ -286,7 +286,7 @@ def validate_for_commit(
 
         except Exception as e:
             typer.echo(f"Error validating metadata for commit: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()
 
@@ -339,7 +339,7 @@ def check_metadata_freshness(
 
         except Exception as e:
             typer.echo(f"Error checking metadata freshness: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()
 
@@ -384,7 +384,7 @@ def check_freshness_for_commit(
 
         except Exception as e:
             typer.echo(f"Error checking metadata freshness for commit: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()
 
@@ -452,7 +452,7 @@ def validate_metadata(
                 typer.echo(f"✓ {path} metadata is valid")
         except Exception as e:
             typer.echo(f"Error validating {path}: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
     else:
         # Validate all modules
         root = Path(project_root or ".").resolve()
@@ -471,7 +471,7 @@ def validate_metadata(
 
         except Exception as e:
             typer.echo(f"Error during validation: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
 
 @module_app.command("generate-readme")
@@ -520,7 +520,7 @@ def generate_readme(
 
             except Exception as e:
                 typer.echo(f"Error generating README: {e}", err=True)
-                raise typer.Exit(1)
+                raise typer.Exit(1) from e
         else:
             # Generate for all modules
             root = Path(project_root or ".").resolve()
@@ -540,7 +540,7 @@ def generate_readme(
 
             except Exception as e:
                 typer.echo(f"Error generating README files: {e}", err=True)
-                raise typer.Exit(1)
+                raise typer.Exit(1) from e
 
     handle()
 
@@ -592,7 +592,7 @@ def generate_readme_for_commit(
 
         except Exception as e:
             typer.echo(f"Error generating README files for commit: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()
 
@@ -645,7 +645,7 @@ def check_readme_freshness(
 
         except Exception as e:
             typer.echo(f"Error checking README freshness: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()
 
@@ -690,6 +690,6 @@ def check_readme_freshness_for_commit(
 
         except Exception as e:
             typer.echo(f"Error checking README freshness for commit: {e}", err=True)
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
     handle()

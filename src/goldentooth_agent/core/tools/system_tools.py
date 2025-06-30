@@ -87,7 +87,7 @@ async def process_execute_implementation(
             process = (
                 await asyncio.create_subprocess_exec(
                     *cmd if not input_data.shell else [],
-                    shell=input_data.shell,
+                    shell=input_data.shell,  # nosec B604 - shell execution is intentional for system tool
                     stdout=subprocess.PIPE if input_data.capture_output else None,
                     stderr=subprocess.PIPE if input_data.capture_output else None,
                     stdin=subprocess.PIPE if input_data.input_data else None,

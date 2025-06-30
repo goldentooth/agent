@@ -12,6 +12,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
+# Import project modules after path modification
 from goldentooth_agent.core.document_store import DocumentStore
 from goldentooth_agent.core.embeddings import OpenAIEmbeddingsService
 from goldentooth_agent.core.embeddings.vector_store import VectorStore
