@@ -20,6 +20,9 @@ app.add_typer(
     commands.demo.app, name="demo", help="Interactive demonstrations and tutorials."
 )
 app.add_typer(
+    commands.codebase.app, name="codebase", help="Codebase introspection and analysis."
+)
+app.add_typer(
     commands.pipeline.app, name="pipeline", help="Execute and manage tool pipelines."
 )
 app.add_typer(

@@ -147,18 +147,31 @@ repos:
         pass_filenames: false
         always_run: false
 
-  # Run pytest tests
+  # Validate test structure alignment
   - repo: local
     hooks:
-      - id: pytest
-        name: PyTest
+      - id: test-structure-validation
+        name: Test Structure Validation
+        entry: poetry run python
+        language: system
+        types: [python]
+        description: Validate that test structure aligns with source structure
+        pass_filenames: false
+        always_run: false
+        args: ['scripts/test_structure_validator.py', '--strict']
+
+  # Run pytest tests with coverage checking
+  - repo: local
+    hooks:
+      - id: pytest-coverage
+        name: PyTest with Coverage Check
         entry: poetry run pytest
         language: system
         types: [python]
-        description: Run pytest tests
+        description: Run pytest tests with minimum 85% coverage requirement
         pass_filenames: false
         always_run: true
-        args: ['tests/', '-v', '--tb=short']
+        args: ['tests/', '--cov=goldentooth_agent', '--cov-fail-under=85', '--cov-report=term-missing', '-v', '--tb=short']
 
   # Optional: Additional security checks
   - repo: https://github.com/PyCQA/bandit

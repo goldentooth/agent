@@ -1,6 +1,7 @@
 from . import (
     agents,
     chat,
+    codebase,
     context,
     debug,
     demo,
@@ -30,4 +31,5 @@ __all__ = [
     "pipeline",
     "setup",
     "instructor",
+    "codebase",
 ]

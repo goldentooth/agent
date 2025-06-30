@@ -47,6 +47,27 @@ poetry run poe test-cov                  # Run tests with coverage
 poetry run poe test-sanity               # Basic sanity tests
 poetry run poe test-core                 # All core module tests
 
+# Coverage Analysis - Finding Low/No Coverage Areas
+poetry run poe test-cov-report           # HTML + terminal coverage reports
+poetry run poe test-cov-check            # Enforce 85% minimum coverage (fails if below)
+poetry run poe test-cov-analyze          # Custom analysis script - shows lowest coverage files
+poetry run poe test-cov-targets          # Top 10 files needing coverage attention
+
+# For detailed coverage analysis guidance, see: coverage-quick-reference.md
+
+# Coverage Analysis Workflow:
+# 1. Run: poetry run poe test-cov-analyze
+# 2. Review output for files with <85% coverage
+# 3. Check htmlcov/index.html for detailed line-by-line analysis
+# 4. Focus on public APIs and critical business logic first
+# 5. Use: poetry run poe test-cov-check to validate improvements
+
+# Coverage Report Interpretation:
+# - Files with 0% coverage = completely untested (highest priority)
+# - Files with <50% coverage = major gaps (high priority)  
+# - Files with 50-84% coverage = missing edge cases (medium priority)
+# - Focus on core/ modules over cli/ modules for critical coverage
+
 # Type checking
 poetry run poe typecheck                 # Type check source code with mypy
 poetry run poe typecheck-all             # Type check entire project including tests

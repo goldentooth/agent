@@ -75,9 +75,48 @@ addopts = "-v"
 # Exclude old directory from test discovery
 norecursedirs = ["old", "*.egg", ".eggs", "dist", "build", ".tox", ".git", "__pycache__"]
 
+[tool.coverage.run]
+source = ["src/goldentooth_agent"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/conftest.py",
+    "*/old/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
+show_missing = true
+skip_covered = false
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
+
 [tool.poe.tasks]
 test = "pytest tests/"
 test-cov = "pytest tests/ --cov=goldentooth_agent"
+test-cov-report = "pytest tests/ --cov=goldentooth_agent --cov-report=html --cov-report=term"
+test-cov-check = "pytest tests/ --cov=goldentooth_agent --cov-fail-under=85 --cov-report=term-missing"
+test-cov-analyze = "python scripts/coverage_analysis.py"
+test-cov-targets = "python scripts/coverage_analysis.py --limit=10"
+test-structure = "python scripts/test_structure_validator.py"
+test-structure-verbose = "python scripts/test_structure_validator.py --verbose"
+test-structure-strict = "python scripts/test_structure_validator.py --strict"
 test-sanity = "pytest tests/test_sanity.py -v"
 test-maybe-await = "pytest tests/core/util/test_maybe_await.py -v"
 test-core = "pytest tests/core/ -v"
@@ -102,7 +141,7 @@ docs-serve = "python -m http.server 8000 --directory docs/_build"
 docs-autobuild = "sphinx-autobuild docs docs/_build --host 0.0.0.0 --port 8000"
 
 # Quality assurance - run all checks
-qa = ["typecheck", "test", "precommit-run"]
+qa = ["typecheck", "test-cov-check", "precommit-run"]
 
 [tool.mypy]
 # Strict type checking configuration aligned with Pylance standards
