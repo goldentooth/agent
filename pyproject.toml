@@ -61,6 +61,10 @@ isort = "^5.13.2"
 ruff = "^0.8.4"
 bandit = "^1.7.10"
 types-aiofiles = "^24.1.0.20250606"
+sphinx = "^7.0"
+sphinx-rtd-theme = "^1.3"
+myst-parser = "^2.0"
+sphinx-autobuild = "^2024.2.4"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -90,6 +94,12 @@ precommit-install = "pre-commit install"
 precommit-update = "pre-commit autoupdate"
 precommit-run = "pre-commit run --all-files"
 precommit-run-hook = "pre-commit run"
+
+# Documentation tasks
+docs-build = "sphinx-build -b html docs docs/_build"
+docs-clean = "sphinx-build -b html -E docs docs/_build"
+docs-serve = "python -m http.server 8000 --directory docs/_build"
+docs-autobuild = "sphinx-autobuild docs docs/_build --host 0.0.0.0 --port 8000"
 
 # Quality assurance - run all checks
 qa = ["typecheck", "test", "precommit-run"]

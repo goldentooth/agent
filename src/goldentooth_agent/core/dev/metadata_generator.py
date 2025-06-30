@@ -489,14 +489,25 @@ class ModuleMetadataGenerator:
 
     def _find_module_directory_for_file(self, file_path: Path) -> Path | None:
         """Find the most specific module directory that contains the given Python file."""
+        # Only process files within src/goldentooth_agent/
+        if "/src/goldentooth_agent/" not in str(file_path):
+            return None
+
         # Define exclusion patterns (same as in _find_module_directories)
-        excluded_dirs = ["old", "tests", "examples", "scripts"]
+        excluded_dirs = ["old", "tests", "examples", "scripts", "docs"]
 
         # Start from the file's directory and walk up to find all module directories
         current_dir = file_path.parent
         most_specific_module = None
 
         while current_dir != current_dir.parent:  # Stop at filesystem root
+            # Stop if we've gone above src/goldentooth_agent/
+            if str(current_dir).endswith("/src/goldentooth_agent"):
+                # Check if src/goldentooth_agent itself is a module
+                if self._is_python_module(current_dir) and most_specific_module is None:
+                    most_specific_module = current_dir
+                break
+            
             # Check if this directory should be excluded
             if any(
                 f"/{dirname}/" in str(current_dir)
@@ -543,38 +554,26 @@ class ModuleMetadataGenerator:
         return len(py_files) > 0
 
     def _find_module_directories(self, project_root: Path) -> list[Path]:
-        """Find all Python module directories in the project."""
+        """Find all Python module directories in src/goldentooth_agent/."""
         module_dirs = []
 
-        # Look in src/ directory primarily
-        src_dir = project_root / "src"
-        if src_dir.exists():
-            for path in src_dir.rglob("*"):
-                if path.is_dir() and self._is_python_module(path):
-                    # Skip __pycache__ and other special directories
-                    if path.name.startswith("__") and path.name.endswith("__"):
-                        continue
-                    # Skip excluded directories
-                    excluded_dirs = ["old", "tests", "examples", "scripts"]
-                    if any(
-                        f"/{dirname}/" in str(path) or str(path).endswith(f"/{dirname}")
-                        for dirname in excluded_dirs
-                    ):
-                        continue
-                    module_dirs.append(path)
+        # Only look in src/goldentooth_agent/
+        src_path = project_root / "src" / "goldentooth_agent"
+        if not src_path.exists():
+            return module_dirs
 
-        # Also check for modules in project root
-        for path in project_root.rglob("*"):
-            if (
-                path.is_dir()
-                and self._is_python_module(path)
-                and not any(part.startswith(".") for part in path.parts)
-                and path not in module_dirs
-                and not any(
+        for path in src_path.rglob("*"):
+            if path.is_dir() and self._is_python_module(path):
+                # Skip __pycache__ and other special directories
+                if path.name.startswith("__") and path.name.endswith("__"):
+                    continue
+                # Skip excluded directories
+                excluded_dirs = ["old", "tests", "examples", "scripts", "docs"]
+                if any(
                     f"/{dirname}/" in str(path) or str(path).endswith(f"/{dirname}")
-                    for dirname in ["old", "tests", "examples", "scripts"]
-                )  # Skip excluded directories
-            ):
+                    for dirname in excluded_dirs
+                ):
+                    continue
                 module_dirs.append(path)
 
         return sorted(module_dirs)
@@ -1435,8 +1434,13 @@ class ModuleMetadataGenerator:
         """Generate README.md files for all modules that have metadata."""
         updated_readmes = []
 
-        # Find all README.meta.yaml files
-        for meta_file in project_root.rglob("README.meta.yaml"):
+        # Only process modules in src/goldentooth_agent/
+        src_path = project_root / "src" / "goldentooth_agent"
+        if not src_path.exists():
+            return updated_readmes
+
+        # Find all README.meta.yaml files in src/goldentooth_agent/
+        for meta_file in src_path.rglob("README.meta.yaml"):
             # Skip excluded directories
             if any(
                 excluded in str(meta_file)
@@ -1488,8 +1492,13 @@ class ModuleMetadataGenerator:
         """Check for missing README.bg.md files in all modules."""
         missing_background = []
 
-        # Find all module directories in the main project (exclude old/ and external dependencies)
-        for python_file in project_root.rglob("*.py"):
+        # Only check modules in src/goldentooth_agent/
+        src_path = project_root / "src" / "goldentooth_agent"
+        if not src_path.exists():
+            return missing_background
+
+        # Find all module directories in src/goldentooth_agent/
+        for python_file in src_path.rglob("*.py"):
             module_dir = python_file.parent
 
             # Skip excluded directories

@@ -8,10 +8,10 @@ repos:
     hooks:
       - id: trailing-whitespace
         description: Remove trailing whitespace
-        exclude: ^old/
+        exclude: ^(old/|docs/)
       - id: end-of-file-fixer
         description: Ensure files end with newline
-        exclude: ^old/
+        exclude: ^(old/|docs/)
       - id: check-yaml
         description: Validate YAML syntax
         exclude: ^old/
@@ -133,6 +133,19 @@ repos:
         pass_filenames: false
         always_run: false
         stages: [pre-commit]
+
+  # Build Sphinx documentation
+  - repo: local
+    hooks:
+      - id: sphinx-build
+        name: Build Sphinx Documentation
+        entry: poetry run sphinx-build
+        language: system
+        args: ['-W', '-b', 'html', 'docs', 'docs/_build']
+        description: Build Sphinx documentation and fail on warnings
+        files: '(\.py|\.rst|\.md)$'
+        pass_filenames: false
+        always_run: false
 
   # Run pytest tests
   - repo: local

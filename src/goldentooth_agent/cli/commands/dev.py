@@ -1085,18 +1085,20 @@ def _generate_ai_background_content(analysis_data: dict[str, Any]) -> str:
     # For now, fall back to template-based generation
     # This is where we would integrate with Claude API or similar
     # to generate intelligent background content based on analysis_data
-    
+
     # Extract module name for template
     module_name = analysis_data.get("module_name", "Unknown")
-    
+
     # Load template from external YAML file
-    template_file = Path(__file__).parent.parent.parent / "data" / "background_template.yaml"
-    with open(template_file, "r", encoding="utf-8") as f:
+    template_file = (
+        Path(__file__).parent.parent.parent / "data" / "background_template.yaml"
+    )
+    with open(template_file, encoding="utf-8") as f:
         template_data = yaml.safe_load(f)
-    
+
     # Generate content using template
-    template_content = template_data["background_template"].format(module_name=module_name)
-    
+    template_content = template_data["background_template"].format(
+        module_name=module_name
+    )
+
     return template_content
-
-

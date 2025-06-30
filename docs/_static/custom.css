@@ -1,0 +1,90 @@
+/* Custom CSS for Goldentooth Agent documentation */
+
+/* Improve code block styling */
+.highlight {
+    border-radius: 4px;
+    margin: 1em 0;
+}
+
+/* Better table styling */
+table.docutils {
+    border-collapse: collapse;
+    border: none;
+    margin: 1em 0;
+}
+
+table.docutils td, table.docutils th {
+    border: 1px solid #e1e4e5;
+    padding: 8px 12px;
+}
+
+table.docutils th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Improve admonition styling */
+.admonition {
+    border-radius: 4px;
+    margin: 1em 0;
+    padding: 12px;
+}
+
+.admonition.note {
+    border-left: 4px solid #17a2b8;
+    background-color: #d1ecf1;
+}
+
+.admonition.warning {
+    border-left: 4px solid #ffc107;
+    background-color: #fff3cd;
+}
+
+.admonition.danger {
+    border-left: 4px solid #dc3545;
+    background-color: #f8d7da;
+}
+
+/* Better navigation styling */
+.wy-nav-content {
+    max-width: 1200px;
+}
+
+/* Improve type hint display */
+.sig-param {
+    font-style: normal;
+}
+
+.sig-return {
+    font-weight: 600;
+}
+
+/* Better module documentation */
+.py.class > dt {
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding-left: 8px;
+}
+
+.py.function > dt {
+    background-color: #f8f9fa;
+    border-left: 4px solid #28a745;
+    padding-left: 8px;
+}
+
+/* Improved source code links */
+.viewcode-link {
+    float: right;
+    font-size: 0.8em;
+    margin-top: 2px;
+}
+
+/* Better handling of long type signatures */
+.sig-paren {
+    font-weight: normal;
+}
+
+/* Ensure good contrast for links */
+a.reference.internal:hover {
+    text-decoration: underline;
+}

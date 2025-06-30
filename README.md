@@ -269,6 +269,24 @@ This project maintains enterprise-grade code quality:
 - **Test Coverage**: 834+ tests including unit, integration, and security
 - **Code Style**: Black formatting with ruff linting
 
+### Documentation
+
+Comprehensive API documentation is generated using Sphinx:
+
+```bash
+# Build documentation
+poetry run poe docs-build          # Build HTML documentation
+poetry run poe docs-clean          # Clean build (rebuild everything)
+poetry run poe docs-serve          # Serve docs at http://localhost:8000
+poetry run poe docs-autobuild      # Live reload for development
+```
+
+The documentation includes:
+- **API Reference**: Auto-generated from docstrings with full type information
+- **Module Backgrounds**: In-depth explanations of design decisions and theoretical foundations
+- **Developer Guide**: Code quality standards, testing practices, and contribution guidelines
+- **Architecture Overview**: System design and module interdependencies
+
 ### Available Commands
 
 ```bash
@@ -281,6 +299,10 @@ poetry run poe test-cov            # Tests with coverage
 # Type checking
 poetry run poe typecheck           # Source code only
 poetry run poe typecheck-all       # All code including tests
+
+# Documentation
+poetry run poe docs-build          # Build Sphinx documentation
+poetry run poe docs-serve          # Serve documentation locally
 
 # Code quality
 poetry run poe lint                # Run ruff linting

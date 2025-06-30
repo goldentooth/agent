@@ -48,9 +48,9 @@ The commands module integrates with the broader system through well-defined inte
 
 - **Complexity**: Critical
 - **Files**: 15 Python files
-- **Lines of Code**: ~5875
+- **Lines of Code**: ~5723
 - **Classes**: 8
-- **Functions**: 135
+- **Functions**: 130
 
 ## API Reference
 
@@ -470,6 +470,7 @@ Sync GitHub data and automatically commit to Git repository.
 - `time`
 - `typer`
 - `typing`
+- `yaml`
 
 ## Exports
 
