@@ -6,7 +6,7 @@ Tools module
 
 - **Complexity**: Critical
 - **Files**: 9 Python files
-- **Lines of Code**: ~2933
+- **Lines of Code**: ~2932
 - **Classes**: 36
 - **Functions**: 102
 

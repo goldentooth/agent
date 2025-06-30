@@ -164,7 +164,7 @@ items = ["apple", "banana", "cherry"]
 # ✅ Long lists - multiline with trailing comma
 long_items = [
     "first_very_long_item_name",
-    "second_very_long_item_name", 
+    "second_very_long_item_name",
     "third_very_long_item_name",
 ]
 
@@ -208,22 +208,22 @@ def complex_operation(input_data: InputType, config: ConfigType) -> OutputType:
 ```python
 class DocumentProcessor:
     """Processes documents using configurable strategies.
-    
+
     This class provides a high-level interface for document processing
     with support for multiple processing strategies and error recovery.
-    
+
     Attributes:
         strategy: The current processing strategy
         config: Configuration controlling processor behavior
-        
+
     Example:
         >>> processor = DocumentProcessor(strategy="fast")
         >>> result = processor.process(documents)
     """
-    
+
     def __init__(self, strategy: str = "default") -> None:
         """Initialize the processor with the specified strategy.
-        
+
         Args:
             strategy: Processing strategy ("fast", "accurate", "default")
         """
@@ -235,7 +235,7 @@ class DocumentProcessor:
 # Use exponential backoff to handle rate limiting gracefully
 await asyncio.sleep(2 ** retry_count)
 
-# ✅ Warn about non-obvious behavior  
+# ✅ Warn about non-obvious behavior
 # Note: This modifies the input list in-place
 items.sort(key=lambda x: x.priority)
 
@@ -262,7 +262,7 @@ except SpecificError as e:
 def validate_input(data: InputType) -> None:
     if not data:
         raise ValueError("Input data cannot be empty")
-    
+
     if not data.is_valid():
         raise ValueError(f"Invalid input data: {data.validation_errors}")
 ```
@@ -305,32 +305,32 @@ async def safe_async_operation():
 ```python
 class ExampleClass:
     """Class docstring."""
-    
+
     # Class variables
     DEFAULT_TIMEOUT = 30.0
-    
+
     def __init__(self, config: Config) -> None:
         """Initialize instance."""
         # Instance variables
         self.config = config
         self._cache: dict[str, Any] = {}
-    
+
     # Public methods
     def public_method(self) -> Result:
         """Public method docstring."""
         ...
-    
+
     # Private methods
     def _private_method(self) -> None:
         """Private method docstring."""
         ...
-    
+
     # Properties
     @property
     def status(self) -> str:
         """Current status of the instance."""
         return self._status
-    
+
     # Special methods
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(config={self.config!r})"
@@ -425,7 +425,7 @@ if condition1:
         if condition3:
             if condition4:
                 # Too deep!
-                
+
 # ✅ Use early returns
 if not condition1:
     return early_result

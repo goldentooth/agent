@@ -87,13 +87,13 @@ The system automatically:
 
 #### Pre-Commit Hook Sequence
 ```bash
-# 1. Code formatting (black, isort, ruff)
-# 2. Check metadata freshness (automatic)
-# 3. Update module metadata (automatic)
-# 4. Type checking (mypy)
-# 5. Validate metadata (automatic)
-# 6. Run tests (pytest)
-# 7. Security checks (bandit)
+# 1. Code formatting (black, isort, ruff) - auto-fixes style issues
+# 2. Update module metadata (automatic) - auto-generates/updates README.meta.yaml
+# 3. Generate README files (automatic) - auto-generates README.md from metadata
+# 4. Type checking (mypy) - enforces type safety
+# 5. Validate metadata (automatic) - ensures accuracy before commit
+# 6. Run tests (pytest) - ensures functionality
+# 7. Security checks (bandit) - identifies security issues
 ```
 
 ### Available Commands
@@ -147,19 +147,23 @@ Developers don't need to do anything special:
 1. Make changes to Python files
 2. Stage changes with `git add`
 3. Commit with `git commit`
-4. Pre-commit hooks automatically handle metadata
+4. Pre-commit hooks **automatically generate and stage** updated metadata and README files
 
-#### When Metadata Issues Occur
-If pre-commit hooks fail due to metadata validation or staleness:
+#### Auto-Fixing Behavior
+The pre-commit hooks now automatically fix documentation issues:
+- **Stale metadata**: Automatically updates README.meta.yaml files for changed modules
+- **Stale README files**: Automatically generates README.md from updated metadata
+- **Missing files**: Creates metadata and README files for new modules
+- **Auto-staging**: Updated files are automatically staged for commit
+
+#### Manual Intervention (Rarely Needed)
+In rare cases where automatic fixing fails:
 ```bash
-# Check what validation errors occurred
-goldentooth-agent dev module validate-for-commit
+# Manually update specific module
+goldentooth-agent dev module update [module-path]
 
-# Check for stale metadata files
-goldentooth-agent dev module check-freshness-for-commit
-
-# Fix any issues manually if needed
-goldentooth-agent dev module update [problematic-module]
+# Manually generate README
+goldentooth-agent dev module generate-readme [module-path]
 
 # Re-stage and commit
 git add .

@@ -8,7 +8,7 @@ This document defines performance standards, optimization strategies, and benchm
 
 #### Core Operations
 - **Vector search**: <100ms for typical queries (1-10 documents)
-- **Flow execution**: <50ms overhead per flow stage  
+- **Flow execution**: <50ms overhead per flow stage
 - **Context operations**: <10ms for get/set operations
 - **Document processing**: <500ms per document (text)
 - **Embedding generation**: <200ms per document
@@ -21,7 +21,7 @@ This document defines performance standards, optimization strategies, and benchm
 
 #### Scalability Targets
 - **Concurrent requests**: Handle 10+ concurrent operations
-- **Document corpus**: Support 10K+ documents efficiently  
+- **Document corpus**: Support 10K+ documents efficiently
 - **Vector database**: Sub-linear search performance
 - **Flow composition**: Support 10+ stage pipelines
 
@@ -35,15 +35,15 @@ from goldentooth_agent.core.observability import MetricsCollector
 class PerformanceMonitor:
     def __init__(self, metrics: MetricsCollector = inject.me()) -> None:
         self.metrics = metrics
-    
+
     def track_operation(self, operation_name: str):
         """Context manager for tracking operation performance."""
         return self.metrics.timer(f"{operation_name}_duration")
-    
+
     def track_throughput(self, operation_name: str, count: int):
         """Track operation throughput."""
         self.metrics.histogram(f"{operation_name}_throughput", count)
-    
+
     def track_memory_usage(self, component: str):
         """Track memory usage for component."""
         import psutil
@@ -64,21 +64,21 @@ from typing import Any, Callable, Awaitable
 
 class CacheManager:
     """Multi-level cache management."""
-    
+
     def __init__(self) -> None:
         self._memory_cache: dict[str, Any] = {}
         self._locks: dict[str, asyncio.Lock] = {}
-    
+
     # Level 1: Function-level caching
     @lru_cache(maxsize=256)
     def cached_computation(self, input_data: str) -> str:
         """Cache expensive synchronous computations."""
         return expensive_computation(input_data)
-    
+
     # Level 2: Async operation caching
     async def cached_async_operation(
-        self, 
-        key: str, 
+        self,
+        key: str,
         operation: Callable[[], Awaitable[Any]],
         ttl: int = 300
     ) -> Any:
@@ -87,11 +87,11 @@ class CacheManager:
             cached_value, timestamp = self._memory_cache[key]
             if time.time() - timestamp < ttl:
                 return cached_value
-        
+
         # Prevent cache stampede
         if key not in self._locks:
             self._locks[key] = asyncio.Lock()
-        
+
         async with self._locks[key]:
             if key not in self._memory_cache:
                 result = await operation()
@@ -105,7 +105,7 @@ class CacheManager:
 @injectable
 class CachedVectorStore:
     """Vector store with intelligent caching."""
-    
+
     def __init__(
         self,
         vector_store: VectorStore = inject.me(),
@@ -114,7 +114,7 @@ class CachedVectorStore:
         self.vector_store = vector_store
         self._search_cache: dict[str, list[dict]] = {}
         self._cache_size = cache_size
-    
+
     async def search_similar_cached(
         self,
         query_embedding: list[float],
@@ -124,28 +124,28 @@ class CachedVectorStore:
         """Search with embedding cache."""
         # Create cache key from embedding and parameters
         cache_key = self._create_cache_key(query_embedding, limit, kwargs)
-        
+
         if cache_key in self._search_cache:
             return self._search_cache[cache_key]
-        
+
         # Perform search
         results = self.vector_store.search_similar(
             query_embedding, limit=limit, **kwargs
         )
-        
+
         # Cache results (with LRU eviction)
         if len(self._search_cache) >= self._cache_size:
             # Remove oldest entry
             oldest_key = next(iter(self._search_cache))
             del self._search_cache[oldest_key]
-        
+
         self._search_cache[cache_key] = results
         return results
-    
+
     def _create_cache_key(
-        self, 
-        embedding: list[float], 
-        limit: int, 
+        self,
+        embedding: list[float],
+        limit: int,
         kwargs: dict
     ) -> str:
         """Create cache key from embedding and parameters."""
@@ -173,11 +173,11 @@ async def process_concurrently(
 ) -> list[R]:
     """Process items concurrently with controlled concurrency."""
     semaphore = asyncio.Semaphore(max_concurrency)
-    
+
     async def process_with_semaphore(item: T) -> R:
         async with semaphore:
             return await processor(item)
-    
+
     tasks = [process_with_semaphore(item) for item in items]
     return await asyncio.gather(*tasks)
 
@@ -190,19 +190,19 @@ async def stream_process_concurrently(
     """Process stream concurrently with backpressure control."""
     semaphore = asyncio.Semaphore(max_concurrency)
     result_queue: asyncio.Queue[R] = asyncio.Queue(buffer_size)
-    
+
     async def process_item(item: T) -> None:
         async with semaphore:
             result = await processor(item)
             await result_queue.put(result)
-    
+
     async def producer():
         async for item in stream:
             asyncio.create_task(process_item(item))
         await result_queue.put(None)  # Sentinel
-    
+
     producer_task = asyncio.create_task(producer())
-    
+
     try:
         while True:
             result = await result_queue.get()
@@ -222,7 +222,7 @@ async def stream_process_concurrently(
 @injectable
 class ResourcePool:
     """Generic resource pool for expensive objects."""
-    
+
     def __init__(
         self,
         factory: Callable[[], Awaitable[T]],
@@ -235,7 +235,7 @@ class ResourcePool:
         self._pool: asyncio.Queue[T] = asyncio.Queue(max_size)
         self._current_size = 0
         self._lock = asyncio.Lock()
-    
+
     async def acquire(self) -> T:
         """Acquire resource from pool."""
         try:
@@ -247,10 +247,10 @@ class ResourcePool:
                 if self._current_size < self.max_size:
                     self._current_size += 1
                     return await self.factory()
-            
+
             # Wait for resource to become available
             return await self._pool.get()
-    
+
     async def release(self, resource: T) -> None:
         """Release resource back to pool."""
         try:
@@ -273,19 +273,19 @@ async def process_large_dataset_streaming(
 ) -> AsyncIterator[ProcessedData]:
     """Process large dataset in streaming fashion."""
     batch = []
-    
+
     async for item in data_source:
         batch.append(item)
-        
+
         if len(batch) >= batch_size:
             # Process batch and yield results
             processed_batch = await process_batch(batch)
             for result in processed_batch:
                 yield result
-            
+
             # Clear batch to free memory
             batch.clear()
-    
+
     # Process remaining items
     if batch:
         processed_batch = await process_batch(batch)
@@ -301,29 +301,29 @@ async def memory_efficient_vector_search(
     """Memory-efficient vector search over large corpora."""
     # Get query embedding
     query_embedding = await get_embedding(query)
-    
+
     # Search in chunks to limit memory usage
     offset = 0
     while True:
         # Get chunk of document IDs
         doc_ids = await document_store.get_document_ids(
-            offset=offset, 
+            offset=offset,
             limit=chunk_size
         )
-        
+
         if not doc_ids:
             break
-        
+
         # Search within this chunk
         chunk_results = await vector_store.search_similar_in_subset(
             query_embedding,
             document_subset=doc_ids,
             limit=10
         )
-        
+
         for result in chunk_results:
             yield result
-        
+
         offset += chunk_size
 ```
 
@@ -335,7 +335,7 @@ from contextlib import asynccontextmanager
 
 class MemoryTracker:
     """Track memory usage for performance optimization."""
-    
+
     @asynccontextmanager
     async def track_memory(self, operation_name: str):
         """Track memory usage during operation."""
@@ -343,7 +343,7 @@ class MemoryTracker:
         tracemalloc.start()
         process = psutil.Process()
         start_memory = process.memory_info().rss
-        
+
         try:
             yield
         finally:
@@ -351,11 +351,11 @@ class MemoryTracker:
             end_memory = process.memory_info().rss
             current, peak = tracemalloc.get_traced_memory()
             tracemalloc.stop()
-            
+
             # Log memory usage
             memory_delta = (end_memory - start_memory) / 1024 / 1024  # MB
             peak_memory = peak / 1024 / 1024  # MB
-            
+
             logger.info(
                 "Memory usage",
                 operation=operation_name,
@@ -389,11 +389,11 @@ async def optimized_processing_flow(
         validated = validate_document(document)
         if not validated:
             continue
-            
+
         transformed = transform_document(document)
         enriched = enrich_document(transformed)
         processed = finalize_processing(enriched)
-        
+
         yield processed
 
 # ❌ Inefficient: Multiple small flows with overhead
@@ -414,17 +414,17 @@ async def batch_processing_flow(
 ) -> AsyncIterator[ProcessedDocument]:
     """Process documents in batches for efficiency."""
     batch = []
-    
+
     async for document in stream:
         batch.append(document)
-        
+
         if len(batch) >= batch_size:
             # Process entire batch efficiently
             processed_batch = await process_document_batch(batch)
             for processed_doc in processed_batch:
                 yield processed_doc
             batch.clear()
-    
+
     # Process remaining documents
     if batch:
         processed_batch = await process_document_batch(batch)
@@ -442,15 +442,15 @@ from typing import Callable, Any
 
 class PerformanceBenchmark:
     """Framework for performance testing."""
-    
+
     def __init__(self, name: str) -> None:
         self.name = name
         self.metrics: dict[str, float] = {}
-    
+
     def time_operation(self, operation_name: str):
         """Context manager for timing operations."""
         return self._timer_context(operation_name)
-    
+
     @contextmanager
     def _timer_context(self, operation_name: str):
         """Time an operation and store result."""
@@ -460,17 +460,17 @@ class PerformanceBenchmark:
         finally:
             duration = time.perf_counter() - start_time
             self.metrics[operation_name] = duration
-    
+
     def assert_performance(
-        self, 
-        operation_name: str, 
+        self,
+        operation_name: str,
         max_duration: float
     ) -> None:
         """Assert operation meets performance requirement."""
         actual_duration = self.metrics.get(operation_name)
         if actual_duration is None:
             raise ValueError(f"No timing data for {operation_name}")
-        
+
         assert actual_duration <= max_duration, (
             f"{operation_name} took {actual_duration:.3f}s, "
             f"expected <= {max_duration:.3f}s"
@@ -481,15 +481,15 @@ class PerformanceBenchmark:
 def test_vector_search_performance():
     """Benchmark vector search performance."""
     benchmark = PerformanceBenchmark("vector_search")
-    
+
     # Setup
     vector_store = create_test_vector_store(size=10000)
     query_vector = create_test_vector()
-    
+
     # Benchmark
     with benchmark.time_operation("search"):
         results = vector_store.search_similar(query_vector, limit=10)
-    
+
     # Assertions
     benchmark.assert_performance("search", max_duration=0.1)  # 100ms
     assert len(results) == 10
@@ -508,13 +508,13 @@ def profile_performance(output_file: str | None = None):
         def wrapper(*args, **kwargs):
             profiler = cProfile.Profile()
             profiler.enable()
-            
+
             try:
                 result = func(*args, **kwargs)
                 return result
             finally:
                 profiler.disable()
-                
+
                 if output_file:
                     profiler.dump_stats(output_file)
                 else:
@@ -522,7 +522,7 @@ def profile_performance(output_file: str | None = None):
                     stats = pstats.Stats(profiler)
                     stats.sort_stats('cumulative')
                     stats.print_stats(20)
-        
+
         return wrapper
     return decorator
 
@@ -547,32 +547,32 @@ def memory_intensive_function():
 
 class MemoryProfiler:
     """Custom memory profiler for async operations."""
-    
+
     def __init__(self) -> None:
         self.snapshots: list[tracemalloc.Snapshot] = []
-    
+
     def take_snapshot(self, label: str) -> None:
         """Take memory snapshot with label."""
         if not tracemalloc.is_tracing():
             tracemalloc.start()
-        
+
         snapshot = tracemalloc.take_snapshot()
         snapshot.label = label  # type: ignore
         self.snapshots.append(snapshot)
-    
+
     def compare_snapshots(self, start_label: str, end_label: str) -> None:
         """Compare two snapshots and report differences."""
         start_snapshot = next(
-            s for s in self.snapshots 
+            s for s in self.snapshots
             if getattr(s, 'label', '') == start_label
         )
         end_snapshot = next(
-            s for s in self.snapshots 
+            s for s in self.snapshots
             if getattr(s, 'label', '') == end_label
         )
-        
+
         top_stats = end_snapshot.compare_to(start_snapshot, 'lineno')
-        
+
         print(f"Memory comparison: {start_label} -> {end_label}")
         for stat in top_stats[:10]:
             print(stat)
@@ -585,38 +585,38 @@ class MemoryProfiler:
 @injectable
 class ProductionPerformanceMonitor:
     """Monitor performance in production environment."""
-    
+
     def __init__(self, metrics: MetricsCollector = inject.me()) -> None:
         self.metrics = metrics
         self._operation_times: dict[str, list[float]] = {}
-    
+
     def record_operation_time(self, operation: str, duration: float) -> None:
         """Record operation timing."""
         self.metrics.histogram(f"{operation}_duration", duration)
-        
+
         # Track recent times for alerting
         if operation not in self._operation_times:
             self._operation_times[operation] = []
-        
+
         times = self._operation_times[operation]
         times.append(duration)
-        
+
         # Keep only recent measurements
         if len(times) > 100:
             times.pop(0)
-        
+
         # Check for performance degradation
         if len(times) >= 10:
             recent_avg = sum(times[-10:]) / 10
             overall_avg = sum(times) / len(times)
-            
+
             if recent_avg > overall_avg * 1.5:  # 50% slower
                 self._alert_performance_degradation(operation, recent_avg, overall_avg)
-    
+
     def _alert_performance_degradation(
-        self, 
-        operation: str, 
-        recent_avg: float, 
+        self,
+        operation: str,
+        recent_avg: float,
         overall_avg: float
     ) -> None:
         """Alert on performance degradation."""
@@ -627,7 +627,7 @@ class ProductionPerformanceMonitor:
             overall_avg=overall_avg,
             degradation_factor=recent_avg / overall_avg
         )
-        
+
         self.metrics.increment("performance_alerts", tags={"operation": operation})
 ```
 
@@ -635,7 +635,7 @@ class ProductionPerformanceMonitor:
 ```python
 class PerformanceAlerter:
     """Alert on performance issues."""
-    
+
     def __init__(self) -> None:
         self.thresholds = {
             "vector_search": 0.1,  # 100ms
@@ -643,21 +643,21 @@ class PerformanceAlerter:
             "flow_execution": 0.05,  # 50ms
             "context_operation": 0.01,  # 10ms
         }
-    
+
     def check_operation_performance(
-        self, 
-        operation: str, 
+        self,
+        operation: str,
         duration: float
     ) -> None:
         """Check if operation meets performance requirements."""
         threshold = self.thresholds.get(operation)
         if threshold and duration > threshold:
             self._send_alert(operation, duration, threshold)
-    
+
     def _send_alert(
-        self, 
-        operation: str, 
-        actual: float, 
+        self,
+        operation: str,
+        actual: float,
         expected: float
     ) -> None:
         """Send performance alert."""
@@ -668,7 +668,7 @@ class PerformanceAlerter:
             expected_duration=expected,
             slowdown_factor=actual / expected
         )
-        
+
         # Send to monitoring system
         # metrics.increment("performance_violations")
 ```
@@ -724,7 +724,7 @@ def memory_efficient_processing(large_dataset: list[Data]) -> Iterator[Result]:
 
 ### Common Performance Issues
 1. **Synchronous operations in async code**
-2. **Missing connection pooling**  
+2. **Missing connection pooling**
 3. **Inefficient database queries**
 4. **Memory leaks from circular references**
 5. **Blocking I/O operations**

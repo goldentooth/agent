@@ -6,9 +6,9 @@ Dev module
 
 - **Complexity**: Medium
 - **Files**: 2 Python files
-- **Lines of Code**: ~1151
+- **Lines of Code**: ~1176
 - **Classes**: 4
-- **Functions**: 43
+- **Functions**: 44
 
 ## API Reference
 
@@ -48,7 +48,6 @@ Generates and maintains README.meta.yaml files for Python modules.
 ### External Dependencies
 - `antidote`
 - `ast`
-- `collections`
 - `dataclasses`
 - `metadata_generator`
 - `pathlib`

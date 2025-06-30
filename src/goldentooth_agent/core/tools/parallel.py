@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections.abc import AsyncIterator, Callable, Coroutine
+from collections.abc import AsyncGenerator, AsyncIterator, Callable, Coroutine
 from contextlib import asynccontextmanager
 from typing import Any, TypeVar
-from collections.abc import AsyncGenerator
 
 from ..flow_agent import FlowIOSchema
 from .performance import performance_monitor

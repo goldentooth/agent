@@ -3,10 +3,9 @@ from datetime import datetime
 from typing import Any
 
 from antidote import inject, injectable
+from github import Github
 from github.Organization import Organization
 from github.Repository import Repository
-
-from github import Github
 
 from ..document_store import DocumentStore
 from ..schemas.github import GitHubOrg, GitHubRepo

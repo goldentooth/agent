@@ -2,17 +2,16 @@ module_name: Dev
 description: Dev module
 complexity: Medium
 file_count: 2
-loc: ~1151
+loc: ~1176
 test_coverage: Medium
 class_count: 4
-function_count: 43
+function_count: 44
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies: []
 external_dependencies:
 - antidote
 - ast
-- collections
 - dataclasses
 - metadata_generator
 - pathlib

@@ -495,23 +495,21 @@ class ModuleMetadataGenerator:
         return sorted(list(staged_modules))
 
     def _find_module_directory_for_file(self, file_path: Path) -> Path | None:
-        """Find the module directory that contains the given Python file."""
-        # Start from the file's directory and walk up
+        """Find the most specific module directory that contains the given Python file."""
+        # Start from the file's directory and walk up to find all module directories
         current_dir = file_path.parent
+        most_specific_module = None
 
         while current_dir != current_dir.parent:  # Stop at filesystem root
             # Check if this directory is a Python module
             if self._is_python_module(current_dir):
-                # Check if this is the top-level module directory
-                parent_dir = current_dir.parent
-                if not self._is_python_module(parent_dir) or parent_dir.name.startswith(
-                    "."
-                ):
-                    return current_dir
+                # This is a module directory - keep track of the most specific one
+                if most_specific_module is None:
+                    most_specific_module = current_dir
 
             current_dir = current_dir.parent
 
-        return None
+        return most_specific_module
 
     def _stage_file(self, file_path: Path) -> None:
         """Stage a file for commit."""

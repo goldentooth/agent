@@ -16,7 +16,7 @@ This document demonstrates the complete workflow for retrieving GitHub data and 
    export ANTHROPIC_API_KEY="your_anthropic_key_here"
    ```
 
-3. **Install the Package**: 
+3. **Install the Package**:
    ```bash
    poetry install
    ```

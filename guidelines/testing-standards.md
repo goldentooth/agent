@@ -52,14 +52,14 @@ Test individual functions, methods, or classes in isolation.
 def test_document_processor_validates_input():
     """Unit test for input validation logic."""
     processor = DocumentProcessor()
-    
+
     with pytest.raises(ValueError, match="cannot be empty"):
         processor.process([])
 
 def test_context_key_creation():
     """Unit test for context key creation."""
     key = ContextKey.create("test.path", str, "Test description")
-    
+
     assert key.path == "test.path"
     assert key.type == str
     assert key.description == "Test description"
@@ -75,11 +75,11 @@ async def test_rag_service_with_vector_store():
     # Setup
     vector_store = create_test_vector_store()
     rag_service = RAGService(vector_store=vector_store)
-    
+
     # Test document storage and retrieval
     await rag_service.store_document("test content")
     results = await rag_service.query("test query")
-    
+
     assert len(results) > 0
     assert "test content" in results[0].content
 ```
@@ -91,10 +91,10 @@ Test complete user workflows through the CLI or API.
 def test_chat_workflow_e2e(cli_runner):
     """End-to-end test of chat workflow."""
     result = cli_runner.invoke(
-        main_app, 
+        main_app,
         ["chat", "--agent", "rag", "--message", "What is the project about?"]
     )
-    
+
     assert result.exit_code == 0
     assert "goldentooth" in result.output.lower()
 ```
@@ -108,9 +108,9 @@ def test_vector_search_performance(benchmark, sample_vectors):
     """Benchmark vector search performance."""
     vector_store = create_test_vector_store(sample_vectors)
     query_vector = create_test_vector()
-    
+
     result = benchmark(vector_store.search_similar, query_vector, limit=10)
-    
+
     # Verify performance requirements
     assert benchmark.stats.mean < 0.1  # 100ms threshold
     assert len(result) == 10
@@ -125,10 +125,10 @@ def test_feature():
     # Arrange - Set up test data and dependencies
     processor = DocumentProcessor(config=test_config)
     documents = create_test_documents(count=5)
-    
+
     # Act - Execute the code under test
     result = processor.process(documents)
-    
+
     # Assert - Verify the results
     assert result.status == "completed"
     assert len(result.processed_documents) == 5
@@ -159,9 +159,9 @@ def test_with_fixtures(test_config, mock_vector_store):
         config=test_config,
         vector_store=mock_vector_store
     )
-    
+
     result = service.query("test")
-    
+
     assert result is not None
     mock_vector_store.search_similar.assert_called_once()
 ```
@@ -173,14 +173,14 @@ async def test_async_operation():
     """Test async operations properly."""
     async with create_test_client() as client:
         result = await client.fetch_data("test_id")
-        
+
         assert result.status == "success"
 
 @pytest.mark.asyncio
 async def test_async_error_handling():
     """Test async error handling."""
     client = create_failing_client()
-    
+
     with pytest.raises(ClientError, match="connection failed"):
         await client.fetch_data("invalid_id")
 ```
@@ -203,7 +203,7 @@ def test_text_transformation(input_data, expected):
 async def test_agent_creation(agent_type):
     """Test creation of different agent types."""
     agent = await create_agent(agent_type)
-    
+
     assert agent.type == agent_type
     assert agent.is_ready()
 ```
@@ -217,11 +217,11 @@ def test_service_with_external_dependency(mocker):
     # Mock the external service
     mock_api = mocker.patch('module.external_api')
     mock_api.fetch_data.return_value = {"status": "success"}
-    
+
     # Test the service
     service = MyService()
     result = service.process_with_external_data("test_id")
-    
+
     assert result.success is True
     mock_api.fetch_data.assert_called_once_with("test_id")
 ```
@@ -234,11 +234,11 @@ def test_with_dependency_injection():
     with world.test.clone(freeze=False) as test_world:
         mock_service = Mock(spec=ExternalService)
         test_world[ExternalService] = mock_service
-        
+
         # Test the component
         component = inject(MyComponent)
         result = component.do_work()
-        
+
         assert result is not None
         mock_service.process.assert_called()
 ```
@@ -251,13 +251,13 @@ async def test_async_service(mocker):
     # Mock async dependency
     mock_async_service = AsyncMock()
     mock_async_service.fetch_data.return_value = {"data": "test"}
-    
+
     mocker.patch('module.AsyncService', return_value=mock_async_service)
-    
+
     # Test
     service = MyAsyncService()
     result = await service.process()
-    
+
     assert result.data == "test"
     mock_async_service.fetch_data.assert_awaited_once()
 ```
@@ -295,19 +295,19 @@ def test_db():
     db_path = ":memory:"  # SQLite in-memory database
     db = Database(db_path)
     db.initialize()
-    
+
     yield db
-    
+
     # Cleanup
     db.close()
 
 def test_document_storage(test_db):
     """Test document storage in database."""
     document = create_test_document()
-    
+
     test_db.store_document(document)
     retrieved = test_db.get_document(document.id)
-    
+
     assert retrieved.title == document.title
     assert retrieved.content == document.content
 ```
@@ -319,19 +319,19 @@ def temp_directory(tmp_path):
     """Provide temporary directory for file tests."""
     test_dir = tmp_path / "test_data"
     test_dir.mkdir()
-    
+
     # Create test files
     (test_dir / "test.txt").write_text("test content")
     (test_dir / "config.yaml").write_text("key: value")
-    
+
     return test_dir
 
 def test_file_processing(temp_directory):
     """Test file processing with temporary files."""
     processor = FileProcessor(temp_directory)
-    
+
     result = processor.process_all_files()
-    
+
     assert len(result) == 2
     assert "test.txt" in [f.name for f in result]
 ```
@@ -343,18 +343,18 @@ def test_file_processing(temp_directory):
 def test_error_conditions():
     """Test various error conditions."""
     processor = DocumentProcessor()
-    
+
     # Test specific exception types
     with pytest.raises(ValueError, match="empty document"):
         processor.process("")
-    
+
     with pytest.raises(ConfigurationError):
         processor.configure(invalid_config)
-    
+
     # Test exception chaining
     with pytest.raises(ProcessingError) as exc_info:
         processor.process_invalid_data()
-    
+
     assert exc_info.value.__cause__ is not None
 ```
 
@@ -364,10 +364,10 @@ def test_error_conditions():
 async def test_async_error_handling():
     """Test async error handling."""
     service = AsyncService()
-    
+
     with pytest.raises(asyncio.TimeoutError):
         await asyncio.wait_for(service.slow_operation(), timeout=0.1)
-    
+
     with pytest.raises(ConnectionError):
         await service.connect_to_invalid_endpoint()
 ```
@@ -415,7 +415,7 @@ def setup_test_environment(monkeypatch):
     # Set test environment variables
     monkeypatch.setenv("ENVIRONMENT", "test")
     monkeypatch.setenv("LOG_LEVEL", "DEBUG")
-    
+
     # Disable external API calls
     monkeypatch.setenv("DISABLE_EXTERNAL_APIS", "true")
 
@@ -438,9 +438,9 @@ def test_vector_search_benchmark(benchmark):
     """Benchmark vector search performance."""
     vector_store = create_large_vector_store()
     query = create_test_vector()
-    
+
     result = benchmark(vector_store.search_similar, query, limit=10)
-    
+
     assert len(result) == 10
     # Benchmark automatically captures timing statistics
 
@@ -449,9 +449,9 @@ def test_document_processing_benchmark(benchmark):
     """Benchmark document processing with minimum rounds."""
     documents = create_test_documents(count=100)
     processor = DocumentProcessor()
-    
+
     result = benchmark(processor.process_batch, documents)
-    
+
     assert len(result) == 100
 ```
 
@@ -462,15 +462,15 @@ import tracemalloc
 def test_memory_usage():
     """Test memory usage of operations."""
     tracemalloc.start()
-    
+
     # Perform memory-intensive operation
     large_data = create_large_dataset()
     processor = MemoryEfficientProcessor()
     result = processor.process(large_data)
-    
+
     current, peak = tracemalloc.get_traced_memory()
     tracemalloc.stop()
-    
+
     # Assert memory usage is within acceptable limits
     assert peak < 100 * 1024 * 1024  # 100MB limit
     assert result is not None
@@ -491,17 +491,17 @@ def test_memory_usage():
 def test_internal_method_calls(mocker):
     service = MyService()
     spy = mocker.spy(service, '_internal_method')
-    
+
     service.public_method()
-    
+
     spy.assert_called_once()  # Too brittle!
 
 # ✅ Test behavior instead
 def test_public_method_behavior():
     service = MyService()
-    
+
     result = service.public_method()
-    
+
     assert result.status == "completed"
     assert result.data is not None
 
@@ -515,10 +515,10 @@ def test_complex_scenario():
 def test_single_behavior():
     # Simple setup
     service = MyService()
-    
+
     # Single action
     result = service.do_one_thing()
-    
+
     # Clear assertion
     assert result.success is True
 ```
