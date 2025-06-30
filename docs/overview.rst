@@ -15,7 +15,6 @@ Core System Architecture
    │   └── commands/          # Chat, tools, and other commands
    ├── core/                  # Core system modules (25K+ LOC)
    │   ├── context/           # Context management system
-   │   ├── flow/              # Functional flow composition (5K+ LOC)
    │   ├── flow_agent/        # Agent framework
    │   ├── embeddings/        # Vector embeddings & search
    │   ├── rag/               # Retrieval-Augmented Generation
@@ -31,7 +30,7 @@ Key Features
 
 **✅ Fully Implemented:**
 
-* Flow-based functional architecture with composition
+* Flow-based functional architecture with composition (via flow_engine)
 * Context management with snapshots and history tracking
 * RAG system with OpenAI embeddings and hybrid search
 * Document store with GitHub, notes, and goldentooth data
@@ -88,7 +87,7 @@ Critical performance areas:
 Module Interdependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-* **Core dependencies**: ``context`` ← ``flow`` ← ``flow_agent`` ← ``rag``
+* **Core dependencies**: ``context`` ← ``flow_agent`` ← ``rag``
 * **Utility modules**: ``paths``, ``util`` used by most other modules
 * **Data flow**: ``document_store`` → ``embeddings`` → ``rag`` → ``cli``
 * **DI container**: Antidote manages service lifecycles across all modules

@@ -28,7 +28,6 @@ Core System
    :toctree: generated
 
    goldentooth_agent.core.context
-   goldentooth_agent.core.flow
    goldentooth_agent.core.flow_agent
    goldentooth_agent.core.rag
    goldentooth_agent.core.embeddings
@@ -50,13 +49,6 @@ Context Management
    :undoc-members:
    :show-inheritance:
 
-Flow System
-~~~~~~~~~~~
-
-.. automodule:: goldentooth_agent.core.flow
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 RAG System
 ~~~~~~~~~~

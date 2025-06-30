@@ -8,7 +8,6 @@ This section provides in-depth background information about the design decisions
    :caption: Module Backgrounds:
 
    context
-   flow
    rag
    embeddings
    llm
@@ -35,13 +34,6 @@ The context system manages state, snapshots, and history across agent interactio
 .. include:: ../../src/goldentooth_agent/core/context/README.bg.md
    :parser: myst_parser.sphinx_
 
-Flow System
-~~~~~~~~~~~
-
-The flow system provides functional composition for complex agent workflows.
-
-.. include:: ../../src/goldentooth_agent/core/flow/README.bg.md
-   :parser: myst_parser.sphinx_
 
 RAG System
 ~~~~~~~~~~

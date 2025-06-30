@@ -131,9 +131,9 @@ functions:
     Any]'
   docstring: "Decorator to register a flow in the global registry.\n\n    Args:\n\
     \        name: Unique name for the flow\n        category: Optional category for\
-    \ organization\n\n    Example:\n        @registered_flow(\"text_processor\", \"\
-    nlp\")\n        @Flow.from_sync_fn\n        def process_text(text):\n        \
-    \    return text.upper()\n\n        Or with factory functions:\n        @registered_flow(\"\
+    \ organization\n\n    Example::\n\n        @registered_flow(\"text_processor\"\
+    , \"nlp\")\n        @Flow.from_sync_fn\n        def process_text(text):\n    \
+    \        return text.upper()\n\n    Or with factory functions::\n\n        @registered_flow(\"\
     my_flow\")\n        def create_flow():\n            return map_stream(lambda x:\
     \ x + 1)"
   public: true

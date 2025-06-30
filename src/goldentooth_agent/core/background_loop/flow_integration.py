@@ -33,14 +33,14 @@ def async_flow(
         A Flow that transforms items asynchronously
 
     Example:
-        # Define an async operation
-        async def fetch_data(url: str) -> dict:
-            await asyncio.sleep(0.1)  # Simulate async work
-            return {"url": url, "data": "fetched"}
-
-        # Create a flow that fetches data asynchronously
-        urls = Flow.from_iterable(["url1", "url2", "url3"])
-        results = urls >> async_flow(fetch_data)
+        >>> # Define an async operation
+        >>> async def fetch_data(url: str) -> dict:
+        ...     await asyncio.sleep(0.1)  # Simulate async work
+        ...     return {"url": url, "data": "fetched"}
+        >>>
+        >>> # Create a flow that fetches data asynchronously
+        >>> urls = Flow.from_iterable(["url1", "url2", "url3"])
+        >>> results = urls >> async_flow(fetch_data)
     """
 
     def transform(item: T) -> R:
@@ -66,9 +66,9 @@ def schedule_flow(
         A Flow that delays items
 
     Example:
-        # Delay each item by 1 second
-        items = Flow.from_iterable([1, 2, 3])
-        delayed = items >> schedule_flow(1.0)
+        >>> # Delay each item by 1 second
+        >>> items = Flow.from_iterable([1, 2, 3])
+        >>> delayed = items >> schedule_flow(1.0)
     """
 
     async def delay_item(item: T) -> T:
@@ -96,9 +96,9 @@ def timeout_async_flow(
         A Flow that transforms items with timeout
 
     Example:
-        # Fetch data with 5 second timeout
-        urls = Flow.from_iterable(["url1", "url2", "url3"])
-        results = urls >> timeout_async_flow(fetch_data, 5.0, default_value={})
+        >>> # Fetch data with 5 second timeout
+        >>> urls = Flow.from_iterable(["url1", "url2", "url3"])
+        >>> results = urls >> timeout_async_flow(fetch_data, 5.0, default_value={})
     """
 
     async def with_timeout(item: T) -> R | None:

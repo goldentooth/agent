@@ -7,6 +7,7 @@ A production-ready, functional reactive agent framework built with enterprise-gr
 [![Code Style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Tests](https://img.shields.io/badge/tests-834%20passing-green)](tests/)
 [![Security](https://img.shields.io/badge/security-enterprise--grade-green)](src/goldentooth_agent/core/security/)
+[![Documentation](https://img.shields.io/badge/docs-sphinx-blue)](https://[your-username].github.io/goldentooth-agent/)
 
 ## 🎯 Overview
 
@@ -286,6 +287,9 @@ The documentation includes:
 - **Module Backgrounds**: In-depth explanations of design decisions and theoretical foundations
 - **Developer Guide**: Code quality standards, testing practices, and contribution guidelines
 - **Architecture Overview**: System design and module interdependencies
+
+Documentation is automatically built and deployed to GitHub Pages on every push to the main branch.
+View the live documentation at: https://[your-username].github.io/goldentooth-agent/
 
 ### Available Commands
 

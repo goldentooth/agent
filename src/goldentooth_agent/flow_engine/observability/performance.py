@@ -199,7 +199,8 @@ def monitored_stream(
     Returns:
         Decorated flow with performance monitoring.
 
-    Example:
+    Example::
+
         @monitored_stream("my_pipeline")
         def my_flow():
             return Flow(...)

@@ -266,13 +266,15 @@ def registered_flow(name: str, category: str | None = None) -> Callable[[Any], A
         name: Unique name for the flow
         category: Optional category for organization
 
-    Example:
+    Example::
+
         @registered_flow("text_processor", "nlp")
         @Flow.from_sync_fn
         def process_text(text):
             return text.upper()
 
-        Or with factory functions:
+    Or with factory functions::
+
         @registered_flow("my_flow")
         def create_flow():
             return map_stream(lambda x: x + 1)

@@ -113,25 +113,25 @@ functions:
 - name: path_exists_filter
   signature: 'def path_exists_filter(paths_instance: Paths) -> Flow[Path, Path]'
   docstring: "Create a Flow that filters paths to only existing ones.\n\n    Returns:\n\
-    \        A Flow that filters out non-existent paths\n\n    Example:\n        paths\
-    \ = Flow.from_iterable([Path(\"file1.txt\"), Path(\"file2.txt\"), Path(\"missing.txt\"\
-    )])\n        existing = paths >> path_exists_filter()"
+    \        A Flow that filters out non-existent paths\n\n    Example:\n        >>>\
+    \ paths = Flow.from_iterable([Path(\"file1.txt\"), Path(\"file2.txt\"), Path(\"\
+    missing.txt\")])\n        >>> existing = paths >> path_exists_filter()"
   public: true
 - name: resolve_config_path
   signature: 'def resolve_config_path(relative_path: str) -> Flow[AnyInput, Path]'
   docstring: "Create a Flow that resolves a relative path within the config directory.\n\
     \n    Args:\n        relative_path: Relative path within the config directory\n\
     \n    Returns:\n        A Flow that returns the resolved config path\n\n    Example:\n\
-    \        flow = Flow.from_iterable([None])\n        config_file = flow >> resolve_config_path(\"\
-    settings.json\")"
+    \        >>> flow = Flow.from_iterable([None])\n        >>> config_file = flow\
+    \ >> resolve_config_path(\"settings.json\")"
   public: true
 - name: resolve_data_path
   signature: 'def resolve_data_path(relative_path: str) -> Flow[AnyInput, Path]'
   docstring: "Create a Flow that resolves a relative path within the data directory.\n\
     \n    Args:\n        relative_path: Relative path within the data directory\n\n\
     \    Returns:\n        A Flow that returns the resolved data path\n\n    Example:\n\
-    \        flow = Flow.from_iterable([None])\n        cache_file = flow >> resolve_data_path(\"\
-    cache.db\")"
+    \        >>> flow = Flow.from_iterable([None])\n        >>> cache_file = flow\
+    \ >> resolve_data_path(\"cache.db\")"
   public: true
 - name: list_directory_flow
   signature: 'def list_directory_flow(pattern: str, paths_instance: Paths) -> Flow[Path,
@@ -139,8 +139,9 @@ functions:
   docstring: "Create a Flow that lists files in a directory.\n\n    Args:\n      \
     \  pattern: Glob pattern to match files\n        paths_instance: Paths instance\
     \ (injected)\n\n    Returns:\n        A Flow that expands directories to their\
-    \ contents\n\n    Example:\n        dirs = Flow.from_iterable([paths.config(),\
-    \ paths.data()])\n        all_files = dirs >> list_directory_flow(\"*.json\")"
+    \ contents\n\n    Example:\n        >>> dirs = Flow.from_iterable([paths.config(),\
+    \ paths.data()])\n        >>> all_files = dirs >> list_directory_flow(\"*.json\"\
+    )"
   public: true
 - name: ensure_parent_dir
   signature: 'def ensure_parent_dir(paths_instance: Paths) -> Flow[Path, Path]'

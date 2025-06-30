@@ -203,7 +203,8 @@ class Flow(Generic[Input, Output]):
     ):
         """Create a flow from an async function that takes an input and returns an output.
 
-        Can be used as a decorator:
+        Can be used as a decorator::
+
             @Flow.from_value_fn
             async def process(item):
                 return await some_async_operation(item)
@@ -229,7 +230,8 @@ class Flow(Generic[Input, Output]):
     ):
         """Create a flow from a synchronous function that takes an input and returns an output.
 
-        Can be used as a decorator:
+        Can be used as a decorator::
+
             @Flow.from_sync_fn
             def double(x):
                 return x * 2
@@ -256,7 +258,8 @@ class Flow(Generic[Input, Output]):
     ):
         """Create a flow from an async function that returns an async iterator.
 
-        Can be used as a decorator:
+        Can be used as a decorator::
+
             @Flow.from_event_fn
             async def split_lines(text):
                 for line in text.split('\\n'):

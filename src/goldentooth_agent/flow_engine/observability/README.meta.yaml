@@ -619,9 +619,9 @@ functions:
     AnyFlow]], AnyFlow]'
   docstring: "Decorator to add performance monitoring to a Flow.\n\n    Args:\n  \
     \      monitor_name: Optional custom name for monitoring. Defaults to flow name.\n\
-    \n    Returns:\n        Decorated flow with performance monitoring.\n\n    Example:\n\
-    \        @monitored_stream(\"my_pipeline\")\n        def my_flow():\n        \
-    \    return Flow(...)"
+    \n    Returns:\n        Decorated flow with performance monitoring.\n\n    Example::\n\
+    \n        @monitored_stream(\"my_pipeline\")\n        def my_flow():\n       \
+    \     return Flow(...)"
   public: true
 - name: performance_stream
   signature: def performance_stream() -> AnyFlow

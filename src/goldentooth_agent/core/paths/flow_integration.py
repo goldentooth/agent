@@ -30,8 +30,8 @@ def path_exists_filter(paths_instance: Paths = inject[Paths]) -> Flow[Path, Path
         A Flow that filters out non-existent paths
 
     Example:
-        paths = Flow.from_iterable([Path("file1.txt"), Path("file2.txt"), Path("missing.txt")])
-        existing = paths >> path_exists_filter()
+        >>> paths = Flow.from_iterable([Path("file1.txt"), Path("file2.txt"), Path("missing.txt")])
+        >>> existing = paths >> path_exists_filter()
     """
     return filter_stream(lambda path: path.exists())
 
@@ -47,8 +47,8 @@ def resolve_config_path(relative_path: str) -> Flow[AnyInput, Path]:
         A Flow that returns the resolved config path
 
     Example:
-        flow = Flow.from_iterable([None])
-        config_file = flow >> resolve_config_path("settings.json")
+        >>> flow = Flow.from_iterable([None])
+        >>> config_file = flow >> resolve_config_path("settings.json")
     """
 
     @inject
@@ -71,8 +71,8 @@ def resolve_data_path(relative_path: str) -> Flow[AnyInput, Path]:
         A Flow that returns the resolved data path
 
     Example:
-        flow = Flow.from_iterable([None])
-        cache_file = flow >> resolve_data_path("cache.db")
+        >>> flow = Flow.from_iterable([None])
+        >>> cache_file = flow >> resolve_data_path("cache.db")
     """
 
     @inject
@@ -99,8 +99,8 @@ def list_directory_flow(
         A Flow that expands directories to their contents
 
     Example:
-        dirs = Flow.from_iterable([paths.config(), paths.data()])
-        all_files = dirs >> list_directory_flow("*.json")
+        >>> dirs = Flow.from_iterable([paths.config(), paths.data()])
+        >>> all_files = dirs >> list_directory_flow("*.json")
     """
 
     def list_files_async(directory: Path) -> AsyncIterator[Path]:

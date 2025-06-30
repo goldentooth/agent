@@ -106,8 +106,9 @@ napoleon_attr_annotations = True
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "typing": ("https://typing.readthedocs.io/en/latest/", None),
-    "pydantic": ("https://pydantic-docs.helpmanual.io/", None),
-    "typer": ("https://typer.tiangolo.com/", None),
+    "pydantic": ("https://docs.pydantic.dev/latest/", None),
+    # Note: Typer doesn't provide a proper objects.inv file, so we'll skip it
+    # "typer": ("https://typer.tiangolo.com/", None),
 }
 
 # MyST parser configuration
@@ -125,6 +126,9 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
+
+# Suppress certain MyST warnings
+myst_suppress_warnings = ["myst.header"]
 
 # TODOs
 todo_include_todos = True

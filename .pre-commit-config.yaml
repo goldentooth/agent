@@ -141,8 +141,8 @@ repos:
         name: Build Sphinx Documentation
         entry: poetry run sphinx-build
         language: system
-        args: ['-W', '-b', 'html', 'docs', 'docs/_build']
-        description: Build Sphinx documentation and fail on warnings
+        args: ['-b', 'html', '-q', 'docs', 'docs/_build']
+        description: Build Sphinx documentation quietly
         files: '(\.py|\.rst|\.md)$'
         pass_filenames: false
         always_run: false

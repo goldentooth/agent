@@ -113,7 +113,7 @@ classes:
       -> Flow[Input, Output] | Callable[[Callable[[Input], Awaitable[Output]]], Flow[Input,
       Output]]'
     docstring: "Create a flow from an async function that takes an input and returns\
-      \ an output.\n\n        Can be used as a decorator:\n            @Flow.from_value_fn\n\
+      \ an output.\n\n        Can be used as a decorator::\n\n            @Flow.from_value_fn\n\
       \            async def process(item):\n                return await some_async_operation(item)"
     first_line: Create a flow from an async function that takes an input and returns
       an output
@@ -122,8 +122,9 @@ classes:
     signature: 'def from_sync_fn(fn: Callable[[Input], Output] | None) -> Flow[Input,
       Output] | Callable[[Callable[[Input], Output]], Flow[Input, Output]]'
     docstring: "Create a flow from a synchronous function that takes an input and\
-      \ returns an output.\n\n        Can be used as a decorator:\n            @Flow.from_sync_fn\n\
-      \            def double(x):\n                return x * 2"
+      \ returns an output.\n\n        Can be used as a decorator::\n\n           \
+      \ @Flow.from_sync_fn\n            def double(x):\n                return x *\
+      \ 2"
     first_line: Create a flow from a synchronous function that takes an input and
       returns an output
     public: true
@@ -132,8 +133,8 @@ classes:
       -> Flow[Input, Output] | Callable[[Callable[[Input], AsyncIterator[Output]]],
       Flow[Input, Output]]'
     docstring: "Create a flow from an async function that returns an async iterator.\n\
-      \n        Can be used as a decorator:\n            @Flow.from_event_fn\n   \
-      \         async def split_lines(text):\n                for line in text.split('\\\
+      \n        Can be used as a decorator::\n\n            @Flow.from_event_fn\n\
+      \            async def split_lines(text):\n                for line in text.split('\\\
       n'):\n                    yield line"
     first_line: Create a flow from an async function that returns an async iterator
     public: true

@@ -2,7 +2,7 @@ module_name: Background Loop
 description: Background Loop module
 complexity: Medium
 file_count: 3
-loc: ~174
+loc: ~175
 test_coverage: Medium
 class_count: 1
 function_count: 10
@@ -77,11 +77,12 @@ functions:
     \    Args:\n        coroutine_fn: A function that takes an item and returns a\
     \ coroutine\n        background_loop: The background event loop to use (injected)\n\
     \n    Returns:\n        A Flow that transforms items asynchronously\n\n    Example:\n\
-    \        # Define an async operation\n        async def fetch_data(url: str) ->\
-    \ dict:\n            await asyncio.sleep(0.1)  # Simulate async work\n       \
-    \     return {\"url\": url, \"data\": \"fetched\"}\n\n        # Create a flow\
-    \ that fetches data asynchronously\n        urls = Flow.from_iterable([\"url1\"\
-    , \"url2\", \"url3\"])\n        results = urls >> async_flow(fetch_data)"
+    \        >>> # Define an async operation\n        >>> async def fetch_data(url:\
+    \ str) -> dict:\n        ...     await asyncio.sleep(0.1)  # Simulate async work\n\
+    \        ...     return {\"url\": url, \"data\": \"fetched\"}\n        >>>\n \
+    \       >>> # Create a flow that fetches data asynchronously\n        >>> urls\
+    \ = Flow.from_iterable([\"url1\", \"url2\", \"url3\"])\n        >>> results =\
+    \ urls >> async_flow(fetch_data)"
   public: true
 - name: schedule_flow
   signature: 'def schedule_flow(delay_seconds: float, background_loop: BackgroundEventLoop)
@@ -89,8 +90,9 @@ functions:
   docstring: "Create a Flow that delays items using the background loop.\n\n    Args:\n\
     \        delay_seconds: Seconds to delay each item\n        background_loop: The\
     \ background event loop to use (injected)\n\n    Returns:\n        A Flow that\
-    \ delays items\n\n    Example:\n        # Delay each item by 1 second\n      \
-    \  items = Flow.from_iterable([1, 2, 3])\n        delayed = items >> schedule_flow(1.0)"
+    \ delays items\n\n    Example:\n        >>> # Delay each item by 1 second\n  \
+    \      >>> items = Flow.from_iterable([1, 2, 3])\n        >>> delayed = items\
+    \ >> schedule_flow(1.0)"
   public: true
 - name: timeout_async_flow
   signature: 'def timeout_async_flow(coroutine_fn: Callable[[T], Coroutine[AnyType,
@@ -99,9 +101,9 @@ functions:
     \        coroutine_fn: A function that takes an item and returns a coroutine\n\
     \        timeout_seconds: Timeout in seconds\n        default_value: Value to\
     \ return on timeout (None to skip)\n\n    Returns:\n        A Flow that transforms\
-    \ items with timeout\n\n    Example:\n        # Fetch data with 5 second timeout\n\
-    \        urls = Flow.from_iterable([\"url1\", \"url2\", \"url3\"])\n        results\
-    \ = urls >> timeout_async_flow(fetch_data, 5.0, default_value={})"
+    \ items with timeout\n\n    Example:\n        >>> # Fetch data with 5 second timeout\n\
+    \        >>> urls = Flow.from_iterable([\"url1\", \"url2\", \"url3\"])\n     \
+    \   >>> results = urls >> timeout_async_flow(fetch_data, 5.0, default_value={})"
   public: true
 - name: run_in_background
   signature: 'def run_in_background(coroutine: AnyCoroutine[T], background_loop: BackgroundEventLoop)
