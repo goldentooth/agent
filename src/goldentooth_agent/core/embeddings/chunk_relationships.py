@@ -463,7 +463,7 @@ class ChunkRelationshipAnalyzer:
 
             for chunk_id in current_chunks:
                 # Find all chunks related to this one
-                for rel_type, rel_list in relationship_data["relationships"].items():
+                for _rel_type, rel_list in relationship_data["relationships"].items():
                     for relationship in rel_list:
                         if relationship["source_chunk_id"] == chunk_id:
                             next_chunks.add(relationship["target_chunk_id"])

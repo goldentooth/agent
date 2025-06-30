@@ -128,7 +128,6 @@ class VectorStore:
 
             # Create vec0 virtual table for embeddings
             # Try to create vec0 table (optimal performance)
-            vec0_available = True
             try:
                 conn.execute(
                     """
@@ -144,7 +143,6 @@ class VectorStore:
                 """
                 )
             except sqlite3.OperationalError as e:
-                vec0_available = False
                 print(
                     f"Warning: vec0 extension not available ({e}), vec0 table not created"
                 )

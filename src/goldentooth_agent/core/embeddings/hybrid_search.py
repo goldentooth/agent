@@ -315,7 +315,7 @@ class HybridSearchEngine:
 
         # Calculate hybrid scores
         combined_results = []
-        for doc_id, result in results_map.items():
+        for _doc_id, result in results_map.items():
             semantic_score = result["semantic_score"]
             keyword_score = result["keyword_score"]
 

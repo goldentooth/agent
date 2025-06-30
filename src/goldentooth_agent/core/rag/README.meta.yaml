@@ -2,7 +2,7 @@ module_name: Rag
 description: Rag module
 complexity: Critical
 file_count: 7
-loc: ~4558
+loc: ~4559
 test_coverage: Medium
 class_count: 13
 function_count: 109

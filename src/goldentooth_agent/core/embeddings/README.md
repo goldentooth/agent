@@ -6,7 +6,7 @@ Embeddings module
 
 - **Complexity**: Critical
 - **Files**: 8 Python files
-- **Lines of Code**: ~3535
+- **Lines of Code**: ~3533
 - **Classes**: 9
 - **Functions**: 105
 

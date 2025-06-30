@@ -102,7 +102,8 @@ class RAGAgent:
                 conversation_history = context.get(
                     "schema.RAGInput.conversation_history", []
                 )
-                domain_context = context.get("schema.RAGInput.domain_context")
+                # Note: domain_context could be used for future enhancements
+                # domain_context = context.get("schema.RAGInput.domain_context")
             except KeyError:
                 # Input data not properly set, pass through
                 yield context

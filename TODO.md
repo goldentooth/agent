@@ -31,3 +31,4 @@
 29. Create a command that will retrieve the .py files in the codebase that have been touched least recently within the codebase and perform a deep audit of them, evaluating whether they should be refactored or otherwise improved, etc. After the file has been updated, a comment should be added to the foot of the document mentioning the date and indicating that the file was touched on that date. The command might be `goldentooth-agent dev audit stale-files` or something.
 30. Can Sphinx be integrated as a RAG source?
 31. Can pre-commit pass along an argument to fail on the first error to allow Claude Code to focus a bit more easily on the errors?
+32. I don't see much need for the README.meta.yaml and README.md files outside of src/goldentooth_agent. Can we zap the ones outside of the core codebase?

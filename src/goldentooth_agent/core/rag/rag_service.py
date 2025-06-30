@@ -156,11 +156,11 @@ class RAGService:
                     "similarity_threshold": similarity_threshold,
                     "model_used": self.claude_client.default_model,
                     "chunk_types_found": list(
-                        set(
+                        {
                             doc.get("chunk_type")
                             for doc in filtered_docs
                             if doc.get("is_chunk", False) and doc.get("chunk_type")
-                        )
+                        }
                     ),
                 },
             }
@@ -279,7 +279,7 @@ class RAGService:
                 store_type = chunk["store_type"]
                 content = chunk["content"]
                 similarity = chunk["similarity_score"]
-                chunk_id = chunk.get("chunk_id", "unknown")
+                # chunk_id available but not currently used
                 chunk_type = chunk.get("chunk_type", "unknown")
                 chunk_title = chunk.get("chunk_title", "Untitled")
                 chunk_index = chunk.get("chunk_index", 0)
@@ -295,7 +295,7 @@ Content: {content}
                 # Multiple chunks from same document
                 context_entry = f"""Source {entry_num}: {parent_key} - Multiple Sections
 """
-                for j, chunk in enumerate(chunks):
+                for _j, chunk in enumerate(chunks):
                     content = chunk["content"]
                     similarity = chunk["similarity_score"]
                     chunk_type = chunk.get("chunk_type", "unknown")
@@ -729,8 +729,8 @@ Provide concise, actionable insights in a structured format."""
         """
         try:
             # Get chunk details from vector store
-            chunks = []
-            for chunk_id in chunk_ids:
+            # chunks = []  # TODO: Implement when VectorStore has get_chunk_by_id
+            for _chunk_id in chunk_ids:
                 # Note: This would require a get_chunk_by_id method in VectorStore
                 # For now, we'll return a placeholder
                 pass
@@ -866,7 +866,7 @@ Provide a structured analysis that helps understand how these chunks relate to e
 
             # Store relationships in vector store
             all_relationships = []
-            for rel_type, rel_list in relationship_data["relationships"].items():
+            for _rel_type, rel_list in relationship_data["relationships"].items():
                 all_relationships.extend(rel_list)
 
             stored_count = self.vector_store.store_chunk_relationships(
@@ -1389,9 +1389,9 @@ Provide a structured analysis that helps understand how these chunks relate to e
 
         context_parts = []
 
-        # Group results by search method contribution
-        semantic_results = [r for r in search_results if r.get("semantic_score", 0) > 0]
-        keyword_results = [r for r in search_results if r.get("keyword_score", 0) > 0]
+        # Group results by search method contribution (for future analysis)
+        # semantic_results = [r for r in search_results if r.get("semantic_score", 0) > 0]
+        # keyword_results = [r for r in search_results if r.get("keyword_score", 0) > 0]
 
         # Add introduction
         context_parts.append("=== HYBRID SEARCH RESULTS ===")
@@ -1548,18 +1548,18 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
             )
 
             # Analyze overlap and differences
-            semantic_docs = set(
+            semantic_docs = {
                 self._get_doc_id_from_result(r)
                 for r in semantic_results.get("retrieved_documents", [])
-            )
-            keyword_docs = set(
+            }
+            keyword_docs = {
                 self._get_doc_id_from_result(r)
                 for r in keyword_results.get("retrieved_documents", [])
-            )
-            hybrid_docs = set(
+            }
+            hybrid_docs = {
                 self._get_doc_id_from_result(r)
                 for r in hybrid_results.get("retrieved_documents", [])
-            )
+            }
 
             overlap_analysis = {
                 "semantic_only": list(semantic_docs - keyword_docs),
@@ -2233,7 +2233,7 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
             strategy_results = []
             all_retrieved_docs = []
 
-            for i, strategy in enumerate(strategies):
+            for _i, strategy in enumerate(strategies):
                 strategy_docs = []
 
                 for j, query in enumerate(strategy.queries):
@@ -2635,8 +2635,8 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                 best_doc = max(docs, key=lambda d: d.get("weighted_score", 0))
 
                 # Combine strategy information
-                strategies = list(set(d.get("strategy_type", "unknown") for d in docs))
-                query_variants = list(set(d.get("query_variant", "") for d in docs))
+                strategies = list({d.get("strategy_type", "unknown") for d in docs})
+                query_variants = list({d.get("query_variant", "") for d in docs})
 
                 best_doc["strategy_types"] = strategies
                 best_doc["query_variants"] = query_variants

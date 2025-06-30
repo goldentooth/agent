@@ -6,7 +6,7 @@ Rag module
 
 - **Complexity**: Critical
 - **Files**: 7 Python files
-- **Lines of Code**: ~4558
+- **Lines of Code**: ~4559
 - **Classes**: 13
 - **Functions**: 109
 

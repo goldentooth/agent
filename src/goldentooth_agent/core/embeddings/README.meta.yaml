@@ -2,7 +2,7 @@ module_name: Embeddings
 description: Embeddings module
 complexity: Critical
 file_count: 8
-loc: ~3535
+loc: ~3533
 test_coverage: Medium
 class_count: 9
 function_count: 105

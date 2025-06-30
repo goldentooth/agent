@@ -315,7 +315,7 @@ class ChunkFusion:
         common_terms = 0
         total_unique_terms = len(word_freq)
 
-        for word, freq in word_freq.items():
+        for _word, freq in word_freq.items():
             if freq >= len(chunks) * 0.4:  # Term appears in at least 40% of chunks
                 common_terms += 1
 
@@ -354,7 +354,7 @@ class ChunkFusion:
 
         coherence_scores = []
 
-        for doc_id, doc_chunk_list in doc_chunks.items():
+        for _doc_id, doc_chunk_list in doc_chunks.items():
             if len(doc_chunk_list) < 2:
                 coherence_scores.append(1.0)
                 continue
