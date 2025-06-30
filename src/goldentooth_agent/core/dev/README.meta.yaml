@@ -2,10 +2,10 @@ module_name: Dev
 description: Dev module
 complexity: Medium
 file_count: 2
-loc: ~1193
+loc: ~1181
 test_coverage: Medium
 class_count: 4
-function_count: 44
+function_count: 41
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies: []

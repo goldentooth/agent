@@ -6,9 +6,9 @@ Dev module
 
 - **Complexity**: Medium
 - **Files**: 2 Python files
-- **Lines of Code**: ~1193
+- **Lines of Code**: ~1181
 - **Classes**: 4
-- **Functions**: 44
+- **Functions**: 41
 
 ## API Reference
 

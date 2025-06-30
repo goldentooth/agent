@@ -75,7 +75,7 @@ class SearchStrategy:
 class QueryExpansionEngine:
     """Advanced query expansion and semantic understanding engine."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the query expansion engine."""
         # Technical domain synonyms and related terms
         self.tech_synonyms = {

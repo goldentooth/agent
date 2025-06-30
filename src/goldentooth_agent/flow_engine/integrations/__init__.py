@@ -4,6 +4,6 @@
 # from .context_bridge import ContextFlowBridge
 # from .trampoline import TrampolineFlowCombinators
 
-__all__ = [
+__all__: list[str] = [
     # Will be populated as integrations are implemented
 ]

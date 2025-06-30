@@ -165,7 +165,6 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = [
     "tests.*",
-    "test_*",
 ]
 # Less strict type checking for tests
 disallow_untyped_defs = false

@@ -394,7 +394,7 @@ class DocumentChunker:
 
         sections = []
         current_header = ""
-        current_content = []
+        current_content: list[str] = []
 
         for line in lines:
             if re.match(header_pattern, line):
@@ -427,7 +427,7 @@ class DocumentChunker:
             return {"total_chunks": 0, "chunk_types": [], "total_content_length": 0}
 
         chunk_types = [chunk.chunk_type for chunk in chunks]
-        chunk_type_counts = {}
+        chunk_type_counts: dict[str, int] = {}
         for chunk_type in chunk_types:
             chunk_type_counts[chunk_type] = chunk_type_counts.get(chunk_type, 0) + 1
 

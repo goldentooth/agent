@@ -2,7 +2,7 @@
 
 import ast
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -17,14 +17,8 @@ class MetadataUpdateResult:
     module_path: Path
     updated: bool = False
     would_update: bool = False
-    changes: list[str] = None
-    errors: list[str] = None
-
-    def __post_init__(self) -> None:
-        if self.changes is None:
-            self.changes = []
-        if self.errors is None:
-            self.errors = []
+    changes: list[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -34,12 +28,8 @@ class SymbolInfo:
     name: str
     docstring: str = ""
     signature: str = ""
-    methods: list[str] = None
+    methods: list[str] = field(default_factory=list)
     public: bool = True
-
-    def __post_init__(self) -> None:
-        if self.methods is None:
-            self.methods = []
 
 
 @dataclass
@@ -59,17 +49,9 @@ class ModuleAnalysis:
     complexity: str  # "Low", "Medium", "High", "Critical"
 
     # Enhanced symbol information
-    classes: list[SymbolInfo] = None
-    functions: list[SymbolInfo] = None
-    constants: list[SymbolInfo] = None
-
-    def __post_init__(self) -> None:
-        if self.classes is None:
-            self.classes = []
-        if self.functions is None:
-            self.functions = []
-        if self.constants is None:
-            self.constants = []
+    classes: list[SymbolInfo] = field(default_factory=list)
+    functions: list[SymbolInfo] = field(default_factory=list)
+    constants: list[SymbolInfo] = field(default_factory=list)
 
 
 @injectable
@@ -101,7 +83,7 @@ class ModuleMetadataGenerator:
 
             # Load existing metadata if it exists
             meta_file = module_path / "README.meta.yaml"
-            existing_metadata = {}
+            existing_metadata: dict[str, Any] = {}
             if meta_file.exists():
                 with open(meta_file) as f:
                     existing_metadata = yaml.safe_load(f) or {}
@@ -138,7 +120,7 @@ class ModuleMetadataGenerator:
         self, project_root: Path, force: bool = False, dry_run: bool = False
     ) -> list[MetadataUpdateResult]:
         """Update README.meta.yaml for all modules in the project."""
-        results = []
+        results: list[MetadataUpdateResult] = []
 
         # Find all Python module directories
         module_dirs = self._find_module_directories(project_root)
@@ -240,7 +222,7 @@ class ModuleMetadataGenerator:
         dry_run: bool = False,
     ) -> list[MetadataUpdateResult]:
         """Update README.meta.yaml for modules that have changed since the specified commit."""
-        results = []
+        results: list[MetadataUpdateResult] = []
 
         # Get modules that have changed
         changed_modules = self._get_changed_python_modules(project_root, since_commit)
@@ -259,7 +241,7 @@ class ModuleMetadataGenerator:
 
     def update_for_pre_commit(self, project_root: Path) -> list[MetadataUpdateResult]:
         """Update metadata for modules with staged changes (optimized for pre-commit)."""
-        results = []
+        results: list[MetadataUpdateResult] = []
 
         # Get modules with staged changes
         staged_modules = self._get_staged_python_modules(project_root)
@@ -279,7 +261,7 @@ class ModuleMetadataGenerator:
 
     def validate_for_commit(self, project_root: Path) -> list[str]:
         """Validate metadata for modules that will be committed."""
-        all_errors = []
+        all_errors: list[str] = []
 
         # Get modules with staged changes
         staged_modules = self._get_staged_python_modules(project_root)
@@ -711,7 +693,10 @@ class ModuleMetadataGenerator:
         detailed_constants: list[SymbolInfo] = []
 
         # First pass: collect all module-level definitions and imports
-        module_level_nodes = list(tree.body)
+        if isinstance(tree, ast.Module):
+            module_level_nodes: list[ast.stmt] = list(tree.body)
+        else:
+            module_level_nodes = []
         imported_names = set()  # Track what we import for re-export detection
 
         for node in module_level_nodes:
