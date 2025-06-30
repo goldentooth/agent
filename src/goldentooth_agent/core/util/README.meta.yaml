@@ -1,0 +1,42 @@
+module_name: Util
+description: Util module
+complexity: Low
+file_count: 2
+loc: ~29
+test_coverage: Medium
+class_count: 0
+function_count: 1
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- collections
+- inspect
+- maybe_await
+- typing
+symbols:
+- T
+- __all__
+- maybe_await
+exports:
+- maybe_await
+functions:
+- name: maybe_await
+  signature: 'async def maybe_await(func: Callable[..., T], *args: object, **kwargs:
+    object) -> T'
+  docstring: "Call a function and conditionally await its result if it returns a coroutine.\n\
+    \n    This utility enables uniform handling of both synchronous and asynchronous\
+    \ functions\n    in contexts where you don't know ahead of time whether the function\
+    \ is async.\n    Useful for building flexible APIs that accept either sync or\
+    \ async callables.\n\n    Args:\n        func: The callable to execute (can be\
+    \ sync or async)\n        *args: Positional arguments to pass to the function\n\
+    \        **kwargs: Keyword arguments to pass to the function\n\n    Returns:\n\
+    \        The result of the function call, awaited if it was a coroutine\n\n  \
+    \  Example:\n        # Works with both sync and async functions\n        result1\
+    \ = await maybe_await(lambda x: x + 1, 5)  # Returns 6\n        result2 = await\
+    \ maybe_await(async_function, arg1, kwarg=value)"
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true

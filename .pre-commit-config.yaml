@@ -61,6 +61,19 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
         exclude: ^old/
 
+  # Update module metadata for changed modules (auto-fixes stale metadata)
+  - repo: local
+    hooks:
+      - id: update-module-metadata
+        name: Update Module Metadata
+        entry: poetry run goldentooth-agent dev module pre-commit-update
+        language: system
+        types: [python]
+        description: Update README.meta.yaml for modules with staged changes
+        pass_filenames: false
+        always_run: false
+        stages: [pre-commit]
+
   # Type checking with MyPy
   - repo: local
     hooks:
@@ -84,6 +97,30 @@ repos:
   #       args: ['--pythonpath=src', '--project=pyproject.toml']
   #       additional_dependencies: []
   #       pass_filenames: false
+
+  # Generate README.md files from metadata (auto-fixes stale READMEs)
+  - repo: local
+    hooks:
+      - id: update-readme-files
+        name: Update README Files
+        entry: poetry run goldentooth-agent dev module generate-readme-for-commit
+        language: system
+        description: Generate README.md files from README.meta.yaml for staged modules
+        pass_filenames: false
+        always_run: false
+        stages: [pre-commit]
+
+  # Validate module metadata before running tests
+  - repo: local
+    hooks:
+      - id: validate-module-metadata
+        name: Validate Module Metadata
+        entry: poetry run goldentooth-agent dev module validate-for-commit
+        language: system
+        description: Validate metadata accuracy for staged modules before commit
+        pass_filenames: false
+        always_run: false
+        stages: [pre-commit]
 
   # Run pytest tests
   - repo: local

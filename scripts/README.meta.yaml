@@ -1,0 +1,138 @@
+module_name: Scripts
+description: Scripts module
+complexity: High
+file_count: 7
+loc: ~1098
+test_coverage: Medium
+class_count: 0
+function_count: 18
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.document_store
+- goldentooth_agent.core.embeddings
+- goldentooth_agent.core.embeddings.vector_store
+- goldentooth_agent.core.paths
+external_dependencies:
+- ast
+- asyncio
+- collections
+- datetime
+- os
+- pathlib
+- shutil
+- subprocess
+- sys
+- typing
+symbols:
+- analyze_module
+- check_module_tests
+- create_compatibility_shim
+- create_package_structure
+- create_readme_template
+- extract_module
+- extract_symbols
+- find_python_files
+- main
+- migrate_embeddings
+- move_module_files
+- move_tests
+- populate_vector_store
+- project_root
+- run_command
+- run_tests_for_package
+- update_imports_across_codebase
+- update_imports_in_file
+- verify_migration
+exports: []
+functions:
+- name: run_command
+  signature: 'def run_command(cmd: list[str]) -> tuple[bool, str]'
+  docstring: Run a command and return success status and output.
+  public: true
+- name: check_module_tests
+  signature: 'def check_module_tests(module_name: str) -> dict[str, any]'
+  docstring: Check if tests pass for a specific module.
+  public: true
+- name: main
+  signature: def main()
+  docstring: Check extraction readiness for all major modules.
+  public: true
+- name: create_package_structure
+  signature: 'def create_package_structure(package_name: str) -> Path'
+  docstring: Create the new package directory structure.
+  public: true
+- name: move_module_files
+  signature: 'def move_module_files(source_module: str, target_package: Path) -> list[Path]'
+  docstring: Move files from core module to new package.
+  public: true
+- name: update_imports_in_file
+  signature: 'def update_imports_in_file(file_path: Path, old_import: str, new_import:
+    str)'
+  docstring: Update import statements in a Python file.
+  public: true
+- name: update_imports_across_codebase
+  signature: 'def update_imports_across_codebase(old_module: str, new_package: str)'
+  docstring: Update all import statements across the codebase.
+  public: true
+- name: create_compatibility_shim
+  signature: 'def create_compatibility_shim(old_module: str, new_package: str)'
+  docstring: Create a compatibility shim in the old location.
+  public: true
+- name: move_tests
+  signature: 'def move_tests(source_module: str, target_package: str) -> bool'
+  docstring: Move tests to match the new package structure.
+  public: true
+- name: run_tests_for_package
+  signature: 'def run_tests_for_package(package_name: str) -> bool'
+  docstring: Run tests to verify the extraction worked.
+  public: true
+- name: extract_module
+  signature: 'def extract_module(source_module: str, target_package: str)'
+  docstring: Extract a module into a new package.
+  public: true
+- name: main
+  signature: def main()
+  docstring: Extract the flow module as a demonstration.
+  public: true
+- name: migrate_embeddings
+  signature: async def migrate_embeddings()
+  docstring: Main migration function.
+  public: true
+- name: verify_migration
+  signature: async def verify_migration()
+  docstring: Verify the migration by testing a few embeddings.
+  public: true
+- name: populate_vector_store
+  signature: async def populate_vector_store()
+  docstring: Populate vector store with OpenAI embeddings.
+  public: true
+- name: analyze_module
+  signature: 'def analyze_module(module_path: Path) -> dict[str, Any]'
+  docstring: Analyze a Python module to extract API surface.
+  public: true
+- name: create_readme_template
+  signature: 'def create_readme_template(module_name: str, analysis: dict[str, Any])
+    -> str'
+  docstring: Create a standardized README template.
+  public: true
+- name: main
+  signature: def main()
+  docstring: Generate README files for all major modules.
+  public: true
+- name: extract_symbols
+  signature: 'def extract_symbols(file_path: Path) -> set[str]'
+  docstring: Extract all defined symbols from a Python file.
+  public: true
+- name: find_python_files
+  signature: 'def find_python_files(root_dir: Path) -> list[Path]'
+  docstring: Find all Python files in the project.
+  public: true
+- name: main
+  signature: def main()
+  docstring: Main function to check for duplicate symbols.
+  public: true
+- name: main
+  signature: def main() -> int
+  docstring: Main entry point for the pre-commit hook.
+  public: true

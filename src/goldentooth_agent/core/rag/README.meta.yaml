@@ -1,0 +1,148 @@
+module_name: Rag
+description: Rag module
+complexity: Critical
+file_count: 7
+loc: ~4558
+test_coverage: Medium
+class_count: 13
+function_count: 109
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.embeddings.models
+external_dependencies:
+- __future__
+- antidote
+- chunk_fusion
+- collections
+- context
+- dataclasses
+- datetime
+- document_store
+- embeddings
+- enum
+- flow_agent
+- goldentooth_agent
+- llm
+- numpy
+- pydantic
+- query_expansion
+- rag_agent
+- rag_service
+- re
+- simple_rag_service
+- typing
+symbols:
+- ChunkCluster
+- ChunkFusion
+- FusedAnswer
+- QueryExpansion
+- QueryExpansionEngine
+- QueryIntent
+- RAGAgent
+- RAGInput
+- RAGOutput
+- RAGService
+- SearchStrategy
+- SimpleRAGAgent
+- SimpleRAGService
+- __all__
+- create_simple_rag_agent
+exports:
+- RAGAgent
+- RAGInput
+- RAGOutput
+- RAGService
+classes:
+- name: RAGService
+  docstring: Retrieval-Augmented Generation service for intelligent document querying.
+  methods:
+  - query
+  - get_document_chunks_info
+  - summarize_documents
+  - get_document_insights
+  - search_chunks_by_type
+  - get_document_chunk_summary
+  - compare_chunks
+  - analyze_document_relationships
+  - query_with_relationships
+  - get_chunk_relationship_insights
+  - hybrid_query
+  - compare_search_methods
+  - tune_hybrid_search
+  - query_with_fusion
+  - analyze_fusion_quality
+  - enhanced_query
+  - analyze_query_intelligence
+  public: true
+- name: QueryIntent
+  docstring: Types of query intents for different search strategies.
+  methods: []
+  public: true
+- name: QueryExpansion
+  docstring: Result of query expansion with enhanced terms and strategies.
+  methods:
+  - all_terms
+  public: true
+- name: SearchStrategy
+  docstring: Strategy for executing enhanced searches.
+  methods:
+  - primary_query
+  public: true
+- name: QueryExpansionEngine
+  docstring: Advanced query expansion and semantic understanding engine.
+  methods:
+  - expand_query
+  - create_search_strategies
+  - analyze_query_quality
+  - reformulate_query
+  public: true
+- name: ChunkCluster
+  docstring: A cluster of related chunks that can be fused together.
+  methods:
+  - average_relevance
+  - chunk_ids
+  public: true
+- name: FusedAnswer
+  docstring: A synthesized answer created from multiple chunks.
+  methods:
+  - num_sources
+  - source_documents
+  public: true
+- name: ChunkFusion
+  docstring: Intelligent chunk fusion for creating comprehensive answers from multiple
+    chunks.
+  methods:
+  - fuse_chunks
+  public: true
+- name: RAGInput
+  docstring: Input schema for RAG agent interactions.
+  methods: []
+  public: true
+- name: RAGOutput
+  docstring: Output schema for RAG agent responses.
+  methods: []
+  public: true
+- name: RAGAgent
+  docstring: RAG-powered agent using FlowAgent architecture.
+  methods:
+  - process_question
+  - as_flow
+  public: true
+- name: SimpleRAGService
+  docstring: Simplified RAG service for reliable document-based question answering.
+  methods:
+  - query
+  - get_document_count
+  - get_stats
+  public: true
+- name: SimpleRAGAgent
+  docstring: Simplified RAG agent for document-based conversations.
+  methods:
+  - process_question
+  public: true
+functions:
+- name: create_simple_rag_agent
+  signature: def create_simple_rag_agent() -> SimpleRAGAgent
+  docstring: Factory function to create a simple RAG agent with dependencies.
+  public: true

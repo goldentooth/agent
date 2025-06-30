@@ -1,0 +1,58 @@
+module_name: Named Registry
+description: Named Registry module
+complexity: Low
+file_count: 2
+loc: ~96
+test_coverage: Medium
+class_count: 3
+function_count: 12
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- __future__
+- collections
+- main
+- typing
+symbols:
+- Creatable
+- NamedRegistry
+- RegisterCallable
+- T
+- Tc
+- __all__
+- make_register_fn
+exports:
+- NamedRegistry
+- make_register_fn
+classes:
+- name: NamedRegistry
+  docstring: Generic registry for name-keyed objects of type T.
+  methods:
+  - set
+  - get
+  - remove
+  - has
+  - list_ids
+  - all_objects
+  - all_items
+  - clear
+  public: true
+- name: Creatable
+  docstring: Protocol for a class that can be instantiated.
+  methods:
+  - create
+  public: true
+- name: RegisterCallable
+  docstring: Protocol for a callable that registers an object with a name.
+  methods: []
+  public: true
+functions:
+- name: make_register_fn
+  signature: 'def make_register_fn(registry_cls: type[NamedRegistry[T]]) -> RegisterCallable[T]'
+  docstring: Create a registration function for the given type.
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true

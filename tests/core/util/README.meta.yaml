@@ -1,0 +1,73 @@
+module_name: Util
+description: Util module
+complexity: Low
+file_count: 2
+loc: ~165
+test_coverage: Medium
+class_count: 1
+function_count: 21
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.util.maybe_await
+external_dependencies:
+- asyncio
+- pytest
+symbols:
+- TestMaybeAwait
+- async_function
+- async_function_that_raises
+- async_function_with_args
+- async_function_with_delay
+- sync_function
+- sync_function_that_raises
+- sync_function_with_args
+exports: []
+classes:
+- name: TestMaybeAwait
+  docstring: Test cases for maybe_await function.
+  methods:
+  - test_sync_function_no_args
+  - test_sync_function_with_args
+  - test_async_function_no_args
+  - test_async_function_with_args
+  - test_async_function_with_delay
+  - test_sync_function_exception
+  - test_async_function_exception
+  - test_non_callable_raises_error
+  - test_lambda_functions
+  - test_method_calls
+  - test_builtin_functions
+  - test_coroutine_detection
+  - test_empty_args_kwargs
+  - test_mixed_argument_types
+  public: true
+functions:
+- name: sync_function
+  signature: def sync_function()
+  docstring: A simple synchronous function.
+  public: true
+- name: sync_function_with_args
+  signature: def sync_function_with_args(arg1, arg2, kwarg1)
+  docstring: A synchronous function that takes arguments.
+  public: true
+- name: sync_function_that_raises
+  signature: def sync_function_that_raises()
+  docstring: A synchronous function that raises an exception.
+  public: true
+- name: async_function
+  signature: async def async_function()
+  docstring: A simple asynchronous function.
+  public: true
+- name: async_function_with_args
+  signature: async def async_function_with_args(arg1, arg2, kwarg1)
+  docstring: An asynchronous function that takes arguments.
+  public: true
+- name: async_function_that_raises
+  signature: async def async_function_that_raises()
+  docstring: An asynchronous function that raises an exception.
+  public: true
+- name: async_function_with_delay
+  signature: async def async_function_with_delay()
+  docstring: An asynchronous function with a delay.
+  public: true

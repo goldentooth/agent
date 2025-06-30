@@ -1,0 +1,277 @@
+module_name: Context
+description: Context module
+complexity: High
+file_count: 9
+loc: ~1633
+test_coverage: Medium
+class_count: 15
+function_count: 122
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.event
+external_dependencies:
+- __future__
+- asyncio
+- collections
+- copy
+- dataclasses
+- dependency_graph
+- flow_integration
+- frame
+- functools
+- goldentooth_agent
+- history_tracker
+- json
+- key
+- main
+- pyee
+- re
+- snapshot_manager
+- symbol
+- time
+- typing
+- weakref
+symbols:
+- AnyContextKey
+- AnyFlow
+- AnyValue
+- AsyncEventRegistry
+- AsyncGlobalEventFlow
+- ComputedFunction
+- ComputedProperty
+- Context
+- ContextChangeEvent
+- ContextData
+- ContextDiff
+- ContextFlowCombinators
+- ContextFlowDecorator
+- ContextFlowError
+- ContextFlowFunction
+- ContextFrame
+- ContextKey
+- ContextSnapshot
+- ContextTypeMismatchError
+- ContextValue
+- DependencyGraph
+- FlattenedData
+- GlobalChangeData
+- GlobalChangeFlow
+- HistoryTracker
+- MissingRequiredKeyError
+- R
+- SnapshotManager
+- Symbol
+- SyncEventRegistry
+- SyncGlobalEventFlow
+- T
+- TrackedValue
+- TransformFunction
+- Transformation
+- ValuePredicate
+- __all__
+- _single_item_stream
+- context_flow
+- context_key
+- extend_flow_with_context
+- run_flow_with_input
+exports:
+- Context
+- ContextFlowCombinators
+- ContextFlowError
+- ContextFrame
+- ContextKey
+- ContextTypeMismatchError
+- DependencyGraph
+- HistoryTracker
+- MissingRequiredKeyError
+- SnapshotManager
+- Symbol
+- context_flow
+- context_key
+- extend_flow_with_context
+classes:
+- name: DependencyGraph
+  docstring: Manages dependency relationships between context keys and computed properties.
+  methods:
+  - add_dependency
+  - remove_dependency
+  - remove_all_dependencies
+  - get_dependents
+  - has_dependents
+  - get_all_source_keys
+  - clear
+  - get_graph_copy
+  public: true
+- name: ContextKey
+  docstring: Class for context keys that can be used to store and retrieve values
+    in a context.
+  methods:
+  - create
+  - symbol
+  public: true
+- name: Symbol
+  docstring: "Represents a symbolic key like 'agent.intent'.\n    You can use Symbol('agent.intent')\
+    \ or just strings interchangeably."
+  methods:
+  - parts
+  public: true
+- name: SnapshotManager
+  docstring: Manages snapshots for Context objects.
+  methods:
+  - create_snapshot
+  - restore_snapshot
+  - list_snapshots
+  - delete_snapshot
+  - get_snapshot
+  - clear_snapshots
+  public: true
+- name: ContextFlowError
+  docstring: Base exception for Flow-Context integration errors.
+  methods: []
+  public: true
+- name: MissingRequiredKeyError
+  docstring: Raised when a required context key is missing.
+  methods: []
+  public: true
+- name: ContextTypeMismatchError
+  docstring: Raised when a context key has the wrong type.
+  methods: []
+  public: true
+- name: ContextFlowCombinators
+  docstring: Flow combinators for context manipulation with type safety.
+  methods:
+  - get_key
+  - set_key
+  - require_key
+  - optional_key
+  - move_key
+  - copy_key
+  - forget_key
+  - require_keys
+  - transform_key
+  public: true
+- name: ContextFrame
+  docstring: A single layer of the context stack, representing local bindings.
+  methods:
+  - copy
+  public: true
+- name: ContextSnapshot
+  docstring: Represents a snapshot of context state at a specific point in time.
+  methods:
+  - restore_to
+  public: true
+- name: ComputedProperty
+  docstring: Represents a computed property that automatically updates when its dependencies
+    change.
+  methods:
+  - compute
+  - invalidate
+  - subscribe
+  - notify_change
+  public: true
+- name: Transformation
+  docstring: Represents a value transformation applied to context keys.
+  methods:
+  - apply
+  public: true
+- name: Context
+  docstring: A layered, reactive, symbolic context with scoped access and EventFlow
+    integration.
+  methods:
+  - get
+  - set
+  - push_layer
+  - pop_layer
+  - fork
+  - fork_with_history
+  - merge
+  - diff
+  - deep_diff
+  - create_snapshot
+  - restore_snapshot
+  - list_snapshots
+  - delete_snapshot
+  - get_change_history
+  - clear_history
+  - get_history_size
+  - set_max_history_size
+  - rollback_to_timestamp
+  - get_snapshots
+  - replay_changes_since
+  - keys
+  - subscribe_sync
+  - subscribe_async
+  - as_flow
+  - global_changes_sync
+  - global_changes_async
+  - global_changes_as_flow
+  - dump
+  - add_computed_property
+  - remove_computed_property
+  - add_transformation
+  - remove_transformations
+  - get_computed_value
+  - is_computed_property
+  - computed_properties
+  - transformations
+  - query
+  - find_keys
+  - find_values
+  - filter_by_type
+  - search
+  - get_nested
+  - set_nested
+  - has_nested
+  - flatten
+  public: true
+- name: ContextChangeEvent
+  docstring: Represents a single change event in context history.
+  methods: []
+  public: true
+- name: HistoryTracker
+  docstring: Tracks change history for Context objects.
+  methods:
+  - record_change
+  - get_history
+  - clear_history
+  - get_history_size
+  - set_max_history_size
+  - replay_changes_since
+  - get_changes_to_reverse
+  - get_all_history
+  public: true
+functions:
+- name: context_key
+  signature: 'def context_key(name: str, type_: type[T], description: str) -> ContextKey[T]'
+  docstring: Create a context key with the specified name and type.
+  public: true
+- name: run_flow_with_input
+  signature: 'def run_flow_with_input(flow: Flow[T, R], input_item: T) -> R'
+  docstring: "Run a flow with a single input item and return the first result.\n\n\
+    \    This is a convenience function for testing and simple use cases."
+  public: true
+- name: extend_flow_with_context
+  signature: def extend_flow_with_context() -> None
+  docstring: Extend Flow class with context manipulation methods.
+  public: true
+- name: context_flow
+  signature: def context_flow() -> ContextFlowDecorator
+  docstring: "Decorator to create a context-aware Flow with declared dependencies.\n\
+    \n    Args:\n        inputs: List of required input context keys\n        outputs:\
+    \ List of output context keys this flow will set\n        optional: Dict of optional\
+    \ keys with their default values\n        name: Optional name for the flow"
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true
+- name: T
+  value: ''
+  public: true
+- name: R
+  value: ''
+  public: true
+- name: T
+  value: ''
+  public: true

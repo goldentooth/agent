@@ -1,0 +1,21 @@
+module_name: Cli
+description: Cli module
+complexity: Low
+file_count: 2
+loc: ~54
+test_coverage: Medium
+class_count: 0
+function_count: 0
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- dotenv
+- main
+- typer
+symbols:
+- __all__
+- app
+exports:
+- app
+- commands

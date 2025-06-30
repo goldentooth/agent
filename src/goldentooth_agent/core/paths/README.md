@@ -1,165 +1,161 @@
-# Paths Module
+# Paths
+
+Paths module
 
 ## Overview
-**Status**: 🟢 Low Complexity | **Lines of Code**: 380 | **Files**: 3
 
-Brief description of the module's purpose and responsibilities.
+- **Complexity**: Medium
+- **Files**: 3 Python files
+- **Lines of Code**: ~295
+- **Classes**: 1
+- **Functions**: 17
 
-## Key Components
+## API Reference
 
-### Classes (1)
+### Classes
 
-#### `Paths`
-- **File**: `main.py`
-- **Methods**: 10 methods
-- **Purpose**: A class to manage user-specific paths for configuration and data storage....
+#### Paths
+A class to manage user-specific paths for configuration and data storage.
 
-### Functions (19)
+**Public Methods:**
+- `config()`
+- `data()`
+- `cache()`
+- `logs()`
+- `runtime()`
+- `get_subdir()`
+- `ensure_file()`
+- `app_info()`
+- `clear_cache()`
 
-#### `path_exists_filter`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that filters paths to only existing ones.
+### Functions
 
-Returns:
-    A Flow that filters out non-ex...
+#### `def path_exists_filter(paths_instance: Paths) -> Flow[Path, Path]`
+Create a Flow that filters paths to only existing ones.
 
-#### `resolve_config_path`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that resolves a relative path within the config directory.
+    Returns:
+        A Flow that filters out non-existent paths
 
-Args:
-    relative_path: R...
+    Example:
+        paths = Flow.from_iterable([Path("file1.txt"), Path("file2.txt"), Path("missing.txt")])
+        existing = paths >> path_exists_filter()
 
-#### `resolve_data_path`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that resolves a relative path within the data directory.
+#### `def resolve_config_path(relative_path: str) -> Flow[AnyInput, Path]`
+Create a Flow that resolves a relative path within the config directory.
 
-Args:
-    relative_path: Rel...
+    Args:
+        relative_path: Relative path within the config directory
 
-#### `list_directory_flow`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that lists files in a directory.
+    Returns:
+        A Flow that returns the resolved config path
 
-Args:
-    pattern: Glob pattern to match files
-    p...
+    Example:
+        flow = Flow.from_iterable([None])
+        config_file = flow >> resolve_config_path("settings.json")
 
-#### `ensure_parent_dir`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that ensures parent directories exist.
+#### `def resolve_data_path(relative_path: str) -> Flow[AnyInput, Path]`
+Create a Flow that resolves a relative path within the data directory.
 
-Returns:
-    A Flow that creates parent direct...
+    Args:
+        relative_path: Relative path within the data directory
 
-#### `read_config_file`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that reads a config file.
+    Returns:
+        A Flow that returns the resolved data path
 
-Args:
-    filename: Name of the config file
-    default_con...
+    Example:
+        flow = Flow.from_iterable([None])
+        cache_file = flow >> resolve_data_path("cache.db")
 
-#### `write_config_file`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that writes content to a config file.
+#### `def list_directory_flow(pattern: str, paths_instance: Paths) -> Flow[Path, Path]`
+Create a Flow that lists files in a directory.
 
-Args:
-    filename: Name of the config file
+    Args:
+        pattern: Glob pattern to match files
+        paths_instance: Paths instance (injected)
 
-Re...
+    Returns:
+        A Flow that expands directories to their contents
 
-#### `list_files_async`
-- **File**: `flow_integration.py`
-- **Purpose**: ...
+    Example:
+        dirs = Flow.from_iterable([paths.config(), paths.data()])
+        all_files = dirs >> list_directory_flow("*.json")
 
-#### `ensure_parent`
-- **File**: `flow_integration.py`
-- **Purpose**: ...
+#### `def ensure_parent_dir(paths_instance: Paths) -> Flow[Path, Path]`
+Create a Flow that ensures parent directories exist.
 
-#### `write_content`
-- **File**: `flow_integration.py`
-- **Purpose**: ...
+    Returns:
+        A Flow that creates parent directories if needed
 
-## Public API
+    Example:
+        file_paths = Flow.from_iterable([config_dir / "nested/dir/file.txt"])
+        prepared = file_paths >> ensure_parent_dir()
 
-### Main Exports
-```python
-# TODO: Document main exports
-from goldentooth_agent.core.paths import (
-    # Add main classes and functions here
-)
-```
+#### `def read_config_file(filename: str, default_content: str) -> Flow[AnyInput, str]`
+Create a Flow that reads a config file.
 
-### Usage Examples
-```python
-# TODO: Add usage examples
-```
+    Args:
+        filename: Name of the config file
+        default_content: Content to return if file doesn't exist
+
+    Returns:
+        A Flow that reads the file content
+
+    Example:
+        flow = Flow.from_iterable([None])
+        settings = flow >> read_config_file("settings.json", default_content="{}")
+
+#### `def write_config_file(filename: str) -> Flow[str, Path]`
+Create a Flow that writes content to a config file.
+
+    Args:
+        filename: Name of the config file
+
+    Returns:
+        A Flow that writes content and returns the path
+
+    Example:
+        content = Flow.from_iterable(['{"setting": "value"}'])
+        saved = content >> write_config_file("settings.json")
+
+### Constants
+
+#### `T`
+
+#### `APP_AUTHOR`
+Value: `'ndouglas'`
+
+#### `APP_NAME`
+Value: `'goldentooth-agent'`
 
 ## Dependencies
 
-### Internal Dependencies
-```python
-# Key internal imports
-
-```
-
 ### External Dependencies
-```python
-# Key external imports
-# logging
-# main
-# platformdirs
-# pathlib
-# collections.abc
-# antidote
-# flow_integration
-# flow
-# shutil
-```
+- `__future__`
+- `antidote`
+- `collections`
+- `flow_integration`
+- `goldentooth_agent`
+- `logging`
+- `main`
+- `pathlib`
+- `platformdirs`
+- `typing`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/core/paths/`
-- **Coverage target**: 85%+
-- **Performance**: All tests <1s
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all tests for this module
-poetry run pytest tests/core/paths/
+- `Paths`
+- `ensure_parent_dir`
+- `list_directory_flow`
+- `path_exists_filter`
+- `read_config_file`
+- `resolve_config_path`
+- `resolve_data_path`
+- `write_config_file`
 
-# Run with coverage
-poetry run pytest tests/core/paths/ --cov=src/goldentooth_agent/core/paths/
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] TODO: Document known issues
-- [ ] TODO: Type safety concerns
-- [ ] TODO: Performance bottlenecks
-
-### Future Improvements
-- [ ] TODO: Planned enhancements
-- [ ] TODO: Refactoring needs
-
-## Development Notes
-
-### Architecture Decisions
-- TODO: Document key design decisions
-- TODO: Explain complex interactions
-
-### Performance Considerations
-- TODO: Document performance requirements
-- TODO: Known bottlenecks and optimizations
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: TODO: List module dependencies
-- **Used by**: TODO: List modules that use this one
-
-### Integration Points
-- TODO: Document how this module integrates with others
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

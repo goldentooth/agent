@@ -1,193 +1,261 @@
-# Flow Module
+# Flow Engine
+
+Flow Engine module
 
 ## Overview
-**Status**: 🔴 High Complexity | **Lines of Code**: 5220 | **Files**: 10
 
-Brief description of the module's purpose and responsibilities.
+- **Complexity**: Medium
+- **Files**: 5 Python files
+- **Lines of Code**: ~692
+- **Classes**: 5
+- **Functions**: 35
 
-## Key Components
+## API Reference
 
-### Classes (27)
+### Classes
 
-#### `StreamNotification`
-- **File**: `combinators.py`
-- **Methods**: 0 methods
-- **Purpose**: Represents a stream notification (item, error, or completion)....
+#### ContextKeyProtocol
+Protocol for context keys that can store typed values.
 
-#### `OnNext`
-- **File**: `combinators.py`
-- **Methods**: 2 methods
-- **Purpose**: ...
+**Public Methods:**
+- `name()`
+- `value_type()`
 
-#### `OnError`
-- **File**: `combinators.py`
-- **Methods**: 2 methods
-- **Purpose**: ...
+#### ContextProtocol
+Protocol for context objects that can store keyed values.
 
-#### `OnComplete`
-- **File**: `combinators.py`
-- **Methods**: 1 methods
-- **Purpose**: ...
+**Public Methods:**
+- `get()`
+- `set()`
+- `contains()`
 
-#### `FlowNode`
-- **File**: `analysis.py`
-- **Methods**: 1 methods
-- **Purpose**: Represents a node in a Flow composition graph....
+#### FlowProtocol
+Protocol for Flow objects to avoid concrete dependencies.
 
-#### `FlowEdge`
-- **File**: `analysis.py`
-- **Methods**: 1 methods
-- **Purpose**: Represents an edge (connection) between Flow nodes....
+**Public Methods:**
+- `name()`
 
-#### `FlowGraph`
-- **File**: `analysis.py`
-- **Methods**: 7 methods
-- **Purpose**: Represents a complete Flow composition as a directed graph....
+#### FlowExtensionRegistry
+Registry for Flow extensions that can be added without circular imports.
 
-#### `FlowAnalyzer`
-- **File**: `analysis.py`
-- **Methods**: 17 methods
-- **Purpose**: Analyzer for Flow compositions and structures....
+**Public Methods:**
+- `register_extension()`
+- `register_method_extension()`
+- `register_initialization_hook()`
+- `get_extension()`
+- `get_method_extension()`
+- `extend_flow_class()`
 
-#### `FlowRegistry`
-- **File**: `registry.py`
-- **Methods**: 10 methods
-- **Purpose**: Registry for named flows with discovery and introspection capabilities....
+#### TrampolineFlowCombinators
+Flow combinators for trampoline-style execution patterns.
 
-#### `HealthStatus`
-- **File**: `health.py`
-- **Methods**: 0 methods
-- **Purpose**: Health status levels....
+**Public Methods:**
+- `set_should_exit()`
+- `set_should_break()`
+- `set_should_skip()`
+- `check_should_exit()`
+- `check_should_break()`
+- `check_should_skip()`
+- `clear_break_flag()`
+- `clear_skip_flag()`
+- `exitable_chain()`
+- `trampoline()`
+- `trampoline_chain()`
+- `conditional_flow()`
+- `skip_if()`
 
-### Functions (202)
+### Functions
 
-#### `compose`
-- **File**: `combinators.py`
-- **Purpose**: Compose two flows, where the output of the first is the input to the second....
+#### `def register_flow_extension(name: str) -> Callable[[ExtensionFunction], ExtensionFunction]`
+Decorator to register flow extensions.
 
-#### `filter_stream`
-- **File**: `combinators.py`
-- **Purpose**: Create a flow that filters stream items based on a predicate....
+#### `def register_flow_method(method_name: str) -> Callable[[ExtensionFunction], ExtensionFunction]`
+Decorator to register flow method extensions.
 
-#### `map_stream`
-- **File**: `combinators.py`
-- **Purpose**: Create a flow that maps a function over each item in the stream....
+#### `def get_context_module() -> Any`
+Lazily import the context module to avoid circular imports.
 
-#### `flat_map_stream`
-- **File**: `combinators.py`
-- **Purpose**: Create a flow that flat-maps a function over each item in the stream....
+#### `def get_context_key_class() -> type[ContextKey]`
+Lazily get the ContextKey class.
 
-#### `log_stream`
-- **File**: `combinators.py`
-- **Purpose**: Create a flow that logs each stream item and passes it through unchanged.
+#### `def get_context_class() -> type[Context]`
+Lazily get the Context class.
 
-Useful for debugging flow...
+#### `def create_context_key(name: str, value_type: type[T], description: str) -> ContextKey[T]`
+Create a context key without direct import.
 
-#### `identity_stream`
-- **File**: `combinators.py`
-- **Purpose**: Create a flow that passes the stream through unchanged....
+#### `def extend_flow_with_trampoline() -> None`
+Extend Flow class with trampoline manipulation methods.
 
-#### `if_then_stream`
-- **File**: `combinators.py`
-- **Purpose**: Create a flow that conditionally processes items based on a predicate.
+### Constants
 
-Items that match the predica...
+#### `T`
 
-#### `tap_stream`
-- **File**: `combinators.py`
-- **Purpose**: Create a flow that applies a side-effect function to each item without changing the stream.
+#### `K`
 
-Useful ...
+#### `V`
 
-#### `delay_stream`
-- **File**: `combinators.py`
-- **Purpose**: Create a flow that delays each item in the stream by a given number of seconds....
+#### `T`
 
-#### `recover_stream`
-- **File**: `combinators.py`
-- **Purpose**: Create a flow that handles exceptions and provides fallback values.
+#### `T`
 
-When an exception occurs during...
+#### `SHOULD_EXIT_KEY`
 
-## Public API
+#### `SHOULD_BREAK_KEY`
 
-### Main Exports
-```python
-# TODO: Document main exports
-from goldentooth_agent.core.flow import (
-    # Add main classes and functions here
-)
-```
-
-### Usage Examples
-```python
-# TODO: Add usage examples
-```
+#### `SHOULD_SKIP_KEY`
 
 ## Dependencies
 
 ### Internal Dependencies
-```python
-# Key internal imports
-# goldentooth_agent.core.util
-```
+- `goldentooth_agent.core.context`
+- `goldentooth_agent.core.context.flow_integration`
 
 ### External Dependencies
-```python
-# Key external imports
-# psutil
-# combinators
-# dataclasses
-# contextlib
-# time
-# context
-# context.flow_integration
-# main
-# asyncio
-```
+- `__future__`
+- `collections`
+- `combinators`
+- `core`
+- `importlib`
+- `integrations`
+- `observability`
+- `registry`
+- `trampoline`
+- `typing`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/core/flow/`
-- **Coverage target**: 85%+
-- **Performance**: All tests <1s
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all tests for this module
-poetry run pytest tests/core/flow/
+- `Flow`
+- `FlowAnalyzer`
+- `FlowConfigValidator`
+- `FlowConfigurationError`
+- `FlowDebugger`
+- `FlowEdge`
+- `FlowError`
+- `FlowExecutionContext`
+- `FlowExecutionError`
+- `FlowGraph`
+- `FlowHealthMonitor`
+- `FlowMetrics`
+- `FlowNode`
+- `FlowRegistry`
+- `FlowTimeoutError`
+- `FlowValidationError`
+- `HealthCheck`
+- `HealthCheckResult`
+- `HealthStatus`
+- `OnComplete`
+- `OnError`
+- `OnNext`
+- `PerformanceMonitor`
+- `SHOULD_BREAK_KEY`
+- `SHOULD_EXIT_KEY`
+- `SHOULD_SKIP_KEY`
+- `StreamNotification`
+- `SystemHealth`
+- `TrampolineFlowCombinators`
+- `add_flow_breakpoint`
+- `analyze_flow`
+- `analyze_flow_composition`
+- `batch_stream`
+- `benchmark_stream`
+- `branch_flows`
+- `buffer_stream`
+- `catch_and_continue_stream`
+- `chain_flows`
+- `chain_stream`
+- `check_system_health`
+- `chunk_stream`
+- `circuit_breaker_stream`
+- `collect_stream`
+- `combine_latest_stream`
+- `compose`
+- `debounce_stream`
+- `debug_session`
+- `debug_stream`
+- `delay_stream`
+- `detect_flow_patterns`
+- `disable_flow_debugging`
+- `distinct_stream`
+- `empty_flow`
+- `enable_flow_debugging`
+- `enable_memory_tracking`
+- `expand_stream`
+- `export_execution_trace`
+- `export_flow_analysis`
+- `export_health_report`
+- `export_performance_metrics`
+- `extend_flow_with_trampoline`
+- `filter_stream`
+- `finalize_stream`
+- `flat_map_ctx_stream`
+- `flat_map_stream`
+- `flatten_stream`
+- `flow_registry`
+- `generate_flow_optimizations`
+- `get_config_validator`
+- `get_execution_trace`
+- `get_flow`
+- `get_flow_analyzer`
+- `get_flow_debugger`
+- `get_health_monitor`
+- `get_performance_monitor`
+- `get_performance_summary`
+- `group_by_stream`
+- `guard_stream`
+- `health_check_stream`
+- `identity_stream`
+- `if_then_stream`
+- `initialize_context_integration`
+- `inspect_flow`
+- `inspect_stream`
+- `list_flows`
+- `log_stream`
+- `map_stream`
+- `materialize_stream`
+- `memoize_stream`
+- `merge_flows`
+- `merge_stream`
+- `metrics_stream`
+- `monitored_stream`
+- `pairwise_stream`
+- `parallel_stream`
+- `parallel_stream_successful`
+- `performance_stream`
+- `race_stream`
+- `range_flow`
+- `recover_stream`
+- `register_flow`
+- `register_health_check`
+- `registered_flow`
+- `remove_flow_breakpoint`
+- `repeat_flow`
+- `retry_stream`
+- `run_fold`
+- `sample_stream`
+- `scan_stream`
+- `search_flows`
+- `share_stream`
+- `skip_stream`
+- `start_with_stream`
+- `switch_stream`
+- `take_stream`
+- `tap_stream`
+- `then_stream`
+- `throttle_stream`
+- `timeout_stream`
+- `trace_stream`
+- `traced_flow`
+- `until_stream`
+- `validate_flow_configuration`
+- `while_condition_stream`
+- `window_stream`
+- `zip_stream`
 
-# Run with coverage
-poetry run pytest tests/core/flow/ --cov=src/goldentooth_agent/core/flow/
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] TODO: Document known issues
-- [ ] TODO: Type safety concerns
-- [ ] TODO: Performance bottlenecks
-
-### Future Improvements
-- [ ] TODO: Planned enhancements
-- [ ] TODO: Refactoring needs
-
-## Development Notes
-
-### Architecture Decisions
-- TODO: Document key design decisions
-- TODO: Explain complex interactions
-
-### Performance Considerations
-- TODO: Document performance requirements
-- TODO: Known bottlenecks and optimizations
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: TODO: List module dependencies
-- **Used by**: TODO: List modules that use this one
-
-### Integration Points
-- TODO: Document how this module integrates with others
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

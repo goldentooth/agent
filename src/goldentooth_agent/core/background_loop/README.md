@@ -1,155 +1,120 @@
-# Background_Loop Module
+# Background Loop
+
+Background Loop module
 
 ## Overview
-**Status**: 🟢 Low Complexity | **Lines of Code**: 227 | **Files**: 3
 
-Brief description of the module's purpose and responsibilities.
+- **Complexity**: Medium
+- **Files**: 3 Python files
+- **Lines of Code**: ~174
+- **Classes**: 1
+- **Functions**: 10
 
-## Key Components
+## API Reference
 
-### Classes (1)
+### Classes
 
-#### `BackgroundEventLoop`
-- **File**: `main.py`
-- **Methods**: 6 methods
-- **Purpose**: A class to manage an asyncio event loop in a background thread....
+#### BackgroundEventLoop
+A class to manage an asyncio event loop in a background thread.
 
-### Functions (10)
+**Public Methods:**
+- `create()`
+- `submit()`
+- `shutdown()`
+- `is_running()`
 
-#### `async_flow`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that runs async operations in the background loop.
+### Functions
 
-Args:
-    coroutine_fn: A function...
+#### `def async_flow(coroutine_fn: Callable[[T], Coroutine[AnyType, AnyType, R]], background_loop: BackgroundEventLoop) -> Flow[T, R]`
+Create a Flow that runs async operations in the background loop.
 
-#### `schedule_flow`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that delays items using the background loop.
+    Args:
+        coroutine_fn: A function that takes an item and returns a coroutine
+        background_loop: The background event loop to use (injected)
 
-Args:
-    delay_seconds: Seconds to dela...
+    Returns:
+        A Flow that transforms items asynchronously
 
-#### `timeout_async_flow`
-- **File**: `flow_integration.py`
-- **Purpose**: Create a Flow that runs async operations with a timeout.
+    Example:
+        # Define an async operation
+        async def fetch_data(url: str) -> dict:
+            await asyncio.sleep(0.1)  # Simulate async work
+            return {"url": url, "data": "fetched"}
 
-Args:
-    coroutine_fn: A function that ta...
+        # Create a flow that fetches data asynchronously
+        urls = Flow.from_iterable(["url1", "url2", "url3"])
+        results = urls >> async_flow(fetch_data)
 
-#### `transform`
-- **File**: `flow_integration.py`
-- **Purpose**: ...
+#### `def schedule_flow(delay_seconds: float, background_loop: BackgroundEventLoop) -> Flow[T, T]`
+Create a Flow that delays items using the background loop.
 
-#### `filter_none`
-- **File**: `flow_integration.py`
-- **Purpose**: ...
+    Args:
+        delay_seconds: Seconds to delay each item
+        background_loop: The background event loop to use (injected)
 
-#### `run_in_background`
-- **File**: `main.py`
-- **Purpose**: Run a coroutine in the background event loop....
+    Returns:
+        A Flow that delays items
 
-#### `create`
-- **File**: `main.py`
-- **Purpose**: Create a new instance of BackgroundEventLoop....
+    Example:
+        # Delay each item by 1 second
+        items = Flow.from_iterable([1, 2, 3])
+        delayed = items >> schedule_flow(1.0)
 
-#### `submit`
-- **File**: `main.py`
-- **Purpose**: Submit a coroutine to be run in the background event loop.
+#### `def timeout_async_flow(coroutine_fn: Callable[[T], Coroutine[AnyType, AnyType, R]], timeout_seconds: float, default_value: R | None) -> Flow[T, R]`
+Create a Flow that runs async operations with a timeout.
 
-Args:
-    coroutine: The coroutine to ru...
+    Args:
+        coroutine_fn: A function that takes an item and returns a coroutine
+        timeout_seconds: Timeout in seconds
+        default_value: Value to return on timeout (None to skip)
 
-#### `shutdown`
-- **File**: `main.py`
-- **Purpose**: Shutdown the background event loop gracefully.
+    Returns:
+        A Flow that transforms items with timeout
 
-Args:
-    timeout: Maximum time to wait for shutdown...
+    Example:
+        # Fetch data with 5 second timeout
+        urls = Flow.from_iterable(["url1", "url2", "url3"])
+        results = urls >> timeout_async_flow(fetch_data, 5.0, default_value={})
 
-#### `is_running`
-- **File**: `main.py`
-- **Purpose**: Check if the background event loop is running....
+#### `def run_in_background(coroutine: AnyCoroutine[T], background_loop: BackgroundEventLoop) -> T`
+Run a coroutine in the background event loop.
 
-## Public API
+### Constants
 
-### Main Exports
-```python
-# TODO: Document main exports
-from goldentooth_agent.core.background_loop import (
-    # Add main classes and functions here
-)
-```
+#### `T`
 
-### Usage Examples
-```python
-# TODO: Add usage examples
-```
+#### `R`
+
+#### `T`
 
 ## Dependencies
 
-### Internal Dependencies
-```python
-# Key internal imports
-
-```
-
 ### External Dependencies
-```python
-# Key external imports
-# logging
-# threading
-# atexit
-# concurrent.futures
-# main
-# collections.abc
-# asyncio
-# flow_integration
-# antidote
-```
+- `__future__`
+- `antidote`
+- `asyncio`
+- `atexit`
+- `collections`
+- `concurrent`
+- `flow_integration`
+- `goldentooth_agent`
+- `logging`
+- `main`
+- `threading`
+- `typing`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/core/background_loop/`
-- **Coverage target**: 85%+
-- **Performance**: All tests <1s
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all tests for this module
-poetry run pytest tests/core/background_loop/
+- `BackgroundEventLoop`
+- `async_flow`
+- `run_in_background`
+- `schedule_flow`
+- `timeout_async_flow`
 
-# Run with coverage
-poetry run pytest tests/core/background_loop/ --cov=src/goldentooth_agent/core/background_loop/
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] TODO: Document known issues
-- [ ] TODO: Type safety concerns
-- [ ] TODO: Performance bottlenecks
-
-### Future Improvements
-- [ ] TODO: Planned enhancements
-- [ ] TODO: Refactoring needs
-
-## Development Notes
-
-### Architecture Decisions
-- TODO: Document key design decisions
-- TODO: Explain complex interactions
-
-### Performance Considerations
-- TODO: Document performance requirements
-- TODO: Known bottlenecks and optimizations
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: TODO: List module dependencies
-- **Used by**: TODO: List modules that use this one
-
-### Integration Points
-- TODO: Document how this module integrates with others
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

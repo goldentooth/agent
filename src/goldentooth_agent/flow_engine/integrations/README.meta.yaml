@@ -1,0 +1,41 @@
+module_name: Integrations
+description: Integrations module
+complexity: Low
+file_count: 2
+loc: ~142
+test_coverage: Medium
+class_count: 1
+function_count: 12
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- __future__
+- extensions
+- lazy_imports
+- protocols
+- typing
+symbols:
+- ContextFlowBridge
+- __all__
+- context_bridge
+- get_context_bridge
+- initialize_context_integration
+exports: []
+classes:
+- name: ContextFlowBridge
+  docstring: Bridge between Flow Engine and Context system using protocols.
+  methods:
+  - ensure_context_keys
+  - get_trampoline_key
+  - register_trampoline_support
+  public: true
+functions:
+- name: initialize_context_integration
+  signature: def initialize_context_integration() -> None
+  docstring: Initialize context integration if available.
+  public: true
+- name: get_context_bridge
+  signature: def get_context_bridge() -> ContextFlowBridge
+  docstring: Get the global context bridge instance.
+  public: true

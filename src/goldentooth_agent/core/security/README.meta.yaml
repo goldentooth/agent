@@ -1,0 +1,326 @@
+module_name: Security
+description: Security module
+complexity: Critical
+file_count: 4
+loc: ~1261
+test_coverage: Medium
+class_count: 26
+function_count: 96
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- __future__
+- abc
+- collections
+- dataclasses
+- datetime
+- flow_agent
+- functools
+- html
+- input_validation
+- json
+- os
+- pathlib
+- pydantic
+- re
+- time
+- typing
+- unicodedata
+- urllib
+symbols:
+- EncryptionProvider
+- EnvironmentSecretStore
+- FernetEncryptionProvider
+- FileSecretStore
+- FixedWindowLimiter
+- InMemorySecretStore
+- InputSanitizer
+- InputValidator
+- MemoryRateLimitStore
+- PlaintextEncryptionProvider
+- RateLimitConfig
+- RateLimitError
+- RateLimitResult
+- RateLimitStore
+- RateLimiter
+- SanitizationConfig
+- SecretConfig
+- SecretError
+- SecretManager
+- SecretMetadata
+- SecretStore
+- SecretValue
+- SecurityConfig
+- SlidingWindowLimiter
+- T
+- TokenBucketLimiter
+- ValidationError
+- __all__
+- check_rate_limit
+- create_rate_limiter
+- create_secret_manager
+- delete_secret
+- get_global_limiter
+- get_global_manager
+- get_secret
+- rate_limit_decorator
+- rotate_secret
+- sanitize_string
+- secret_exists
+- set_secret
+- validate_file_path
+- validate_flow_input
+- validate_json_payload
+- validate_url
+exports:
+- InputSanitizer
+- InputValidator
+- SanitizationConfig
+- SecurityConfig
+- ValidationError
+- sanitize_string
+- validate_file_path
+- validate_flow_input
+- validate_json_payload
+- validate_url
+classes:
+- name: SecretError
+  docstring: Exception raised for secret management errors.
+  methods: []
+  public: true
+- name: SecretConfig
+  docstring: Configuration for secret management system.
+  methods: []
+  public: true
+- name: SecretMetadata
+  docstring: Metadata for tracking secret lifecycle and compliance.
+  methods:
+  - is_expired
+  - needs_rotation
+  - to_dict
+  - from_dict
+  public: true
+- name: SecretValue
+  docstring: Wrapper for secret values with memory protection.
+  methods:
+  - value
+  public: true
+- name: EncryptionProvider
+  docstring: Abstract base class for encryption providers.
+  methods:
+  - encrypt
+  - decrypt
+  public: true
+- name: FernetEncryptionProvider
+  docstring: Fernet symmetric encryption provider using cryptography library.
+  methods:
+  - generate_key
+  - encrypt
+  - decrypt
+  public: true
+- name: PlaintextEncryptionProvider
+  docstring: No-op encryption provider for testing (DO NOT USE IN PRODUCTION).
+  methods:
+  - encrypt
+  - decrypt
+  public: true
+- name: SecretStore
+  docstring: Abstract base class for secret storage backends.
+  methods:
+  - store_secret
+  - get_secret
+  - delete_secret
+  - list_secrets
+  public: true
+- name: EnvironmentSecretStore
+  docstring: Store secrets in environment variables (encrypted).
+  methods:
+  - store_secret
+  - get_secret
+  - delete_secret
+  - list_secrets
+  public: true
+- name: FileSecretStore
+  docstring: Store secrets in encrypted files.
+  methods:
+  - store_secret
+  - get_secret
+  - delete_secret
+  - list_secrets
+  public: true
+- name: InMemorySecretStore
+  docstring: Store secrets in memory (for testing).
+  methods:
+  - store_secret
+  - get_secret
+  - delete_secret
+  - list_secrets
+  public: true
+- name: SecretManager
+  docstring: Main secret management class.
+  methods:
+  - store_secret
+  - get_secret
+  - delete_secret
+  - list_secrets
+  - secret_exists
+  - get_secret_metadata
+  - update_secret_metadata
+  - rotate_secret
+  - find_secrets_needing_rotation
+  - find_expired_secrets
+  public: true
+- name: RateLimitError
+  docstring: Exception raised when rate limit is exceeded.
+  methods: []
+  public: true
+- name: RateLimitConfig
+  docstring: Configuration for rate limiting system.
+  methods: []
+  public: true
+- name: RateLimitResult
+  docstring: Result of a rate limit check.
+  methods: []
+  public: true
+- name: RateLimitStore
+  docstring: Abstract base class for rate limit storage backends.
+  methods:
+  - get
+  - set
+  - increment
+  - delete
+  public: true
+- name: MemoryRateLimitStore
+  docstring: In-memory rate limit store with TTL support.
+  methods:
+  - force_cleanup
+  - get
+  - set
+  - increment
+  - delete
+  public: true
+- name: RateLimiter
+  docstring: Abstract base class for rate limiting algorithms.
+  methods:
+  - check_rate_limit
+  public: true
+- name: TokenBucketLimiter
+  docstring: Token bucket rate limiting algorithm.
+  methods:
+  - check_rate_limit
+  public: true
+- name: SlidingWindowLimiter
+  docstring: Sliding window rate limiting algorithm.
+  methods:
+  - check_rate_limit
+  public: true
+- name: FixedWindowLimiter
+  docstring: Fixed window rate limiting algorithm.
+  methods:
+  - check_rate_limit
+  public: true
+- name: ValidationError
+  docstring: Custom validation error with detailed context.
+  methods: []
+  public: true
+- name: SecurityConfig
+  docstring: Security configuration for input validation.
+  methods: []
+  public: true
+- name: SanitizationConfig
+  docstring: Configuration for input sanitization.
+  methods: []
+  public: true
+- name: InputValidator
+  docstring: Comprehensive input validator with security-focused validation rules.
+  methods:
+  - validate_string
+  - validate_list
+  - validate_dict
+  - validate_any
+  public: true
+- name: InputSanitizer
+  docstring: Input sanitizer for cleaning potentially malicious or dirty input.
+  methods:
+  - sanitize_string
+  - sanitize_list
+  - sanitize_dict
+  - sanitize_any
+  public: true
+functions:
+- name: create_secret_manager
+  signature: 'def create_secret_manager(config: SecretConfig | None) -> SecretManager'
+  docstring: Create a secret manager instance with optional config.
+  public: true
+- name: get_global_manager
+  signature: def get_global_manager() -> SecretManager
+  docstring: Get or create the global secret manager.
+  public: true
+- name: set_secret
+  signature: 'def set_secret(name: str, value: str, secret_type: str, description:
+    str, tags: list[str] | None) -> None'
+  docstring: Store a secret using the global manager.
+  public: true
+- name: get_secret
+  signature: 'def get_secret(name: str) -> SecretValue'
+  docstring: Retrieve a secret using the global manager.
+  public: true
+- name: delete_secret
+  signature: 'def delete_secret(name: str) -> None'
+  docstring: Delete a secret using the global manager.
+  public: true
+- name: secret_exists
+  signature: 'def secret_exists(name: str) -> bool'
+  docstring: Check if a secret exists using the global manager.
+  public: true
+- name: rotate_secret
+  signature: 'def rotate_secret(name: str, new_value: str) -> None'
+  docstring: Rotate a secret using the global manager.
+  public: true
+- name: create_rate_limiter
+  signature: 'def create_rate_limiter(config: RateLimitConfig, store: RateLimitStore
+    | None) -> RateLimiter'
+  docstring: Create a rate limiter based on configuration.
+  public: true
+- name: get_global_limiter
+  signature: def get_global_limiter() -> RateLimiter
+  docstring: Get or create the global rate limiter.
+  public: true
+- name: check_rate_limit
+  signature: 'async def check_rate_limit(key: str) -> RateLimitResult'
+  docstring: Check rate limit using the global limiter.
+  public: true
+- name: rate_limit_decorator
+  signature: 'def rate_limit_decorator(config: RateLimitConfig, key_func: Callable[...,
+    str] | None) -> Callable[[Callable[..., Any]], Callable[..., Any]]'
+  docstring: Decorator to apply rate limiting to async functions.
+  public: true
+- name: validate_file_path
+  signature: 'def validate_file_path(path: str, config: SecurityConfig | None) ->
+    str'
+  docstring: Validate file path for security issues.
+  public: true
+- name: validate_url
+  signature: 'def validate_url(url: str, config: SecurityConfig | None) -> str'
+  docstring: Validate URL for security issues.
+  public: true
+- name: validate_json_payload
+  signature: 'def validate_json_payload(payload: str, config: SecurityConfig | None)
+    -> dict[str, Any]'
+  docstring: Validate JSON payload for security and format issues.
+  public: true
+- name: validate_flow_input
+  signature: 'def validate_flow_input(data: dict[str, Any], schema_class: type[T],
+    sanitize: bool, config: SecurityConfig | None) -> T'
+  docstring: Validate Flow input data against schema with security checks.
+  public: true
+- name: sanitize_string
+  signature: 'def sanitize_string(value: str, config: SanitizationConfig | None) ->
+    str'
+  docstring: Standalone string sanitization function.
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true

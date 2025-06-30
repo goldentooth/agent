@@ -47,3 +47,8 @@ app.add_typer(
     name="git",
     help="Sync knowledge base data to Git repositories.",
 )
+app.add_typer(
+    commands.dev.app,
+    name="dev",
+    help="Development utilities for maintaining the codebase.",
+)

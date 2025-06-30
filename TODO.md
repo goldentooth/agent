@@ -1,6 +1,6 @@
 # TODO
 
-1. Create a command to enter into each `core/` submodule and write a detailed summary of the code therein, including philosophical background, CS theory, interoperation with other libraries, use cases, notes on test coverage, and anything else needed to fully document the module. This file should be stored as README.md
+1. Create a command to enter into each `core/` submodule and write a detailed summary of the code therein, including philosophical background, CS theory, interoperation with other libraries, use cases, notes on test coverage, and anything else needed to fully document the module. This file should be stored as README.md.
 2. Set up Sphinx to generate documentation and integrate it where appropriate into pre-commit hooks, etc.
 3. Add GitHub Actions workflows to run tests in CI/CD.
 4. Create appropriate tools and other mechanisms to ease GitHub issue CRUD operations from within the Goldentooth Agent so that e.g. the Agent can create, search, and review existing tickets and act on them as needed.
@@ -9,7 +9,7 @@
 7. Create a suite of QA tools that can remedy (without consuming LLM tokens) as much as possible of the most common issues we encounter, e.g. determining the number of, severity of, and extent of current type-checking issues, etc.
 8. Consider refactoring large files into smaller ones where possible to improve code locality.
 9. Create a tool that will review the submodule-level README.meta.yaml and README.md files and combine/re-summarize them after meaningful changes. The README file should be reviewed for potential updates whenever a file in the module is changed.
-10. Create commands to accurately construct directory tree representations in markdown for injection into root- and submodule-level README.md files. Probably just `tree`, maybe something fancier. This should be in the `markdown.meta.yaml` files too.
+10. Create commands to accurately construct directory tree representations in markdown for injection into root- and submodule-level README.md files. Probably just `tree`, maybe something fancier. This should be in the `README.meta.yaml` files too.
 11. Devise a detailed plan to incorporate the successful and effective patterns from the smolcode project geared at giving the Goldentooth Agent the ability to code itself when desirable.
 12. Incorporate some method of checking dependencies automatically and manually for upstream security alerts, e.g. `goldentooth-agent dev audit security` or using Dependabot.
 13. Write a command or GHA workflow to bump the version in the pyproject.toml file, e.g. `goldentooth-agent dev bump-version` or use the bump-version GitHub Action if it supports pyproject.toml (probably does).
@@ -30,4 +30,3 @@
 28. Maintain a README.meta.yaml in each and every module/submodule directory that collects useful information about a given module and that can be updated entirely by executing a script (i.e. without consuming unnecessary extra tokens), e.g. `goldentooth-agent dev module meta check <path>`. This should be used to determine that the README.md file in that module is outdated, e.g. `goldentooth-agent dev module readme check <path>`.
 29. Create a command that will retrieve the .py files in the codebase that have been touched least recently within the codebase and perform a deep audit of them, evaluating whether they should be refactored or otherwise improved, etc. After the file has been updated, a comment should be added to the foot of the document mentioning the date and indicating that the file was touched on that date. The command might be `goldentooth-agent dev audit stale-files` or something.
 30. Can Sphinx be integrated as a RAG source?
-31. Create a directory located at <repo-root>/guidelines. This will host a set of Markdown documents comprising guidelines for development. The directory should contain a README.md that contains 1) an explanation of the directory contents and 2) an unordered list of the Markdown documents present and a brief summary of each. CLAUDE.md should contain a reference to these guidelines so that Claude Code can find and benefit from these guidelines.

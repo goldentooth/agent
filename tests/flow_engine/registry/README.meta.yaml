@@ -1,0 +1,88 @@
+module_name: Registry
+description: Registry module
+complexity: Medium
+file_count: 1
+loc: ~419
+test_coverage: Medium
+class_count: 4
+function_count: 41
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.flow_engine.combinators.basic
+- goldentooth_agent.flow_engine.registry
+external_dependencies:
+- goldentooth_agent
+symbols:
+- TestFlowRegistry
+- TestFlowRegistryIntegration
+- TestGlobalFunctions
+- TestRegisteredFlowDecorator
+- double
+- increment
+exports: []
+classes:
+- name: TestFlowRegistry
+  docstring: Tests for FlowRegistry class.
+  methods:
+  - test_registry_creation
+  - test_register_flow_basic
+  - test_register_flow_with_category
+  - test_register_multiple_flows_same_category
+  - test_register_flow_no_duplicate_in_category
+  - test_get_flow_exists
+  - test_get_flow_not_exists
+  - test_list_flows_empty
+  - test_list_flows_all
+  - test_list_flows_by_category
+  - test_list_flows_nonexistent_category
+  - test_list_categories_empty
+  - test_list_categories
+  - test_search_by_name
+  - test_search_by_metadata
+  - test_search_case_insensitive
+  - test_search_no_matches
+  - test_remove_flow_exists
+  - test_remove_flow_not_exists
+  - test_remove_flow_from_multiple_categories
+  - test_clear_all
+  - test_clear_by_category
+  - test_clear_nonexistent_category
+  - test_info_exists
+  - test_info_not_exists
+  - test_info_no_metadata
+  - test_info_multiple_categories
+  - test_print_registry_empty
+  - test_print_registry_with_flows
+  public: true
+- name: TestGlobalFunctions
+  docstring: Tests for global convenience functions.
+  methods:
+  - test_register_flow_function
+  - test_get_flow_function
+  - test_list_flows_function
+  - test_search_flows_function
+  public: true
+- name: TestRegisteredFlowDecorator
+  docstring: Tests for registered_flow decorator.
+  methods:
+  - test_registered_flow_decorator_basic
+  - test_registered_flow_decorator_with_category
+  - test_registered_flow_decorator_returns_flow
+  - test_registered_flow_decorator_chaining
+  public: true
+- name: TestFlowRegistryIntegration
+  docstring: Integration tests for flow registry functionality.
+  methods:
+  - test_registry_workflow
+  - test_registry_edge_cases
+  public: true
+functions:
+- name: increment
+  signature: 'def increment(x: int) -> int'
+  docstring: Increment a number by 1.
+  public: true
+- name: double
+  signature: 'def double(x: int) -> int'
+  docstring: Double a number.
+  public: true

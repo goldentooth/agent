@@ -13,7 +13,7 @@ This document defines the documentation standards and practices for the Goldento
 
 ### Documentation Types
 1. **API Documentation**: Function/method signatures, parameters, return values
-2. **Module Documentation**: README files explaining module purpose and structure  
+2. **Module Documentation**: README files explaining module purpose and structure
 3. **Architecture Documentation**: High-level system design and patterns
 4. **User Documentation**: How to use the system (CLI, agents, workflows)
 5. **Developer Documentation**: Contributing, setup, development workflow
@@ -172,13 +172,267 @@ Automatically generated or manually maintained statistics:
 Recent significant changes to the module:
 - Version/Date: Description of changes
 - Version/Date: Description of changes
-```
 
 ### Module README Update Requirements
 - **Update trigger**: Any significant change to a Python file in the module
 - **Content accuracy**: Ensure all information reflects current implementation
 - **API completeness**: Document all public functions, classes, and methods
 - **Example validity**: Verify all code examples work with current implementation
+
+### Module Metadata Requirements (README.meta.yaml)
+
+Every Python module/submodule must include a `README.meta.yaml` file providing structured metadata for organization and symbol tracking. This ensures no symbol is defined in multiple places and provides quick module overview.
+
+#### Required Structure
+```yaml
+module_name: Flow Engine Core
+complexity: Low  # Low, Medium, High, Critical
+file_count: 4
+loc: ~400  # Approximate lines of code
+test_coverage: High  # Low, Medium, High
+class_count: 4
+function_count: 16
+coverage_target: 95%+
+test_perf: All tests <100ms
+
+internal_dependencies:
+  - goldentooth_agent.flow_engine.protocols
+  - goldentooth_agent.flow_engine.extensions
+
+external_dependencies:
+  - typing
+  - collections.abc
+  - asyncio
+
+symbols:
+  - Flow
+  - FlowError
+  - FlowValidationError
+  - FlowFactory
+  # List all top-level symbols (classes, functions, constants, types)
+  # defined in this module to ensure uniqueness across codebase
+
+exports:
+  - Flow
+  - FlowError
+  - FlowValidationError
+  - FlowExecutionError
+  - FlowTimeoutError
+  - FlowConfigurationError
+  - FlowFactory
+  # List all symbols exported from this module's __init__.py
+```
+
+#### Field Definitions
+
+**Basic Metadata:**
+- `module_name`: Human-readable module name
+- `complexity`: Development complexity (Low, Medium, High, Critical)
+- `file_count`: Number of Python files in the module
+- `loc`: Approximate lines of code (use ~ prefix for estimates)
+- `test_coverage`: Current test coverage level (Low <70%, Medium 70-85%, High >85%)
+- `class_count`: Number of classes defined in the module
+- `function_count`: Number of top-level functions in the module
+- `coverage_target`: Target test coverage percentage
+- `test_perf`: Performance requirement for tests
+
+**Dependencies:**
+- `internal_dependencies`: Other project modules this module depends on
+- `external_dependencies`: External packages/libraries used
+
+**Symbol Tracking:**
+- `symbols`: All top-level symbols defined in this module (classes, functions, constants, type aliases)
+- `exports`: Symbols exported through the module's `__init__.py`
+
+#### Example for Different Module Types
+
+**Core Service Module:**
+```yaml
+module_name: RAG Service
+complexity: High
+file_count: 6
+loc: ~3200
+test_coverage: High
+class_count: 8
+function_count: 24
+coverage_target: 90%+
+test_perf: Most tests <500ms
+
+internal_dependencies:
+  - goldentooth_agent.core.embeddings
+  - goldentooth_agent.core.document_store
+  - goldentooth_agent.core.llm
+  - goldentooth_agent.core.context
+
+external_dependencies:
+  - anthropic
+  - numpy
+  - asyncio
+  - pydantic
+
+symbols:
+  - RAGService
+  - QueryExpansionEngine
+  - QueryExpansion
+  - QueryIntent
+  - SearchStrategy
+  - ChunkFusion
+  - RAGError
+  - QueryExpansionError
+  - DocumentNotFoundError
+
+exports:
+  - RAGService
+  - QueryExpansionEngine
+  - QueryExpansion
+  - QueryIntent
+  - SearchStrategy
+  - ChunkFusion
+  - RAGError
+```
+
+**Utility Module:**
+```yaml
+module_name: Path Utilities
+complexity: Low
+file_count: 2
+loc: ~150
+test_coverage: High
+class_count: 1
+function_count: 8
+coverage_target: 100%
+test_perf: All tests <50ms
+
+internal_dependencies: []
+
+external_dependencies:
+  - pathlib
+  - os
+  - typing
+
+symbols:
+  - Paths
+  - ensure_directory
+  - resolve_path
+  - get_project_root
+  - normalize_path
+
+exports:
+  - Paths
+  - ensure_directory
+  - resolve_path
+```
+
+**Flow Engine Module:**
+```yaml
+module_name: Flow Engine Combinators
+complexity: Medium
+file_count: 8
+loc: ~2100
+test_coverage: High
+class_count: 2
+function_count: 45
+coverage_target: 95%+
+test_perf: All tests <200ms
+
+internal_dependencies:
+  - goldentooth_agent.flow_engine.core
+  - goldentooth_agent.flow_engine.protocols
+
+external_dependencies:
+  - typing
+  - collections.abc
+  - asyncio
+  - functools
+
+symbols:
+  - map_stream
+  - filter_stream
+  - batch_stream
+  - parallel_stream
+  - merge_streams
+  - throttle_stream
+  - cache_stream
+  - retry_stream
+  - timeout_stream
+  - distinct_stream
+  - memoize_stream
+  - route_stream
+  - split_stream
+  - aggregate_stream
+  - window_stream
+
+exports:
+  - map_stream
+  - filter_stream
+  - batch_stream
+  - parallel_stream
+  - merge_streams
+  - throttle_stream
+  - cache_stream
+  - retry_stream
+  - timeout_stream
+  - distinct_stream
+  - memoize_stream
+  - route_stream
+  - split_stream
+  - aggregate_stream
+  - window_stream
+```
+
+#### Maintenance Requirements
+
+**Update Triggers:**
+- Any new symbol (class, function, constant) added to the module
+- Changes to public API (exports)
+- New dependencies added
+- Significant changes to file count or LOC
+- Coverage target changes
+
+**Validation Rules:**
+- All symbols in `exports` must exist in `symbols`
+- Dependencies should be accurate and minimal
+- Complexity should reflect actual development difficulty
+
+
+**Automation Opportunities:**
+```python
+def validate_module_metadata(module_path: Path) -> list[str]:
+    """Validate README.meta.yaml against actual module content."""
+    errors = []
+
+    meta_file = module_path / "README.meta.yaml"
+    if not meta_file.exists():
+        errors.append(f"Missing README.meta.yaml in {module_path}")
+        return errors
+
+    with open(meta_file) as f:
+        metadata = yaml.safe_load(f)
+
+    # Validate file count
+    actual_files = len(list(module_path.glob("*.py")))
+    declared_files = metadata.get("file_count", 0)
+    if abs(actual_files - declared_files) > 1:
+        errors.append(
+            f"File count mismatch: declared {declared_files}, "
+            f"actual {actual_files}"
+        )
+
+    # Validate symbols exist
+    init_file = module_path / "__init__.py"
+    if init_file.exists():
+        # Parse __init__.py and verify exports
+        # ... implementation
+
+    return errors
+
+```
+
+This metadata system enables:
+- **Dependency tracking**: Understand module relationships
+- **Complexity assessment**: Identify modules needing attention
+- **API surface documentation**: Track what each module exports
+- **Automated validation**: Verify metadata accuracy against actual code
 
 ## Code Documentation Standards
 
@@ -190,33 +444,33 @@ def process_documents(
     timeout: float = 30.0
 ) -> ProcessingResult:
     """Process a list of documents with optional configuration.
-    
+
     This function processes documents using the configured strategy and
     returns a result containing processed documents and metadata.
-    
+
     Args:
         documents: List of documents to process. Must not be empty.
         config: Optional processing configuration. Uses defaults if None.
         timeout: Maximum time to spend processing in seconds.
-    
+
     Returns:
         ProcessingResult containing:
         - processed_documents: List of successfully processed documents
         - failed_documents: List of documents that failed processing
         - metadata: Processing statistics and timing information
-    
+
     Raises:
         ValueError: If documents list is empty
         ProcessingError: If processing fails for all documents
         TimeoutError: If processing exceeds timeout
-        
+
     Example:
         >>> docs = [Document(content="Hello"), Document(content="World")]
         >>> config = ProcessingConfig(strategy="fast")
         >>> result = process_documents(docs, config, timeout=60.0)
         >>> print(f"Processed {len(result.processed_documents)} documents")
         Processed 2 documents
-        
+
     Note:
         This function is safe to call concurrently as it doesn't modify
         the input documents or maintain shared state.
@@ -227,43 +481,43 @@ def process_documents(
 ```python
 class DocumentProcessor:
     """Processes documents using configurable strategies.
-    
+
     The DocumentProcessor provides a high-level interface for document
     processing with support for multiple strategies, error recovery,
     and performance monitoring.
-    
+
     This class is thread-safe and can be used concurrently from multiple
     coroutines. It maintains internal state for caching and optimization
     but doesn't modify input data.
-    
+
     Attributes:
         strategy: Current processing strategy name
         config: Processing configuration
         stats: Processing statistics (read-only)
-        
+
     Example:
         Basic usage:
         >>> processor = DocumentProcessor()
         >>> result = await processor.process(document)
-        
+
         With custom configuration:
         >>> config = ProcessingConfig(strategy="accurate", timeout=60.0)
         >>> processor = DocumentProcessor(config)
         >>> results = await processor.process_batch(documents)
-        
+
     See Also:
         ProcessingConfig: Configuration options
         ProcessingResult: Return value structure
         ProcessingStrategy: Available processing strategies
     """
-    
+
     def __init__(
-        self, 
+        self,
         config: ProcessingConfig | None = None,
         cache_size: int = 1000
     ) -> None:
         """Initialize the document processor.
-        
+
         Args:
             config: Processing configuration. Uses defaults if None.
             cache_size: Maximum number of cached processing results.
@@ -275,16 +529,16 @@ class DocumentProcessor:
 ```python
 def complex_processing_function(data: InputData) -> OutputData:
     """Process complex data with multiple stages."""
-    
+
     # Validate input data structure and content
     if not self._validate_input(data):
         raise ValueError("Invalid input data structure")
-    
+
     # Apply preprocessing transformations
     # Note: Order matters here - normalization must come before tokenization
     normalized = self._normalize_data(data)
     tokenized = self._tokenize_data(normalized)
-    
+
     # Main processing pipeline
     # Using parallel processing for performance on large datasets
     with ThreadPoolExecutor(max_workers=4) as executor:
@@ -292,19 +546,19 @@ def complex_processing_function(data: InputData) -> OutputData:
             executor.submit(self._process_chunk, chunk)
             for chunk in self._chunk_data(tokenized)
         ]
-        
+
         processed_chunks = [
             future.result() for future in as_completed(futures)
         ]
-    
+
     # Combine results and apply post-processing
     combined = self._combine_chunks(processed_chunks)
-    
+
     # Final validation before returning
     if not self._validate_output(combined):
         logger.warning("Output validation failed, using fallback")
         return self._fallback_processing(data)
-    
+
     return combined
 ```
 
@@ -332,41 +586,41 @@ from typing import Protocol
 
 class DocumentStore(Protocol):
     """Protocol for document storage implementations.
-    
+
     This protocol defines the interface that all document store
     implementations must provide. It supports both synchronous
     and asynchronous operations for maximum flexibility.
-    
+
     Implementations should be thread-safe and handle concurrent
     access gracefully.
-    
+
     Example implementations:
     - FileDocumentStore: File-based storage
     - DatabaseDocumentStore: Database-backed storage
     - MemoryDocumentStore: In-memory storage for testing
     """
-    
+
     def store_document(self, document: Document) -> None:
         """Store a document in the store.
-        
+
         Args:
             document: Document to store. Must have valid ID.
-            
+
         Raises:
             DocumentExistsError: If document with same ID exists
             StorageError: If storage operation fails
         """
         ...
-    
+
     def get_document(self, document_id: str) -> Document | None:
         """Retrieve a document by ID.
-        
+
         Args:
             document_id: Unique identifier for the document
-            
+
         Returns:
             Document if found, None otherwise
-            
+
         Raises:
             StorageError: If retrieval operation fails
         """
@@ -528,11 +782,11 @@ Create a `.goldentooth.yaml` file:
 ```yaml
 agents:
   default: "rag"
-  
+
 rag:
   max_results: 10
   similarity_threshold: 0.1
-  
+
 llm:
   model: "claude-3-sonnet-20240229"
   max_tokens: 2000
@@ -636,17 +890,17 @@ def get_user_name(user_id: str) -> str:
 # ✅ Explain the purpose and context
 def get_user_name(user_id: str) -> str:
     """Retrieve the display name for a user.
-    
+
     This function fetches the user's preferred display name
     from the database. If the user has not set a display name,
     it falls back to their username.
-    
+
     Args:
         user_id: Unique identifier for the user
-        
+
     Returns:
         User's display name or username if no display name set
-        
+
     Raises:
         UserNotFoundError: If user_id doesn't exist
     """
@@ -660,11 +914,11 @@ user_count += 1  # Track total users for billing purposes
 # ❌ Don't document internal implementation details
 def process_data(data):
     """Uses algorithm X with parameter Y to process data."""
-    
+
 # ✅ Document behavior and interface
 def process_data(data):
     """Transform raw data into structured format.
-    
+
     Normalizes, validates, and enriches the input data
     according to the configured processing rules.
     """

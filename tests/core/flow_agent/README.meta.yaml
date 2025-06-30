@@ -1,0 +1,168 @@
+module_name: Flow Agent
+description: Flow Agent module
+complexity: Critical
+file_count: 5
+loc: ~1041
+test_coverage: Medium
+class_count: 19
+function_count: 48
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.context
+- goldentooth_agent.core.flow_agent.agent
+- goldentooth_agent.core.flow_agent.instructor_integration
+- goldentooth_agent.core.flow_agent.schema
+- goldentooth_agent.core.flow_agent.tool
+external_dependencies:
+- asyncio
+- goldentooth_agent
+- pydantic
+- pytest
+- typing
+symbols:
+- CalculatorInput
+- CalculatorOutput
+- ChatInput
+- ChatOutput
+- EchoInput
+- EchoOutput
+- SimpleAnswerOutput
+- SimpleQuestionInput
+- TaskAnalysisInput
+- TaskAnalysisOutput
+- TaskStep
+- TestAgentInput
+- TestAgentOutput
+- TestFlowAgent
+- TestFlowIOSchema
+- TestFlowTool
+- TestInstructorFlow
+- TestMockLLMClient
+- TestSchemaInteroperability
+exports: []
+classes:
+- name: TaskAnalysisInput
+  docstring: Input schema for task analysis.
+  methods: []
+  public: true
+- name: TaskStep
+  docstring: A single step in a task breakdown.
+  methods: []
+  public: true
+- name: TaskAnalysisOutput
+  docstring: Output schema for task analysis with structured breakdown.
+  methods: []
+  public: true
+- name: SimpleQuestionInput
+  docstring: Input schema for simple questions.
+  methods: []
+  public: true
+- name: SimpleAnswerOutput
+  docstring: Output schema for simple answers.
+  methods: []
+  public: true
+- name: TestMockLLMClient
+  docstring: Test the mock LLM client for testing purposes.
+  methods:
+  - test_mock_client_creation
+  - test_mock_client_with_responses
+  public: true
+- name: TestInstructorFlow
+  docstring: Test the InstructorFlow class.
+  methods:
+  - test_instructor_flow_creation
+  - test_instructor_flow_with_system_prompt
+  - test_instructor_flow_as_flow
+  - test_instructor_flow_execution_with_context
+  - test_instructor_flow_multiple_inputs
+  - test_instructor_flow_error_handling
+  - test_instructor_flow_system_prompt_integration
+  - test_instructor_flow_context_preservation
+  public: true
+- name: TestFlowIOSchema
+  docstring: Test the FlowIOSchema base class.
+  methods:
+  - test_flow_io_schema_can_be_subclassed
+  - test_flow_io_schema_validates_fields
+  - test_to_context_creates_context_entries
+  - test_from_context_extracts_schema_data
+  - test_context_roundtrip_preserves_data
+  - test_schema_forbids_extra_fields
+  - test_schema_validates_assignment
+  - test_multiple_schemas_share_context_safely
+  public: true
+- name: TestAgentInput
+  docstring: Test the AgentInput standard schema.
+  methods:
+  - test_agent_input_basic_usage
+  - test_agent_input_with_context_data
+  - test_agent_input_requires_message
+  - test_agent_input_context_roundtrip
+  - test_agent_input_validates_types
+  public: true
+- name: TestAgentOutput
+  docstring: Test the AgentOutput standard schema.
+  methods:
+  - test_agent_output_basic_usage
+  - test_agent_output_with_metadata
+  - test_agent_output_requires_response
+  - test_agent_output_context_roundtrip
+  - test_agent_output_validates_types
+  public: true
+- name: TestSchemaInteroperability
+  docstring: Test interoperability between standard schemas.
+  methods:
+  - test_schemas_can_coexist_in_context
+  - test_schemas_use_different_context_keys
+  public: true
+- name: CalculatorInput
+  docstring: Input schema for calculator tool.
+  methods: []
+  public: true
+- name: CalculatorOutput
+  docstring: Output schema for calculator tool.
+  methods: []
+  public: true
+- name: EchoInput
+  docstring: Input schema for echo tool.
+  methods: []
+  public: true
+- name: EchoOutput
+  docstring: Output schema for echo tool.
+  methods: []
+  public: true
+- name: TestFlowTool
+  docstring: Test the FlowTool class.
+  methods:
+  - test_flow_tool_creation
+  - test_flow_tool_as_flow_sync
+  - test_flow_tool_as_flow_execution
+  - test_flow_tool_as_flow_async_implementation
+  - test_flow_tool_input_validation
+  - test_flow_tool_output_validation
+  - test_flow_tool_as_agent_compatibility
+  - test_flow_tool_multiple_inputs
+  - test_flow_tool_error_handling
+  public: true
+- name: ChatInput
+  docstring: Input schema for chat agent.
+  methods: []
+  public: true
+- name: ChatOutput
+  docstring: Output schema for chat agent.
+  methods: []
+  public: true
+- name: TestFlowAgent
+  docstring: Test the FlowAgent class.
+  methods:
+  - test_flow_agent_creation
+  - test_flow_agent_as_flow_conversion
+  - test_flow_agent_basic_pipeline
+  - test_flow_agent_system_prompt_integration
+  - test_flow_agent_memory_integration
+  - test_flow_agent_validation
+  - test_flow_agent_error_handling
+  - test_flow_agent_composition
+  - test_flow_agent_multiple_inputs
+  public: true

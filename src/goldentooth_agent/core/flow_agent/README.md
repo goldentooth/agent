@@ -1,203 +1,163 @@
-# Flow_Agent Module
+# Flow Agent
+
+Flow Agent module
 
 ## Overview
-**Status**: 🟡 Medium Complexity | **Lines of Code**: 735 | **Files**: 5
 
-Brief description of the module's purpose and responsibilities.
+- **Complexity**: Medium
+- **Files**: 5 Python files
+- **Lines of Code**: ~593
+- **Classes**: 7
+- **Functions**: 22
 
-## Key Components
+## API Reference
 
-### Classes (7)
+### Classes
 
-#### `MockLLMClient`
-- **File**: `instructor_integration.py`
-- **Methods**: 1 methods
-- **Purpose**: Mock LLM client for testing purposes.
+#### MockLLMClient
+Mock LLM client for testing purposes.
 
-This client simulates LLM responses for testing the Instructo...
+    This client simulates LLM responses for testing the Instructor integration
+    without requiring actual API calls.
 
-#### `InstructorFlow`
-- **File**: `instructor_integration.py`
-- **Methods**: 5 methods
-- **Purpose**: Flow-based wrapper for Instructor-powered structured LLM output.
+**Public Methods:**
+- `create_completion()`
 
-InstructorFlow integrates with the...
+#### InstructorFlow
+Flow-based wrapper for Instructor-powered structured LLM output.
 
-#### `FlowAgent`
-- **File**: `agent.py`
-- **Methods**: 2 methods
-- **Purpose**: Flow-based agent using functional composition.
+    InstructorFlow integrates with the FlowAgent system to provide structured
+    LLM output using Instructor's validation and parsing capabilities.
 
-FlowAgent implements a complete agent pipeline that:...
+**Public Methods:**
+- `as_flow()`
 
-#### `FlowTool`
-- **File**: `tool.py`
-- **Methods**: 3 methods
-- **Purpose**: Flow-based tool with agent-like interface.
+#### FlowAgent
+Flow-based agent using functional composition.
 
-FlowTool provides a unified interface for tools that can...
+    FlowAgent implements a complete agent pipeline that:
+    1. Validates input schemas
+    2. Converts input to context
+    3. Runs system flow (prompt generation, memory, etc.)
+    4. Runs processing flow (LLM calls, tool execution, etc.)
+    5. Extracts and validates output schemas
 
-#### `FlowIOSchema`
-- **File**: `schema.py`
-- **Methods**: 2 methods
-- **Purpose**: Base schema for all Flow-based agent interactions with context integration....
+**Public Methods:**
+- `as_flow()`
 
-#### `AgentInput`
-- **File**: `schema.py`
-- **Methods**: 0 methods
-- **Purpose**: Standard input for agent flows....
+#### FlowTool
+Flow-based tool with agent-like interface.
 
-#### `AgentOutput`
-- **File**: `schema.py`
-- **Methods**: 0 methods
-- **Purpose**: Standard output for agent flows....
+    FlowTool provides a unified interface for tools that can be used as flows
+    or converted to agent-compatible interfaces.
 
-### Functions (9)
+**Public Methods:**
+- `as_flow()`
+- `as_agent()`
 
-#### `create_instructor_flow`
-- **File**: `instructor_integration.py`
-- **Purpose**: Factory function to create an InstructorFlow as a Flow.
+#### FlowIOSchema
+Base schema for all Flow-based agent interactions with context integration.
 
-Args:
-    client: LLM client instance
-    m...
+**Public Methods:**
+- `to_context()`
+- `from_context()`
 
-#### `create_system_prompt_flow`
-- **File**: `instructor_integration.py`
-- **Purpose**: Create a flow that adds a system prompt to the context.
+#### AgentInput
+Standard input for agent flows.
 
-Args:
-    prompt: System prompt text
+#### AgentOutput
+Standard output for agent flows.
 
-Retur...
+### Functions
 
-#### `create_model_config_flow`
-- **File**: `instructor_integration.py`
-- **Purpose**: Create a flow that adds model configuration to the context.
+#### `def create_instructor_flow(client: LLMClient, model: str, input_schema: type[T], output_schema: type[R], system_prompt: str | None, **kwargs: FlowKwargs) -> Flow[Context, Context]`
+Factory function to create an InstructorFlow as a Flow.
 
-Args:
-    model: Model name
-    tempera...
+    Args:
+        client: LLM client instance
+        model: Model name
+        input_schema: Input schema type
+        output_schema: Output schema type
+        system_prompt: Optional system prompt
+        **kwargs: Additional arguments passed to InstructorFlow
 
-#### `as_flow`
-- **File**: `instructor_integration.py`
-- **Purpose**: Convert InstructorFlow to a composable Flow.
+    Returns:
+        Flow that performs structured LLM completion
 
-Returns:
-    Flow that processes contexts through stru...
+#### `def create_system_prompt_flow(prompt: str) -> Flow[Context, Context]`
+Create a flow that adds a system prompt to the context.
 
-#### `as_flow`
-- **File**: `agent.py`
-- **Purpose**: Convert agent to a composable flow.
+    Args:
+        prompt: System prompt text
 
-Returns:
-    Flow that implements the complete agent pipeline...
+    Returns:
+        Flow that adds the system prompt to context
 
-#### `as_flow`
-- **File**: `tool.py`
-- **Purpose**: Convert tool to a composable flow.
+#### `def create_model_config_flow(model: str, temperature: float, max_tokens: int | None) -> Flow[Context, Context]`
+Create a flow that adds model configuration to the context.
 
-Returns:
-    Flow that validates input, runs implementation, and...
+    Args:
+        model: Model name
+        temperature: Temperature setting
+        max_tokens: Optional maximum tokens
 
-#### `as_agent`
-- **File**: `tool.py`
-- **Purpose**: Convert tool to an agent-compatible interface.
+    Returns:
+        Flow that adds model configuration to context
 
-Returns:
-    FlowAgent that wraps this tool with age...
+### Constants
 
-#### `to_context`
-- **File**: `schema.py`
-- **Purpose**: Convert schema to context entries.
+#### `T`
 
-Creates context keys for each field in the schema and stores the...
+#### `R`
 
-#### `from_context`
-- **File**: `schema.py`
-- **Purpose**: Extract schema from context.
+#### `SYSTEM_PROMPT_KEY`
 
-Retrieves values for all schema fields from the context....
+#### `MODEL_NAME_KEY`
 
-## Public API
+#### `TEMPERATURE_KEY`
 
-### Main Exports
-```python
-# TODO: Document main exports
-from goldentooth_agent.core.flow_agent import (
-    # Add main classes and functions here
-)
-```
+#### `MAX_TOKENS_KEY`
 
-### Usage Examples
-```python
-# TODO: Add usage examples
-```
+#### `COMPLETION_METADATA_KEY`
+
+#### `T`
+
+#### `R`
+
+#### `T`
 
 ## Dependencies
 
-### Internal Dependencies
-```python
-# Key internal imports
-
-```
-
 ### External Dependencies
-```python
-# Key external imports
-# context
-# tool
-# collections.abc
-# flow
-# asyncio
-# __future__
-# instructor_integration
-# schema
-# agent
-```
+- `__future__`
+- `agent`
+- `asyncio`
+- `collections`
+- `context`
+- `goldentooth_agent`
+- `instructor_integration`
+- `pydantic`
+- `schema`
+- `tool`
+- `typing`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/core/flow_agent/`
-- **Coverage target**: 85%+
-- **Performance**: All tests <1s
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all tests for this module
-poetry run pytest tests/core/flow_agent/
+- `AgentInput`
+- `AgentOutput`
+- `FlowAgent`
+- `FlowIOSchema`
+- `FlowTool`
+- `InstructorFlow`
+- `MockLLMClient`
+- `create_instructor_flow`
+- `create_model_config_flow`
+- `create_system_prompt_flow`
 
-# Run with coverage
-poetry run pytest tests/core/flow_agent/ --cov=src/goldentooth_agent/core/flow_agent/
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] TODO: Document known issues
-- [ ] TODO: Type safety concerns
-- [ ] TODO: Performance bottlenecks
-
-### Future Improvements
-- [ ] TODO: Planned enhancements
-- [ ] TODO: Refactoring needs
-
-## Development Notes
-
-### Architecture Decisions
-- TODO: Document key design decisions
-- TODO: Explain complex interactions
-
-### Performance Considerations
-- TODO: Document performance requirements
-- TODO: Known bottlenecks and optimizations
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: TODO: List module dependencies
-- **Used by**: TODO: List modules that use this one
-
-### Integration Points
-- TODO: Document how this module integrates with others
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

@@ -1,0 +1,87 @@
+module_name: Named Registry
+description: Named Registry module
+complexity: Medium
+file_count: 2
+loc: ~271
+test_coverage: Medium
+class_count: 7
+function_count: 35
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.named_registry.main
+external_dependencies:
+- __future__
+- pytest
+- unittest
+symbols:
+- CreatableRegistryItem
+- RegistryItem
+- TestCreatableProtocol
+- TestIntegration
+- TestMakeRegisterFn
+- TestNamedRegistry
+- TestRegisterCallableProtocol
+exports: []
+classes:
+- name: RegistryItem
+  docstring: Test class for registry tests.
+  methods: []
+  public: true
+- name: CreatableRegistryItem
+  docstring: Test class that implements Creatable protocol.
+  methods:
+  - create
+  public: true
+- name: TestNamedRegistry
+  docstring: Test suite for NamedRegistry class.
+  methods:
+  - setup_method
+  - test_init_creates_empty_registry
+  - test_set_stores_object
+  - test_get_retrieves_object
+  - test_get_raises_keyerror_for_missing_id
+  - test_get_keyerror_shows_available_ids
+  - test_remove_deletes_object
+  - test_remove_nonexistent_id_does_not_error
+  - test_has_returns_true_for_existing_id
+  - test_has_returns_false_for_missing_id
+  - test_list_returns_sorted_ids
+  - test_list_returns_empty_for_empty_registry
+  - test_all_returns_all_objects
+  - test_all_returns_empty_for_empty_registry
+  - test_items_returns_name_object_pairs
+  - test_items_returns_empty_for_empty_registry
+  - test_clear_removes_all_entries
+  - test_generic_typing_with_different_types
+  public: true
+- name: TestCreatableProtocol
+  docstring: Test suite for Creatable protocol.
+  methods:
+  - test_creatable_class_implements_protocol
+  - test_non_creatable_class_does_not_implement_protocol
+  - test_creatable_create_method_works
+  public: true
+- name: TestRegisterCallableProtocol
+  docstring: Test suite for RegisterCallable protocol.
+  methods:
+  - test_protocol_structure
+  public: true
+- name: TestMakeRegisterFn
+  docstring: Test suite for make_register_fn factory function.
+  methods:
+  - setup_method
+  - test_register_with_class_and_id
+  - test_register_with_object_and_id
+  - test_register_with_creatable_class
+  - test_register_with_get_instance_fn
+  - test_register_with_default_id_fn
+  - test_register_raises_error_without_object_or_creatable
+  - test_register_raises_error_without_id
+  - test_register_can_derive_id_from_default_id_fn
+  public: true
+- name: TestIntegration
+  docstring: Integration tests for the complete named registry system.
+  methods:
+  - test_full_registration_workflow
+  public: true

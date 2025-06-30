@@ -1,0 +1,127 @@
+module_name: Paths
+description: Paths module
+complexity: Medium
+file_count: 3
+loc: ~295
+test_coverage: Medium
+class_count: 1
+function_count: 17
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- __future__
+- antidote
+- collections
+- flow_integration
+- goldentooth_agent
+- logging
+- main
+- pathlib
+- platformdirs
+- typing
+symbols:
+- APP_AUTHOR
+- APP_NAME
+- AnyInput
+- Paths
+- T
+- __all__
+- ensure_parent_dir
+- list_directory_flow
+- logger
+- path_exists_filter
+- read_config_file
+- resolve_config_path
+- resolve_data_path
+- write_config_file
+exports:
+- Paths
+- ensure_parent_dir
+- list_directory_flow
+- path_exists_filter
+- read_config_file
+- resolve_config_path
+- resolve_data_path
+- write_config_file
+classes:
+- name: Paths
+  docstring: A class to manage user-specific paths for configuration and data storage.
+  methods:
+  - config
+  - data
+  - cache
+  - logs
+  - runtime
+  - get_subdir
+  - ensure_file
+  - app_info
+  - clear_cache
+  public: true
+functions:
+- name: path_exists_filter
+  signature: 'def path_exists_filter(paths_instance: Paths) -> Flow[Path, Path]'
+  docstring: "Create a Flow that filters paths to only existing ones.\n\n    Returns:\n\
+    \        A Flow that filters out non-existent paths\n\n    Example:\n        paths\
+    \ = Flow.from_iterable([Path(\"file1.txt\"), Path(\"file2.txt\"), Path(\"missing.txt\"\
+    )])\n        existing = paths >> path_exists_filter()"
+  public: true
+- name: resolve_config_path
+  signature: 'def resolve_config_path(relative_path: str) -> Flow[AnyInput, Path]'
+  docstring: "Create a Flow that resolves a relative path within the config directory.\n\
+    \n    Args:\n        relative_path: Relative path within the config directory\n\
+    \n    Returns:\n        A Flow that returns the resolved config path\n\n    Example:\n\
+    \        flow = Flow.from_iterable([None])\n        config_file = flow >> resolve_config_path(\"\
+    settings.json\")"
+  public: true
+- name: resolve_data_path
+  signature: 'def resolve_data_path(relative_path: str) -> Flow[AnyInput, Path]'
+  docstring: "Create a Flow that resolves a relative path within the data directory.\n\
+    \n    Args:\n        relative_path: Relative path within the data directory\n\n\
+    \    Returns:\n        A Flow that returns the resolved data path\n\n    Example:\n\
+    \        flow = Flow.from_iterable([None])\n        cache_file = flow >> resolve_data_path(\"\
+    cache.db\")"
+  public: true
+- name: list_directory_flow
+  signature: 'def list_directory_flow(pattern: str, paths_instance: Paths) -> Flow[Path,
+    Path]'
+  docstring: "Create a Flow that lists files in a directory.\n\n    Args:\n      \
+    \  pattern: Glob pattern to match files\n        paths_instance: Paths instance\
+    \ (injected)\n\n    Returns:\n        A Flow that expands directories to their\
+    \ contents\n\n    Example:\n        dirs = Flow.from_iterable([paths.config(),\
+    \ paths.data()])\n        all_files = dirs >> list_directory_flow(\"*.json\")"
+  public: true
+- name: ensure_parent_dir
+  signature: 'def ensure_parent_dir(paths_instance: Paths) -> Flow[Path, Path]'
+  docstring: "Create a Flow that ensures parent directories exist.\n\n    Returns:\n\
+    \        A Flow that creates parent directories if needed\n\n    Example:\n  \
+    \      file_paths = Flow.from_iterable([config_dir / \"nested/dir/file.txt\"])\n\
+    \        prepared = file_paths >> ensure_parent_dir()"
+  public: true
+- name: read_config_file
+  signature: 'def read_config_file(filename: str, default_content: str) -> Flow[AnyInput,
+    str]'
+  docstring: "Create a Flow that reads a config file.\n\n    Args:\n        filename:\
+    \ Name of the config file\n        default_content: Content to return if file\
+    \ doesn't exist\n\n    Returns:\n        A Flow that reads the file content\n\n\
+    \    Example:\n        flow = Flow.from_iterable([None])\n        settings = flow\
+    \ >> read_config_file(\"settings.json\", default_content=\"{}\")"
+  public: true
+- name: write_config_file
+  signature: 'def write_config_file(filename: str) -> Flow[str, Path]'
+  docstring: "Create a Flow that writes content to a config file.\n\n    Args:\n \
+    \       filename: Name of the config file\n\n    Returns:\n        A Flow that\
+    \ writes content and returns the path\n\n    Example:\n        content = Flow.from_iterable(['{\"\
+    setting\": \"value\"}'])\n        saved = content >> write_config_file(\"settings.json\"\
+    )"
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true
+- name: APP_AUTHOR
+  value: '''ndouglas'''
+  public: true
+- name: APP_NAME
+  value: '''goldentooth-agent'''
+  public: true

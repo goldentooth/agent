@@ -1,0 +1,598 @@
+module_name: Combinators
+description: Combinators module
+complexity: Critical
+file_count: 7
+loc: ~2474
+test_coverage: Medium
+class_count: 60
+function_count: 185
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.flow_engine.combinators.advanced
+- goldentooth_agent.flow_engine.combinators.aggregation
+- goldentooth_agent.flow_engine.combinators.basic
+- goldentooth_agent.flow_engine.combinators.control_flow
+- goldentooth_agent.flow_engine.combinators.observability
+- goldentooth_agent.flow_engine.combinators.sources
+- goldentooth_agent.flow_engine.combinators.temporal
+- goldentooth_agent.flow_engine.core.exceptions
+external_dependencies:
+- asyncio
+- collections
+- goldentooth_agent
+- io
+- pytest
+- sys
+- time
+symbols:
+- TestBatchStream
+- TestBranchFlows
+- TestBufferStream
+- TestCatchAndContinueStream
+- TestChainFlows
+- TestChainStream
+- TestChunkStream
+- TestCircuitBreakerStream
+- TestCollectStream
+- TestCombineLatestStream
+- TestCompose
+- TestDebounceStream
+- TestDelayStream
+- TestDistinctStream
+- TestEmptyFlow
+- TestExpandStream
+- TestFilterStream
+- TestFinalizeStream
+- TestFlatMapCtxStream
+- TestFlatMapStream
+- TestFlattenStream
+- TestGroupByStream
+- TestGuardStream
+- TestIdentityStream
+- TestIfThenStream
+- TestInspectStream
+- TestLogStream
+- TestMapStream
+- TestMaterializeStream
+- TestMemoizeStream
+- TestMergeAsyncGenerators
+- TestMergeFlows
+- TestMergeStream
+- TestMetricsStream
+- TestPairwiseStream
+- TestParallelStream
+- TestParallelStreamSuccessful
+- TestRaceStream
+- TestRangeFlow
+- TestRecoverStream
+- TestRepeatFlow
+- TestRetryStream
+- TestRunFold
+- TestSampleAdvanced
+- TestSampleStream
+- TestScanStream
+- TestShareStream
+- TestSkipStream
+- TestStartWithStream
+- TestSwitchStream
+- TestTakeStream
+- TestTapStream
+- TestThenStream
+- TestThrottleStream
+- TestTimeoutStream
+- TestTraceStream
+- TestUntilStream
+- TestWhileConditionStream
+- TestWindowStream
+- TestZipStream
+- async_increment
+- async_range
+- double
+- duplicate_items
+- failing_stream
+- get_type
+- increment
+- is_even
+- repeat_n_times
+- triple
+exports: []
+classes:
+- name: TestRunFold
+  docstring: Tests for run_fold function.
+  methods:
+  - test_run_fold_empty_list
+  - test_run_fold_single_flow
+  - test_run_fold_multiple_flows
+  public: true
+- name: TestCompose
+  docstring: Tests for compose function.
+  methods:
+  - test_compose_basic
+  - test_compose_type_transformation
+  public: true
+- name: TestFilterStream
+  docstring: Tests for filter_stream function.
+  methods:
+  - test_filter_basic
+  - test_filter_with_lambda
+  - test_filter_no_matches
+  - test_filter_all_match
+  public: true
+- name: TestMapStream
+  docstring: Tests for map_stream function.
+  methods:
+  - test_map_basic
+  - test_map_with_lambda
+  - test_map_type_transformation
+  - test_map_empty_stream
+  public: true
+- name: TestFlatMapStream
+  docstring: Tests for flat_map_stream function.
+  methods:
+  - test_flat_map_basic
+  - test_flat_map_repeat
+  - test_flat_map_empty_results
+  public: true
+- name: TestIdentityStream
+  docstring: Tests for identity_stream function.
+  methods:
+  - test_identity_basic
+  - test_identity_with_complex_objects
+  public: true
+- name: TestTakeStream
+  docstring: Tests for take_stream function.
+  methods:
+  - test_take_basic
+  - test_take_more_than_available
+  - test_take_zero
+  public: true
+- name: TestSkipStream
+  docstring: Tests for skip_stream function.
+  methods:
+  - test_skip_basic
+  - test_skip_more_than_available
+  - test_skip_zero
+  public: true
+- name: TestGuardStream
+  docstring: Tests for guard_stream function.
+  methods:
+  - test_guard_stream_valid
+  - test_guard_stream_invalid
+  public: true
+- name: TestFlattenStream
+  docstring: Tests for flatten_stream function.
+  methods:
+  - test_flatten_basic
+  - test_flatten_empty_sub_streams
+  public: true
+- name: TestCollectStream
+  docstring: Tests for collect_stream function.
+  methods:
+  - test_collect_basic
+  - test_collect_empty_stream
+  public: true
+- name: TestUntilStream
+  docstring: Tests for until_stream function.
+  methods:
+  - test_until_stream_basic
+  - test_until_stream_no_match
+  - test_until_stream_immediate_match
+  public: true
+- name: TestShareStream
+  docstring: Tests for share_stream function.
+  methods:
+  - test_share_basic
+  public: true
+- name: TestRaceStream
+  docstring: Tests for race_stream function.
+  methods:
+  - test_race_first_succeeds
+  - test_race_first_fails_second_succeeds
+  - test_race_all_fail
+  - test_race_empty_list
+  - test_race_no_results
+  public: true
+- name: TestParallelStream
+  docstring: Tests for parallel_stream function.
+  methods:
+  - test_parallel_all_succeed
+  - test_parallel_some_fail
+  - test_parallel_empty_list
+  public: true
+- name: TestParallelStreamSuccessful
+  docstring: Tests for parallel_stream_successful function.
+  methods:
+  - test_parallel_successful_all_succeed
+  - test_parallel_successful_some_fail
+  - test_parallel_successful_all_fail
+  - test_parallel_successful_empty_list
+  public: true
+- name: TestZipStream
+  docstring: Tests for zip_stream function.
+  methods:
+  - test_zip_basic
+  - test_zip_different_lengths_first_shorter
+  - test_zip_different_lengths_second_shorter
+  - test_zip_empty_streams
+  public: true
+- name: TestChainStream
+  docstring: Tests for chain_stream function.
+  methods:
+  - test_chain_basic
+  - test_chain_empty_streams
+  - test_chain_single_stream
+  - test_chain_no_streams
+  public: true
+- name: TestMergeStream
+  docstring: Tests for merge_stream function.
+  methods:
+  - test_merge_basic
+  - test_merge_with_delays
+  - test_merge_empty_input
+  - test_merge_with_flow_error
+  public: true
+- name: TestMergeFlows
+  docstring: Tests for merge_flows function.
+  methods:
+  - test_merge_flows_basic
+  public: true
+- name: TestCombineLatestStream
+  docstring: Tests for combine_latest_stream function.
+  methods:
+  - test_combine_latest_basic
+  - test_combine_latest_empty_other
+  - test_combine_latest_other_stream_error
+  public: true
+- name: TestFlatMapCtxStream
+  docstring: Tests for flat_map_ctx_stream function.
+  methods:
+  - test_flat_map_ctx_basic
+  public: true
+- name: TestMergeAsyncGenerators
+  docstring: Tests for merge_async_generators utility function.
+  methods:
+  - test_merge_async_generators_basic
+  - test_merge_async_generators_empty
+  - test_merge_async_generators_with_errors
+  public: true
+- name: TestDelayStream
+  docstring: Tests for delay_stream function.
+  methods:
+  - test_delay_basic
+  - test_delay_zero
+  - test_delay_empty_stream
+  public: true
+- name: TestDebounceStream
+  docstring: Tests for debounce_stream function.
+  methods:
+  - test_debounce_basic
+  - test_debounce_spaced_items
+  - test_debounce_single_item
+  public: true
+- name: TestThrottleStream
+  docstring: Tests for throttle_stream function.
+  methods:
+  - test_throttle_basic
+  - test_throttle_slow_input
+  - test_throttle_empty_stream
+  public: true
+- name: TestTimeoutStream
+  docstring: Tests for timeout_stream function.
+  methods:
+  - test_timeout_basic
+  - test_timeout_exceeded
+  - test_timeout_empty_stream
+  - test_timeout_actual_timeout
+  public: true
+- name: TestSampleStream
+  docstring: Tests for sample_stream function.
+  methods:
+  - test_sample_basic
+  - test_sample_slow_input
+  - test_sample_empty_stream
+  - test_sample_single_item
+  public: true
+- name: TestSampleAdvanced
+  docstring: Additional tests for sample_stream function.
+  methods:
+  - test_sample_with_transform
+  public: true
+- name: TestLogStream
+  docstring: Tests for log_stream function.
+  methods:
+  - test_log_basic
+  - test_log_with_prefix
+  - test_log_metadata
+  public: true
+- name: TestTraceStream
+  docstring: Tests for trace_stream function.
+  methods:
+  - test_trace_basic
+  - test_trace_with_error
+  - test_trace_empty_stream
+  public: true
+- name: TestMetricsStream
+  docstring: Tests for metrics_stream function.
+  methods:
+  - test_metrics_basic
+  - test_metrics_with_error
+  - test_metrics_empty_stream
+  public: true
+- name: TestInspectStream
+  docstring: Tests for inspect_stream function.
+  methods:
+  - test_inspect_basic
+  - test_inspect_with_delay
+  public: true
+- name: TestMaterializeStream
+  docstring: Tests for materialize_stream function.
+  methods:
+  - test_materialize_basic
+  - test_materialize_with_error
+  - test_materialize_empty_stream
+  - test_notification_repr
+  public: true
+- name: TestBatchStream
+  docstring: Tests for batch_stream function.
+  methods:
+  - test_batch_basic
+  - test_batch_exact_multiple
+  - test_batch_empty_stream
+  - test_batch_size_one
+  public: true
+- name: TestChunkStream
+  docstring: Tests for chunk_stream function.
+  methods:
+  - test_chunk_basic
+  - test_chunk_single_item
+  public: true
+- name: TestWindowStream
+  docstring: Tests for window_stream function.
+  methods:
+  - test_window_basic
+  - test_window_with_step
+  - test_window_insufficient_items
+  - test_window_step_larger_than_size
+  public: true
+- name: TestScanStream
+  docstring: Tests for scan_stream function.
+  methods:
+  - test_scan_sum
+  - test_scan_list_accumulator
+  - test_scan_empty_stream
+  public: true
+- name: TestGroupByStream
+  docstring: Tests for group_by_stream function.
+  methods:
+  - test_group_by_basic
+  - test_group_by_single_group
+  - test_group_by_empty_stream
+  public: true
+- name: TestDistinctStream
+  docstring: Tests for distinct_stream function.
+  methods:
+  - test_distinct_basic
+  - test_distinct_with_key_function
+  - test_distinct_complex_objects
+  public: true
+- name: TestPairwiseStream
+  docstring: Tests for pairwise_stream function.
+  methods:
+  - test_pairwise_basic
+  - test_pairwise_single_item
+  - test_pairwise_empty_stream
+  - test_pairwise_with_strings
+  public: true
+- name: TestMemoizeStream
+  docstring: Tests for memoize_stream function.
+  methods:
+  - test_memoize_basic
+  - test_memoize_custom_key
+  public: true
+- name: TestBufferStream
+  docstring: Tests for buffer_stream function.
+  methods:
+  - test_buffer_basic
+  - test_buffer_no_trigger
+  - test_buffer_cleanup_on_completion
+  public: true
+- name: TestExpandStream
+  docstring: Tests for expand_stream function.
+  methods:
+  - test_expand_basic
+  - test_expand_max_depth
+  - test_expand_no_expansion
+  public: true
+- name: TestFinalizeStream
+  docstring: Tests for finalize_stream function.
+  methods:
+  - test_finalize_normal_completion
+  - test_finalize_with_error
+  - test_finalize_async_function
+  public: true
+- name: TestRangeFlow
+  docstring: Tests for range_flow function.
+  methods:
+  - test_range_basic
+  - test_range_with_step
+  - test_range_negative_step
+  - test_range_empty
+  public: true
+- name: TestRepeatFlow
+  docstring: Tests for repeat_flow function.
+  methods:
+  - test_repeat_finite
+  - test_repeat_zero_times
+  - test_repeat_infinite
+  - test_repeat_complex_object
+  public: true
+- name: TestEmptyFlow
+  docstring: Tests for empty_flow function.
+  methods:
+  - test_empty_basic
+  - test_empty_is_valid_generator
+  public: true
+- name: TestStartWithStream
+  docstring: Tests for start_with_stream function.
+  methods:
+  - test_start_with_single_item
+  - test_start_with_multiple_items
+  - test_start_with_no_items
+  - test_start_with_empty_stream
+  - test_start_with_mixed_types
+  public: true
+- name: TestIfThenStream
+  docstring: Tests for if_then_stream function.
+  methods:
+  - test_if_then_basic
+  - test_if_then_no_else
+  public: true
+- name: TestTapStream
+  docstring: Tests for tap_stream function.
+  methods:
+  - test_tap_basic
+  - test_tap_with_async_function
+  - test_tap_empty_stream
+  public: true
+- name: TestThenStream
+  docstring: Tests for then_stream function.
+  methods:
+  - test_then_basic
+  - test_then_with_async_function
+  public: true
+- name: TestRetryStream
+  docstring: Tests for retry_stream function.
+  methods:
+  - test_retry_success_first_try
+  - test_retry_with_eventual_success
+  - test_retry_all_attempts_fail
+  public: true
+- name: TestRecoverStream
+  docstring: Tests for recover_stream function.
+  methods:
+  - test_recover_basic
+  public: true
+- name: TestSwitchStream
+  docstring: Tests for switch_stream function.
+  methods:
+  - test_switch_basic
+  - test_switch_with_default
+  - test_switch_no_case_no_default
+  public: true
+- name: TestWhileConditionStream
+  docstring: Tests for while_condition_stream function.
+  methods:
+  - test_while_condition_basic
+  - test_while_condition_immediate_false
+  public: true
+- name: TestCircuitBreakerStream
+  docstring: Tests for circuit_breaker_stream function.
+  methods:
+  - test_circuit_breaker_normal_operation
+  - test_circuit_breaker_opens_on_failures
+  - test_circuit_breaker_recovery_and_open_state
+  public: true
+- name: TestCatchAndContinueStream
+  docstring: Tests for catch_and_continue_stream function.
+  methods:
+  - test_catch_and_continue_basic
+  - test_catch_and_continue_no_handler
+  public: true
+- name: TestChainFlows
+  docstring: Tests for chain_flows function.
+  methods:
+  - test_chain_flows_basic
+  - test_chain_flows_single
+  public: true
+- name: TestBranchFlows
+  docstring: Tests for branch_flows function.
+  methods:
+  - test_branch_flows_basic
+  - test_branch_flows_no_false_branch
+  public: true
+functions:
+- name: increment
+  signature: 'def increment(x: int) -> int'
+  docstring: Increment a number by 1.
+  public: true
+- name: double
+  signature: 'def double(x: int) -> int'
+  docstring: Double a number.
+  public: true
+- name: is_even
+  signature: 'def is_even(x: int) -> bool'
+  docstring: Check if a number is even.
+  public: true
+- name: async_range
+  signature: 'async def async_range(n: int) -> AsyncIterator[int]'
+  docstring: Generate an async range of integers.
+  public: true
+- name: duplicate_items
+  signature: 'async def duplicate_items(x: int) -> AsyncIterator[int]'
+  docstring: Duplicate each item.
+  public: true
+- name: repeat_n_times
+  signature: 'async def repeat_n_times(x: int, n: int) -> AsyncIterator[int]'
+  docstring: Repeat each item n times.
+  public: true
+- name: increment
+  signature: 'def increment(x: int) -> int'
+  docstring: Increment a number by 1.
+  public: true
+- name: double
+  signature: 'def double(x: int) -> int'
+  docstring: Double a number.
+  public: true
+- name: triple
+  signature: 'def triple(x: int) -> int'
+  docstring: Triple a number.
+  public: true
+- name: async_range
+  signature: 'async def async_range(n: int, delay: float) -> AsyncIterator[int]'
+  docstring: Generate an async range with optional delay.
+  public: true
+- name: async_increment
+  signature: 'async def async_increment(x: int) -> int'
+  docstring: Async increment function.
+  public: true
+- name: async_range
+  signature: 'async def async_range(n: int, delay: float)'
+  docstring: Generate an async range with optional delay.
+  public: true
+- name: async_range
+  signature: 'async def async_range(n: int)'
+  docstring: Generate an async range of integers.
+  public: true
+- name: failing_stream
+  signature: async def failing_stream()
+  docstring: Stream that yields some items then fails.
+  public: true
+- name: async_range
+  signature: 'async def async_range(n: int, delay: float)'
+  docstring: Generate an async range with optional delay.
+  public: true
+- name: get_type
+  signature: def get_type(x) -> str
+  docstring: Get type name as string.
+  public: true
+- name: increment
+  signature: 'def increment(x: int) -> int'
+  docstring: Increment a number by 1.
+  public: true
+- name: double
+  signature: 'def double(x: int) -> int'
+  docstring: Double a number.
+  public: true
+- name: is_even
+  signature: 'def is_even(x: int) -> bool'
+  docstring: Check if a number is even.
+  public: true
+- name: async_range
+  signature: 'async def async_range(n: int)'
+  docstring: Generate an async range of integers.
+  public: true
+- name: async_increment
+  signature: 'async def async_increment(x: int) -> int'
+  docstring: Async increment function.
+  public: true

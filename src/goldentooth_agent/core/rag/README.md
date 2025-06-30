@@ -1,200 +1,156 @@
-# Rag Module
+# Rag
+
+Rag module
 
 ## Overview
-**Status**: 🔴 High Complexity | **Lines of Code**: 5031 | **Files**: 7
 
-Brief description of the module's purpose and responsibilities.
+- **Complexity**: Critical
+- **Files**: 7 Python files
+- **Lines of Code**: ~4558
+- **Classes**: 13
+- **Functions**: 109
 
-## Key Components
+## API Reference
 
-### Classes (13)
+### Classes
 
-#### `RAGService`
-- **File**: `rag_service.py`
-- **Methods**: 16 methods
-- **Purpose**: Retrieval-Augmented Generation service for intelligent document querying....
+#### RAGService
+Retrieval-Augmented Generation service for intelligent document querying.
 
-#### `QueryIntent`
-- **File**: `query_expansion.py`
-- **Methods**: 0 methods
-- **Purpose**: Types of query intents for different search strategies....
+**Public Methods:**
+- `query()`
+- `get_document_chunks_info()`
+- `summarize_documents()`
+- `get_document_insights()`
+- `search_chunks_by_type()`
+- `get_document_chunk_summary()`
+- `compare_chunks()`
+- `analyze_document_relationships()`
+- `query_with_relationships()`
+- `get_chunk_relationship_insights()`
+- `hybrid_query()`
+- `compare_search_methods()`
+- `tune_hybrid_search()`
+- `query_with_fusion()`
+- `analyze_fusion_quality()`
+- `enhanced_query()`
+- `analyze_query_intelligence()`
 
-#### `QueryExpansion`
-- **File**: `query_expansion.py`
-- **Methods**: 1 methods
-- **Purpose**: Result of query expansion with enhanced terms and strategies....
+#### QueryIntent
+Types of query intents for different search strategies.
 
-#### `SearchStrategy`
-- **File**: `query_expansion.py`
-- **Methods**: 1 methods
-- **Purpose**: Strategy for executing enhanced searches....
+#### QueryExpansion
+Result of query expansion with enhanced terms and strategies.
 
-#### `QueryExpansionEngine`
-- **File**: `query_expansion.py`
-- **Methods**: 31 methods
-- **Purpose**: Advanced query expansion and semantic understanding engine....
+**Public Methods:**
+- `all_terms()`
 
-#### `ChunkCluster`
-- **File**: `chunk_fusion.py`
-- **Methods**: 2 methods
-- **Purpose**: A cluster of related chunks that can be fused together....
+#### SearchStrategy
+Strategy for executing enhanced searches.
 
-#### `FusedAnswer`
-- **File**: `chunk_fusion.py`
-- **Methods**: 2 methods
-- **Purpose**: A synthesized answer created from multiple chunks....
+**Public Methods:**
+- `primary_query()`
 
-#### `ChunkFusion`
-- **File**: `chunk_fusion.py`
-- **Methods**: 14 methods
-- **Purpose**: Intelligent chunk fusion for creating comprehensive answers from multiple chunks....
+#### QueryExpansionEngine
+Advanced query expansion and semantic understanding engine.
 
-#### `RAGInput`
-- **File**: `rag_agent.py`
-- **Methods**: 0 methods
-- **Purpose**: Input schema for RAG agent interactions....
+**Public Methods:**
+- `expand_query()`
+- `create_search_strategies()`
+- `analyze_query_quality()`
+- `reformulate_query()`
 
-#### `RAGOutput`
-- **File**: `rag_agent.py`
-- **Methods**: 0 methods
-- **Purpose**: Output schema for RAG agent responses....
+#### ChunkCluster
+A cluster of related chunks that can be fused together.
 
-### Functions (15)
+**Public Methods:**
+- `average_relevance()`
+- `chunk_ids()`
 
-#### `all_terms`
-- **File**: `query_expansion.py`
-- **Purpose**: Get all unique terms from expansion....
+#### FusedAnswer
+A synthesized answer created from multiple chunks.
 
-#### `primary_query`
-- **File**: `query_expansion.py`
-- **Purpose**: Get the primary query with highest weight....
+**Public Methods:**
+- `num_sources()`
+- `source_documents()`
 
-#### `expand_query`
-- **File**: `query_expansion.py`
-- **Purpose**: Expand a query with semantic understanding and enhancement.
+#### ChunkFusion
+Intelligent chunk fusion for creating comprehensive answers from multiple chunks.
 
-Args:
-    query: Original query string
-...
+**Public Methods:**
+- `fuse_chunks()`
 
-#### `create_search_strategies`
-- **File**: `query_expansion.py`
-- **Purpose**: Create multiple search strategies from query expansion.
+#### RAGInput
+Input schema for RAG agent interactions.
 
-Args:
-    expansion: Query expansion result...
+#### RAGOutput
+Output schema for RAG agent responses.
 
-#### `analyze_query_quality`
-- **File**: `query_expansion.py`
-- **Purpose**: Analyze query quality and provide improvement suggestions.
+#### RAGAgent
+RAG-powered agent using FlowAgent architecture.
 
-Args:
-    query: Query to analyze
+**Public Methods:**
+- `process_question()`
+- `as_flow()`
 
-R...
+#### SimpleRAGService
+Simplified RAG service for reliable document-based question answering.
 
-#### `reformulate_query`
-- **File**: `query_expansion.py`
-- **Purpose**: Reformulate query based on search performance.
+**Public Methods:**
+- `query()`
+- `get_document_count()`
+- `get_stats()`
 
-Args:
-    original_query: Original query that perfor...
+#### SimpleRAGAgent
+Simplified RAG agent for document-based conversations.
 
-#### `average_relevance`
-- **File**: `chunk_fusion.py`
-- **Purpose**: Get average relevance score across all chunks....
+**Public Methods:**
+- `process_question()`
 
-#### `chunk_ids`
-- **File**: `chunk_fusion.py`
-- **Purpose**: Get set of chunk IDs in this cluster....
+### Functions
 
-#### `num_sources`
-- **File**: `chunk_fusion.py`
-- **Purpose**: Get number of source chunks used....
-
-#### `source_documents`
-- **File**: `chunk_fusion.py`
-- **Purpose**: Get unique source document IDs....
-
-## Public API
-
-### Main Exports
-```python
-# TODO: Document main exports
-from goldentooth_agent.core.rag import (
-    # Add main classes and functions here
-)
-```
-
-### Usage Examples
-```python
-# TODO: Add usage examples
-```
+#### `def create_simple_rag_agent() -> SimpleRAGAgent`
+Factory function to create a simple RAG agent with dependencies.
 
 ## Dependencies
 
 ### Internal Dependencies
-```python
-# Key internal imports
-# goldentooth_agent.core.embeddings.models
-```
+- `goldentooth_agent.core.embeddings.models`
 
 ### External Dependencies
-```python
-# Key external imports
-# llm.claude_client
-# paths
-# dataclasses
-# antidote
-# document_store
-# simple_rag_service
-# context
-# query_expansion
-# rag_agent
-```
+- `__future__`
+- `antidote`
+- `chunk_fusion`
+- `collections`
+- `context`
+- `dataclasses`
+- `datetime`
+- `document_store`
+- `embeddings`
+- `enum`
+- `flow_agent`
+- `goldentooth_agent`
+- `llm`
+- `numpy`
+- `pydantic`
+- `query_expansion`
+- `rag_agent`
+- `rag_service`
+- `re`
+- `simple_rag_service`
+- `typing`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/core/rag/`
-- **Coverage target**: 85%+
-- **Performance**: All tests <1s
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all tests for this module
-poetry run pytest tests/core/rag/
+- `RAGAgent`
+- `RAGInput`
+- `RAGOutput`
+- `RAGService`
 
-# Run with coverage
-poetry run pytest tests/core/rag/ --cov=src/goldentooth_agent/core/rag/
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] TODO: Document known issues
-- [ ] TODO: Type safety concerns
-- [ ] TODO: Performance bottlenecks
-
-### Future Improvements
-- [ ] TODO: Planned enhancements
-- [ ] TODO: Refactoring needs
-
-## Development Notes
-
-### Architecture Decisions
-- TODO: Document key design decisions
-- TODO: Explain complex interactions
-
-### Performance Considerations
-- TODO: Document performance requirements
-- TODO: Known bottlenecks and optimizations
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: TODO: List module dependencies
-- **Used by**: TODO: List modules that use this one
-
-### Integration Points
-- TODO: Document how this module integrates with others
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

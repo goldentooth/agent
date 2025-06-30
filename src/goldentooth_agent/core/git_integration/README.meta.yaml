@@ -1,0 +1,33 @@
+module_name: Git Integration
+description: Git Integration module
+complexity: Low
+file_count: 2
+loc: ~306
+test_coverage: Medium
+class_count: 1
+function_count: 5
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- antidote
+- datetime
+- document_store
+- embeddings
+- git_sync
+- pathlib
+- paths
+- subprocess
+symbols:
+- GitDataSync
+- __all__
+exports:
+- GitDataSync
+classes:
+- name: GitDataSync
+  docstring: Service for syncing knowledge base data to a Git repository.
+  methods:
+  - setup_git_repository
+  - sync_to_git
+  - get_git_status
+  public: true

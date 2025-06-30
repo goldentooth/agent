@@ -1,0 +1,47 @@
+module_name: Document Store
+description: Document Store module
+complexity: Low
+file_count: 2
+loc: ~172
+test_coverage: Medium
+class_count: 1
+function_count: 15
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- antidote
+- document_store
+- pathlib
+- paths
+- schemas
+- typing
+- yaml_store
+symbols:
+- DocumentStore
+- T
+- __all__
+exports:
+- DocumentStore
+classes:
+- name: DocumentStore
+  docstring: Centralized document store managing all knowledge base YAML documents.
+  methods:
+  - github_orgs
+  - github_repos
+  - goldentooth_nodes
+  - goldentooth_services
+  - notes
+  - list_all_documents
+  - get_document_count
+  - get_store_paths
+  - document_exists
+  - get_document_path
+  - delete_document
+  - get_all_document_paths
+  - clear_all_documents
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true

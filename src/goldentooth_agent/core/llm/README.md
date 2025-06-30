@@ -1,133 +1,94 @@
-# Llm Module
+# Llm
+
+Llm module
 
 ## Overview
-**Status**: 🟢 Low Complexity | **Lines of Code**: 388 | **Files**: 3
 
-Brief description of the module's purpose and responsibilities.
+- **Complexity**: Medium
+- **Files**: 3 Python files
+- **Lines of Code**: ~325
+- **Classes**: 4
+- **Functions**: 11
 
-## Key Components
+## API Reference
 
-### Classes (4)
+### Classes
 
-#### `StreamingResponse`
-- **File**: `base.py`
-- **Methods**: 1 methods
-- **Purpose**: Protocol for streaming LLM responses....
+#### StreamingResponse
+Protocol for streaming LLM responses.
 
-#### `LLMClient`
-- **File**: `base.py`
-- **Methods**: 0 methods
-- **Purpose**: Abstract base class for LLM clients....
+**Public Methods:**
+- `usage()`
 
-#### `ClaudeStreamingResponse`
-- **File**: `claude_client.py`
-- **Methods**: 2 methods
-- **Purpose**: Wrapper for Claude streaming responses....
+#### LLMClient
+Abstract base class for LLM clients.
 
-#### `ClaudeFlowClient`
-- **File**: `claude_client.py`
-- **Methods**: 1 methods
-- **Purpose**: Anthropic Claude client with Flow integration....
+**Public Methods:**
+- `create_completion()`
+- `create_chat_completion()`
 
-### Functions (3)
+#### ClaudeStreamingResponse
+Wrapper for Claude streaming responses.
 
-#### `usage`
-- **File**: `base.py`
-- **Purpose**: Token usage information....
+**Public Methods:**
+- `usage()`
 
-#### `create_claude_agent`
-- **File**: `claude_client.py`
-- **Purpose**: Create a Claude-powered FlowAgent.
+#### ClaudeFlowClient
+Anthropic Claude client with Flow integration.
 
-Args:
-    name: Agent name
-    model: Claude model to use
-    sy...
+**Public Methods:**
+- `create_completion()`
+- `create_chat_completion()`
 
-#### `usage`
-- **File**: `claude_client.py`
-- **Purpose**: Token usage information....
+### Functions
 
-## Public API
+#### `def create_claude_agent(name: str, model: str, system_prompt: str | None, temperature: float, max_tokens: int, api_key: str | None) -> FlowAgent`
+Create a Claude-powered FlowAgent.
 
-### Main Exports
-```python
-# TODO: Document main exports
-from goldentooth_agent.core.llm import (
-    # Add main classes and functions here
-)
-```
+    Args:
+        name: Agent name
+        model: Claude model to use
+        system_prompt: Optional system prompt
+        temperature: Sampling temperature
+        max_tokens: Maximum tokens per response
+        api_key: Anthropic API key (defaults to env var)
 
-### Usage Examples
-```python
-# TODO: Add usage examples
-```
+    Returns:
+        FlowAgent powered by Claude
+
+### Constants
+
+#### `T`
+
+#### `T`
 
 ## Dependencies
 
-### Internal Dependencies
-```python
-# Key internal imports
-
-```
-
 ### External Dependencies
-```python
-# Key external imports
-# context
-# os
-# collections.abc
-# abc
-# flow
-# base
-# __future__
-# flow_agent
-# anthropic
-# claude_client
-```
+- `__future__`
+- `abc`
+- `anthropic`
+- `base`
+- `claude_client`
+- `collections`
+- `context`
+- `flow_agent`
+- `goldentooth_agent`
+- `instructor`
+- `os`
+- `typing`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/core/llm/`
-- **Coverage target**: 85%+
-- **Performance**: All tests <1s
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all tests for this module
-poetry run pytest tests/core/llm/
+- `ClaudeFlowClient`
+- `LLMClient`
+- `StreamingResponse`
+- `create_claude_agent`
 
-# Run with coverage
-poetry run pytest tests/core/llm/ --cov=src/goldentooth_agent/core/llm/
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] TODO: Document known issues
-- [ ] TODO: Type safety concerns
-- [ ] TODO: Performance bottlenecks
-
-### Future Improvements
-- [ ] TODO: Planned enhancements
-- [ ] TODO: Refactoring needs
-
-## Development Notes
-
-### Architecture Decisions
-- TODO: Document key design decisions
-- TODO: Explain complex interactions
-
-### Performance Considerations
-- TODO: Document performance requirements
-- TODO: Known bottlenecks and optimizations
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: TODO: List module dependencies
-- **Used by**: TODO: List modules that use this one
-
-### Integration Points
-- TODO: Document how this module integrates with others
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

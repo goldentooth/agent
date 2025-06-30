@@ -1,0 +1,46 @@
+module_name: Rules
+description: Rules module
+complexity: Medium
+file_count: 3
+loc: ~101
+test_coverage: Medium
+class_count: 2
+function_count: 8
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- collections
+- dataclasses
+- goldentooth_agent
+- rule
+- rule_engine
+- typing
+symbols:
+- Rule
+- RuleEngine
+- TIn
+- __all__
+exports:
+- Rule
+- RuleEngine
+classes:
+- name: RuleEngine
+  docstring: "A rule engine that evaluates a list of rules against a context and applies\
+    \ actions based on matching conditions.\n\n    The RuleEngine is pure Flow-based\
+    \ and processes rules in priority order. It can be converted\n    to a Flow for\
+    \ stream processing or used directly for single context evaluation."
+  methods:
+  - evaluate
+  - add_rule
+  - as_flow
+  public: true
+- name: Rule
+  docstring: "A rule that applies a condition to an input and executes an action if\
+    \ the condition is met.\n\n    Rules are pure Flow-based components that evaluate\
+    \ conditions and apply transformations\n    conditionally. They integrate seamlessly\
+    \ with the Flow system for stream processing."
+  methods:
+  - apply
+  - as_flow
+  public: true

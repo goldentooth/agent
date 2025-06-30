@@ -1,0 +1,115 @@
+module_name: Yaml Store
+description: Yaml Store module
+complexity: High
+file_count: 2
+loc: ~472
+test_coverage: Medium
+class_count: 9
+function_count: 54
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.yaml_store
+external_dependencies:
+- __future__
+- pathlib
+- pytest
+- tempfile
+- typing
+- yaml
+symbols:
+- InvalidAdapter
+- Task
+- TaskAdapter
+- TestIntegration
+- TestYamlStore
+- TestYamlStoreAdapter
+- TestYamlStoreInstaller
+- User
+- UserAdapter
+exports: []
+classes:
+- name: User
+  docstring: Test data class for YAML store tests.
+  methods: []
+  public: true
+- name: UserAdapter
+  docstring: Test adapter for User class.
+  methods:
+  - from_dict
+  - to_dict
+  public: true
+- name: Task
+  docstring: Another test data class for YAML store tests.
+  methods: []
+  public: true
+- name: TaskAdapter
+  docstring: Test adapter for Task class.
+  methods:
+  - from_dict
+  - to_dict
+  public: true
+- name: InvalidAdapter
+  docstring: Test adapter that doesn't implement the protocol properly.
+  methods:
+  - from_dict
+  public: true
+- name: TestYamlStoreAdapter
+  docstring: Test suite for YamlStoreAdapter protocol.
+  methods:
+  - test_adapter_protocol_implementation
+  - test_adapter_protocol_validation_valid_adapter
+  - test_adapter_protocol_validation_invalid_adapter
+  - test_adapter_from_dict_creates_object
+  - test_adapter_to_dict_creates_dict
+  - test_adapter_roundtrip_conversion
+  public: true
+- name: TestYamlStore
+  docstring: Test suite for YamlStore class.
+  methods:
+  - setup_method
+  - teardown_method
+  - test_store_creates_directory
+  - test_store_with_existing_directory
+  - test_save_creates_yaml_file
+  - test_save_creates_valid_yaml_content
+  - test_load_retrieves_saved_object
+  - test_load_nonexistent_file_raises_error
+  - test_exists_returns_true_for_existing_file
+  - test_exists_returns_false_for_nonexistent_file
+  - test_delete_removes_existing_file
+  - test_delete_nonexistent_file_does_not_error
+  - test_list_returns_empty_for_empty_store
+  - test_list_returns_saved_file_names
+  - test_list_returns_sorted_names
+  - test_list_ignores_non_yaml_files
+  - test_multiple_saves_overwrites_file
+  - test_store_with_different_types
+  - test_store_handles_special_characters_in_id
+  - test_store_preserves_data_types
+  public: true
+- name: TestYamlStoreInstaller
+  docstring: Test suite for YamlStoreInstaller class.
+  methods:
+  - setup_method
+  - teardown_method
+  - test_installer_with_empty_source
+  - test_installer_copies_all_files_from_source
+  - test_installer_does_not_overwrite_by_default
+  - test_installer_overwrites_when_requested
+  - test_installer_mixed_overwrite_scenario
+  - test_installer_with_overwrite_mixed_scenario
+  - test_installer_reports_false_when_no_changes
+  - test_installer_with_different_adapters
+  public: true
+- name: TestIntegration
+  docstring: Integration tests for the complete yaml_store system.
+  methods:
+  - setup_method
+  - teardown_method
+  - test_complete_workflow
+  - test_file_system_integration
+  - test_concurrent_store_access
+  - test_error_handling_with_corrupted_yaml
+  - test_adapter_validation_in_store
+  public: true

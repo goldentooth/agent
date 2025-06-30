@@ -1,0 +1,341 @@
+module_name: Rules
+description: Rules module
+complexity: Critical
+file_count: 2
+loc: ~1094
+test_coverage: Medium
+class_count: 20
+function_count: 92
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.rules
+external_dependencies:
+- asyncio
+- goldentooth_agent
+- pytest
+symbols:
+- ComplexContext
+- NumberContext
+- StringContext
+- TestRuleApply
+- TestRuleAsFlow
+- TestRuleCall
+- TestRuleChaining
+- TestRuleCreation
+- TestRuleEdgeCases
+- TestRuleEngineAddRule
+- TestRuleEngineAsFlow
+- TestRuleEngineCall
+- TestRuleEngineCreation
+- TestRuleEngineEdgeCases
+- TestRuleEngineEvaluate
+- TestRuleEngineIntegration
+- TestRuleEnginePerformance
+- TestRuleEngineSideEffects
+- TestRuleIntegration
+- TestRulePerformance
+- create_activate_action
+- create_add_5_action
+- create_add_tag_action
+- create_deactivate_action
+- create_double_action
+- create_double_even_rule
+- create_increment_action
+- create_increment_positive_rule
+- create_multiply_by_3_action
+- create_negate_action
+- create_negate_greater_than_10_rule
+- create_side_effect_action
+- create_uppercase_action
+- has_urgent_tag
+- is_active
+- is_even
+- is_greater_than_10
+- is_greater_than_5
+- is_positive
+- name_starts_with_test
+- text_contains_hello
+- value_greater_than_10
+- value_less_than_100
+exports: []
+classes:
+- name: NumberContext
+  docstring: Simple numeric context for testing.
+  methods: []
+  public: true
+- name: StringContext
+  docstring: Simple string context for testing.
+  methods: []
+  public: true
+- name: ComplexContext
+  docstring: Complex context with multiple fields for testing.
+  methods: []
+  public: true
+- name: TestRuleEngineCreation
+  docstring: Test cases for RuleEngine creation and basic functionality.
+  methods:
+  - test_rule_engine_creation_empty
+  - test_rule_engine_creation_single_rule
+  - test_rule_engine_creation_multiple_rules
+  - test_rule_engine_sorts_by_priority
+  - test_rule_engine_handles_same_priority
+  public: true
+- name: TestRuleEngineEvaluate
+  docstring: Test cases for RuleEngine.evaluate method.
+  methods:
+  - test_evaluate_empty_engine
+  - test_evaluate_single_rule_applies
+  - test_evaluate_single_rule_does_not_apply
+  - test_evaluate_multiple_rules_sequential
+  - test_evaluate_rules_priority_order
+  - test_evaluate_complex_rule_chain
+  - test_evaluate_with_complex_context
+  - test_evaluate_some_rules_apply
+  public: true
+- name: TestRuleEngineCall
+  docstring: Test cases for RuleEngine.__call__ method.
+  methods:
+  - test_call_delegates_to_evaluate
+  public: true
+- name: TestRuleEngineAddRule
+  docstring: Test cases for RuleEngine.add_rule method.
+  methods:
+  - test_add_rule_to_empty_engine
+  - test_add_rule_maintains_priority_order
+  - test_add_rule_and_evaluate
+  - test_add_multiple_rules_sequentially
+  public: true
+- name: TestRuleEngineAsFlow
+  docstring: Test cases for RuleEngine.as_flow method.
+  methods:
+  - test_as_flow_basic
+  - test_as_flow_metadata
+  - test_as_flow_empty_engine_metadata
+  - test_as_flow_integration_with_other_flows
+  public: true
+- name: TestRuleEngineSideEffects
+  docstring: Test cases for side effects and logging in RuleEngine.
+  methods:
+  - test_rule_engine_with_side_effects
+  - test_rule_engine_multiple_side_effects
+  public: true
+- name: TestRuleEngineEdgeCases
+  docstring: Test edge cases and error conditions for RuleEngine.
+  methods:
+  - test_rule_engine_with_zero_priority_rules
+  - test_rule_engine_with_negative_priorities
+  - test_rule_engine_exception_handling
+  - test_rule_engine_action_exception
+  - test_rule_engine_with_large_number_of_rules
+  public: true
+- name: TestRuleEngineIntegration
+  docstring: Integration tests for RuleEngine with different scenarios.
+  methods:
+  - test_rule_engine_complex_business_logic
+  - test_rule_engine_mathematical_processing
+  - test_rule_engine_flow_integration
+  - test_rule_engine_repr
+  public: true
+- name: TestRuleEnginePerformance
+  docstring: Performance tests for RuleEngine.
+  methods:
+  - test_rule_engine_performance_many_evaluations
+  - test_rule_engine_performance_concurrent_evaluations
+  public: true
+- name: NumberContext
+  docstring: Simple numeric context for testing.
+  methods: []
+  public: true
+- name: StringContext
+  docstring: Simple string context for testing.
+  methods: []
+  public: true
+- name: ComplexContext
+  docstring: Complex context with multiple fields for testing.
+  methods: []
+  public: true
+- name: TestRuleCreation
+  docstring: Test cases for Rule creation and basic functionality.
+  methods:
+  - test_rule_creation_basic
+  - test_rule_creation_with_priority
+  - test_rule_creation_with_description
+  - test_rule_creation_with_all_parameters
+  public: true
+- name: TestRuleApply
+  docstring: Test cases for Rule.apply method.
+  methods:
+  - test_apply_condition_true
+  - test_apply_condition_false
+  - test_apply_with_even_condition
+  - test_apply_with_complex_context
+  - test_apply_with_string_context
+  public: true
+- name: TestRuleCall
+  docstring: Test cases for Rule.__call__ method.
+  methods:
+  - test_call_delegates_to_apply
+  public: true
+- name: TestRuleAsFlow
+  docstring: Test cases for Rule.as_flow method.
+  methods:
+  - test_as_flow_basic
+  - test_as_flow_metadata
+  - test_as_flow_metadata_with_lambda
+  public: true
+- name: TestRuleChaining
+  docstring: Test cases for chaining rules and complex scenarios.
+  methods:
+  - test_multiple_rules_sequence
+  - test_rule_with_side_effects
+  public: true
+- name: TestRuleEdgeCases
+  docstring: Test edge cases and error conditions for Rule.
+  methods:
+  - test_rule_with_zero_value
+  - test_rule_with_large_numbers
+  - test_rule_with_negative_priority
+  - test_rule_condition_exception
+  - test_rule_action_exception
+  public: true
+- name: TestRuleIntegration
+  docstring: Integration tests for Rule with different flow types.
+  methods:
+  - test_rule_with_complex_flow_chain
+  - test_rule_flow_integration
+  - test_rule_repr
+  public: true
+- name: TestRulePerformance
+  docstring: Performance and stress tests for Rule.
+  methods:
+  - test_rule_performance_many_applications
+  - test_rule_with_async_heavy_action
+  public: true
+functions:
+- name: is_positive
+  signature: 'def is_positive(ctx: NumberContext) -> bool'
+  docstring: Check if number context value is positive.
+  public: true
+- name: is_even
+  signature: 'def is_even(ctx: NumberContext) -> bool'
+  docstring: Check if number context value is even.
+  public: true
+- name: is_greater_than_5
+  signature: 'def is_greater_than_5(ctx: NumberContext) -> bool'
+  docstring: Check if number context value is greater than 5.
+  public: true
+- name: is_greater_than_10
+  signature: 'def is_greater_than_10(ctx: NumberContext) -> bool'
+  docstring: Check if number context value is greater than 10.
+  public: true
+- name: value_less_than_100
+  signature: 'def value_less_than_100(ctx: NumberContext) -> bool'
+  docstring: Check if number context value is less than 100.
+  public: true
+- name: is_active
+  signature: 'def is_active(ctx: ComplexContext) -> bool'
+  docstring: Check if complex context is active.
+  public: true
+- name: name_starts_with_test
+  signature: 'def name_starts_with_test(ctx: ComplexContext) -> bool'
+  docstring: Check if complex context name starts with 'test'.
+  public: true
+- name: has_urgent_tag
+  signature: 'def has_urgent_tag(ctx: ComplexContext) -> bool'
+  docstring: Check if complex context has 'urgent' tag.
+  public: true
+- name: create_increment_action
+  signature: def create_increment_action() -> Flow[NumberContext, NumberContext]
+  docstring: Create a flow that increments the number context value.
+  public: true
+- name: create_double_action
+  signature: def create_double_action() -> Flow[NumberContext, NumberContext]
+  docstring: Create a flow that doubles the number context value.
+  public: true
+- name: create_negate_action
+  signature: def create_negate_action() -> Flow[NumberContext, NumberContext]
+  docstring: Create a flow that negates the number context value.
+  public: true
+- name: create_add_5_action
+  signature: def create_add_5_action() -> Flow[NumberContext, NumberContext]
+  docstring: Create a flow that adds 5 to the number context value.
+  public: true
+- name: create_multiply_by_3_action
+  signature: def create_multiply_by_3_action() -> Flow[NumberContext, NumberContext]
+  docstring: Create a flow that multiplies the number context value by 3.
+  public: true
+- name: create_deactivate_action
+  signature: def create_deactivate_action() -> Flow[ComplexContext, ComplexContext]
+  docstring: Create a flow that deactivates the complex context.
+  public: true
+- name: create_add_tag_action
+  signature: 'def create_add_tag_action(tag: str) -> Flow[ComplexContext, ComplexContext]'
+  docstring: Create a flow that adds a tag to the complex context.
+  public: true
+- name: create_side_effect_action
+  signature: 'def create_side_effect_action(side_effects: list) -> Flow[NumberContext,
+    NumberContext]'
+  docstring: Create a flow that adds side effects while preserving context.
+  public: true
+- name: create_increment_positive_rule
+  signature: 'def create_increment_positive_rule(priority: int) -> Rule[NumberContext]'
+  docstring: Create a rule that increments positive numbers.
+  public: true
+- name: create_double_even_rule
+  signature: 'def create_double_even_rule(priority: int) -> Rule[NumberContext]'
+  docstring: Create a rule that doubles even numbers.
+  public: true
+- name: create_negate_greater_than_10_rule
+  signature: 'def create_negate_greater_than_10_rule(priority: int) -> Rule[NumberContext]'
+  docstring: Create a rule that negates numbers greater than 10.
+  public: true
+- name: is_positive
+  signature: 'def is_positive(ctx: NumberContext) -> bool'
+  docstring: Check if number context value is positive.
+  public: true
+- name: is_even
+  signature: 'def is_even(ctx: NumberContext) -> bool'
+  docstring: Check if number context value is even.
+  public: true
+- name: value_greater_than_10
+  signature: 'def value_greater_than_10(ctx: NumberContext) -> bool'
+  docstring: Check if number context value is greater than 10.
+  public: true
+- name: is_active
+  signature: 'def is_active(ctx: ComplexContext) -> bool'
+  docstring: Check if complex context is active.
+  public: true
+- name: name_starts_with_test
+  signature: 'def name_starts_with_test(ctx: ComplexContext) -> bool'
+  docstring: Check if complex context name starts with 'test'.
+  public: true
+- name: text_contains_hello
+  signature: 'def text_contains_hello(ctx: StringContext) -> bool'
+  docstring: Check if string context contains 'hello'.
+  public: true
+- name: create_increment_action
+  signature: def create_increment_action() -> Flow[NumberContext, NumberContext]
+  docstring: Create a flow that increments the number context value.
+  public: true
+- name: create_double_action
+  signature: def create_double_action() -> Flow[NumberContext, NumberContext]
+  docstring: Create a flow that doubles the number context value.
+  public: true
+- name: create_negate_action
+  signature: def create_negate_action() -> Flow[NumberContext, NumberContext]
+  docstring: Create a flow that negates the number context value.
+  public: true
+- name: create_activate_action
+  signature: def create_activate_action() -> Flow[ComplexContext, ComplexContext]
+  docstring: Create a flow that activates the complex context.
+  public: true
+- name: create_uppercase_action
+  signature: def create_uppercase_action() -> Flow[StringContext, StringContext]
+  docstring: Create a flow that uppercases the string context.
+  public: true
+- name: create_side_effect_action
+  signature: 'def create_side_effect_action(side_effects: list) -> Flow[NumberContext,
+    NumberContext]'
+  docstring: Create a flow that adds side effects while preserving context.
+  public: true

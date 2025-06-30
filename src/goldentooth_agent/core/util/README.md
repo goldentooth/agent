@@ -1,89 +1,59 @@
-# Util Module
+# Util
+
+Util module
 
 ## Overview
-**Status**: 🟢 Low Complexity | **Lines of Code**: 37 | **Files**: 2
 
-Brief description of the module's purpose and responsibilities.
+- **Complexity**: Low
+- **Files**: 2 Python files
+- **Lines of Code**: ~29
+- **Classes**: 0
+- **Functions**: 1
 
-## Key Components
+## API Reference
 
-### Classes (0)
+### Functions
 
-### Functions (0)
+#### `async def maybe_await(func: Callable[..., T], *args: object, **kwargs: object) -> T`
+Call a function and conditionally await its result if it returns a coroutine.
 
-## Public API
+    This utility enables uniform handling of both synchronous and asynchronous functions
+    in contexts where you don't know ahead of time whether the function is async.
+    Useful for building flexible APIs that accept either sync or async callables.
 
-### Main Exports
-```python
-# TODO: Document main exports
-from goldentooth_agent.core.util import (
-    # Add main classes and functions here
-)
-```
+    Args:
+        func: The callable to execute (can be sync or async)
+        *args: Positional arguments to pass to the function
+        **kwargs: Keyword arguments to pass to the function
 
-### Usage Examples
-```python
-# TODO: Add usage examples
-```
+    Returns:
+        The result of the function call, awaited if it was a coroutine
+
+    Example:
+        # Works with both sync and async functions
+        result1 = await maybe_await(lambda x: x + 1, 5)  # Returns 6
+        result2 = await maybe_await(async_function, arg1, kwarg=value)
+
+### Constants
+
+#### `T`
 
 ## Dependencies
 
-### Internal Dependencies
-```python
-# Key internal imports
-
-```
-
 ### External Dependencies
-```python
-# Key external imports
-# collections.abc
-# maybe_await
-# inspect
-```
+- `collections`
+- `inspect`
+- `maybe_await`
+- `typing`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/core/util/`
-- **Coverage target**: 85%+
-- **Performance**: All tests <1s
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all tests for this module
-poetry run pytest tests/core/util/
+- `maybe_await`
 
-# Run with coverage
-poetry run pytest tests/core/util/ --cov=src/goldentooth_agent/core/util/
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] TODO: Document known issues
-- [ ] TODO: Type safety concerns
-- [ ] TODO: Performance bottlenecks
-
-### Future Improvements
-- [ ] TODO: Planned enhancements
-- [ ] TODO: Refactoring needs
-
-## Development Notes
-
-### Architecture Decisions
-- TODO: Document key design decisions
-- TODO: Explain complex interactions
-
-### Performance Considerations
-- TODO: Document performance requirements
-- TODO: Known bottlenecks and optimizations
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: TODO: List module dependencies
-- **Used by**: TODO: List modules that use this one
-
-### Integration Points
-- TODO: Document how this module integrates with others
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

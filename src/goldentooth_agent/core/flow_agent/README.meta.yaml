@@ -1,0 +1,167 @@
+module_name: Flow Agent
+description: Flow Agent module
+complexity: Medium
+file_count: 5
+loc: ~593
+test_coverage: Medium
+class_count: 7
+function_count: 22
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- __future__
+- agent
+- asyncio
+- collections
+- context
+- goldentooth_agent
+- instructor_integration
+- pydantic
+- schema
+- tool
+- typing
+symbols:
+- AgentInput
+- AgentOutput
+- AnyAgent
+- AnyFlow
+- AnyInput
+- AnyOutput
+- AnyType
+- COMPLETION_METADATA_KEY
+- CompletionMetadata
+- ContextData
+- FieldDefaults
+- FlowAgent
+- FlowIOSchema
+- FlowKwargs
+- FlowTool
+- InstructorFlow
+- LLMClient
+- MAX_TOKENS_KEY
+- MODEL_NAME_KEY
+- MessageData
+- MockLLMClient
+- MockResponse
+- R
+- SYSTEM_PROMPT_KEY
+- T
+- TEMPERATURE_KEY
+- __all__
+- create_instructor_flow
+- create_model_config_flow
+- create_system_prompt_flow
+exports:
+- AgentInput
+- AgentOutput
+- FlowAgent
+- FlowIOSchema
+- FlowTool
+- InstructorFlow
+- MockLLMClient
+- create_instructor_flow
+- create_model_config_flow
+- create_system_prompt_flow
+classes:
+- name: MockLLMClient
+  docstring: "Mock LLM client for testing purposes.\n\n    This client simulates LLM\
+    \ responses for testing the Instructor integration\n    without requiring actual\
+    \ API calls."
+  methods:
+  - create_completion
+  public: true
+- name: InstructorFlow
+  docstring: "Flow-based wrapper for Instructor-powered structured LLM output.\n\n\
+    \    InstructorFlow integrates with the FlowAgent system to provide structured\n\
+    \    LLM output using Instructor's validation and parsing capabilities."
+  methods:
+  - as_flow
+  public: true
+- name: FlowAgent
+  docstring: "Flow-based agent using functional composition.\n\n    FlowAgent implements\
+    \ a complete agent pipeline that:\n    1. Validates input schemas\n    2. Converts\
+    \ input to context\n    3. Runs system flow (prompt generation, memory, etc.)\n\
+    \    4. Runs processing flow (LLM calls, tool execution, etc.)\n    5. Extracts\
+    \ and validates output schemas"
+  methods:
+  - as_flow
+  public: true
+- name: FlowTool
+  docstring: "Flow-based tool with agent-like interface.\n\n    FlowTool provides\
+    \ a unified interface for tools that can be used as flows\n    or converted to\
+    \ agent-compatible interfaces."
+  methods:
+  - as_flow
+  - as_agent
+  public: true
+- name: FlowIOSchema
+  docstring: Base schema for all Flow-based agent interactions with context integration.
+  methods:
+  - to_context
+  - from_context
+  public: true
+- name: AgentInput
+  docstring: Standard input for agent flows.
+  methods: []
+  public: true
+- name: AgentOutput
+  docstring: Standard output for agent flows.
+  methods: []
+  public: true
+functions:
+- name: create_instructor_flow
+  signature: 'def create_instructor_flow(client: LLMClient, model: str, input_schema:
+    type[T], output_schema: type[R], system_prompt: str | None, **kwargs: FlowKwargs)
+    -> Flow[Context, Context]'
+  docstring: "Factory function to create an InstructorFlow as a Flow.\n\n    Args:\n\
+    \        client: LLM client instance\n        model: Model name\n        input_schema:\
+    \ Input schema type\n        output_schema: Output schema type\n        system_prompt:\
+    \ Optional system prompt\n        **kwargs: Additional arguments passed to InstructorFlow\n\
+    \n    Returns:\n        Flow that performs structured LLM completion"
+  public: true
+- name: create_system_prompt_flow
+  signature: 'def create_system_prompt_flow(prompt: str) -> Flow[Context, Context]'
+  docstring: "Create a flow that adds a system prompt to the context.\n\n    Args:\n\
+    \        prompt: System prompt text\n\n    Returns:\n        Flow that adds the\
+    \ system prompt to context"
+  public: true
+- name: create_model_config_flow
+  signature: 'def create_model_config_flow(model: str, temperature: float, max_tokens:
+    int | None) -> Flow[Context, Context]'
+  docstring: "Create a flow that adds model configuration to the context.\n\n    Args:\n\
+    \        model: Model name\n        temperature: Temperature setting\n       \
+    \ max_tokens: Optional maximum tokens\n\n    Returns:\n        Flow that adds\
+    \ model configuration to context"
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true
+- name: R
+  value: ''
+  public: true
+- name: SYSTEM_PROMPT_KEY
+  value: ''
+  public: true
+- name: MODEL_NAME_KEY
+  value: ''
+  public: true
+- name: TEMPERATURE_KEY
+  value: ''
+  public: true
+- name: MAX_TOKENS_KEY
+  value: ''
+  public: true
+- name: COMPLETION_METADATA_KEY
+  value: ''
+  public: true
+- name: T
+  value: ''
+  public: true
+- name: R
+  value: ''
+  public: true
+- name: T
+  value: ''
+  public: true

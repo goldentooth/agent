@@ -1,0 +1,140 @@
+module_name: Embeddings
+description: Embeddings module
+complexity: Critical
+file_count: 8
+loc: ~3535
+test_coverage: Medium
+class_count: 9
+function_count: 105
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- anthropic
+- antidote
+- collections
+- dataclasses
+- datetime
+- document_chunker
+- embeddings_service
+- gzip
+- hashlib
+- json
+- math
+- numpy
+- openai
+- openai_embeddings
+- os
+- pathlib
+- paths
+- re
+- sqlite3
+- sqlite_vec
+- struct
+- typing
+- vector_store
+- zlib
+symbols:
+- Chunk
+- ChunkRelationshipAnalyzer
+- DocumentChunk
+- DocumentChunker
+- EmbeddingsService
+- HybridSearchEngine
+- OpenAIEmbeddingsService
+- SearchResult
+- VectorStore
+- __all__
+exports:
+- DocumentChunk
+- DocumentChunker
+- EmbeddingsService
+- OpenAIEmbeddingsService
+- VectorStore
+classes:
+- name: DocumentChunk
+  docstring: Represents a chunk of a document with metadata.
+  methods: []
+  public: true
+- name: DocumentChunker
+  docstring: Intelligently splits documents into meaningful chunks for better RAG
+    retrieval.
+  methods:
+  - chunk_document
+  - get_chunk_summary
+  public: true
+- name: HybridSearchEngine
+  docstring: Hybrid search engine combining semantic and keyword-based retrieval.
+  methods:
+  - hybrid_search
+  - get_search_stats
+  - update_hybrid_weights
+  - update_bm25_parameters
+  - explain_search_results
+  public: true
+- name: Chunk
+  docstring: Represents a chunk of content for embedding and search.
+  methods: []
+  public: true
+- name: SearchResult
+  docstring: Represents a search result with relevance scoring.
+  methods:
+  - chunk_id
+  - document_id
+  - content
+  public: true
+- name: VectorStore
+  docstring: Hybrid vector store supporting both SQLite and compressed sidecar files.
+  methods:
+  - store_document
+  - store_document_chunks
+  - get_document_chunks
+  - delete_document_chunks
+  - search_similar
+  - get_document
+  - delete_document
+  - list_documents
+  - get_stats
+  - get_all_sidecar_paths
+  - count_sidecar_files
+  - sync_sidecar_files
+  - get_sidecar_metadata
+  - store_chunk_relationships
+  - get_chunk_relationships
+  - get_related_chunks
+  - delete_chunk_relationships
+  - get_relationship_stats
+  - analyze_chunk_network
+  public: true
+- name: EmbeddingsService
+  docstring: Service for creating and managing document embeddings using Anthropic.
+  methods:
+  - create_embedding
+  - create_document_embedding
+  - embed_batch
+  - create_document_chunks_with_embeddings
+  - create_chunk_embedding
+  - get_embeddable_text_from_chunk
+  - re_embed_document_with_chunks
+  - should_use_chunking
+  public: true
+- name: ChunkRelationshipAnalyzer
+  docstring: Analyzes semantic relationships between document chunks.
+  methods:
+  - analyze_chunk_relationships
+  - find_related_chunks
+  - get_chunk_context_expansion
+  public: true
+- name: OpenAIEmbeddingsService
+  docstring: Service for creating and managing document embeddings using OpenAI.
+  methods:
+  - create_embedding
+  - create_document_embedding
+  - embed_batch
+  - create_document_chunks_with_embeddings
+  - create_chunk_embedding
+  - get_embeddable_text_from_chunk
+  - re_embed_document_with_chunks
+  - should_use_chunking
+  - get_model_info
+  public: true

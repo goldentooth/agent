@@ -1,0 +1,164 @@
+module_name: Event
+description: Event module
+complexity: Medium
+file_count: 3
+loc: ~278
+test_coverage: Medium
+class_count: 3
+function_count: 32
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- __future__
+- collections
+- flow
+- goldentooth_agent
+- inject
+- pyee
+- typing
+symbols:
+- AnyAsyncEventFlow
+- AnyAwaitableEventHandler
+- AnyEventFlow
+- AnyEventHandler
+- AnyFlow
+- AnySyncEventFlow
+- AnyTransformFlow
+- AnyTransformer
+- AsyncEventFlow
+- EventFlow
+- EventType
+- SyncEventFlow
+- T
+- __all__
+- _async_emitter
+- _sync_emitter
+- create_async_event_flow
+- create_sync_event_flow
+- create_typed_async_event_flow
+- create_typed_sync_event_flow
+- event_bridge
+- event_filter
+- event_sink
+- event_source
+- event_transform
+- get_async_event_emitter
+- get_sync_event_emitter
+exports:
+- AsyncEventFlow
+- EventFlow
+- SyncEventFlow
+- create_async_event_flow
+- create_sync_event_flow
+- create_typed_async_event_flow
+- create_typed_sync_event_flow
+- event_bridge
+- event_filter
+- event_sink
+- event_source
+- event_transform
+- get_async_event_emitter
+- get_sync_event_emitter
+classes:
+- name: EventFlow
+  docstring: Base class for Flow-integrated event handling.
+  methods:
+  - emit
+  - as_flow
+  public: true
+- name: SyncEventFlow
+  docstring: Flow-integrated synchronous event emitter wrapper.
+  methods:
+  - emit
+  - 'on'
+  - once
+  - 'off'
+  - remove_all_listeners
+  - listeners
+  - listener_count
+  - as_flow
+  public: true
+- name: AsyncEventFlow
+  docstring: Flow-integrated asynchronous event emitter wrapper.
+  methods:
+  - emit
+  - 'on'
+  - once
+  - 'off'
+  - remove_all_listeners
+  - listeners
+  - listener_count
+  - as_flow
+  public: true
+functions:
+- name: event_source
+  signature: 'def event_source(event_name: str, use_async: bool) -> AnyFlow'
+  docstring: "Create a Flow that emits events from the specified event name.\n\n \
+    \   Args:\n        event_name: Name of the event to listen for\n        use_async:\
+    \ Whether to use async event emitter (default: True)\n\n    Returns:\n       \
+    \ Flow that yields events as they are emitted"
+  public: true
+- name: event_sink
+  signature: 'def event_sink(event_name: str, use_async: bool) -> Flow[T, T]'
+  docstring: "Create a Flow that emits each item it receives as an event.\n\n    Args:\n\
+    \        event_name: Name of the event to emit\n        use_async: Whether to\
+    \ use async event emitter (default: True)\n\n    Returns:\n        Flow that emits\
+    \ events and passes items through unchanged"
+  public: true
+- name: event_bridge
+  signature: 'def event_bridge(from_event: str, to_event: str, use_async: bool) ->
+    Flow[None, None]'
+  docstring: "Create a Flow that bridges events from one event name to another.\n\n\
+    \    Args:\n        from_event: Source event name to listen for\n        to_event:\
+    \ Target event name to emit to\n        use_async: Whether to use async event\
+    \ emitter (default: True)\n\n    Returns:\n        Flow that forwards events from\
+    \ source to target"
+  public: true
+- name: event_filter
+  signature: 'def event_filter(event_name: str, predicate: Callable[[T], bool], use_async:
+    bool) -> Flow[None, T]'
+  docstring: "Create a Flow that filters events based on a predicate.\n\n    Args:\n\
+    \        event_name: Name of the event to listen for\n        predicate: Function\
+    \ to filter events with\n        use_async: Whether to use async event emitter\
+    \ (default: True)\n\n    Returns:\n        Flow that yields only events matching\
+    \ the predicate"
+  public: true
+- name: event_transform
+  signature: 'def event_transform(event_name: str, transformer: AnyTransformer, use_async:
+    bool) -> AnyTransformFlow'
+  docstring: "Create a Flow that transforms events with a function.\n\n    Args:\n\
+    \        event_name: Name of the event to listen for\n        transformer: Function\
+    \ to transform events with\n        use_async: Whether to use async event emitter\
+    \ (default: True)\n\n    Returns:\n        Flow that yields transformed events"
+  public: true
+- name: create_sync_event_flow
+  signature: 'def create_sync_event_flow(event_name: str) -> AnySyncEventFlow'
+  docstring: Create a synchronous event flow for the given event name.
+  public: true
+- name: create_async_event_flow
+  signature: 'def create_async_event_flow(event_name: str) -> AnyAsyncEventFlow'
+  docstring: Create an asynchronous event flow for the given event name.
+  public: true
+- name: create_typed_sync_event_flow
+  signature: 'def create_typed_sync_event_flow(event_name: str) -> Callable[[type[T]],
+    SyncEventFlow[T]]'
+  docstring: Create a typed synchronous event flow factory.
+  public: true
+- name: create_typed_async_event_flow
+  signature: 'def create_typed_async_event_flow(event_name: str) -> Callable[[type[T]],
+    AsyncEventFlow[T]]'
+  docstring: Create a typed asynchronous event flow factory.
+  public: true
+- name: get_sync_event_emitter
+  signature: def get_sync_event_emitter() -> EventEmitter
+  docstring: Get an event emitter instance for synchronous event handling.
+  public: true
+- name: get_async_event_emitter
+  signature: def get_async_event_emitter() -> AsyncIOEventEmitter
+  docstring: Get an asyncio event emitter instance for asynchronous event handling.
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true

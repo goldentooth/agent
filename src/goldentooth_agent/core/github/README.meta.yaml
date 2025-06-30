@@ -1,0 +1,38 @@
+module_name: Github
+description: Github module
+complexity: Low
+file_count: 2
+loc: ~287
+test_coverage: Medium
+class_count: 1
+function_count: 10
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- antidote
+- datetime
+- document_store
+- github
+- github_client
+- os
+- schemas
+- typing
+symbols:
+- GitHubClient
+- __all__
+exports:
+- GitHubClient
+classes:
+- name: GitHubClient
+  docstring: Client for retrieving and syncing GitHub organization and repository
+    data.
+  methods:
+  - get_authenticated_user_orgs
+  - get_organization
+  - get_organization_repos
+  - get_user_repos
+  - sync_organization
+  - sync_user_repos
+  - get_api_rate_limit
+  public: true

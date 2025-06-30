@@ -1,129 +1,80 @@
-# Flow Engine Core
+# Core
+
+Core module
 
 ## Overview
-**Status**: 🟢 Low Complexity | **Lines of Code**: ~400 | **Files**: 4
 
-The core submodule contains the fundamental Flow class and related infrastructure. This is the foundation of the entire Flow Engine system.
+- **Complexity**: Medium
+- **Files**: 3 Python files
+- **Lines of Code**: ~297
+- **Classes**: 6
+- **Functions**: 23
 
-## Key Components
+## API Reference
 
-### Classes (3)
+### Classes
 
-#### `Flow`
-- **File**: `flow.py`
-- **Methods**: 15+ methods including map, filter, flat_map, compose
-- **Purpose**: Core Flow class for composable stream processing
+#### Flow
+Class for flow functionality.
 
-#### `FlowFactory`
-- **File**: `factory.py`
-- **Methods**: 6 factory methods
-- **Purpose**: Factory methods for creating Flow instances from various sources
+**Public Methods:**
+- `map()`
+- `filter()`
+- `flat_map()`
+- `for_each()`
+- `to_list()`
+- `label()`
+- `collect()`
+- `preview()`
+- `print()`
+- `with_fallback()`
+- `batch()`
+- `from_value_fn()`
+- `from_sync_fn()`
+- `from_event_fn()`
+- `from_iterable()`
+- `from_emitter()`
+- `identity()`
+- `pure()`
 
-#### Exception Classes
-- **File**: `exceptions.py`
-- **Purpose**: Flow-specific exception hierarchy for error handling
+#### FlowError
+Base exception for all Flow-related errors.
 
-### Functions (8)
+#### FlowValidationError
+Raised when flow validation fails (e.g., guard conditions, assertions).
 
-#### Flow Factory Methods
-- **from_value_fn**: Create Flow from single value function
-- **from_sync_fn**: Create Flow from synchronous function
-- **from_event_fn**: Create Flow from event-based function
-- **from_iterable**: Create Flow from iterable
-- **from_emitter**: Create Flow from event emitter
+#### FlowExecutionError
+Raised when flow execution fails (e.g., all retries exhausted, circuit breaker open).
 
-## Public API
+#### FlowTimeoutError
+Raised when flow operations timeout.
 
-### Main Exports
-```python
-from goldentooth_agent.flow_engine.core import (
-    Flow,
-    FlowError,
-    FlowValidationError,
-    FlowExecutionError,
-    FlowTimeoutError,
-    FlowConfigurationError,
-    FlowFactory,
-)
-```
-
-### Usage Examples
-```python
-# Basic Flow creation
-flow = Flow(my_async_function, name="data_processor")
-
-# Factory methods
-numbers_flow = Flow.from_iterable([1, 2, 3, 4, 5])
-double_flow = Flow.from_sync_fn(lambda x: x * 2)
-
-# Composition
-pipeline = numbers_flow >> double_flow >> Flow.from_sync_fn(str)
-
-# Execution
-result = await pipeline.to_list()  # ['2', '4', '6', '8', '10']
-```
+#### FlowConfigurationError
+Raised when flow is incorrectly configured (e.g., invalid parameters).
 
 ## Dependencies
 
-### Internal Dependencies
-```python
-# goldentooth_agent.flow_engine.protocols
-# goldentooth_agent.flow_engine.extensions
-```
-
 ### External Dependencies
-```python
-# typing, collections.abc, asyncio
-```
+- `__future__`
+- `asyncio`
+- `collections`
+- `exceptions`
+- `flow`
+- `typing`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/flow_engine/core/`
-- **Coverage target**: 95%+
-- **Performance**: All tests <100ms
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all core tests
-poetry run pytest tests/flow_engine/core/ -v
+- `Flow`
+- `FlowConfigurationError`
+- `FlowError`
+- `FlowExecutionError`
+- `FlowTimeoutError`
+- `FlowValidationError`
 
-# Run specific test files
-poetry run pytest tests/flow_engine/core/test_flow.py -v
-poetry run pytest tests/flow_engine/core/test_factory.py -v
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] Flow metadata system could be more robust
-- [ ] Factory methods could support more input types
-- [ ] Error messages could be more descriptive
-
-### Future Improvements
-- [ ] Add Flow validation decorators
-- [ ] Support for typed Flow generics
-- [ ] Performance optimizations for common patterns
-
-## Development Notes
-
-### Architecture Decisions
-- Generic Flow class supports any input/output types
-- Factory pattern separates creation from core functionality
-- Exception hierarchy provides clear error categorization
-
-### Performance Considerations
-- Flow creation is lightweight (no eager evaluation)
-- Stream processing is lazy by default
-- Memory usage scales with stream size, not Flow complexity
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: protocols, extensions
-- **Used by**: All other Flow Engine submodules
-
-### Integration Points
-- All combinators operate on Flow instances
-- Observability tools monitor Flow execution
-- Registry system catalogs Flow instances
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

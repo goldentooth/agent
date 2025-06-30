@@ -1,0 +1,77 @@
+module_name: Llm
+description: Llm module
+complexity: Medium
+file_count: 3
+loc: ~325
+test_coverage: Medium
+class_count: 4
+function_count: 11
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- __future__
+- abc
+- anthropic
+- base
+- claude_client
+- collections
+- context
+- flow_agent
+- goldentooth_agent
+- instructor
+- os
+- typing
+symbols:
+- ClaudeFlowClient
+- ClaudeStreamingResponse
+- LLMClient
+- StreamingResponse
+- T
+- __all__
+- create_claude_agent
+exports:
+- ClaudeFlowClient
+- LLMClient
+- StreamingResponse
+- create_claude_agent
+classes:
+- name: StreamingResponse
+  docstring: Protocol for streaming LLM responses.
+  methods:
+  - usage
+  public: true
+- name: LLMClient
+  docstring: Abstract base class for LLM clients.
+  methods:
+  - create_completion
+  - create_chat_completion
+  public: true
+- name: ClaudeStreamingResponse
+  docstring: Wrapper for Claude streaming responses.
+  methods:
+  - usage
+  public: true
+- name: ClaudeFlowClient
+  docstring: Anthropic Claude client with Flow integration.
+  methods:
+  - create_completion
+  - create_chat_completion
+  public: true
+functions:
+- name: create_claude_agent
+  signature: 'def create_claude_agent(name: str, model: str, system_prompt: str |
+    None, temperature: float, max_tokens: int, api_key: str | None) -> FlowAgent'
+  docstring: "Create a Claude-powered FlowAgent.\n\n    Args:\n        name: Agent\
+    \ name\n        model: Claude model to use\n        system_prompt: Optional system\
+    \ prompt\n        temperature: Sampling temperature\n        max_tokens: Maximum\
+    \ tokens per response\n        api_key: Anthropic API key (defaults to env var)\n\
+    \n    Returns:\n        FlowAgent powered by Claude"
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true
+- name: T
+  value: ''
+  public: true

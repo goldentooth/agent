@@ -1,0 +1,32 @@
+module_name: Agent
+description: Agent module
+complexity: Low
+file_count: 2
+loc: ~76
+test_coverage: Medium
+class_count: 0
+function_count: 2
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.embeddings
+- goldentooth_agent.core.paths
+- goldentooth_agent.core.rag.simple_rag_agent
+external_dependencies:
+- asyncio
+- pathlib
+- sys
+symbols:
+- project_root
+- test_basic_rag
+- test_interactive_rag
+exports: []
+functions:
+- name: test_basic_rag
+  signature: async def test_basic_rag()
+  docstring: Test basic RAG components.
+  public: true
+- name: test_interactive_rag
+  signature: async def test_interactive_rag()
+  docstring: Test the RAG system with multiple queries.
+  public: true

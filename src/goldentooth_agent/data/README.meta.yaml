@@ -1,0 +1,13 @@
+module_name: Data
+complexity: Low
+file_count: 1
+loc: ~0
+test_coverage: Medium
+class_count: 0
+function_count: 0
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies: []
+symbols: []
+exports: []

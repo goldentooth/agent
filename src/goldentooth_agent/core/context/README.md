@@ -1,213 +1,254 @@
-# Context Module
+# Context
+
+Context module
 
 ## Overview
-**Status**: 🔴 High Complexity | **Lines of Code**: 2078 | **Files**: 9
 
-Brief description of the module's purpose and responsibilities.
+- **Complexity**: High
+- **Files**: 9 Python files
+- **Lines of Code**: ~1633
+- **Classes**: 15
+- **Functions**: 122
 
-## Key Components
+## API Reference
 
-### Classes (15)
+### Classes
 
-#### `DependencyGraph`
-- **File**: `dependency_graph.py`
-- **Methods**: 12 methods
-- **Purpose**: Manages dependency relationships between context keys and computed properties....
+#### DependencyGraph
+Manages dependency relationships between context keys and computed properties.
 
-#### `ContextKey`
-- **File**: `key.py`
-- **Methods**: 6 methods
-- **Purpose**: Class for context keys that can be used to store and retrieve values in a context....
+**Public Methods:**
+- `add_dependency()`
+- `remove_dependency()`
+- `remove_all_dependencies()`
+- `get_dependents()`
+- `has_dependents()`
+- `get_all_source_keys()`
+- `clear()`
+- `get_graph_copy()`
 
-#### `Symbol`
-- **File**: `symbol.py`
-- **Methods**: 2 methods
-- **Purpose**: Represents a symbolic key like 'agent.intent'.
-You can use Symbol('agent.intent') or just strings in...
+#### ContextKey
+Class for context keys that can be used to store and retrieve values in a context.
 
-#### `SnapshotManager`
-- **File**: `snapshot_manager.py`
-- **Methods**: 7 methods
-- **Purpose**: Manages snapshots for Context objects....
+**Public Methods:**
+- `create()`
+- `symbol()`
 
-#### `ContextFlowError`
-- **File**: `flow_integration.py`
-- **Methods**: 0 methods
-- **Purpose**: Base exception for Flow-Context integration errors....
+#### Symbol
+Represents a symbolic key like 'agent.intent'.
+    You can use Symbol('agent.intent') or just strings interchangeably.
 
-#### `MissingRequiredKeyError`
-- **File**: `flow_integration.py`
-- **Methods**: 0 methods
-- **Purpose**: Raised when a required context key is missing....
+**Public Methods:**
+- `parts()`
 
-#### `ContextTypeMismatchError`
-- **File**: `flow_integration.py`
-- **Methods**: 0 methods
-- **Purpose**: Raised when a context key has the wrong type....
+#### SnapshotManager
+Manages snapshots for Context objects.
 
-#### `ContextFlowCombinators`
-- **File**: `flow_integration.py`
-- **Methods**: 9 methods
-- **Purpose**: Flow combinators for context manipulation with type safety....
+**Public Methods:**
+- `create_snapshot()`
+- `restore_snapshot()`
+- `list_snapshots()`
+- `delete_snapshot()`
+- `get_snapshot()`
+- `clear_snapshots()`
 
-#### `ContextFrame`
-- **File**: `frame.py`
-- **Methods**: 6 methods
-- **Purpose**: A single layer of the context stack, representing local bindings....
+#### ContextFlowError
+Base exception for Flow-Context integration errors.
 
-#### `ContextSnapshot`
-- **File**: `main.py`
-- **Methods**: 2 methods
-- **Purpose**: Represents a snapshot of context state at a specific point in time....
+#### MissingRequiredKeyError
+Raised when a required context key is missing.
 
-### Functions (103)
+#### ContextTypeMismatchError
+Raised when a context key has the wrong type.
 
-#### `add_dependency`
-- **File**: `dependency_graph.py`
-- **Purpose**: Add a dependency relationship.
+#### ContextFlowCombinators
+Flow combinators for context manipulation with type safety.
 
-Args:
-    source_key: The key that is depended upon
-    dependent_ke...
+**Public Methods:**
+- `get_key()`
+- `set_key()`
+- `require_key()`
+- `optional_key()`
+- `move_key()`
+- `copy_key()`
+- `forget_key()`
+- `require_keys()`
+- `transform_key()`
 
-#### `remove_dependency`
-- **File**: `dependency_graph.py`
-- **Purpose**: Remove a specific dependency relationship.
+#### ContextFrame
+A single layer of the context stack, representing local bindings.
 
-Args:
-    source_key: The key that is depended upon
-    ...
+**Public Methods:**
+- `copy()`
 
-#### `remove_all_dependencies`
-- **File**: `dependency_graph.py`
-- **Purpose**: Remove all dependencies for a source key.
+#### ContextSnapshot
+Represents a snapshot of context state at a specific point in time.
 
-Args:
-    source_key: The key to remove all dependencies ...
+**Public Methods:**
+- `restore_to()`
 
-#### `get_dependents`
-- **File**: `dependency_graph.py`
-- **Purpose**: Get all keys that depend on the given source key.
+#### ComputedProperty
+Represents a computed property that automatically updates when its dependencies change.
 
-Args:
-    source_key: The key to get dependents f...
+**Public Methods:**
+- `compute()`
+- `invalidate()`
+- `subscribe()`
+- `notify_change()`
 
-#### `has_dependents`
-- **File**: `dependency_graph.py`
-- **Purpose**: Check if a source key has any dependents.
+#### Transformation
+Represents a value transformation applied to context keys.
 
-Args:
-    source_key: The key to check
+**Public Methods:**
+- `apply()`
 
-Returns:
-    True...
+#### Context
+A layered, reactive, symbolic context with scoped access and EventFlow integration.
 
-#### `get_all_source_keys`
-- **File**: `dependency_graph.py`
-- **Purpose**: Get all source keys that have dependents.
+**Public Methods:**
+- `get()`
+- `set()`
+- `push_layer()`
+- `pop_layer()`
+- `fork()`
+- `fork_with_history()`
+- `merge()`
+- `diff()`
+- `deep_diff()`
+- `create_snapshot()`
+- `restore_snapshot()`
+- `list_snapshots()`
+- `delete_snapshot()`
+- `get_change_history()`
+- `clear_history()`
+- `get_history_size()`
+- `set_max_history_size()`
+- `rollback_to_timestamp()`
+- `get_snapshots()`
+- `replay_changes_since()`
+- `keys()`
+- `subscribe_sync()`
+- `subscribe_async()`
+- `as_flow()`
+- `global_changes_sync()`
+- `global_changes_async()`
+- `global_changes_as_flow()`
+- `dump()`
+- `add_computed_property()`
+- `remove_computed_property()`
+- `add_transformation()`
+- `remove_transformations()`
+- `get_computed_value()`
+- `is_computed_property()`
+- `computed_properties()`
+- `transformations()`
+- `query()`
+- `find_keys()`
+- `find_values()`
+- `filter_by_type()`
+- `search()`
+- `get_nested()`
+- `set_nested()`
+- `has_nested()`
+- `flatten()`
 
-Returns:
-    Set of all source keys...
+#### ContextChangeEvent
+Represents a single change event in context history.
 
-#### `clear`
-- **File**: `dependency_graph.py`
-- **Purpose**: Clear the entire dependency graph....
+#### HistoryTracker
+Tracks change history for Context objects.
 
-#### `get_graph_copy`
-- **File**: `dependency_graph.py`
-- **Purpose**: Get a copy of the internal graph structure.
+**Public Methods:**
+- `record_change()`
+- `get_history()`
+- `clear_history()`
+- `get_history_size()`
+- `set_max_history_size()`
+- `replay_changes_since()`
+- `get_changes_to_reverse()`
+- `get_all_history()`
 
-Returns:
-    Dictionary mapping source keys to sets of ...
+### Functions
 
-#### `context_key`
-- **File**: `key.py`
-- **Purpose**: Create a context key with the specified name and type....
+#### `def context_key(name: str, type_: type[T], description: str) -> ContextKey[T]`
+Create a context key with the specified name and type.
 
-#### `create`
-- **File**: `key.py`
-- **Purpose**: Create a new context key with the specified name, type, and description....
+#### `def run_flow_with_input(flow: Flow[T, R], input_item: T) -> R`
+Run a flow with a single input item and return the first result.
 
-## Public API
+    This is a convenience function for testing and simple use cases.
 
-### Main Exports
-```python
-# TODO: Document main exports
-from goldentooth_agent.core.context import (
-    # Add main classes and functions here
-)
-```
+#### `def extend_flow_with_context() -> None`
+Extend Flow class with context manipulation methods.
 
-### Usage Examples
-```python
-# TODO: Add usage examples
-```
+#### `def context_flow() -> ContextFlowDecorator`
+Decorator to create a context-aware Flow with declared dependencies.
+
+    Args:
+        inputs: List of required input context keys
+        outputs: List of output context keys this flow will set
+        optional: Dict of optional keys with their default values
+        name: Optional name for the flow
+
+### Constants
+
+#### `T`
+
+#### `T`
+
+#### `R`
+
+#### `T`
 
 ## Dependencies
 
 ### Internal Dependencies
-```python
-# Key internal imports
-
-```
+- `goldentooth_agent.core.event`
 
 ### External Dependencies
-```python
-# Key external imports
-# dataclasses
-# pyee
-# snapshot_manager
-# weakref
-# dependency_graph
-# time
-# main
-# asyncio
-# copy
-# history_tracker
-```
+- `__future__`
+- `asyncio`
+- `collections`
+- `copy`
+- `dataclasses`
+- `dependency_graph`
+- `flow_integration`
+- `frame`
+- `functools`
+- `goldentooth_agent`
+- `history_tracker`
+- `json`
+- `key`
+- `main`
+- `pyee`
+- `re`
+- `snapshot_manager`
+- `symbol`
+- `time`
+- `typing`
+- `weakref`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/core/context/`
-- **Coverage target**: 85%+
-- **Performance**: All tests <1s
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all tests for this module
-poetry run pytest tests/core/context/
+- `Context`
+- `ContextFlowCombinators`
+- `ContextFlowError`
+- `ContextFrame`
+- `ContextKey`
+- `ContextTypeMismatchError`
+- `DependencyGraph`
+- `HistoryTracker`
+- `MissingRequiredKeyError`
+- `SnapshotManager`
+- `Symbol`
+- `context_flow`
+- `context_key`
+- `extend_flow_with_context`
 
-# Run with coverage
-poetry run pytest tests/core/context/ --cov=src/goldentooth_agent/core/context/
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] TODO: Document known issues
-- [ ] TODO: Type safety concerns
-- [ ] TODO: Performance bottlenecks
-
-### Future Improvements
-- [ ] TODO: Planned enhancements
-- [ ] TODO: Refactoring needs
-
-## Development Notes
-
-### Architecture Decisions
-- TODO: Document key design decisions
-- TODO: Explain complex interactions
-
-### Performance Considerations
-- TODO: Document performance requirements
-- TODO: Known bottlenecks and optimizations
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: TODO: List module dependencies
-- **Used by**: TODO: List modules that use this one
-
-### Integration Points
-- TODO: Document how this module integrates with others
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

@@ -1,202 +1,149 @@
-# Embeddings Module
+# Embeddings
+
+Embeddings module
 
 ## Overview
-**Status**: 🔴 High Complexity | **Lines of Code**: 4187 | **Files**: 8
 
-Brief description of the module's purpose and responsibilities.
+- **Complexity**: Critical
+- **Files**: 8 Python files
+- **Lines of Code**: ~3535
+- **Classes**: 9
+- **Functions**: 105
 
-## Key Components
+## API Reference
 
-### Classes (9)
+### Classes
 
-#### `DocumentChunk`
-- **File**: `document_chunker.py`
-- **Methods**: 0 methods
-- **Purpose**: Represents a chunk of a document with metadata....
+#### DocumentChunk
+Represents a chunk of a document with metadata.
 
-#### `DocumentChunker`
-- **File**: `document_chunker.py`
-- **Methods**: 12 methods
-- **Purpose**: Intelligently splits documents into meaningful chunks for better RAG retrieval....
+#### DocumentChunker
+Intelligently splits documents into meaningful chunks for better RAG retrieval.
 
-#### `HybridSearchEngine`
-- **File**: `hybrid_search.py`
-- **Methods**: 12 methods
-- **Purpose**: Hybrid search engine combining semantic and keyword-based retrieval....
+**Public Methods:**
+- `chunk_document()`
+- `get_chunk_summary()`
 
-#### `Chunk`
-- **File**: `models.py`
-- **Methods**: 2 methods
-- **Purpose**: Represents a chunk of content for embedding and search....
+#### HybridSearchEngine
+Hybrid search engine combining semantic and keyword-based retrieval.
 
-#### `SearchResult`
-- **File**: `models.py`
-- **Methods**: 5 methods
-- **Purpose**: Represents a search result with relevance scoring....
+**Public Methods:**
+- `hybrid_search()`
+- `get_search_stats()`
+- `update_hybrid_weights()`
+- `update_bm25_parameters()`
+- `explain_search_results()`
 
-#### `VectorStore`
-- **File**: `vector_store.py`
-- **Methods**: 31 methods
-- **Purpose**: Hybrid vector store supporting both SQLite and compressed sidecar files....
+#### Chunk
+Represents a chunk of content for embedding and search.
 
-#### `EmbeddingsService`
-- **File**: `embeddings_service.py`
-- **Methods**: 5 methods
-- **Purpose**: Service for creating and managing document embeddings using Anthropic....
+#### SearchResult
+Represents a search result with relevance scoring.
 
-#### `ChunkRelationshipAnalyzer`
-- **File**: `chunk_relationships.py`
-- **Methods**: 10 methods
-- **Purpose**: Analyzes semantic relationships between document chunks....
+**Public Methods:**
+- `chunk_id()`
+- `document_id()`
+- `content()`
 
-#### `OpenAIEmbeddingsService`
-- **File**: `openai_embeddings.py`
-- **Methods**: 6 methods
-- **Purpose**: Service for creating and managing document embeddings using OpenAI....
+#### VectorStore
+Hybrid vector store supporting both SQLite and compressed sidecar files.
 
-### Functions (34)
+**Public Methods:**
+- `store_document()`
+- `store_document_chunks()`
+- `get_document_chunks()`
+- `delete_document_chunks()`
+- `search_similar()`
+- `get_document()`
+- `delete_document()`
+- `list_documents()`
+- `get_stats()`
+- `get_all_sidecar_paths()`
+- `count_sidecar_files()`
+- `sync_sidecar_files()`
+- `get_sidecar_metadata()`
+- `store_chunk_relationships()`
+- `get_chunk_relationships()`
+- `get_related_chunks()`
+- `delete_chunk_relationships()`
+- `get_relationship_stats()`
+- `analyze_chunk_network()`
 
-#### `chunk_document`
-- **File**: `document_chunker.py`
-- **Purpose**: Split a document into logical chunks based on its type and content.
+#### EmbeddingsService
+Service for creating and managing document embeddings using Anthropic.
 
-Args:
-    store_type: Type of d...
+**Public Methods:**
+- `create_embedding()`
+- `create_document_embedding()`
+- `embed_batch()`
+- `create_document_chunks_with_embeddings()`
+- `create_chunk_embedding()`
+- `get_embeddable_text_from_chunk()`
+- `re_embed_document_with_chunks()`
+- `should_use_chunking()`
 
-#### `get_chunk_summary`
-- **File**: `document_chunker.py`
-- **Purpose**: Generate a summary of chunks for a document.
+#### ChunkRelationshipAnalyzer
+Analyzes semantic relationships between document chunks.
 
-Args:
-    chunks: List of document chunks
+**Public Methods:**
+- `analyze_chunk_relationships()`
+- `find_related_chunks()`
+- `get_chunk_context_expansion()`
 
-Returns:
-  ...
+#### OpenAIEmbeddingsService
+Service for creating and managing document embeddings using OpenAI.
 
-#### `get_search_stats`
-- **File**: `hybrid_search.py`
-- **Purpose**: Get statistics about the search corpus....
-
-#### `update_hybrid_weights`
-- **File**: `hybrid_search.py`
-- **Purpose**: Update the weights for hybrid scoring.
-
-Args:
-    semantic_weight: Weight for semantic similarity (0...
-
-#### `update_bm25_parameters`
-- **File**: `hybrid_search.py`
-- **Purpose**: Update BM25 parameters.
-
-Args:
-    k1: Term frequency saturation parameter (default: 1.5)
-    b: Len...
-
-#### `chunk_id`
-- **File**: `models.py`
-- **Purpose**: Get chunk ID for convenience....
-
-#### `document_id`
-- **File**: `models.py`
-- **Purpose**: Get document ID for convenience....
-
-#### `content`
-- **File**: `models.py`
-- **Purpose**: Get content for convenience....
-
-#### `store_document`
-- **File**: `vector_store.py`
-- **Purpose**: Store a document and its embedding.
-
-Args:
-    store_type: Type of document store (e.g., "github.rep...
-
-#### `store_document_chunks`
-- **File**: `vector_store.py`
-- **Purpose**: Store document chunks and their embeddings.
-
-Args:
-    store_type: Type of document store (e.g., "gi...
-
-## Public API
-
-### Main Exports
-```python
-# TODO: Document main exports
-from goldentooth_agent.core.embeddings import (
-    # Add main classes and functions here
-)
-```
-
-### Usage Examples
-```python
-# TODO: Add usage examples
-```
+**Public Methods:**
+- `create_embedding()`
+- `create_document_embedding()`
+- `embed_batch()`
+- `create_document_chunks_with_embeddings()`
+- `create_chunk_embedding()`
+- `get_embeddable_text_from_chunk()`
+- `re_embed_document_with_chunks()`
+- `should_use_chunking()`
+- `get_model_info()`
 
 ## Dependencies
 
-### Internal Dependencies
-```python
-# Key internal imports
-
-```
-
 ### External Dependencies
-```python
-# Key external imports
-# paths
-# vector_store
-# dataclasses
-# antidote
-# os
-# anthropic
-# pathlib
-# sqlite_vec
-# struct
-```
+- `anthropic`
+- `antidote`
+- `collections`
+- `dataclasses`
+- `datetime`
+- `document_chunker`
+- `embeddings_service`
+- `gzip`
+- `hashlib`
+- `json`
+- `math`
+- `numpy`
+- `openai`
+- `openai_embeddings`
+- `os`
+- `pathlib`
+- `paths`
+- `re`
+- `sqlite3`
+- `sqlite_vec`
+- `struct`
+- `typing`
+- `vector_store`
+- `zlib`
 
-## Testing
+## Exports
 
-### Test Coverage
-- **Test files**: Located in `tests/core/embeddings/`
-- **Coverage target**: 85%+
-- **Performance**: All tests <1s
+This module exports the following symbols:
 
-### Running Tests
-```bash
-# Run all tests for this module
-poetry run pytest tests/core/embeddings/
+- `DocumentChunk`
+- `DocumentChunker`
+- `EmbeddingsService`
+- `OpenAIEmbeddingsService`
+- `VectorStore`
 
-# Run with coverage
-poetry run pytest tests/core/embeddings/ --cov=src/goldentooth_agent/core/embeddings/
-```
+## Quality Metrics
 
-## Known Issues
-
-### Technical Debt
-- [ ] TODO: Document known issues
-- [ ] TODO: Type safety concerns
-- [ ] TODO: Performance bottlenecks
-
-### Future Improvements
-- [ ] TODO: Planned enhancements
-- [ ] TODO: Refactoring needs
-
-## Development Notes
-
-### Architecture Decisions
-- TODO: Document key design decisions
-- TODO: Explain complex interactions
-
-### Performance Considerations
-- TODO: Document performance requirements
-- TODO: Known bottlenecks and optimizations
-
-## Related Modules
-
-### Dependencies
-- **Depends on**: TODO: List module dependencies
-- **Used by**: TODO: List modules that use this one
-
-### Integration Points
-- TODO: Document how this module integrates with others
+- **Test Coverage**: Medium
+- **Coverage Target**: 90%+
+- **Performance**: All tests <200ms

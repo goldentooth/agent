@@ -9,7 +9,7 @@ This directory contains comprehensive development guidelines for the Goldentooth
 - **[type-safety.md](type-safety.md)** - Type annotation requirements, mypy configuration, and type safety best practices for maintaining strict type checking
 - **[architecture.md](architecture.md)** - System architecture patterns, module organization, dependency injection guidelines, and design principles
 - **[performance.md](performance.md)** - Performance standards, optimization guidelines, benchmarking practices, and critical performance targets
-- **[documentation.md](documentation.md)** - Documentation standards for code, APIs, modules, and system components including README requirements
+- **[documentation.md](documentation.md)** - Documentation standards for code, APIs, modules, and system components including README requirements and module metadata (README.meta.yaml)
 - **[module-development.md](module-development.md)** - Guidelines for working with large modules, refactoring strategies, and module-specific development practices
 - **[error-handling.md](error-handling.md)** - Exception handling patterns, error propagation strategies, and async error handling best practices
 

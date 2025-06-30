@@ -1,0 +1,431 @@
+module_name: Observability
+description: Observability module
+complexity: High
+file_count: 5
+loc: ~1693
+test_coverage: Medium
+class_count: 15
+function_count: 110
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- __future__
+- analysis
+- asyncio
+- collections
+- contextlib
+- core
+- dataclasses
+- datetime
+- debugging
+- enum
+- hashlib
+- health
+- json
+- performance
+- time
+- traceback
+- typing
+symbols:
+- AnalysisData
+- AnyFlow
+- AnyItem
+- AnyIteratorFactory
+- AnyValidator
+- AnyValue
+- BenchmarkResult
+- BreakpointCondition
+- BreakpointRegistry
+- ConfigData
+- ConfigSchema
+- DebugData
+- DebugMetadata
+- FlowAnalyzer
+- FlowConfigValidator
+- FlowDebugger
+- FlowEdge
+- FlowExecutionContext
+- FlowExecutionErrorWithContext
+- FlowGraph
+- FlowHealthMonitor
+- FlowList
+- FlowMetadata
+- FlowMetrics
+- FlowNode
+- FlowRegistry
+- HealthCheck
+- HealthCheckIterator
+- HealthCheckResult
+- HealthCheckStream
+- HealthData
+- HealthMetadata
+- HealthStatus
+- Input
+- ItemCondition
+- OptimizationData
+- OptimizationList
+- Output
+- PatternData
+- PatternList
+- PerformanceData
+- PerformanceMonitor
+- StatsList
+- SystemHealth
+- TraceData
+- ValidatorRegistry
+- __all__
+- _config_validator
+- _flow_analyzer
+- _flow_debugger
+- _health_monitor
+- _performance_monitor
+- add_flow_breakpoint
+- analyze_flow
+- analyze_flow_composition
+- benchmark_stream
+- check_system_health
+- debug_session
+- debug_stream
+- detect_flow_patterns
+- disable_flow_debugging
+- enable_flow_debugging
+- enable_memory_tracking
+- export_execution_trace
+- export_flow_analysis
+- export_health_report
+- export_performance_metrics
+- generate_flow_optimizations
+- get_config_validator
+- get_execution_trace
+- get_flow_analyzer
+- get_flow_debugger
+- get_health_monitor
+- get_performance_monitor
+- get_performance_summary
+- health_check_stream
+- inspect_flow
+- monitored_stream
+- performance_stream
+- register_health_check
+- remove_flow_breakpoint
+- traced_flow
+- validate_flow_configuration
+exports:
+- FlowAnalyzer
+- FlowConfigValidator
+- FlowDebugger
+- FlowEdge
+- FlowExecutionContext
+- FlowGraph
+- FlowHealthMonitor
+- FlowMetrics
+- FlowNode
+- HealthCheck
+- HealthCheckResult
+- HealthStatus
+- PerformanceMonitor
+- SystemHealth
+- add_flow_breakpoint
+- analyze_flow
+- analyze_flow_composition
+- benchmark_stream
+- check_system_health
+- debug_session
+- debug_stream
+- detect_flow_patterns
+- disable_flow_debugging
+- enable_flow_debugging
+- enable_memory_tracking
+- export_execution_trace
+- export_flow_analysis
+- export_health_report
+- export_performance_metrics
+- generate_flow_optimizations
+- get_config_validator
+- get_execution_trace
+- get_flow_analyzer
+- get_flow_debugger
+- get_health_monitor
+- get_performance_monitor
+- get_performance_summary
+- health_check_stream
+- inspect_flow
+- monitored_stream
+- performance_stream
+- register_health_check
+- remove_flow_breakpoint
+- traced_flow
+- validate_flow_configuration
+classes:
+- name: FlowNode
+  docstring: Represents a node in a Flow composition graph.
+  methods:
+  - to_dict
+  public: true
+- name: FlowEdge
+  docstring: Represents an edge (connection) between Flow nodes.
+  methods:
+  - to_dict
+  public: true
+- name: FlowGraph
+  docstring: Represents a complete Flow composition as a directed graph.
+  methods:
+  - complexity_score
+  - depth
+  - get_critical_path
+  - find_cycles
+  - to_dict
+  public: true
+- name: FlowAnalyzer
+  docstring: Analyzer for Flow compositions and structures.
+  methods:
+  - analyze_flow
+  - analyze_composition
+  - detect_patterns
+  - generate_optimization_suggestions
+  - export_analysis
+  public: true
+- name: HealthStatus
+  docstring: Health status levels.
+  methods: []
+  public: true
+- name: HealthCheck
+  docstring: Individual health check definition.
+  methods:
+  - run
+  public: true
+- name: HealthCheckResult
+  docstring: Result of a health check execution.
+  methods:
+  - to_dict
+  public: true
+- name: SystemHealth
+  docstring: Overall system health status.
+  methods:
+  - healthy_checks
+  - warning_checks
+  - critical_checks
+  - to_dict
+  public: true
+- name: FlowHealthMonitor
+  docstring: Health monitoring system for Flow applications.
+  methods:
+  - register_check
+  - unregister_check
+  - run_check
+  - run_all_checks
+  - get_health_history
+  - export_health_report
+  public: true
+- name: FlowConfigValidator
+  docstring: Configuration validation for Flow systems.
+  methods:
+  - register_validator
+  - set_config_schema
+  - validate_config
+  - validate_flow_config
+  public: true
+- name: FlowExecutionContext
+  docstring: Context information for a Flow execution.
+  methods:
+  - to_dict
+  public: true
+- name: FlowDebugger
+  docstring: Debugging system for Flow executions.
+  methods:
+  - enable_debugging
+  - disable_debugging
+  - add_breakpoint
+  - remove_breakpoint
+  - execution_context
+  - check_breakpoint
+  - print_execution_stack
+  - print_item_inspection
+  - get_execution_trace
+  - export_trace
+  public: true
+- name: FlowExecutionErrorWithContext
+  docstring: Enhanced flow execution error with debugging context.
+  methods:
+  - get_debug_info
+  - print_debug_info
+  public: true
+- name: FlowMetrics
+  docstring: Metrics collected for a Flow execution.
+  methods:
+  - duration_ms
+  - throughput_items_per_sec
+  - yield_rate
+  - to_dict
+  public: true
+- name: PerformanceMonitor
+  docstring: Performance monitoring system for Flow executions.
+  methods:
+  - enable_memory_tracking
+  - start_monitoring
+  - record_item_processed
+  - record_item_yielded
+  - record_error
+  - record_memory_usage
+  - finish_monitoring
+  - get_summary_stats
+  - export_metrics
+  public: true
+functions:
+- name: analyze_flow
+  signature: 'def analyze_flow(flow: AnyFlow) -> FlowGraph'
+  docstring: Analyze a single Flow and return its graph representation.
+  public: true
+- name: analyze_flow_composition
+  signature: 'def analyze_flow_composition(flows: FlowList) -> FlowGraph'
+  docstring: Analyze a composition of multiple flows.
+  public: true
+- name: detect_flow_patterns
+  signature: 'def detect_flow_patterns(graph: FlowGraph) -> PatternList'
+  docstring: Detect common patterns in a flow graph.
+  public: true
+- name: generate_flow_optimizations
+  signature: 'def generate_flow_optimizations(graph: FlowGraph) -> OptimizationList'
+  docstring: Generate optimization suggestions for a flow graph.
+  public: true
+- name: export_flow_analysis
+  signature: 'def export_flow_analysis(graph: FlowGraph, filepath: str) -> None'
+  docstring: Export comprehensive flow analysis to JSON file.
+  public: true
+- name: get_flow_analyzer
+  signature: def get_flow_analyzer() -> FlowAnalyzer
+  docstring: Get the global flow analyzer instance.
+  public: true
+- name: health_check_stream
+  signature: 'def health_check_stream(health_monitor: FlowHealthMonitor | None) ->
+    HealthCheckStream'
+  docstring: "Create a flow that performs health checks during stream processing.\n\
+    \n    Args:\n        health_monitor: Optional health monitor instance. Uses global\
+    \ if None.\n\n    Returns:\n        A flow that runs health checks and passes\
+    \ items through unchanged."
+  public: true
+- name: get_health_monitor
+  signature: def get_health_monitor() -> FlowHealthMonitor
+  docstring: Get the global health monitor instance.
+  public: true
+- name: get_config_validator
+  signature: def get_config_validator() -> FlowConfigValidator
+  docstring: Get the global configuration validator instance.
+  public: true
+- name: check_system_health
+  signature: async def check_system_health() -> SystemHealth
+  docstring: Check overall system health.
+  public: true
+- name: validate_flow_configuration
+  signature: 'def validate_flow_configuration(config: ConfigData) -> list[str]'
+  docstring: Validate flow configuration.
+  public: true
+- name: register_health_check
+  signature: 'def register_health_check(name: str, description: str, check_function:
+    Callable[[], AsyncIterator[bool]], **kwargs: AnyValue) -> None'
+  docstring: Register a custom health check.
+  public: true
+- name: export_health_report
+  signature: 'def export_health_report(filepath: str) -> None'
+  docstring: Export system health report to file.
+  public: true
+- name: debug_stream
+  signature: 'def debug_stream(breakpoint_condition: ItemCondition | None, log_items:
+    bool) -> Flow[Input, Input]'
+  docstring: "Create a flow that adds debugging capabilities to the pipeline.\n\n\
+    \    Args:\n        breakpoint_condition: Optional condition to trigger breakpoints\n\
+    \        log_items: Whether to log items as they pass through\n\n    Returns:\n\
+    \        A flow that provides debugging and passes items through unchanged."
+  public: true
+- name: traced_flow
+  signature: 'def traced_flow(flow: Flow[Input, Output]) -> Flow[Input, Output]'
+  docstring: "Wrap a flow with execution tracing and enhanced error reporting.\n\n\
+    \    Args:\n        flow: The flow to wrap with tracing\n\n    Returns:\n    \
+    \    A flow with enhanced debugging and error reporting."
+  public: true
+- name: get_flow_debugger
+  signature: def get_flow_debugger() -> FlowDebugger
+  docstring: Get the global flow debugger instance.
+  public: true
+- name: enable_flow_debugging
+  signature: def enable_flow_debugging() -> None
+  docstring: Enable flow debugging globally.
+  public: true
+- name: disable_flow_debugging
+  signature: def disable_flow_debugging() -> None
+  docstring: Disable flow debugging globally.
+  public: true
+- name: add_flow_breakpoint
+  signature: 'def add_flow_breakpoint(flow_name: str, condition: BreakpointCondition)
+    -> None'
+  docstring: Add a breakpoint for a specific flow.
+  public: true
+- name: remove_flow_breakpoint
+  signature: 'def remove_flow_breakpoint(flow_name: str) -> None'
+  docstring: Remove a breakpoint for a flow.
+  public: true
+- name: get_execution_trace
+  signature: def get_execution_trace() -> TraceData
+  docstring: Get the current execution trace.
+  public: true
+- name: export_execution_trace
+  signature: 'def export_execution_trace(filepath: str) -> None'
+  docstring: Export execution trace to a JSON file.
+  public: true
+- name: inspect_flow
+  signature: 'def inspect_flow(flow: AnyFlow) -> DebugData'
+  docstring: "Inspect a flow and return metadata about its structure.\n\n    Args:\n\
+    \        flow: The flow to inspect\n\n    Returns:\n        Dictionary containing\
+    \ flow metadata and structure information."
+  public: true
+- name: debug_session
+  signature: 'async def debug_session(enable_breakpoints: bool) -> AsyncGenerator[FlowDebugger]'
+  docstring: "Context manager for a temporary debugging session.\n\n    Args:\n  \
+    \      enable_breakpoints: Whether to enable breakpoint functionality\n\n    Example:\n\
+    \        async with debug_session():\n            # All flows will have debugging\
+    \ enabled\n            result = await my_flow.to_list(test_stream)"
+  public: true
+- name: monitored_stream
+  signature: 'def monitored_stream(monitor_name: str | None) -> Callable[[Callable[[],
+    AnyFlow]], AnyFlow]'
+  docstring: "Decorator to add performance monitoring to a Flow.\n\n    Args:\n  \
+    \      monitor_name: Optional custom name for monitoring. Defaults to flow name.\n\
+    \n    Returns:\n        Decorated flow with performance monitoring.\n\n    Example:\n\
+    \        @monitored_stream(\"my_pipeline\")\n        def my_flow():\n        \
+    \    return Flow(...)"
+  public: true
+- name: performance_stream
+  signature: def performance_stream() -> AnyFlow
+  docstring: "Create a flow that adds performance monitoring to the pipeline.\n\n\
+    \    This combinator automatically tracks timing, throughput, and memory usage\n\
+    \    for the stream processing without requiring decoration.\n\n    Returns:\n\
+    \        A flow that monitors performance and passes items through unchanged."
+  public: true
+- name: benchmark_stream
+  signature: 'def benchmark_stream(iterations: int, warmup_iterations: int) -> Callable[[AnyFlow],
+    Callable[[AnyIteratorFactory], Awaitable[BenchmarkResult]]]'
+  docstring: "Benchmark a Flow's performance over multiple iterations.\n\n    Args:\n\
+    \        iterations: Number of benchmark iterations to run\n        warmup_iterations:\
+    \ Number of warmup iterations (not counted in results)\n\n    Returns:\n     \
+    \   Function that benchmarks the given flow and returns performance stats.\n\n\
+    \    Example:\n        benchmark = benchmark_stream(iterations=1000)\n       \
+    \ stats = await benchmark(my_flow)\n        print(f\"Average duration: {stats['avg_duration_ms']:.2f}ms\"\
+    )"
+  public: true
+- name: get_performance_monitor
+  signature: def get_performance_monitor() -> PerformanceMonitor
+  docstring: Get the global performance monitor instance.
+  public: true
+- name: enable_memory_tracking
+  signature: def enable_memory_tracking() -> None
+  docstring: Enable memory tracking for all monitored flows.
+  public: true
+- name: get_performance_summary
+  signature: def get_performance_summary() -> PerformanceData
+  docstring: Get summary of all performance metrics.
+  public: true
+- name: export_performance_metrics
+  signature: 'def export_performance_metrics(filepath: str) -> None'
+  docstring: Export all performance metrics to a JSON file.
+  public: true

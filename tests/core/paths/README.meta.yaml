@@ -1,0 +1,83 @@
+module_name: Paths
+description: Paths module
+complexity: Medium
+file_count: 3
+loc: ~406
+test_coverage: Medium
+class_count: 3
+function_count: 30
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.paths
+external_dependencies:
+- __future__
+- collections
+- goldentooth_agent
+- pathlib
+- pytest
+- tempfile
+- typing
+- unittest
+symbols:
+- T
+- TestPaths
+- TestPathsFlowIntegration
+- TestPathsIntegration
+- empty_stream
+- flow_from_list
+exports: []
+classes:
+- name: TestPathsFlowIntegration
+  docstring: Test suite for paths Flow integration.
+  methods:
+  - test_path_exists_filter
+  - test_resolve_config_path
+  - test_resolve_data_path
+  - test_list_directory_flow
+  - test_ensure_parent_dir
+  - test_read_config_file_existing
+  - test_read_config_file_missing
+  - test_write_config_file
+  public: true
+- name: TestPaths
+  docstring: Test suite for Paths class.
+  methods:
+  - test_initialization_with_defaults
+  - test_initialization_with_custom_values
+  - test_config_returns_path
+  - test_data_returns_path
+  - test_config_creates_directory
+  - test_data_creates_directory
+  - test_config_handles_existing_directory
+  - test_data_handles_existing_directory
+  - test_config_creates_nested_directories
+  - test_data_creates_nested_directories
+  - test_paths_are_platform_specific
+  - test_multiple_calls_return_same_path
+  - test_config_and_data_are_different
+  - test_permission_error_handling
+  - test_injectable_decorator
+  - test_inject_method_decorator
+  public: true
+- name: TestPathsIntegration
+  docstring: Integration tests for Paths class.
+  methods:
+  - test_real_directory_creation
+  - test_file_operations_in_paths
+  - test_concurrent_access
+  - test_path_persistence
+  public: true
+functions:
+- name: flow_from_list
+  signature: 'def flow_from_list(items: list[T]) -> Flow[None, T]'
+  docstring: Create a flow that yields items from a list.
+  public: true
+- name: empty_stream
+  signature: async def empty_stream() -> AsyncIterator[None]
+  docstring: Create an empty async stream.
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true

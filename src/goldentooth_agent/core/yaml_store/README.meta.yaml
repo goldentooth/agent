@@ -1,0 +1,61 @@
+module_name: Yaml Store
+description: Yaml Store module
+complexity: Medium
+file_count: 4
+loc: ~78
+test_coverage: Medium
+class_count: 3
+function_count: 10
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- adapter
+- base
+- installer
+- pathlib
+- typing
+- yaml
+symbols:
+- T
+- YamlData
+- YamlStore
+- YamlStoreAdapter
+- YamlStoreInstaller
+- __all__
+exports:
+- YamlStore
+- YamlStoreAdapter
+- YamlStoreInstaller
+classes:
+- name: YamlStoreAdapter
+  docstring: Protocol for classes that can be serialized to and from YAML.
+  methods:
+  - from_dict
+  - to_dict
+  public: true
+- name: YamlStoreInstaller
+  docstring: A generic base class for installing YAML files from an embedded directory
+    into a YAML store.
+  methods:
+  - install
+  public: true
+- name: YamlStore
+  docstring: A generic base class for managing YAML files in a directory.
+  methods:
+  - list
+  - load
+  - save
+  - delete
+  - exists
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true
+- name: T
+  value: ''
+  public: true
+- name: T
+  value: ''
+  public: true

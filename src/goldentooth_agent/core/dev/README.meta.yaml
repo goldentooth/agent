@@ -1,0 +1,62 @@
+module_name: Dev
+description: Dev module
+complexity: Medium
+file_count: 2
+loc: ~1151
+test_coverage: Medium
+class_count: 4
+function_count: 43
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- antidote
+- ast
+- collections
+- dataclasses
+- metadata_generator
+- pathlib
+- subprocess
+- typing
+- yaml
+symbols:
+- MetadataUpdateResult
+- ModuleAnalysis
+- ModuleMetadataGenerator
+- SymbolInfo
+- __all__
+exports:
+- MetadataUpdateResult
+- ModuleMetadataGenerator
+classes:
+- name: MetadataUpdateResult
+  docstring: Result of a metadata update operation.
+  methods: []
+  public: true
+- name: SymbolInfo
+  docstring: Information about a symbol (class, function, constant).
+  methods: []
+  public: true
+- name: ModuleAnalysis
+  docstring: Analysis result for a Python module.
+  methods: []
+  public: true
+- name: ModuleMetadataGenerator
+  docstring: Generates and maintains README.meta.yaml files for Python modules.
+  methods:
+  - update_module_metadata
+  - update_all_modules
+  - validate_module_metadata
+  - validate_all_metadata
+  - update_changed_modules
+  - update_for_pre_commit
+  - validate_for_commit
+  - check_metadata_freshness
+  - check_staged_metadata_freshness
+  - generate_commit_message_info
+  - generate_readme_from_metadata
+  - write_readme_from_metadata
+  - update_all_readmes
+  - check_readme_freshness
+  - check_staged_readme_freshness
+  public: true

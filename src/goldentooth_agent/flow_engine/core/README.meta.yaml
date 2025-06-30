@@ -1,0 +1,81 @@
+module_name: Core
+description: Core module
+complexity: Medium
+file_count: 3
+loc: ~297
+test_coverage: Medium
+class_count: 6
+function_count: 23
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- __future__
+- asyncio
+- collections
+- exceptions
+- flow
+- typing
+symbols:
+- Flow
+- FlowConfigurationError
+- FlowError
+- FlowExecutionError
+- FlowMetadata
+- FlowTimeoutError
+- FlowValidationError
+- Input
+- Newput
+- Output
+- __all__
+exports:
+- Flow
+- FlowConfigurationError
+- FlowError
+- FlowExecutionError
+- FlowTimeoutError
+- FlowValidationError
+classes:
+- name: Flow
+  docstring: ''
+  methods:
+  - map
+  - filter
+  - flat_map
+  - for_each
+  - to_list
+  - label
+  - collect
+  - preview
+  - print
+  - with_fallback
+  - batch
+  - from_value_fn
+  - from_sync_fn
+  - from_event_fn
+  - from_iterable
+  - from_emitter
+  - identity
+  - pure
+  public: true
+- name: FlowError
+  docstring: Base exception for all Flow-related errors.
+  methods: []
+  public: true
+- name: FlowValidationError
+  docstring: Raised when flow validation fails (e.g., guard conditions, assertions).
+  methods: []
+  public: true
+- name: FlowExecutionError
+  docstring: Raised when flow execution fails (e.g., all retries exhausted, circuit
+    breaker open).
+  methods: []
+  public: true
+- name: FlowTimeoutError
+  docstring: Raised when flow operations timeout.
+  methods: []
+  public: true
+- name: FlowConfigurationError
+  docstring: Raised when flow is incorrectly configured (e.g., invalid parameters).
+  methods: []
+  public: true

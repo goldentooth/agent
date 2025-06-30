@@ -1,0 +1,87 @@
+module_name: Registry
+description: Registry module
+complexity: Low
+file_count: 2
+loc: ~259
+test_coverage: Medium
+class_count: 1
+function_count: 15
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- collections
+- core
+- main
+- typing
+symbols:
+- AnyFlow
+- FlowInfo
+- FlowRegistry
+- Input
+- Output
+- __all__
+- flow_registry
+- get_flow
+- list_flows
+- register_flow
+- registered_flow
+- search_flows
+exports:
+- FlowRegistry
+- flow_registry
+- get_flow
+- list_flows
+- register_flow
+- registered_flow
+- search_flows
+classes:
+- name: FlowRegistry
+  docstring: Registry for named flows with discovery and introspection capabilities.
+  methods:
+  - register
+  - get
+  - list_flows
+  - list_categories
+  - search
+  - remove
+  - clear
+  - info
+  - print_registry
+  public: true
+functions:
+- name: register_flow
+  signature: 'def register_flow(name: str, flow: AnyFlow, category: str | None) ->
+    AnyFlow'
+  docstring: "Register a flow in the global registry.\n\n    Args:\n        name:\
+    \ Unique name for the flow\n        flow: Flow instance to register\n        category:\
+    \ Optional category for organization\n\n    Returns:\n        The registered flow\
+    \ (for chaining)"
+  public: true
+- name: get_flow
+  signature: 'def get_flow(name: str) -> AnyFlow | None'
+  docstring: "Get a flow from the global registry.\n\n    Args:\n        name: Name\
+    \ of the flow to retrieve\n\n    Returns:\n        Flow instance or None if not\
+    \ found"
+  public: true
+- name: list_flows
+  signature: 'def list_flows(category: str | None) -> list[str]'
+  docstring: "List flows in the global registry.\n\n    Args:\n        category: Optional\
+    \ category to filter by\n\n    Returns:\n        List of flow names"
+  public: true
+- name: search_flows
+  signature: 'def search_flows(query: str) -> list[str]'
+  docstring: "Search flows in the global registry.\n\n    Args:\n        query: Search\
+    \ query\n\n    Returns:\n        List of matching flow names"
+  public: true
+- name: registered_flow
+  signature: 'def registered_flow(name: str, category: str | None) -> Callable[[Any],
+    Any]'
+  docstring: "Decorator to register a flow in the global registry.\n\n    Args:\n\
+    \        name: Unique name for the flow\n        category: Optional category for\
+    \ organization\n\n    Example:\n        @registered_flow(\"text_processor\", \"\
+    nlp\")\n        @Flow.from_sync_fn\n        def process_text(text):\n        \
+    \    return text.upper()\n\n        Or with factory functions:\n        @registered_flow(\"\
+    my_flow\")\n        def create_flow():\n            return map_stream(lambda x:\
+    \ x + 1)"
+  public: true

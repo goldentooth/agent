@@ -1,0 +1,321 @@
+module_name: Flow Engine
+description: Flow Engine module
+complexity: Critical
+file_count: 4
+loc: ~1238
+test_coverage: Medium
+class_count: 26
+function_count: 97
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies:
+- goldentooth_agent.core.context
+- goldentooth_agent.flow_engine.combinators
+external_dependencies:
+- asyncio
+- collections
+- goldentooth_agent
+- hypothesis
+- pytest
+symbols:
+- FlowStateMachine
+- TestBatchChunkProperties
+- TestCompositionProperties
+- TestConditionalFlow
+- TestConvenienceConstructors
+- TestDebuggingAndRepr
+- TestDecoratorSupport
+- TestDistinctStreamProperties
+- TestEdgeCases
+- TestErrorHandling
+- TestExitableChain
+- TestFilterStreamProperties
+- TestFlowRegistry
+- TestFlowStateMachine
+- TestFluentAPI
+- TestIntegratedWorkflow
+- TestMapStreamProperties
+- TestPairwiseStreamProperties
+- TestScanStreamProperties
+- TestSkipIf
+- TestTakeSkipProperties
+- TestTrampoline
+- TestTrampolineChain
+- TestTrampolineControlKeys
+- TestTrampolineIntegration
+- TestWindowStreamProperties
+- assert_items_equal
+- assert_items_in_order
+- async_empty
+- async_exception_stream
+- async_iter_from_list
+- async_range
+- async_string_range
+- double
+- double_flow
+- empty_stream
+- increment
+- increment_flow
+- is_even
+- is_positive
+- list_from_async_iter
+- square
+- square_flow
+exports: []
+classes:
+- name: TestTrampolineControlKeys
+  docstring: Test the control key system for trampoline execution.
+  methods:
+  - test_control_key_creation
+  - test_set_exit_flag
+  - test_set_break_flag
+  - test_set_skip_flag
+  - test_check_flags_defaults
+  - test_check_flags_when_set
+  public: true
+- name: TestExitableChain
+  docstring: Test the exitable_chain combinator.
+  methods:
+  - test_simple_chain_execution
+  - test_chain_exit_early
+  - test_chain_break_and_restart
+  - test_empty_chain
+  public: true
+- name: TestTrampoline
+  docstring: Test the trampoline combinator.
+  methods:
+  - test_trampoline_basic_execution
+  - test_trampoline_with_break
+  - test_trampoline_immediate_exit
+  public: true
+- name: TestTrampolineChain
+  docstring: Test the trampoline_chain combinator.
+  methods:
+  - test_trampoline_chain_basic
+  - test_trampoline_chain_with_break
+  public: true
+- name: TestConditionalFlow
+  docstring: Test conditional flow execution.
+  methods:
+  - test_conditional_true
+  - test_conditional_false
+  - test_conditional_no_else
+  public: true
+- name: TestSkipIf
+  docstring: Test skip_if functionality.
+  methods:
+  - test_skip_when_condition_true
+  - test_execute_when_condition_false
+  public: true
+- name: TestTrampolineIntegration
+  docstring: Test integration patterns combining multiple trampoline features.
+  methods:
+  - test_chat_loop_simulation
+  - test_state_machine_with_transitions
+  - test_agent_with_skip_functionality
+  public: true
+- name: TestMapStreamProperties
+  docstring: Property-based tests for map_stream.
+  methods:
+  - test_map_functor_identity
+  - test_map_functor_composition
+  - test_map_preserves_length
+  public: true
+- name: TestFilterStreamProperties
+  docstring: Property-based tests for filter_stream.
+  methods:
+  - test_filter_with_true_predicate
+  - test_filter_with_false_predicate
+  - test_filter_is_idempotent
+  - test_filter_respects_predicate
+  public: true
+- name: TestTakeSkipProperties
+  docstring: Property-based tests for take_stream and skip_stream.
+  methods:
+  - test_take_skip_complementary
+  - test_take_never_exceeds_length
+  - test_skip_reduces_length_correctly
+  public: true
+- name: TestBatchChunkProperties
+  docstring: Property-based tests for batch_stream and chunk_stream.
+  methods:
+  - test_batch_preserves_all_items
+  - test_batch_size_constraints
+  public: true
+- name: TestDistinctStreamProperties
+  docstring: Property-based tests for distinct_stream.
+  methods:
+  - test_distinct_removes_duplicates
+  - test_distinct_is_idempotent
+  public: true
+- name: TestScanStreamProperties
+  docstring: Property-based tests for scan_stream.
+  methods:
+  - test_scan_length
+  - test_scan_sum_correctness
+  public: true
+- name: TestPairwiseStreamProperties
+  docstring: Property-based tests for pairwise_stream.
+  methods:
+  - test_pairwise_length
+  - test_pairwise_consecutive
+  public: true
+- name: TestWindowStreamProperties
+  docstring: Property-based tests for window_stream.
+  methods:
+  - test_window_properties
+  public: true
+- name: TestCompositionProperties
+  docstring: Property-based tests for flow composition.
+  methods:
+  - test_identity_composition
+  - test_composition_associativity
+  public: true
+- name: FlowStateMachine
+  docstring: Stateful property-based testing for Flow operations.
+  methods:
+  - init_state
+  - add_item
+  - apply_map_double
+  - apply_filter_positive
+  - apply_take
+  - results_are_consistent
+  public: true
+- name: TestFlowStateMachine
+  docstring: Test runner for the Flow state machine.
+  methods:
+  - test_flow_state_machine
+  public: true
+- name: TestEdgeCases
+  docstring: Property-based tests for edge cases.
+  methods:
+  - test_empty_stream_handling
+  - test_extreme_values
+  public: true
+- name: TestFluentAPI
+  docstring: Test fluent API improvements.
+  methods:
+  - test_collect_method
+  - test_preview_method
+  - test_print_method
+  - test_with_fallback_method
+  public: true
+- name: TestConvenienceConstructors
+  docstring: Test convenience constructor methods.
+  methods:
+  - test_identity_constructor
+  - test_pure_constructor
+  public: true
+- name: TestDebuggingAndRepr
+  docstring: Test debugging and representation improvements.
+  methods:
+  - test_flow_repr
+  - test_flow_aiter_error
+  public: true
+- name: TestDecoratorSupport
+  docstring: Test decorator support for Flow constructors.
+  methods:
+  - test_from_sync_fn_decorator
+  - test_from_value_fn_decorator
+  - test_from_event_fn_decorator
+  - test_from_sync_fn_direct_call
+  public: true
+- name: TestFlowRegistry
+  docstring: Test Flow registry functionality.
+  methods:
+  - setup_method
+  - teardown_method
+  - test_register_and_get_flow
+  - test_list_flows
+  - test_search_flows
+  - test_registered_flow_decorator
+  - test_flow_registry_info
+  - test_flow_registry_remove
+  public: true
+- name: TestErrorHandling
+  docstring: Test error handling improvements.
+  methods:
+  - test_with_fallback_empty_stream
+  - test_with_fallback_non_empty_stream
+  public: true
+- name: TestIntegratedWorkflow
+  docstring: Test integrated developer workflow scenarios.
+  methods:
+  - test_complete_development_workflow
+  - test_repr_and_debugging
+  - setup_method
+  - teardown_method
+  public: true
+functions:
+- name: async_range
+  signature: 'async def async_range(n: int)'
+  docstring: Generate numbers from 0 to n-1 in a stream.
+  public: true
+- name: async_string_range
+  signature: 'async def async_string_range(n: int)'
+  docstring: Generate string values in a stream.
+  public: true
+- name: async_empty
+  signature: async def async_empty()
+  docstring: Generate empty stream.
+  public: true
+- name: async_exception_stream
+  signature: 'async def async_exception_stream(n: int, fail_at: int)'
+  docstring: Stream that raises an exception after yielding some values.
+  public: true
+- name: increment
+  signature: 'def increment(x: int) -> int'
+  docstring: ''
+  public: true
+- name: double
+  signature: 'def double(x: int) -> int'
+  docstring: ''
+  public: true
+- name: is_even
+  signature: 'def is_even(x: int) -> bool'
+  docstring: ''
+  public: true
+- name: is_positive
+  signature: 'def is_positive(x: int) -> bool'
+  docstring: ''
+  public: true
+- name: square
+  signature: 'def square(x: int) -> int'
+  docstring: ''
+  public: true
+- name: increment_flow
+  signature: def increment_flow()
+  docstring: Flow that increments integers.
+  public: true
+- name: double_flow
+  signature: def double_flow()
+  docstring: Flow that doubles integers.
+  public: true
+- name: square_flow
+  signature: def square_flow()
+  docstring: Flow that squares integers.
+  public: true
+- name: assert_items_equal
+  signature: def assert_items_equal(actual, expected)
+  docstring: Assert that two iterables contain the same items, regardless of order.
+  public: true
+- name: assert_items_in_order
+  signature: def assert_items_in_order(actual, expected)
+  docstring: Assert that two iterables contain the same items in the same order.
+  public: true
+- name: list_from_async_iter
+  signature: 'async def list_from_async_iter(async_iter: AsyncIterator) -> list'
+  docstring: Convert async iterator to list.
+  public: true
+- name: async_iter_from_list
+  signature: 'async def async_iter_from_list(items: list) -> AsyncIterator'
+  docstring: Convert list to async iterator.
+  public: true
+- name: async_range
+  signature: 'async def async_range(n: int) -> AsyncIterator[int]'
+  docstring: Generate numbers from 0 to n-1.
+  public: true
+- name: empty_stream
+  signature: async def empty_stream() -> AsyncIterator[None]
+  docstring: Generate a single None for testing from_iterable flows.
+  public: true
