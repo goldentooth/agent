@@ -149,7 +149,7 @@ def create_sentiment_analyzer_agent(
 
             except Exception as e:
                 error_result = SentimentAnalysis(
-                    text=input_data.message,
+                    text=input_data.message if "input_data" in locals() else "Unknown",
                     sentiment=Sentiment.NEUTRAL,
                     confidence=0.0,
                     reasoning=f"Error occurred: {str(e)}",

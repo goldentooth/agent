@@ -2,7 +2,7 @@ module_name: Git Integration
 description: Git Integration module
 complexity: Low
 file_count: 2
-loc: ~306
+loc: ~307
 test_coverage: Medium
 class_count: 1
 function_count: 5
@@ -18,6 +18,7 @@ external_dependencies:
 - pathlib
 - paths
 - subprocess
+- typing
 symbols:
 - GitDataSync
 - __all__

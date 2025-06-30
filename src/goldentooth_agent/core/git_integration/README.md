@@ -6,7 +6,7 @@ Git Integration module
 
 - **Complexity**: Low
 - **Files**: 2 Python files
-- **Lines of Code**: ~306
+- **Lines of Code**: ~307
 - **Classes**: 1
 - **Functions**: 5
 
@@ -33,6 +33,7 @@ Service for syncing knowledge base data to a Git repository.
 - `pathlib`
 - `paths`
 - `subprocess`
+- `typing`
 
 ## Exports
 

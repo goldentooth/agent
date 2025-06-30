@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Protocol, TypeVar, runtime_checkable
 
-# Type variables for protocols
+# Type variables for protocols (invariant since they're used in both input and output positions)
 T = TypeVar("T")
 K = TypeVar("K")  # Key type
 V = TypeVar("V")  # Value type

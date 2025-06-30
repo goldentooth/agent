@@ -3,6 +3,7 @@
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from antidote import inject, injectable
 
@@ -35,7 +36,7 @@ class GitDataSync:
 
     def setup_git_repository(
         self, repo_path: Path, remote_url: str | None = None
-    ) -> dict[str, any]:
+    ) -> dict[str, Any]:
         """Set up a Git repository for knowledge base data.
 
         Args:
@@ -122,7 +123,7 @@ Last updated: {datetime.now().isoformat()}
         repo_path: Path,
         commit_message: str | None = None,
         push_to_remote: bool = False,
-    ) -> dict[str, any]:
+    ) -> dict[str, Any]:
         """Sync current knowledge base data to Git repository.
 
         Args:
@@ -178,6 +179,7 @@ Last updated: {datetime.now().isoformat()}
             )
 
             # Push to remote if requested
+            push_error = None
             if push_to_remote:
                 try:
                     subprocess.run(
@@ -198,7 +200,6 @@ Last updated: {datetime.now().isoformat()}
                         push_error = str(e)
             else:
                 pushed = False
-                push_error = None
 
             return {
                 "success": True,
@@ -271,7 +272,7 @@ Last updated: {datetime.now().isoformat()}
 
         return copied_files
 
-    def get_git_status(self, repo_path: Path) -> dict[str, any]:
+    def get_git_status(self, repo_path: Path) -> dict[str, Any]:
         """Get Git repository status.
 
         Args:
@@ -327,9 +328,9 @@ Last updated: {datetime.now().isoformat()}
                         "|", 2
                     )
                 else:
-                    commit_hash = commit_message = commit_date = None
+                    commit_hash = commit_message = commit_date = ""
             except Exception:
-                commit_hash = commit_message = commit_date = None
+                commit_hash = commit_message = commit_date = ""
 
             # Check for remote
             try:
