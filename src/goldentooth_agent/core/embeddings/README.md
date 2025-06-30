@@ -2,6 +2,64 @@
 
 Embeddings module
 
+## Background & Motivation
+
+### Problem Statement
+
+Traditional information retrieval systems rely on exact keyword matching, which fails to capture semantic relationships between concepts. Users often know what they're looking for conceptually but struggle to express it in precise terms that match document content. This creates a significant barrier to effective knowledge discovery.
+
+### Theoretical Foundation
+
+#### Vector Embedding Theory
+
+This module implements dense vector embeddings based on transformer architecture, specifically leveraging:
+
+1. **Semantic Similarity**: Documents with similar meanings are represented by vectors that are close in high-dimensional space
+2. **Contextual Understanding**: Each word/phrase embedding considers surrounding context, not just isolated terms
+3. **Cross-modal Retrieval**: The same embedding space allows matching between queries and documents regardless of exact wording
+
+#### Hybrid Retrieval Strategy
+
+The module combines multiple retrieval approaches:
+
+- **Semantic Search**: Uses vector similarity (cosine distance) to find conceptually related content
+- **Keyword Search**: Employs BM25 algorithm for exact term matching and traditional relevance scoring
+- **Hybrid Scoring**: Weighted combination allows tuning between precision (keyword) and recall (semantic)
+
+### Design Philosophy
+
+#### Chunking Strategy
+
+Rather than embedding entire documents, the system implements intelligent chunking:
+
+- **Semantic Boundaries**: Chunks respect logical document structure (sections, paragraphs)
+- **Context Preservation**: Overlapping chunks maintain semantic continuity
+- **Size Optimization**: Chunk sizes optimized for embedding model context windows
+
+#### Performance Considerations
+
+- **Sidecar Storage**: Embeddings stored in compressed files alongside documents for fast access
+- **Lazy Loading**: Embeddings computed on-demand and cached for subsequent use
+- **Batch Processing**: Efficient batch embedding for bulk operations
+
+### Technical Challenges Addressed
+
+1. **Cold Start Problem**: How to provide useful results before significant content is indexed
+2. **Embedding Drift**: Maintaining consistency as underlying models evolve
+3. **Scale Efficiency**: Supporting large document collections without linear performance degradation
+4. **Relevance Tuning**: Balancing semantic similarity with traditional relevance signals
+
+### Integration with RAG Pipeline
+
+This module serves as the retrieval component in a Retrieval-Augmented Generation (RAG) system:
+
+1. **Query Processing**: User queries transformed into semantic vectors
+2. **Document Retrieval**: Both semantic and keyword matching identify relevant content
+3. **Context Assembly**: Retrieved chunks assembled into coherent context for language model
+4. **Relationship Analysis**: Understanding connections between retrieved chunks for better context
+
+The goal is to bridge the gap between human information needs and machine-readable content, enabling more intuitive and effective knowledge discovery.
+
 ## Overview
 
 - **Complexity**: Critical

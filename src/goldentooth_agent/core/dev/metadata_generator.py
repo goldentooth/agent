@@ -1220,7 +1220,7 @@ class ModuleMetadataGenerator:
             )
 
     def generate_readme_from_metadata(self, module_path: Path) -> str:
-        """Generate README.md content from README.meta.yaml."""
+        """Generate README.md content from README.meta.yaml and optional README.bg.md."""
         meta_file = module_path / "README.meta.yaml"
         if not meta_file.exists():
             raise FileNotFoundError(f"No README.meta.yaml found in {module_path}")
@@ -1231,10 +1231,23 @@ class ModuleMetadataGenerator:
         if not metadata:
             raise ValueError(f"Empty metadata in {meta_file}")
 
-        return self._generate_readme_content(metadata)
+        # Check for background content
+        background_content = None
+        bg_file = module_path / "README.bg.md"
+        if bg_file.exists():
+            try:
+                with open(bg_file, encoding="utf-8") as f:
+                    background_content = f.read().strip()
+            except Exception:
+                # If we can't read the background file, continue without it
+                background_content = None
 
-    def _generate_readme_content(self, metadata: dict[str, Any]) -> str:
-        """Generate README.md content from metadata dictionary."""
+        return self._generate_readme_content(metadata, background_content)
+
+    def _generate_readme_content(
+        self, metadata: dict[str, Any], background_content: str | None = None
+    ) -> str:
+        """Generate README.md content from metadata dictionary and optional background content."""
         sections = []
 
         # Title and description
@@ -1245,6 +1258,11 @@ class ModuleMetadataGenerator:
         sections.append("")
         sections.append(description)
         sections.append("")
+
+        # Add background content if available
+        if background_content:
+            sections.append(background_content)
+            sections.append("")
 
         # Overview section
         sections.append("## Overview")
@@ -1466,6 +1484,57 @@ class ModuleMetadataGenerator:
 
         return stale_readmes
 
+    def check_background_files(self, project_root: Path) -> list[str]:
+        """Check for missing README.bg.md files in all modules."""
+        missing_background = []
+
+        # Find all module directories in the main project (exclude old/ and external dependencies)
+        for python_file in project_root.rglob("*.py"):
+            module_dir = python_file.parent
+
+            # Skip excluded directories
+            if any(
+                excluded in str(module_dir)
+                for excluded in [
+                    "/old/",
+                    "/.venv/",
+                    "/venv/",
+                    "__pycache__",
+                    "/site-packages/",
+                ]
+            ):
+                continue
+
+            # Only check actual Python modules
+            if self._is_python_module(module_dir):
+                bg_file = module_dir / "README.bg.md"
+                if not bg_file.exists():
+                    # Avoid duplicates by checking if we've already added this module
+                    module_entry = f"{module_dir.name}: Missing README.bg.md file"
+                    if not any(
+                        entry.startswith(f"{module_dir.name}:")
+                        for entry in missing_background
+                    ):
+                        missing_background.append(module_entry)
+
+        return missing_background
+
+    def check_staged_background_files(self, project_root: Path) -> list[str]:
+        """Check for missing README.bg.md files in modules with staged changes."""
+        missing_background = []
+
+        # Get modules with staged changes
+        staged_modules = self._get_staged_python_modules(project_root)
+
+        for module_dir in staged_modules:
+            bg_file = module_dir / "README.bg.md"
+            if not bg_file.exists():
+                missing_background.append(
+                    f"{module_dir.name}: Missing README.bg.md file"
+                )
+
+        return missing_background
+
     def _check_readme_freshness(self, module_path: Path) -> str | None:
         """Check if a module's README.md is fresh relative to its README.meta.yaml."""
         meta_file = module_path / "README.meta.yaml"
@@ -1505,3 +1574,259 @@ class ModuleMetadataGenerator:
 
         except OSError as e:
             return f"{module_path.name}: Error checking file timestamps: {e}"
+
+    def _should_have_background_file(self, module_path: Path) -> bool:
+        """Determine if a module should have a README.bg.md file based on significance."""
+        # Check if metadata exists to get complexity info
+        meta_file = module_path / "README.meta.yaml"
+        if not meta_file.exists():
+            return False
+
+        try:
+            with open(meta_file) as f:
+                metadata = yaml.safe_load(f)
+
+            if not metadata:
+                return False
+
+            # Significant modules should have background files
+            complexity = metadata.get("complexity", "Low")
+            file_count = metadata.get("file_count", 0)
+            class_count = metadata.get("class_count", 0)
+            function_count = metadata.get("function_count", 0)
+
+            # Criteria for requiring background documentation:
+            return (
+                complexity in ["High", "Critical"]  # High complexity modules
+                or file_count >= 5  # Large modules
+                or class_count >= 3  # Modules with multiple classes
+                or function_count >= 20  # Modules with many functions
+            )
+
+        except Exception:
+            return False
+
+    def analyze_module_for_background(self, module_path: Path) -> dict[str, Any]:
+        """Analyze a module in depth for AI-powered background generation."""
+        analysis_data = {
+            "module_path": str(module_path),
+            "module_name": module_path.name,
+            "files": [],
+            "complexity_metrics": {},
+            "key_patterns": [],
+            "dependencies": {},
+            "notable_features": [],
+        }
+
+        try:
+            # Get standard module analysis
+            module_analysis = self._analyze_module(module_path)
+            analysis_data["complexity_metrics"] = {
+                "complexity": module_analysis.complexity,
+                "file_count": module_analysis.file_count,
+                "loc": module_analysis.loc,
+                "class_count": module_analysis.class_count,
+                "function_count": module_analysis.function_count,
+                "symbols": (module_analysis.symbols or [])[:20],  # Limit for context
+            }
+
+            analysis_data["dependencies"] = {
+                "internal": module_analysis.internal_dependencies,
+                "external": module_analysis.external_dependencies,
+            }
+
+            # Analyze individual files for deeper insights
+            py_files = list(module_path.glob("*.py"))
+            for py_file in py_files[:10]:  # Limit to avoid overwhelming context
+                file_info = self._analyze_file_for_background(py_file)
+                if file_info:
+                    analysis_data["files"].append(file_info)
+
+            # Identify key patterns and features
+            analysis_data["key_patterns"] = self._identify_key_patterns(module_analysis)
+            analysis_data["notable_features"] = self._identify_notable_features(
+                module_path, module_analysis
+            )
+
+        except Exception as e:
+            analysis_data["error"] = str(e)
+
+        return analysis_data
+
+    def _analyze_file_for_background(self, file_path: Path) -> dict[str, Any] | None:
+        """Analyze a single Python file for background generation context."""
+        try:
+            content = file_path.read_text(encoding="utf-8")
+            tree = ast.parse(content)
+
+            file_info = {
+                "name": file_path.name,
+                "loc": len([line for line in content.splitlines() if line.strip()]),
+                "classes": [],
+                "functions": [],
+                "key_concepts": [],
+                "module_docstring": "",
+            }
+
+            # Extract module-level docstring
+            if (
+                tree.body
+                and isinstance(tree.body[0], ast.Expr)
+                and isinstance(tree.body[0].value, ast.Constant)
+                and isinstance(tree.body[0].value.value, str)
+            ):
+                file_info["module_docstring"] = tree.body[0].value.value.strip()
+
+            # Analyze top-level definitions
+            for node in tree.body:
+                if isinstance(node, ast.ClassDef):
+                    class_info = {
+                        "name": node.name,
+                        "docstring": self._extract_docstring(node),
+                        "methods": [
+                            item.name
+                            for item in node.body
+                            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
+                        ][
+                            :5
+                        ],  # Limit
+                        "base_classes": [
+                            ast.unparse(base) if hasattr(ast, "unparse") else "Unknown"
+                            for base in (node.bases or [])
+                        ][
+                            :3
+                        ],  # Limit
+                    }
+                    file_info["classes"].append(class_info)
+
+                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    func_info = {
+                        "name": node.name,
+                        "docstring": self._extract_docstring(node),
+                        "is_async": isinstance(node, ast.AsyncFunctionDef),
+                        "decorators": [
+                            ast.unparse(dec) if hasattr(ast, "unparse") else "Unknown"
+                            for dec in (node.decorator_list or [])
+                        ][
+                            :3
+                        ],  # Limit
+                    }
+                    file_info["functions"].append(func_info)
+
+            # Identify key concepts from names and docstrings
+            file_info["key_concepts"] = self._extract_key_concepts(file_info)
+
+            return file_info
+
+        except Exception:
+            return None
+
+    def _identify_key_patterns(self, module_analysis: ModuleAnalysis) -> list[str]:
+        """Identify key design patterns and architectural elements in the module."""
+        patterns = []
+
+        # Analyze class and function names for patterns
+        symbols = module_analysis.symbols or []
+
+        # Common patterns to detect
+        if any("Factory" in s for s in symbols):
+            patterns.append("Factory Pattern")
+        if any("Builder" in s for s in symbols):
+            patterns.append("Builder Pattern")
+        if any("Manager" in s or "Service" in s for s in symbols):
+            patterns.append("Service/Manager Pattern")
+        if any("Engine" in s for s in symbols):
+            patterns.append("Engine/Processing Pattern")
+        if any("Store" in s or "Repository" in s for s in symbols):
+            patterns.append("Data Storage Pattern")
+        if any("Agent" in s for s in symbols):
+            patterns.append("Agent Pattern")
+        if any("Flow" in s for s in symbols):
+            patterns.append("Flow/Pipeline Pattern")
+        if any("Context" in s for s in symbols):
+            patterns.append("Context Pattern")
+        if any("Registry" in s for s in symbols):
+            patterns.append("Registry Pattern")
+
+        # Analyze dependencies for architectural patterns
+        external_deps = module_analysis.external_dependencies
+        if "asyncio" in external_deps:
+            patterns.append("Asynchronous Programming")
+        if "abc" in external_deps or "typing" in external_deps:
+            patterns.append("Abstract Base Classes/Protocols")
+        if "dataclasses" in external_deps:
+            patterns.append("Data Classes")
+        if "antidote" in external_deps:
+            patterns.append("Dependency Injection")
+
+        return patterns[:8]  # Limit for context
+
+    def _identify_notable_features(
+        self, module_path: Path, module_analysis: ModuleAnalysis
+    ) -> list[str]:
+        """Identify notable features and characteristics of the module."""
+        features = []
+
+        # Size-based features
+        if module_analysis.complexity == "Critical":
+            features.append("High complexity module with extensive functionality")
+        if module_analysis.file_count >= 10:
+            features.append("Large multi-file module")
+        if module_analysis.loc > 2000:
+            features.append("Substantial codebase (2000+ lines)")
+
+        # Architecture-based features
+        if module_analysis.class_count > 10:
+            features.append("Object-oriented design with multiple classes")
+        if module_analysis.function_count > 50:
+            features.append("Function-rich module with extensive API")
+
+        # Dependency-based features
+        if len(module_analysis.external_dependencies) > 15:
+            features.append("High external dependency usage")
+        if len(module_analysis.internal_dependencies) > 5:
+            features.append("Highly integrated with other project modules")
+
+        # Check for specific file types that indicate special functionality
+        special_files = list(module_path.glob("*"))
+        if any(
+            f.name.endswith(".yaml") or f.name.endswith(".yml") for f in special_files
+        ):
+            features.append("Configuration or data files present")
+        if any("test" in f.name.lower() for f in special_files):
+            features.append("Includes test files")
+
+        return features[:6]  # Limit for context
+
+    def _extract_key_concepts(self, file_info: dict[str, Any]) -> list[str]:
+        """Extract key concepts from file names, class names, and docstrings."""
+        concepts = []
+
+        # From class names
+        for cls in file_info.get("classes", []):
+            name = cls["name"]
+            # Split camelCase and extract meaningful words
+            import re
+
+            words = re.findall(r"[A-Z][a-z]*", name)
+            concepts.extend(words)
+
+        # From function names
+        for func in file_info.get("functions", []):
+            name = func["name"]
+            # Split snake_case and extract meaningful words
+            words = [word.capitalize() for word in name.split("_") if len(word) > 2]
+            concepts.extend(words)
+
+        # From docstrings (extract key nouns)
+        docstring = file_info.get("module_docstring", "")
+        if docstring:
+            # Simple extraction of capitalized words that might be concepts
+            import re
+
+            concept_words = re.findall(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b", docstring)
+            concepts.extend(concept_words)
+
+        # Clean up and deduplicate
+        concepts = list(set([c for c in concepts if len(c) > 2 and c.isalpha()]))
+        return concepts[:10]  # Limit for context

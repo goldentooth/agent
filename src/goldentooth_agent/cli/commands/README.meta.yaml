@@ -2,10 +2,10 @@ module_name: Commands
 description: Commands module
 complexity: Critical
 file_count: 15
-loc: ~5379
+loc: ~5875
 test_coverage: Medium
 class_count: 8
-function_count: 124
+function_count: 135
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies:
@@ -56,6 +56,14 @@ symbols:
 - TraceDataDict
 - TraceStep
 - __all__
+- _generate_ai_background_content
+- _generate_all_backgrounds
+- _generate_core_concepts_section
+- _generate_design_philosophy
+- _generate_integration_section
+- _generate_single_background
+- _generate_technical_challenges
+- _infer_problem_statement
 - app
 - ask_question
 - auto_sync_after_github_sync
@@ -63,6 +71,8 @@ symbols:
 - chat
 - chat_loop
 - check_agents_health
+- check_background_files
+- check_background_files_for_commit
 - check_flows_health
 - check_freshness_for_commit
 - check_metadata_freshness
@@ -101,6 +111,7 @@ symbols:
 - exec_flow
 - export_context
 - export_context_as_json
+- generate_background_file
 - generate_readme
 - generate_readme_for_commit
 - get_agent_description
@@ -703,6 +714,31 @@ functions:
     to current)'')]) -> None'
   docstring: Check README freshness for modules that will be committed (pre-commit
     hook).
+  public: true
+- name: check_background_files
+  signature: 'def check_background_files(project_root: Annotated[str, typer.Option(''--project-root'',
+    ''-p'', help=''Project root directory (defaults to current directory)'')]) ->
+    None'
+  docstring: Check for missing README.bg.md files in modules.
+  public: true
+- name: check_background_files_for_commit
+  signature: 'def check_background_files_for_commit(project_root: Annotated[str, typer.Option(''--project-root'',
+    ''-p'', help=''Project root directory (defaults to current directory)'')]) ->
+    None'
+  docstring: Check for missing README.bg.md files in modules with staged changes (pre-commit
+    hook).
+  public: true
+- name: generate_background_file
+  signature: 'def generate_background_file(module_path: Annotated[str | None, typer.Argument(help=''Path
+    to the module directory (optional - generates for all modules if not provided)'')],
+    project_root: Annotated[str | None, typer.Option(''--root'', ''-r'', help=''Project
+    root directory (defaults to current, used when generating all)'')], force: Annotated[bool,
+    typer.Option(''--force'', ''-f'', help=''Overwrite existing README.bg.md files'')],
+    ai_powered: Annotated[bool, typer.Option(''--ai'', help=''Use AI to analyze modules
+    and generate comprehensive backgrounds'')], template_only: Annotated[bool, typer.Option(''--template-only'',
+    help=''Generate templates without AI analysis'')]) -> None'
+  docstring: Generate README.bg.md files for a specific module or all modules with
+    optional AI assistance.
   public: true
 - name: sync_organization
   signature: 'def sync_organization(org_name: str, repos: bool, embed: bool) -> None'

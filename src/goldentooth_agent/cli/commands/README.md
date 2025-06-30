@@ -2,13 +2,55 @@
 
 Commands module
 
+## Background & Motivation
+
+### Problem Statement
+
+The commands module addresses the challenge of managing commands-related operations in a complex system architecture.
+
+### Theoretical Foundation
+
+#### Core Concepts
+
+The module implements domain-specific concepts tailored to its functional requirements.
+
+#### Design Philosophy
+
+**Simplicity and Clarity**: Emphasizes straightforward implementations that are easy to understand and maintain.
+
+### Technical Challenges Addressed
+
+1. **Modularity**: Designing clean interfaces that promote reusability and testability
+2. **Maintainability**: Structuring code for easy modification and extension
+3. **Integration**: Seamlessly connecting with other system components
+
+### Integration & Usage
+
+The commands module integrates with the broader system through well-defined interfaces.
+
+**Key Dependencies:**
+- goldentooth_agent.cli.commands.agents: Provides essential functionality required by this module
+- goldentooth_agent.cli.commands.chat: Provides essential functionality required by this module
+- goldentooth_agent.cli.commands.flow: Provides essential functionality required by this module
+- goldentooth_agent.cli.commands.tools: Provides essential functionality required by this module
+- goldentooth_agent.core.context: Provides essential functionality required by this module
+
+**Usage Patterns:**
+- **Dependency Injection**: Services are provided through the Antidote DI container
+- **Type-Safe Interfaces**: All public APIs use comprehensive type annotations
+- **Error Propagation**: Exceptions are handled consistently with the system's error handling patterns
+
+---
+
+*This background file was generated using AI analysis of the commands module. Please review and customize as needed.*
+
 ## Overview
 
 - **Complexity**: Critical
 - **Files**: 15 Python files
-- **Lines of Code**: ~5379
+- **Lines of Code**: ~5875
 - **Classes**: 8
-- **Functions**: 124
+- **Functions**: 135
 
 ## API Reference
 
@@ -309,6 +351,15 @@ Check that README.md files are newer than their README.meta.yaml files.
 
 #### `def check_readme_freshness_for_commit(project_root: Annotated[str | None, typer.Option('--root', '-r', help='Project root directory (defaults to current)')]) -> None`
 Check README freshness for modules that will be committed (pre-commit hook).
+
+#### `def check_background_files(project_root: Annotated[str, typer.Option('--project-root', '-p', help='Project root directory (defaults to current directory)')]) -> None`
+Check for missing README.bg.md files in modules.
+
+#### `def check_background_files_for_commit(project_root: Annotated[str, typer.Option('--project-root', '-p', help='Project root directory (defaults to current directory)')]) -> None`
+Check for missing README.bg.md files in modules with staged changes (pre-commit hook).
+
+#### `def generate_background_file(module_path: Annotated[str | None, typer.Argument(help='Path to the module directory (optional - generates for all modules if not provided)')], project_root: Annotated[str | None, typer.Option('--root', '-r', help='Project root directory (defaults to current, used when generating all)')], force: Annotated[bool, typer.Option('--force', '-f', help='Overwrite existing README.bg.md files')], ai_powered: Annotated[bool, typer.Option('--ai', help='Use AI to analyze modules and generate comprehensive backgrounds')], template_only: Annotated[bool, typer.Option('--template-only', help='Generate templates without AI analysis')]) -> None`
+Generate README.bg.md files for a specific module or all modules with optional AI assistance.
 
 #### `def sync_organization(org_name: str, repos: bool, embed: bool) -> None`
 Sync a GitHub organization and its repositories.

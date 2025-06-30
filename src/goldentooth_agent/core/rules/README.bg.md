@@ -1,0 +1,28 @@
+## Background & Motivation
+
+### Problem Statement
+
+Describe the specific problem this module addresses and why it exists.
+
+### Theoretical Foundation
+
+#### Core Concepts
+
+Explain the key concepts, algorithms, or design patterns used in this module.
+
+#### Design Philosophy
+
+Describe the design principles and architectural decisions.
+
+### Technical Challenges Addressed
+
+1. **Challenge 1**: Description of technical challenge and how it's solved
+2. **Challenge 2**: Another challenge and solution approach
+
+### Integration & Usage
+
+Explain how this module fits into the larger system and typical usage patterns.
+
+---
+
+*This background file was generated as a template. Please customize it with specific details about the rules module's purpose, design decisions, and theoretical foundations.*

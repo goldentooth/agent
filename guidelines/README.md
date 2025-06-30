@@ -11,6 +11,7 @@ This directory contains comprehensive development guidelines for the Goldentooth
 - **[architecture.md](architecture.md)** - System architecture patterns, module organization, dependency injection guidelines, and design principles
 - **[performance.md](performance.md)** - Performance standards, optimization guidelines, benchmarking practices, and critical performance targets
 - **[documentation.md](documentation.md)** - Documentation standards for code, APIs, modules, and system components including README requirements and module metadata (README.meta.yaml)
+- **[background-documentation.md](background-documentation.md)** - Guidelines for creating and maintaining README.bg.md files that provide in-depth module background, motivation, and theoretical foundations
 - **[module-development.md](module-development.md)** - Guidelines for working with large modules, refactoring strategies, and module-specific development practices
 - **[error-handling.md](error-handling.md)** - Exception handling patterns, error propagation strategies, and async error handling best practices
 

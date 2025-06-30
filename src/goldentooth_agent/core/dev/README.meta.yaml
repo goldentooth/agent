@@ -1,11 +1,11 @@
 module_name: Dev
 description: Dev module
-complexity: Medium
+complexity: High
 file_count: 2
-loc: ~1244
+loc: ~1519
 test_coverage: Medium
 class_count: 5
-function_count: 42
+function_count: 50
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies: []
@@ -109,8 +109,8 @@ classes:
     public: true
   - name: generate_readme_from_metadata
     signature: 'def generate_readme_from_metadata(self, module_path: Path) -> str'
-    docstring: Generate README.md content from README.meta.yaml.
-    first_line: Generate README.md content from README.meta.yaml
+    docstring: Generate README.md content from README.meta.yaml and optional README.bg.md.
+    first_line: Generate README.md content from README.meta.yaml and optional README.bg.md
     public: true
   - name: write_readme_from_metadata
     signature: 'def write_readme_from_metadata(self, module_path: Path) -> bool'
@@ -133,5 +133,21 @@ classes:
     signature: 'def check_staged_readme_freshness(self, project_root: Path) -> list[str]'
     docstring: Check README freshness only for modules with staged changes.
     first_line: Check README freshness only for modules with staged changes
+    public: true
+  - name: check_background_files
+    signature: 'def check_background_files(self, project_root: Path) -> list[str]'
+    docstring: Check for missing README.bg.md files in all modules.
+    first_line: Check for missing README.bg.md files in all modules
+    public: true
+  - name: check_staged_background_files
+    signature: 'def check_staged_background_files(self, project_root: Path) -> list[str]'
+    docstring: Check for missing README.bg.md files in modules with staged changes.
+    first_line: Check for missing README.bg.md files in modules with staged changes
+    public: true
+  - name: analyze_module_for_background
+    signature: 'def analyze_module_for_background(self, module_path: Path) -> dict[str,
+      Any]'
+    docstring: Analyze a module in depth for AI-powered background generation.
+    first_line: Analyze a module in depth for AI-powered background generation
     public: true
   public: true

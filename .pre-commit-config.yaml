@@ -122,6 +122,18 @@ repos:
         always_run: false
         stages: [pre-commit]
 
+  # Check for missing background files in significant modules
+  - repo: local
+    hooks:
+      - id: check-background-files
+        name: Check Background Files
+        entry: poetry run goldentooth-agent dev module check-background-for-commit
+        language: system
+        description: Check for missing README.bg.md files in significant modules with changes
+        pass_filenames: false
+        always_run: false
+        stages: [pre-commit]
+
   # Run pytest tests
   - repo: local
     hooks:
