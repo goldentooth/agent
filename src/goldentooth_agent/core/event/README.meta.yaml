@@ -2,7 +2,7 @@ module_name: Event
 description: Event module
 complexity: Medium
 file_count: 3
-loc: ~278
+loc: ~284
 test_coverage: Medium
 class_count: 3
 function_count: 32

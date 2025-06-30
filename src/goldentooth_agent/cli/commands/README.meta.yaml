@@ -1,11 +1,11 @@
 module_name: Commands
 description: Commands module
 complexity: Critical
-file_count: 15
-loc: ~5723
+file_count: 16
+loc: ~6232
 test_coverage: Medium
 class_count: 8
-function_count: 130
+function_count: 143
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies:
@@ -13,6 +13,8 @@ internal_dependencies:
 - goldentooth_agent.cli.commands.chat
 - goldentooth_agent.cli.commands.flow
 - goldentooth_agent.cli.commands.tools
+- goldentooth_agent.core.agent_codebase
+- goldentooth_agent.core.agent_codebase.rag_integration
 - goldentooth_agent.core.context
 - goldentooth_agent.core.dev.metadata_generator
 - goldentooth_agent.core.flow_agent
@@ -57,12 +59,18 @@ symbols:
 - TraceDataDict
 - TraceStep
 - __all__
+- _display_codebase_overview
+- _display_comparison_results
+- _display_query_results
+- _display_rag_results
 - _generate_ai_background_content
 - _generate_all_backgrounds
 - _generate_single_background
+- add_codebase
 - app
 - ask_question
 - auto_sync_after_github_sync
+- budget_management
 - calculator_implementation
 - chat
 - chat_loop
@@ -75,7 +83,9 @@ symbols:
 - check_readme_freshness
 - check_readme_freshness_for_commit
 - check_tools_health
+- codebase_overview
 - commit_message_info
+- compare_codebases
 - console
 - create_demo_context
 - create_echo_agent
@@ -117,9 +127,11 @@ symbols:
 - get_available_instructor_agents
 - get_available_tools
 - get_document_insights
+- index_codebase
 - initialize_system
 - inspect_context
 - list_agents
+- list_codebases
 - list_context_keys
 - list_documents
 - list_flows
@@ -135,6 +147,8 @@ symbols:
 - process_rag_input
 - process_single_message
 - profile_performance
+- query_codebase
+- rag_query
 - run_agent
 - run_agent_async
 - run_agent_scenario
@@ -174,6 +188,7 @@ symbols:
 - sync_user_repos
 - system_health
 - test_agent
+- token_analysis
 - trace_execution
 - update_all_modules
 - update_changed_modules
@@ -183,6 +198,7 @@ symbols:
 exports:
 - agents
 - chat
+- codebase
 - context
 - debug
 - demo
@@ -356,6 +372,57 @@ functions:
   signature: 'def describe_flow(flow_name: Annotated[str, typer.Argument(help=''Name
     of the flow to describe'')]) -> None'
   docstring: Show detailed information about a flow.
+  public: true
+- name: index_codebase
+  signature: 'def index_codebase(codebase_name: str | None, force: bool) -> None'
+  docstring: "Index a codebase for introspection queries.\n\n    Mechanically, this:\n\
+    \    1. Extracts documents from Python files using AST parsing\n    2. Processes\
+    \ README.md and README.bg.md files\n    3. Chunks content based on document types\n\
+    \    4. Generates embeddings and stores in vector database\n    5. Updates indexing\
+    \ statistics"
+  public: true
+- name: query_codebase
+  signature: 'def query_codebase(query: str, limit: int, doc_type: str | None, include_source:
+    bool, format_output: str) -> None'
+  docstring: "Query the codebase using natural language.\n\n    Mechanical query process:\n\
+    \    1. Parse query intent to determine search strategy\n    2. Route to appropriate\
+    \ document types\n    3. Perform vector similarity search\n    4. Rank results\
+    \ by relevance\n    5. Display formatted results"
+  public: true
+- name: rag_query
+  signature: 'def rag_query(query: str, codebase_weight: float, max_results: int,
+    include_codebase: bool, include_documents: bool) -> None'
+  docstring: "Query using combined codebase introspection and document RAG.\n\n  \
+    \  Mechanical RAG process:\n    1. Execute parallel searches in codebase and document\
+    \ store\n    2. Combine results with weighted scoring\n    3. Synthesize comprehensive\
+    \ answer using LLM\n    4. Display unified response with source attribution"
+  public: true
+- name: codebase_overview
+  signature: 'def codebase_overview(codebase_name: str) -> None'
+  docstring: Get comprehensive overview of a codebase.
+  public: true
+- name: compare_codebases
+  signature: 'def compare_codebases(query: str, codebases: str) -> None'
+  docstring: Compare implementations across different codebases.
+  public: true
+- name: add_codebase
+  signature: 'def add_codebase(name: str, path: str, display_name: str | None, description:
+    str, index_now: bool) -> None'
+  docstring: Add an external codebase for comparison and analysis.
+  public: true
+- name: list_codebases
+  signature: def list_codebases() -> None
+  docstring: List all available codebases.
+  public: true
+- name: token_analysis
+  signature: 'def token_analysis(days: int, show_breakdown: bool, export_path: str
+    | None) -> None'
+  docstring: Analyze token usage and costs for embedding operations.
+  public: true
+- name: budget_management
+  signature: 'def budget_management(daily_limit: int | None, monthly_limit: int |
+    None, warning_threshold: float | None, reset_usage: bool) -> None'
+  docstring: Manage token budget and limits.
   public: true
 - name: get_available_instructor_agents
   signature: def get_available_instructor_agents() -> dict[str, Any]

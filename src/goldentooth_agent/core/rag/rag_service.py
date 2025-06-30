@@ -2467,7 +2467,6 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
     async def analyze_query_intelligence(
         self,
         question: str,
-        suggest_alternatives: bool = False,
         domain_context: str | None = None,
     ) -> dict[str, Any]:
         """Analyze query intelligence and provide enhancement suggestions.

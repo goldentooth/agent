@@ -3,19 +3,23 @@ Test fixtures for agent_codebase module.
 """
 
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 import pytest
 
 from goldentooth_agent.core.agent_codebase.change_detection import SmartChangeDetector
-from goldentooth_agent.core.agent_codebase.token_tracking import TokenTracker
 from goldentooth_agent.core.agent_codebase.extraction import CodebaseDocumentExtractor
-from goldentooth_agent.core.agent_codebase.schema import CodebaseDocument, CodebaseDocumentType
+from goldentooth_agent.core.agent_codebase.schema import (
+    CodebaseDocument,
+    CodebaseDocumentType,
+)
+from goldentooth_agent.core.agent_codebase.token_tracking import TokenTracker
 
 
 @pytest.fixture
-def temp_dir() -> Generator[Path, None, None]:
+def temp_dir() -> Generator[Path]:
     """Temporary directory for test files."""
     with tempfile.TemporaryDirectory() as temp:
         yield Path(temp)
@@ -51,11 +55,11 @@ from typing import List
 
 class TestClass:
     """A test class."""
-    
+
     def __init__(self, name: str) -> None:
         """Initialize with name."""
         self.name = name
-    
+
     def process_data(self, items: List[str]) -> dict:
         """Process a list of items."""
         return {"count": len(items), "items": items}
@@ -72,7 +76,7 @@ MAX_ITEMS = 100
 @pytest.fixture
 def sample_markdown_content() -> str:
     """Sample markdown content for testing."""
-    return '''# Test Module
+    return """# Test Module
 
 This is a test module for the agent codebase introspection system.
 
@@ -80,7 +84,7 @@ This is a test module for the agent codebase introspection system.
 
 The module provides functionality for:
 - Document extraction
-- Change detection  
+- Change detection
 - Token tracking
 
 ## API Reference
@@ -97,28 +101,33 @@ Main class for testing purposes.
 ### Functions
 
 - `utility_function(x, y)`: Add two numbers
-'''
+"""
 
 
 @pytest.fixture
-def sample_codebase_files(temp_dir: Path, sample_python_code: str, sample_markdown_content: str) -> Path:
+def sample_codebase_files(
+    temp_dir: Path, sample_python_code: str, sample_markdown_content: str
+) -> Path:
     """Create a sample codebase structure."""
     # Create directory structure
     src_dir = temp_dir / "src" / "test_package"
     src_dir.mkdir(parents=True)
-    
+
     # Python files
     (src_dir / "__init__.py").write_text('"""Test package."""\n')
     (src_dir / "main.py").write_text(sample_python_code)
-    (src_dir / "utils.py").write_text('''
+    (src_dir / "utils.py").write_text(
+        '''
 def helper_function(data: str) -> str:
     """Help with data processing."""
     return data.upper()
-''')
-    
+'''
+    )
+
     # Documentation files
     (src_dir / "README.md").write_text(sample_markdown_content)
-    (src_dir / "README.bg.md").write_text('''# Background: Test Module
+    (src_dir / "README.bg.md").write_text(
+        """# Background: Test Module
 
 ## Motivation
 
@@ -128,21 +137,24 @@ This module was created to test the codebase introspection system.
 
 - Simple structure for easy testing
 - Clear documentation for validation
-''')
-    
+"""
+    )
+
     # Subdirectory
     subdir = src_dir / "submodule"
     subdir.mkdir()
-    (subdir / "__init__.py").write_text('')
-    (subdir / "worker.py").write_text('''
+    (subdir / "__init__.py").write_text("")
+    (subdir / "worker.py").write_text(
+        '''
 class Worker:
     """A worker class."""
-    
+
     def work(self) -> str:
         """Do some work."""
         return "working"
-''')
-    
+'''
+    )
+
     return temp_dir
 
 
@@ -162,37 +174,13 @@ def sample_document() -> CodebaseDocument:
         tags=["function", "python"],
         signature="def sample_function(x: int) -> int",
         docstring="A sample function that doubles input",
-        complexity_score=0.1
+        complexity_score=0.1,
     )
 
 
 @pytest.fixture
 def mock_vector_store():
-    """Mock vector store for testing."""
-    class MockVectorStore:
-        def __init__(self):
-            self.documents = {}
-            self.call_log = []
-        
-        async def add_document(self, text: str, document_id: str, source: Any, metadata: dict) -> None:
-            self.documents[document_id] = {
-                "text": text,
-                "source": source,
-                "metadata": metadata
-            }
-            self.call_log.append(("add_document", document_id, len(text)))
-        
-        async def search(self, query: str, limit: int = 10, metadata_filters: dict = None) -> list:
-            # Simple mock search - return documents containing query terms
-            results = []
-            for doc_id, doc_data in self.documents.items():
-                if query.lower() in doc_data["text"].lower():
-                    results.append({
-                        "document_id": doc_id,
-                        "content": doc_data["text"],
-                        "score": 0.8,
-                        "metadata": doc_data["metadata"]
-                    })
-            return results[:limit]
-    
-    return MockVectorStore()
+    """Mock vector store for testing - uses type-safe implementation."""
+    from tests.mock_factories import create_vector_store_mock
+
+    return create_vector_store_mock()

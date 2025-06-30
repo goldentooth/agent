@@ -6,7 +6,11 @@ structure, documentation, and behavior patterns.
 """
 
 from .collection import CodebaseCollection
-from .introspection import CodebaseIntrospectionService, IntrospectionQuery, IntrospectionResult
+from .introspection import (
+    CodebaseIntrospectionService,
+    IntrospectionQuery,
+    IntrospectionResult,
+)
 from .schema import CodebaseDocument, CodebaseDocumentType
 
 __all__ = [

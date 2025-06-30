@@ -324,15 +324,13 @@ class EmbeddingsService:
         store_type: str,
         document_id: str,
         document_data: dict[str, Any],
-        force_rechunk: bool = False,
     ) -> dict[str, Any]:
-        """Re-embed a document using chunking, optionally forcing re-chunking.
+        """Re-embed a document using chunking.
 
         Args:
             store_type: Type of document store
             document_id: ID of the document
             document_data: Document content dictionary
-            force_rechunk: Whether to force re-chunking even if chunks exist
 
         Returns:
             Dictionary with chunks, embeddings, and metadata

@@ -1,6 +1,6 @@
 # 🤖 Goldentooth Agent
 
-A production-ready, functional reactive agent framework built with enterprise-grade security, performance optimization, and comprehensive tooling.
+An intelligent agent built for my [Pi Bramble](https://github.com/goldentooth/).
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Type Checked](https://img.shields.io/badge/type--checked-mypy-blue)](http://mypy-lang.org/)

@@ -236,7 +236,7 @@ Configure your IDE to show type hints:
 Based on our codebase analysis, prioritize fixing:
 
 1. **34 `[no-untyped-def]`** - Missing return type annotations (highest priority)
-2. **25 `[arg-type]`** - Function argument type mismatches  
+2. **25 `[arg-type]`** - Function argument type mismatches
 3. **21 `[assignment]`** - Assignment type incompatibilities
 4. **11 `[no-untyped-call]`** - Calls to untyped functions
 5. **9 `[var-annotated]`** - Missing variable type annotations

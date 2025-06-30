@@ -65,6 +65,8 @@ sphinx = "^7.0"
 sphinx-rtd-theme = "^1.3"
 myst-parser = "^2.0"
 sphinx-autobuild = "^2024.2.4"
+vulture = "^2.14"
+pytest-mock = "^3.14.1"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -128,6 +130,12 @@ test-flow-registry = "pytest tests/flow_engine/registry/ -v"
 typecheck = "mypy src/goldentooth_agent --strict --show-error-codes --pretty"
 typecheck-all = "mypy . --strict --show-error-codes --pretty"
 
+# Dead code analysis
+deadcode = "vulture src/goldentooth_agent --min-confidence 80"
+deadcode-all = "vulture src/goldentooth_agent --min-confidence 60"
+deadcode-diff = "python scripts/vulture_diff.py"
+deadcode-report = "python scripts/find_orphaned_code.py"
+
 # Pre-commit management tasks
 precommit-install = "pre-commit install"
 precommit-update = "pre-commit autoupdate"
@@ -140,8 +148,15 @@ docs-clean = "sphinx-build -b html -E docs docs/_build"
 docs-serve = "python -m http.server 8000 --directory docs/_build"
 docs-autobuild = "sphinx-autobuild docs docs/_build --host 0.0.0.0 --port 8000"
 
+# Mock compliance testing
+test-mocks = "pytest tests/test_mock_compliance.py -v"
+
 # Quality assurance - run all checks
-qa = ["typecheck", "test-cov-check", "precommit-run"]
+qa = ["typecheck", "test-cov-check", "test-mocks", "precommit-run"]
+qa-fast = "python scripts/qa_check.py --fast"
+qa-verbose = "python scripts/qa_check.py --verbose"
+qa-fix = "python scripts/qa_check.py --fix"
+qa-check = "python scripts/qa_check.py"
 
 [tool.mypy]
 # Strict type checking configuration aligned with Pylance standards

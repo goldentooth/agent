@@ -6,65 +6,50 @@ Embeddings module
 
 ### Problem Statement
 
-Traditional information retrieval systems rely on exact keyword matching, which fails to capture semantic relationships between concepts. Users often know what they're looking for conceptually but struggle to express it in precise terms that match document content. This creates a significant barrier to effective knowledge discovery.
+The embeddings module addresses the challenge of performing efficient semantic search in high-dimensional vector spaces while maintaining accuracy and scalability.
 
 ### Theoretical Foundation
 
-#### Vector Embedding Theory
+#### Core Concepts
 
-This module implements dense vector embeddings based on transformer architecture, specifically leveraging:
+The module implements domain-specific concepts tailored to its functional requirements.
 
-1. **Semantic Similarity**: Documents with similar meanings are represented by vectors that are close in high-dimensional space
-2. **Contextual Understanding**: Each word/phrase embedding considers surrounding context, not just isolated terms
-3. **Cross-modal Retrieval**: The same embedding space allows matching between queries and documents regardless of exact wording
+#### Design Philosophy
 
-#### Hybrid Retrieval Strategy
-
-The module combines multiple retrieval approaches:
-
-- **Semantic Search**: Uses vector similarity (cosine distance) to find conceptually related content
-- **Keyword Search**: Employs BM25 algorithm for exact term matching and traditional relevance scoring
-- **Hybrid Scoring**: Weighted combination allows tuning between precision (keyword) and recall (semantic)
-
-### Design Philosophy
-
-#### Chunking Strategy
-
-Rather than embedding entire documents, the system implements intelligent chunking:
-
-- **Semantic Boundaries**: Chunks respect logical document structure (sections, paragraphs)
-- **Context Preservation**: Overlapping chunks maintain semantic continuity
-- **Size Optimization**: Chunk sizes optimized for embedding model context windows
-
-#### Performance Considerations
-
-- **Sidecar Storage**: Embeddings stored in compressed files alongside documents for fast access
-- **Lazy Loading**: Embeddings computed on-demand and cached for subsequent use
-- **Batch Processing**: Efficient batch embedding for bulk operations
+**Simplicity and Clarity**: Emphasizes straightforward implementations that are easy to understand and maintain.
 
 ### Technical Challenges Addressed
 
-1. **Cold Start Problem**: How to provide useful results before significant content is indexed
-2. **Embedding Drift**: Maintaining consistency as underlying models evolve
-3. **Scale Efficiency**: Supporting large document collections without linear performance degradation
-4. **Relevance Tuning**: Balancing semantic similarity with traditional relevance signals
+1. **Vector Space Optimization**: Designing efficient storage and retrieval mechanisms for high-dimensional embeddings
+2. **Similarity Search Accuracy**: Balancing approximate nearest neighbor algorithms with exact similarity requirements
+3. **Embedding Consistency**: Ensuring stable vector representations across model updates and different text preprocessing approaches
+4. **Scalability**: Handling large-scale vector databases while maintaining sub-second query response times
 
-### Integration with RAG Pipeline
+### Integration & Usage
 
-This module serves as the retrieval component in a Retrieval-Augmented Generation (RAG) system:
+The embeddings module integrates with the broader system through well-defined interfaces.
 
-1. **Query Processing**: User queries transformed into semantic vectors
-2. **Document Retrieval**: Both semantic and keyword matching identify relevant content
-3. **Context Assembly**: Retrieved chunks assembled into coherent context for language model
-4. **Relationship Analysis**: Understanding connections between retrieved chunks for better context
+**Key Dependencies:**
+- anthropic: Provides essential functionality required by this module
+- antidote: Provides essential functionality required by this module
+- collections: Provides essential functionality required by this module
+- dataclasses: Provides essential functionality required by this module
+- datetime: Provides essential functionality required by this module
 
-The goal is to bridge the gap between human information needs and machine-readable content, enabling more intuitive and effective knowledge discovery.
+**Usage Patterns:**
+- **Dependency Injection**: Services are provided through the Antidote DI container
+- **Type-Safe Interfaces**: All public APIs use comprehensive type annotations
+- **Error Propagation**: Exceptions are handled consistently with the system's error handling patterns
+
+---
+
+*This background file was generated using AI analysis of the embeddings module. Please review and customize as needed.*
 
 ## Overview
 
 - **Complexity**: Critical
 - **Files**: 8 Python files
-- **Lines of Code**: ~3533
+- **Lines of Code**: ~3529
 - **Classes**: 9
 - **Functions**: 105
 
@@ -137,7 +122,7 @@ Service for creating and managing document embeddings using Anthropic.
 - `async create_document_chunks_with_embeddings(self, store_type: str, document_id: str, document_data: dict[str, Any]) -> dict[str, Any]` - Create chunks for a document and generate embeddings for each chunk
 - `async create_chunk_embedding(self, chunk: DocumentChunk) -> dict[str, Any]` - Create an embedding for a single document chunk
 - `get_embeddable_text_from_chunk(self, chunk: DocumentChunk) -> str` - Extract embeddable text from a document chunk
-- `async re_embed_document_with_chunks(self, store_type: str, document_id: str, document_data: dict[str, Any], force_rechunk: bool) -> dict[str, Any]` - Re-embed a document using chunking, optionally forcing re-chunking
+- `async re_embed_document_with_chunks(self, store_type: str, document_id: str, document_data: dict[str, Any]) -> dict[str, Any]` - Re-embed a document using chunking
 - `should_use_chunking(self, store_type: str, document_data: dict[str, Any]) -> bool` - Determine if a document should be chunked based on type and size
 
 #### ChunkRelationshipAnalyzer
@@ -158,7 +143,7 @@ Service for creating and managing document embeddings using OpenAI.
 - `async create_document_chunks_with_embeddings(self, store_type: str, document_id: str, document_data: dict[str, Any]) -> dict[str, Any]` - Create chunks for a document and generate embeddings for each chunk
 - `async create_chunk_embedding(self, chunk: DocumentChunk) -> dict[str, Any]` - Create an embedding for a single document chunk
 - `get_embeddable_text_from_chunk(self, chunk: DocumentChunk) -> str` - Extract embeddable text from a document chunk
-- `async re_embed_document_with_chunks(self, store_type: str, document_id: str, document_data: dict[str, Any], force_rechunk: bool) -> dict[str, Any]` - Re-embed a document using chunking, optionally forcing re-chunking
+- `async re_embed_document_with_chunks(self, store_type: str, document_id: str, document_data: dict[str, Any]) -> dict[str, Any]` - Re-embed a document using chunking
 - `should_use_chunking(self, store_type: str, document_data: dict[str, Any]) -> bool` - Determine if a document should be chunked based on type and size
 - `get_model_info(self) -> dict[str, Any]` - Get information about the current embedding model
 

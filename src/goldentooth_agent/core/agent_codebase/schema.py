@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 class CodebaseDocumentType(str, Enum):
     """Types of documents in the codebase collection."""
-    
+
     MODULE_API = "module_api"
     MODULE_BACKGROUND = "module_background"
     SOURCE_CODE = "source_code"
@@ -26,37 +26,45 @@ class CodebaseDocumentType(str, Enum):
 
 class CodebaseDocument(BaseModel):
     """A document extracted from the codebase for introspection."""
-    
+
     # Core identification
     document_id: str = Field(..., description="Unique identifier for this document")
     document_type: CodebaseDocumentType = Field(..., description="Type of document")
-    
+
     # Content
     title: str = Field(..., description="Human-readable title")
     content: str = Field(..., description="Full text content")
     summary: str = Field(default="", description="Brief summary of content")
-    
+
     # Source information
     file_path: str = Field(..., description="Path to source file")
     line_start: int = Field(default=0, description="Starting line number")
     line_end: int = Field(default=0, description="Ending line number")
-    
+
     # Metadata
-    module_path: str = Field(..., description="Python module path (e.g., 'goldentooth_agent.core.flow')")
+    module_path: str = Field(
+        ..., description="Python module path (e.g., 'goldentooth_agent.core.flow')"
+    )
     tags: list[str] = Field(default_factory=list, description="Tags for categorization")
-    dependencies: list[str] = Field(default_factory=list, description="Dependencies/imports")
-    
+    dependencies: list[str] = Field(
+        default_factory=list, description="Dependencies/imports"
+    )
+
     # Code-specific metadata
     signature: str = Field(default="", description="Function/class signature")
     docstring: str = Field(default="", description="Docstring content")
     complexity_score: float = Field(default=0.0, description="Complexity metric (0-1)")
-    
+
     # Relationships
-    related_documents: list[str] = Field(default_factory=list, description="Related document IDs")
-    
+    related_documents: list[str] = Field(
+        default_factory=list, description="Related document IDs"
+    )
+
     # Additional structured data
-    metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
-    
+    metadata: dict[str, Any] = Field(
+        default_factory=dict, description="Additional metadata"
+    )
+
     def get_searchable_text(self) -> str:
         """Get text optimized for search indexing."""
         parts = [
@@ -68,7 +76,7 @@ class CodebaseDocument(BaseModel):
             self.module_path,
         ]
         return "\n".join(part for part in parts if part)
-    
+
     def get_chunk_size_hint(self) -> int:
         """Suggest chunk size based on document type."""
         type_hints = {

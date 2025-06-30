@@ -98,6 +98,18 @@ repos:
   #       additional_dependencies: []
   #       pass_filenames: false
 
+  # Dead code detection with Vulture (only NEW issues)
+  - repo: local
+    hooks:
+      - id: vulture-diff
+        name: Dead Code Detection (New Issues Only)
+        entry: python scripts/vulture_diff.py
+        language: system
+        types: [python]
+        description: Check for NEW dead code issues (ignores existing baseline)
+        pass_filenames: false
+        always_run: false
+
   # Generate README.md files from metadata (auto-fixes stale READMEs)
   - repo: local
     hooks:

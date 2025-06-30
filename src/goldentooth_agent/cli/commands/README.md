@@ -47,10 +47,10 @@ The commands module integrates with the broader system through well-defined inte
 ## Overview
 
 - **Complexity**: Critical
-- **Files**: 15 Python files
-- **Lines of Code**: ~5723
+- **Files**: 16 Python files
+- **Lines of Code**: ~6232
 - **Classes**: 8
-- **Functions**: 130
+- **Functions**: 143
 
 ## API Reference
 
@@ -157,6 +157,53 @@ Run a flow asynchronously.
 
 #### `def describe_flow(flow_name: Annotated[str, typer.Argument(help='Name of the flow to describe')]) -> None`
 Show detailed information about a flow.
+
+#### `def index_codebase(codebase_name: str | None, force: bool) -> None`
+Index a codebase for introspection queries.
+
+    Mechanically, this:
+    1. Extracts documents from Python files using AST parsing
+    2. Processes README.md and README.bg.md files
+    3. Chunks content based on document types
+    4. Generates embeddings and stores in vector database
+    5. Updates indexing statistics
+
+#### `def query_codebase(query: str, limit: int, doc_type: str | None, include_source: bool, format_output: str) -> None`
+Query the codebase using natural language.
+
+    Mechanical query process:
+    1. Parse query intent to determine search strategy
+    2. Route to appropriate document types
+    3. Perform vector similarity search
+    4. Rank results by relevance
+    5. Display formatted results
+
+#### `def rag_query(query: str, codebase_weight: float, max_results: int, include_codebase: bool, include_documents: bool) -> None`
+Query using combined codebase introspection and document RAG.
+
+    Mechanical RAG process:
+    1. Execute parallel searches in codebase and document store
+    2. Combine results with weighted scoring
+    3. Synthesize comprehensive answer using LLM
+    4. Display unified response with source attribution
+
+#### `def codebase_overview(codebase_name: str) -> None`
+Get comprehensive overview of a codebase.
+
+#### `def compare_codebases(query: str, codebases: str) -> None`
+Compare implementations across different codebases.
+
+#### `def add_codebase(name: str, path: str, display_name: str | None, description: str, index_now: bool) -> None`
+Add an external codebase for comparison and analysis.
+
+#### `def list_codebases() -> None`
+List all available codebases.
+
+#### `def token_analysis(days: int, show_breakdown: bool, export_path: str | None) -> None`
+Analyze token usage and costs for embedding operations.
+
+#### `def budget_management(daily_limit: int | None, monthly_limit: int | None, warning_threshold: float | None, reset_usage: bool) -> None`
+Manage token budget and limits.
 
 #### `def get_available_instructor_agents() -> dict[str, Any]`
 Get available Instructor-powered agents.
@@ -449,6 +496,8 @@ Sync GitHub data and automatically commit to Git repository.
 - `goldentooth_agent.cli.commands.chat`
 - `goldentooth_agent.cli.commands.flow`
 - `goldentooth_agent.cli.commands.tools`
+- `goldentooth_agent.core.agent_codebase`
+- `goldentooth_agent.core.agent_codebase.rag_integration`
 - `goldentooth_agent.core.context`
 - `goldentooth_agent.core.dev.metadata_generator`
 - `goldentooth_agent.core.flow_agent`
@@ -478,6 +527,7 @@ This module exports the following symbols:
 
 - `agents`
 - `chat`
+- `codebase`
 - `context`
 - `debug`
 - `demo`

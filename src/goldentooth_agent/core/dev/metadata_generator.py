@@ -507,7 +507,7 @@ class ModuleMetadataGenerator:
                 if self._is_python_module(current_dir) and most_specific_module is None:
                     most_specific_module = current_dir
                 break
-            
+
             # Check if this directory should be excluded
             if any(
                 f"/{dirname}/" in str(current_dir)
@@ -645,9 +645,7 @@ class ModuleMetadataGenerator:
         cleaned_external_deps = sorted(external_deps)
 
         # Assess complexity based on actual metrics
-        complexity = self._assess_complexity(
-            file_count, total_loc, len(all_classes), len(all_functions)
-        )
+        complexity = self._assess_complexity(file_count, total_loc, len(all_classes))
 
         # Generate module name from path
         module_name = self._generate_module_name(module_path)
@@ -1035,9 +1033,7 @@ class ModuleMetadataGenerator:
 
         return sorted(exports)
 
-    def _assess_complexity(
-        self, file_count: int, loc: int, class_count: int, func_count: int
-    ) -> str:
+    def _assess_complexity(self, file_count: int, loc: int, class_count: int) -> str:
         """Assess module complexity."""
         if file_count > 10 or loc > 3000 or class_count > 15:
             return "Critical"

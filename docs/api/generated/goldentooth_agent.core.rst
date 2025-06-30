@@ -1,4 +1,4 @@
-goldentooth\_agent.core
+﻿goldentooth\_agent.core
 =======================
 
 .. automodule:: goldentooth_agent.core
@@ -27,6 +27,7 @@ goldentooth\_agent.core
    :toctree:
    :recursive:
 
+   goldentooth_agent.core.agent_codebase
    goldentooth_agent.core.background_loop
    goldentooth_agent.core.context
    goldentooth_agent.core.dev

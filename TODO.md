@@ -32,3 +32,7 @@
 30. Refactor `dev module` commands to make them more stylistically consistent with one another. For example, let's try to avoid long hyphenated subcommand names like `check-freshness-for-commit` and instead consider making that an option switch of another command, e.g. `check-freshness`. In general, let's try to avoid having hyphenated subcommands and prefer just having subcommands. We might also consider reverse-DNS-style or namespaced dotted subcommands, e.g. `goldentooth-agent dev module readme.update --all` or `goldentooth-agent dev module.readme.update --all`.
 31. Add guidelines on how CLI commands should be structured for consistency.
 32. Add module README.md files to RAG knowledge base.
+33. Can we establish a policy of dividing the command implementation (which is mostly e.g. Typer configuration and
+  parameter annotations) from the actual invocation of the commands (which should be just mapping those parameters to
+  existing library code)? We should add this to guidelines too.
+34. Add a link to the GitHub Pages site (https://goldentooth.github.io/agent/) in the README.

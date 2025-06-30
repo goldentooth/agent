@@ -2,7 +2,7 @@ module_name: Rag
 description: Rag module
 complexity: Critical
 file_count: 7
-loc: ~4559
+loc: ~4557
 test_coverage: Medium
 class_count: 13
 function_count: 109
@@ -245,8 +245,8 @@ classes:
       and fusion
     public: true
   - name: analyze_query_intelligence
-    signature: 'async def analyze_query_intelligence(self, question: str, suggest_alternatives:
-      bool, domain_context: str | None) -> dict[str, Any]'
+    signature: 'async def analyze_query_intelligence(self, question: str, domain_context:
+      str | None) -> dict[str, Any]'
     docstring: "Analyze query intelligence and provide enhancement suggestions.\n\n\
       \        Args:\n            question: Query to analyze\n            domain_context:\
       \ Optional domain context\n\n        Returns:\n            Comprehensive query\

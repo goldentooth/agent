@@ -375,7 +375,6 @@ class TestRAGServiceQueryExpansion:
 
         result = await rag_service.analyze_query_intelligence(
             question="python programming tutorial",
-            suggest_alternatives=True,
         )
 
         # Check structure

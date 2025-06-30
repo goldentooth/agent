@@ -29,6 +29,7 @@
 
    goldentooth_agent.cli.commands.agents
    goldentooth_agent.cli.commands.chat
+   goldentooth_agent.cli.commands.codebase
    goldentooth_agent.cli.commands.context
    goldentooth_agent.cli.commands.debug
    goldentooth_agent.cli.commands.demo

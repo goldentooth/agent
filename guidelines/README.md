@@ -6,6 +6,7 @@ This directory contains comprehensive development guidelines for the Goldentooth
 
 - **[code-style.md](code-style.md)** - Comprehensive code style and formatting standards, including naming conventions, import organization, and file structure guidelines
 - **[testing-standards.md](testing-standards.md)** - Testing philosophy, patterns, and requirements including TDD practices, test organization, and coverage standards
+- **[mock-compliance.md](mock-compliance.md)** - Mock object best practices, type-safe mocking patterns, and automated compliance testing to prevent mock drift
 - **[type-safety.md](type-safety.md)** - Type annotation requirements, mypy configuration, and type safety best practices for maintaining strict type checking
 - **[type-safety-development.md](type-safety-development.md)** - Practical development guidelines to prevent common type errors, based on analysis of current codebase issues
 - **[architecture.md](architecture.md)** - System architecture patterns, module organization, dependency injection guidelines, and design principles
@@ -14,6 +15,7 @@ This directory contains comprehensive development guidelines for the Goldentooth
 - **[background-documentation.md](background-documentation.md)** - Guidelines for creating and maintaining README.bg.md files that provide in-depth module background, motivation, and theoretical foundations
 - **[module-development.md](module-development.md)** - Guidelines for working with large modules, refactoring strategies, and module-specific development practices
 - **[error-handling.md](error-handling.md)** - Exception handling patterns, error propagation strategies, and async error handling best practices
+- **[development-workflow.md](development-workflow.md)** - Standard development workflow, quality gates, and pre-commit requirements to ensure code quality
 
 ## Usage
 

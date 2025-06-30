@@ -3,6 +3,7 @@ Tests for codebase document schema and types.
 """
 
 import pytest
+
 from goldentooth_agent.core.agent_codebase.schema import (
     CodebaseDocument,
     CodebaseDocumentType,
@@ -11,24 +12,26 @@ from goldentooth_agent.core.agent_codebase.schema import (
 
 class TestCodebaseDocumentType:
     """Test CodebaseDocumentType enum."""
-    
+
     def test_all_types_available(self):
         """Test that all expected document types are available."""
         expected_types = {
             "MODULE_API",
-            "MODULE_BACKGROUND", 
+            "MODULE_BACKGROUND",
             "SOURCE_CODE",
             "FUNCTION_DEFINITION",
             "CLASS_DEFINITION",
             "TEST_CODE",
             "EXAMPLE_CODE",
             "CONFIGURATION",
-            "ARCHITECTURE_OVERVIEW"
+            "ARCHITECTURE_OVERVIEW",
         }
-        
-        available_types = {attr for attr in dir(CodebaseDocumentType) if not attr.startswith('_')}
+
+        available_types = {
+            attr for attr in dir(CodebaseDocumentType) if not attr.startswith("_")
+        }
         assert expected_types.issubset(available_types)
-    
+
     def test_type_values(self):
         """Test that document types have correct string values."""
         assert CodebaseDocumentType.MODULE_API.value == "module_api"
@@ -38,7 +41,7 @@ class TestCodebaseDocumentType:
 
 class TestCodebaseDocument:
     """Test CodebaseDocument model."""
-    
+
     def test_minimal_document_creation(self):
         """Test creating document with minimal required fields."""
         doc = CodebaseDocument(
@@ -47,16 +50,16 @@ class TestCodebaseDocument:
             title="Test Document",
             content="print('hello')",
             file_path="/test/file.py",
-            module_path="test.module"
+            module_path="test.module",
         )
-        
+
         assert doc.document_id == "test_123"
         assert doc.document_type == CodebaseDocumentType.SOURCE_CODE
         assert doc.title == "Test Document"
         assert doc.content == "print('hello')"
         assert doc.file_path == "/test/file.py"
         assert doc.module_path == "test.module"
-        
+
         # Check defaults
         assert doc.summary == ""
         assert doc.line_start == 0
@@ -68,7 +71,7 @@ class TestCodebaseDocument:
         assert doc.complexity_score == 0.0
         assert doc.related_documents == []
         assert doc.metadata == {}
-    
+
     def test_complete_document_creation(self):
         """Test creating document with all fields."""
         doc = CodebaseDocument(
@@ -87,9 +90,9 @@ class TestCodebaseDocument:
             docstring="Converts integer to string representation",
             complexity_score=0.2,
             related_documents=["test_123"],
-            metadata={"author": "test", "version": "1.0"}
+            metadata={"author": "test", "version": "1.0"},
         )
-        
+
         assert doc.document_id == "test_456"
         assert doc.summary == "Converts integer to string"
         assert doc.line_start == 10
@@ -101,7 +104,7 @@ class TestCodebaseDocument:
         assert doc.complexity_score == 0.2
         assert doc.related_documents == ["test_123"]
         assert doc.metadata == {"author": "test", "version": "1.0"}
-    
+
     def test_get_searchable_text(self):
         """Test searchable text generation."""
         doc = CodebaseDocument(
@@ -113,11 +116,11 @@ class TestCodebaseDocument:
             file_path="/test.py",
             module_path="test",
             tags=["class", "test"],
-            docstring="This is a test class"
+            docstring="This is a test class",
         )
-        
+
         searchable = doc.get_searchable_text()
-        
+
         # Should contain all relevant text fields
         assert "Class MyClass" in searchable
         assert "A test class" in searchable
@@ -125,7 +128,7 @@ class TestCodebaseDocument:
         assert "This is a test class" in searchable
         assert "class test" in searchable  # tags joined
         assert "test" in searchable  # module_path
-    
+
     def test_get_chunk_size_hint(self):
         """Test chunk size hints for different document types."""
         test_cases = [
@@ -139,7 +142,7 @@ class TestCodebaseDocument:
             (CodebaseDocumentType.CONFIGURATION, 800),
             (CodebaseDocumentType.ARCHITECTURE_OVERVIEW, 4000),
         ]
-        
+
         for doc_type, expected_size in test_cases:
             doc = CodebaseDocument(
                 document_id="test",
@@ -147,10 +150,10 @@ class TestCodebaseDocument:
                 title="Test",
                 content="test content",
                 file_path="/test.py",
-                module_path="test"
+                module_path="test",
             )
             assert doc.get_chunk_size_hint() == expected_size
-    
+
     def test_validation_errors(self):
         """Test validation errors for invalid data."""
         # Missing required fields
@@ -161,20 +164,20 @@ class TestCodebaseDocument:
                 title="Test",
                 content="test",
                 file_path="/test.py",
-                module_path="test"
+                module_path="test",
             )
-        
+
         # Invalid document type
         with pytest.raises(ValueError):
             CodebaseDocument(
                 document_id="test",
                 document_type="invalid_type",  # Should be enum
-                title="Test", 
+                title="Test",
                 content="test",
                 file_path="/test.py",
-                module_path="test"
+                module_path="test",
             )
-    
+
     def test_model_serialization(self):
         """Test that documents can be serialized and deserialized."""
         original = CodebaseDocument(
@@ -185,13 +188,13 @@ class TestCodebaseDocument:
             file_path="/test.py",
             module_path="test",
             tags=["serialization", "test"],
-            metadata={"test": True}
+            metadata={"test": True},
         )
-        
+
         # Convert to dict and back
         doc_dict = original.model_dump()
         restored = CodebaseDocument.model_validate(doc_dict)
-        
+
         assert original == restored
         assert original.document_id == restored.document_id
         assert original.document_type == restored.document_type

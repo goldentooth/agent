@@ -2,7 +2,7 @@ module_name: Embeddings
 description: Embeddings module
 complexity: Critical
 file_count: 8
-loc: ~3533
+loc: ~3529
 test_coverage: Medium
 class_count: 9
 function_count: 105
@@ -369,14 +369,12 @@ classes:
     public: true
   - name: re_embed_document_with_chunks
     signature: 'async def re_embed_document_with_chunks(self, store_type: str, document_id:
-      str, document_data: dict[str, Any], force_rechunk: bool) -> dict[str, Any]'
-    docstring: "Re-embed a document using chunking, optionally forcing re-chunking.\n\
-      \n        Args:\n            store_type: Type of document store\n          \
-      \  document_id: ID of the document\n            document_data: Document content\
-      \ dictionary\n            force_rechunk: Whether to force re-chunking even if\
-      \ chunks exist\n\n        Returns:\n            Dictionary with chunks, embeddings,\
-      \ and metadata"
-    first_line: Re-embed a document using chunking, optionally forcing re-chunking
+      str, document_data: dict[str, Any]) -> dict[str, Any]'
+    docstring: "Re-embed a document using chunking.\n\n        Args:\n           \
+      \ store_type: Type of document store\n            document_id: ID of the document\n\
+      \            document_data: Document content dictionary\n\n        Returns:\n\
+      \            Dictionary with chunks, embeddings, and metadata"
+    first_line: Re-embed a document using chunking
     public: true
   - name: should_use_chunking
     signature: 'def should_use_chunking(self, store_type: str, document_data: dict[str,
@@ -480,14 +478,12 @@ classes:
     public: true
   - name: re_embed_document_with_chunks
     signature: 'async def re_embed_document_with_chunks(self, store_type: str, document_id:
-      str, document_data: dict[str, Any], force_rechunk: bool) -> dict[str, Any]'
-    docstring: "Re-embed a document using chunking, optionally forcing re-chunking.\n\
-      \n        Args:\n            store_type: Type of document store\n          \
-      \  document_id: ID of the document\n            document_data: Document content\
-      \ dictionary\n            force_rechunk: Whether to force re-chunking even if\
-      \ chunks exist\n\n        Returns:\n            Dictionary with chunks, embeddings,\
-      \ and metadata"
-    first_line: Re-embed a document using chunking, optionally forcing re-chunking
+      str, document_data: dict[str, Any]) -> dict[str, Any]'
+    docstring: "Re-embed a document using chunking.\n\n        Args:\n           \
+      \ store_type: Type of document store\n            document_id: ID of the document\n\
+      \            document_data: Document content dictionary\n\n        Returns:\n\
+      \            Dictionary with chunks, embeddings, and metadata"
+    first_line: Re-embed a document using chunking
     public: true
   - name: should_use_chunking
     signature: 'def should_use_chunking(self, store_type: str, document_data: dict[str,

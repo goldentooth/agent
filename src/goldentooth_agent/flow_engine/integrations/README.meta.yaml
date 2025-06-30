@@ -2,7 +2,7 @@ module_name: Integrations
 description: Integrations module
 complexity: Low
 file_count: 2
-loc: ~142
+loc: ~136
 test_coverage: Medium
 class_count: 1
 function_count: 12

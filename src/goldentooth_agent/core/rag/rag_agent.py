@@ -113,7 +113,6 @@ class RAGAgent:
             try:
                 query_analysis = await self.rag_service.analyze_query_intelligence(
                     question=question,
-                    suggest_alternatives=True,
                 )
 
                 # Store query analysis in context

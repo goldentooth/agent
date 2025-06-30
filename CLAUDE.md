@@ -64,7 +64,7 @@ poetry run poe test-cov-targets          # Top 10 files needing coverage attenti
 
 # Coverage Report Interpretation:
 # - Files with 0% coverage = completely untested (highest priority)
-# - Files with <50% coverage = major gaps (high priority)  
+# - Files with <50% coverage = major gaps (high priority)
 # - Files with 50-84% coverage = missing edge cases (medium priority)
 # - Focus on core/ modules over cli/ modules for critical coverage
 
@@ -72,8 +72,11 @@ poetry run poe test-cov-targets          # Top 10 files needing coverage attenti
 poetry run poe typecheck                 # Type check source code with mypy
 poetry run poe typecheck-all             # Type check entire project including tests
 
-# Quality checks (run before committing)
-poetry run poe test && poetry run poe typecheck
+# Quality checks (MANDATORY before committing)
+poetry run poe qa-check                  # Comprehensive quality validation (recommended)
+poetry run poe qa-fast                   # Quick quality check for development iteration
+poetry run poe qa-fix                    # Auto-fix formatting and style issues
+poetry run poe test && poetry run poe typecheck  # Legacy approach
 
 # Type Safety Pre-commit Checklist:
 # - All functions have return type annotations (-> Type or -> None)
@@ -360,10 +363,20 @@ Several modules exceed 1000 LOC and require special attention:
 ## Memory Management
 
 ### Development Workflow
-- **Pre-commit**: Always run `poetry run poe test && poetry run poe typecheck`
+- **Pre-commit**: **MANDATORY** - Always run `poetry run poe qa-check` before committing
+- **Fast iteration**: Use `poetry run poe qa-fast` during development for quick feedback
 - **Module changes**: Update README.md files when making significant changes
 - **API changes**: Document breaking changes and migration paths
 - **Performance**: Run benchmarks for performance-critical changes
+
+### Quality Assurance Policy
+**Every development task MUST complete with a successful quality check run.**
+
+The QA script (`scripts/qa_check.py`) provides:
+- **Comprehensive validation**: Type safety, test coverage, mock compliance, dead code detection
+- **Enhanced feedback**: Detailed error reporting with actionable guidance
+- **Auto-fix capabilities**: Automatic resolution of formatting and style issues
+- **Fast mode**: Quick iteration during development without full test suite
 
 ### Known Technical Debt
 - **Flow module complexity**: Needs refactoring into smaller submodules

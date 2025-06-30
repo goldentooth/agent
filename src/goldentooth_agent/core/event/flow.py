@@ -208,8 +208,10 @@ def event_bridge(
 
         # Start with an empty stream since we don't consume input
         async def empty_stream() -> AsyncIterator[None]:
+            # This function needs to be a generator but yields nothing
+            if False:  # Intentional dead code to make this a generator
+                yield  # type: ignore[unreachable]
             return
-            yield  # unreachable
 
         async for event_data in source_events(empty_stream()):
             target_flow.emit(event_data)
@@ -244,8 +246,10 @@ def event_filter(
 
         # Start with an empty stream since we don't consume input
         async def empty_stream() -> AsyncIterator[None]:
+            # This function needs to be a generator but yields nothing
+            if False:  # Intentional dead code to make this a generator
+                yield  # type: ignore[unreachable]
             return
-            yield  # unreachable
 
         async for event_data in base_flow(empty_stream()):
             if predicate(event_data):
@@ -280,8 +284,10 @@ def event_transform(
 
         # Start with an empty stream since we don't consume input
         async def empty_stream() -> AsyncIterator[None]:
+            # This function needs to be a generator but yields nothing
+            if False:  # Intentional dead code to make this a generator
+                yield  # type: ignore[unreachable]
             return
-            yield  # unreachable
 
         async for event_data in base_flow(empty_stream()):
             yield transformer(event_data)
@@ -307,7 +313,7 @@ def create_typed_sync_event_flow(
 ) -> Callable[[type[T]], SyncEventFlow[T]]:
     """Create a typed synchronous event flow factory."""
 
-    def factory(event_type: type[T]) -> SyncEventFlow[T]:
+    def factory(_: type[T]) -> SyncEventFlow[T]:
         return SyncEventFlow[T](event_name)
 
     return factory
@@ -318,7 +324,7 @@ def create_typed_async_event_flow(
 ) -> Callable[[type[T]], AsyncEventFlow[T]]:
     """Create a typed asynchronous event flow factory."""
 
-    def factory(event_type: type[T]) -> AsyncEventFlow[T]:
+    def factory(_: type[T]) -> AsyncEventFlow[T]:
         return AsyncEventFlow[T](event_name)
 
     return factory
