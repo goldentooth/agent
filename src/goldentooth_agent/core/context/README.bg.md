@@ -1,12 +1,12 @@
-## Background & Motivation
+# Background & Motivation
 
-### Problem Statement
+## Problem Statement
 
 The context module addresses the challenge of integrating event-driven programming with functional flow architectures, enabling reactive data processing while maintaining composability.
 
-### Theoretical Foundation
+## Theoretical Foundation
 
-#### Core Concepts
+### Core Concepts
 
 This module implements state management concepts:
 - **State Snapshots**: Immutable captures of system state for debugging and rollback

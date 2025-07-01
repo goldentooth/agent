@@ -1,12 +1,12 @@
-## Background & Motivation
+# Background & Motivation
 
-### Problem Statement
+## Problem Statement
 
 The embeddings module addresses the challenge of performing efficient semantic search in high-dimensional vector spaces while maintaining accuracy and scalability.
 
-### Theoretical Foundation
+## Theoretical Foundation
 
-#### Core Concepts
+### Core Concepts
 
 The module implements domain-specific concepts tailored to its functional requirements.
 

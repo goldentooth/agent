@@ -318,12 +318,17 @@ class CodebaseCollection:
         chunks = []
         current_chunk: list[str] = []
         current_size = 0
+        min_chunk_size = chunk_size // 4  # Minimum size before considering split
 
         for line in lines:
             line_size = len(line) + 1  # +1 for newline
 
-            # Start new chunk on major headers if current chunk is substantial
-            if line.startswith("# ") and current_size > chunk_size // 2:
+            # Start new chunk on major headers, but avoid very small chunks
+            if (
+                line.startswith("# ")
+                and current_chunk  # Don't split on very first line
+                and current_size > min_chunk_size
+            ):  # Ensure minimum chunk size
                 if current_chunk:
                     chunks.append("\n".join(current_chunk))
                     current_chunk = []

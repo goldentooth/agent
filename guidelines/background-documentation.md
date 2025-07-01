@@ -54,29 +54,29 @@ Update `README.bg.md` files when:
 
 #### 1. **Background & Motivation**
 ```markdown
-## Background & Motivation
+# Background & Motivation
 
-### Problem Statement
+## Problem Statement
 What specific problem does this module solve? Why does it exist?
 
-### Theoretical Foundation
+## Theoretical Foundation
 What concepts, algorithms, or design patterns are used?
 ```
 
 #### 2. **Design Philosophy**
 ```markdown
-### Design Philosophy
+## Design Philosophy
 
-#### Core Concepts
+### Core Concepts
 Key abstractions and their relationships
 
-#### Architecture Decisions
+### Architecture Decisions
 Major design choices and their rationale
 ```
 
 #### 3. **Technical Challenges**
 ```markdown
-### Technical Challenges Addressed
+## Technical Challenges Addressed
 
 1. **Challenge Name**: Description and solution approach
 2. **Performance**: How efficiency concerns are handled
@@ -144,23 +144,23 @@ See `src/goldentooth_agent/core/embeddings/README.bg.md` for an example that:
 
 ### Template Structure
 ```markdown
-## Background & Motivation
+# Background & Motivation
 
-### Problem Statement
+## Problem Statement
 [Clear description of the problem being solved]
 
-### Theoretical Foundation
-#### Core Concepts
+## Theoretical Foundation
+### Core Concepts
 [Key algorithms, patterns, or theories]
 
-### Design Philosophy
-#### Architecture Decisions
+## Design Philosophy
+### Architecture Decisions
 [Major design choices and rationale]
 
-### Technical Challenges Addressed
+## Technical Challenges Addressed
 1. **Challenge**: [Solution approach]
 
-### Integration & Usage
+## Integration & Usage
 [How it fits into the larger system]
 ```
 

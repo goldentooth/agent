@@ -1,12 +1,12 @@
-## Background & Motivation
+# Background & Motivation
 
-### Problem Statement
+## Problem Statement
 
 The llm module addresses the challenge of creating unified, type-safe interfaces for diverse large language model APIs while handling rate limiting, retries, and response streaming.
 
-### Theoretical Foundation
+## Theoretical Foundation
 
-#### Core Concepts
+### Core Concepts
 
 The module implements domain-specific concepts tailored to its functional requirements.
 

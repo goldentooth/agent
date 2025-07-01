@@ -73,11 +73,11 @@ class TestSimpleRAGAgent:
         )
 
         # Verify response object structure
-        assert result.response == "Python is a programming language."
-        assert result.sources == mock_rag_result["retrieved_documents"]
-        assert result.metadata == mock_rag_result["metadata"]
-        assert hasattr(result, "confidence")
-        assert hasattr(result, "suggestions")
+        assert result["response"] == "Python is a programming language."
+        assert result["sources"] == mock_rag_result["retrieved_documents"]
+        assert result["metadata"] == mock_rag_result["metadata"]
+        assert "confidence" in result
+        assert "suggestions" in result
 
     @pytest.mark.asyncio
     async def test_process_question_with_parameters(self):
@@ -287,14 +287,14 @@ class TestSimpleRAGAgent:
         result = await self.agent.process_question(question)
 
         # Verify all components are present and calculated
-        assert hasattr(result, "confidence")
-        assert hasattr(result, "suggestions")
-        assert isinstance(result.confidence, float)
-        assert isinstance(result.suggestions, list)
-        assert 0 <= result.confidence <= 1.0
+        assert "confidence" in result
+        assert "suggestions" in result
+        assert isinstance(result["confidence"], float)
+        assert isinstance(result["suggestions"], list)
+        assert 0 <= result["confidence"] <= 1.0
 
         # Should have GitHub-related suggestion due to document type
-        suggestions_text = " ".join(result.suggestions)
+        suggestions_text = " ".join(result["suggestions"])
         assert "repository" in suggestions_text or "projects" in suggestions_text
 
 

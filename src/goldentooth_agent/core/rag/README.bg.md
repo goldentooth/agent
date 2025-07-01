@@ -1,12 +1,12 @@
-## Background & Motivation
+# Background & Motivation
 
-### Problem Statement
+## Problem Statement
 
 The rag module addresses the challenge of augmenting language model capabilities with dynamic information retrieval and contextual knowledge integration.
 
-### Theoretical Foundation
+## Theoretical Foundation
 
-#### Core Concepts
+### Core Concepts
 
 The module implements domain-specific concepts tailored to its functional requirements.
 
