@@ -8,6 +8,7 @@ An intelligent agent built for my [Pi Bramble](https://github.com/goldentooth/).
 [![Tests](https://img.shields.io/badge/tests-834%20passing-green)](tests/)
 [![Security](https://img.shields.io/badge/security-enterprise--grade-green)](src/goldentooth_agent/core/security/)
 [![Documentation](https://img.shields.io/badge/docs-sphinx-blue)](https://[your-username].github.io/goldentooth-agent/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 
 ## 🎯 Overview
 
@@ -201,13 +202,13 @@ except AttributeError as e:
 
 ### **📊 Debugging Tool Matrix**
 
-| Problem Type | CLI Tool | Advanced Tool | Use Case |
-|--------------|----------|---------------|----------|
-| **System Issues** | `debug health` | HealthCheck monitoring | Component validation, configuration |
-| **Execution Problems** | `debug trace` | FlowDebugger + breakpoints | Step-through analysis, error location |
-| **Performance Issues** | `debug profile` | PerformanceMonitor | Timing analysis, bottleneck detection |
-| **Flow Composition** | N/A | Flow analysis tools | Architecture review, optimization |
-| **Runtime Errors** | Enhanced exceptions | Error context + suggestions | Immediate debugging guidance |
+| Problem Type           | CLI Tool            | Advanced Tool               | Use Case                              |
+| ---------------------- | ------------------- | --------------------------- | ------------------------------------- |
+| **System Issues**      | `debug health`      | HealthCheck monitoring      | Component validation, configuration   |
+| **Execution Problems** | `debug trace`       | FlowDebugger + breakpoints  | Step-through analysis, error location |
+| **Performance Issues** | `debug profile`     | PerformanceMonitor          | Timing analysis, bottleneck detection |
+| **Flow Composition**   | N/A                 | Flow analysis tools         | Architecture review, optimization     |
+| **Runtime Errors**     | Enhanced exceptions | Error context + suggestions | Immediate debugging guidance          |
 
 ### **🎯 Quick Debugging Workflow**
 

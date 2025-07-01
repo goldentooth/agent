@@ -173,10 +173,10 @@ class TestSlashCommandHandler:
 
     def test_clear_command(self):
         """Test clear command."""
-        with patch("os.system") as mock_system:
+        with patch("subprocess.run") as mock_subprocess:
             result = self.handler.handle_command("/clear")
             assert result == "continue"
-            mock_system.assert_called_once()
+            mock_subprocess.assert_called_once()
 
     def test_status_command(self):
         """Test status command."""

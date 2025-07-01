@@ -270,5 +270,5 @@ default_language_version:
   python: python3.13
 
 # Global settings
-fail_fast: true  # CRITICAL: Stop at first failure to avoid running expensive checks
+fail_fast: false
 default_stages: [pre-commit]

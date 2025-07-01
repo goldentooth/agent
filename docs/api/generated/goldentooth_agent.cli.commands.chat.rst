@@ -18,6 +18,7 @@ goldentooth\_agent.cli.commands.chat
       create_claude_agent
       create_echo_agent
       create_rag_agent
+      get_command_handler
       process_agent_input
       process_rag_input
       process_single_message
@@ -35,6 +36,7 @@ goldentooth\_agent.cli.commands.chat
       AgentOutput
       Any
       AsyncIterator
+      Callable
       Console
       Context
       Flow
@@ -42,6 +44,7 @@ goldentooth\_agent.cli.commands.chat
       Live
       Panel
       Prompt
+      SlashCommandHandler
       Text
    
    

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import sys
-from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, Annotated, Any, Callable
+from collections.abc import AsyncIterator, Callable
+from typing import TYPE_CHECKING, Annotated, Any
 
 import typer
 from antidote import inject
@@ -141,8 +141,19 @@ class SlashCommandHandler:
     def _handle_clear(self, args: str) -> str:
         """Handle clear screen commands."""
         import os
+        import subprocess
 
-        os.system("cls" if os.name == "nt" else "clear")
+        # Use subprocess without shell=True for security
+        try:
+            if os.name == "nt":
+                # On Windows, use cmd.exe with /c parameter to run cls
+                subprocess.run(["cmd", "/c", "cls"], check=False)
+            else:
+                # On Unix-like systems, run clear directly
+                subprocess.run(["/usr/bin/clear"], check=False)
+        except (subprocess.SubprocessError, FileNotFoundError):
+            # Fallback if clear command fails - just print newlines
+            print("\n" * 50)
         return "continue"
 
     def _handle_status(self, args: str) -> str:
@@ -161,7 +172,7 @@ class SlashCommandHandler:
         table.add_row("Available Commands", str(len(set(self.commands.keys()))))
 
         # Show registered command categories
-        categories = set(cmd["category"] for cmd in self.commands.values())
+        categories = {cmd["category"] for cmd in self.commands.values()}
         table.add_row("Command Categories", ", ".join(sorted(categories)))
 
         self.console.print(table)

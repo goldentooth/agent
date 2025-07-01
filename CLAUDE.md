@@ -38,6 +38,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   @guidelines/debugging-guide.md
 - **[VS Code Setup](guidelines/vscode-setup.md)**: Development environment configuration
   @guidelines/vscode-setup.md
+- **[Actually Works](guidelines/actually-works.md)**: Quality standards and testing practices for ensuring code works as intended
+  @guidelines/actually-works.md
 
 These guidelines are enforced through pre-commit hooks, CI/CD pipelines, and code review processes.
 

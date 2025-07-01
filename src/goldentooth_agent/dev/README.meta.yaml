@@ -2,7 +2,7 @@ module_name: Dev
 description: Dev module
 complexity: Medium
 file_count: 3
-loc: ~331
+loc: ~353
 test_coverage: Medium
 class_count: 2
 function_count: 13

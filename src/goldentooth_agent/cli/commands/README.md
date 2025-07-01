@@ -48,9 +48,9 @@ The commands module integrates with the broader system through well-defined inte
 
 - **Complexity**: Critical
 - **Files**: 16 Python files
-- **Lines of Code**: ~6299
-- **Classes**: 8
-- **Functions**: 144
+- **Lines of Code**: ~6475
+- **Classes**: 9
+- **Functions**: 154
 
 ## API Reference
 
@@ -67,6 +67,14 @@ Input schema for echo tool.
 
 #### EchoOutput
 Output schema for echo tool.
+
+#### SlashCommandHandler
+Extensible slash command handler for chat interface.
+
+**Public Methods:**
+- `register_command(self, names: list[str], handler: Callable[[str], str], description: str, category: str, aliases: list[str] | None) -> None` - Register a new command
+- `handle_command(self, user_input: str) -> str | None` - Handle slash-prefixed commands
+- `show_help(self) -> None` - Display available slash commands grouped by category
 
 #### TraceStep
 Class for tracestep functionality.
@@ -253,6 +261,9 @@ Initialize the Goldentooth Agent system with sample data.
 #### `def show_system_status() -> None`
 Show overall system status and configuration.
 
+#### `def get_command_handler(console: Console) -> SlashCommandHandler`
+Get or create the command handler instance.
+
 #### `async def process_rag_input(rag_agent: SimpleRAGAgent, question: str, conversation_history: list[dict[str, str]]) -> dict[str, Any]`
 Process input through a RAG agent.
 
@@ -386,7 +397,7 @@ Execute a pipeline with input data.
 #### `def create_pipeline(name: Annotated[str, typer.Argument(help='Name for the new pipeline')], config_file: Annotated[str | None, typer.Option('--config', help='JSON config file path')]) -> None`
 Create a new pipeline from configuration.
 
-#### `def quick_check_command(file_path: Annotated[str, typer.Argument(help='Path to the file to check')]) -> None`
+#### `def quick_check_command(file_paths: Annotated[list[str], typer.Argument(help='Paths to the files to check')]) -> None`
 Provide quick development feedback without blocking.
 
 #### `def update_module_metadata(module_path: Annotated[str, typer.Argument(help='Path to the module directory to update')], force: Annotated[bool, typer.Option('--force', '-f', help='Force update even if no changes detected')], dry_run: Annotated[bool, typer.Option('--dry-run', '-n', help='Show what would be updated without making changes')]) -> None`

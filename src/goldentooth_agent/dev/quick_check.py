@@ -5,7 +5,6 @@ import ast
 import re
 import sys
 from pathlib import Path
-from typing import Any
 
 
 def has_complex_help_text(file_path: Path) -> bool:
@@ -15,10 +14,14 @@ def has_complex_help_text(file_path: Path) -> bool:
 
         # Look for multiline strings in help parameters
         multiline_help_pattern = r'help\s*=\s*["\']([^"\']*\n[^"\']*)["\']'
-        multiline_matches = re.findall(multiline_help_pattern, content, re.MULTILINE | re.DOTALL)
+        multiline_matches = re.findall(
+            multiline_help_pattern, content, re.MULTILINE | re.DOTALL
+        )
 
         # Look for help text with unicode characters
-        unicode_help_pattern = r'help\s*=\s*["\']([^"\']*[🔧🔍📊⚡💡📝🎯🏥🤖🌊⚙️🚨][^"\']*)["\']'
+        unicode_help_pattern = (
+            r'help\s*=\s*["\']([^"\']*[🔧🔍📊⚡💡📝🎯🏥🤖🌊⚙️🚨][^"\']*)["\']'
+        )
         unicode_matches = re.findall(unicode_help_pattern, content)
 
         return len(multiline_matches) > 0 or len(unicode_matches) > 0
@@ -38,7 +41,7 @@ def count_missing_return_types(file_path: Path) -> int:
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 # Skip private methods and special methods
-                if node.name.startswith('_'):
+                if node.name.startswith("_"):
                     continue
 
                 # Check if function has return annotation
@@ -59,9 +62,15 @@ def check_dict_access_patterns(file_path: Path) -> list[str]:
 
         # Look for common problematic patterns
         patterns = [
-            (r'result\.response', "Consider: result['response'] if result is a dict"),
-            (r'data\.get\(\s*["\'](\w+)["\'].*?\)\.(\w+)', "Chained .get().attribute access may fail"),
-            (r'\.response\s*=', "Assignment to .response - ensure object has this attribute")
+            (r"result\.response", "Consider: result['response'] if result is a dict"),
+            (
+                r'data\.get\(\s*["\'](\w+)["\'].*?\)\.(\w+)',
+                "Chained .get().attribute access may fail",
+            ),
+            (
+                r"\.response\s*=",
+                "Assignment to .response - ensure object has this attribute",
+            ),
         ]
 
         for pattern, suggestion in patterns:
@@ -78,28 +87,39 @@ def check_import_organization(file_path: Path) -> list[str]:
     """Check for import organization issues."""
     try:
         content = file_path.read_text()
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         issues = []
         imports_started = False
         non_import_seen = False
 
-        for i, line in enumerate(lines):
+        for _, line in enumerate(lines):
             stripped = line.strip()
 
             # Skip docstrings and comments
-            if not stripped or stripped.startswith('#') or stripped.startswith('"""') or stripped.startswith("'''"):
+            if (
+                not stripped
+                or stripped.startswith("#")
+                or stripped.startswith('"""')
+                or stripped.startswith("'''")
+            ):
                 continue
 
-            if stripped.startswith('from __future__'):
+            if stripped.startswith("from __future__"):
                 continue
 
-            if stripped.startswith(('import ', 'from ')):
+            if stripped.startswith(("import ", "from ")):
                 imports_started = True
                 if non_import_seen:
-                    issues.append("Imports mixed with other code - consider reorganizing")
+                    issues.append(
+                        "Imports mixed with other code - consider reorganizing"
+                    )
                     break
-            elif imports_started and stripped and not stripped.startswith(('import ', 'from ')):
+            elif (
+                imports_started
+                and stripped
+                and not stripped.startswith(("import ", "from "))
+            ):
                 non_import_seen = True
 
         return issues
@@ -113,11 +133,11 @@ def quick_check(file_path: str) -> None:
     path = Path(file_path)
 
     # Only check Python files
-    if path.suffix != '.py':
+    if path.suffix != ".py":
         return
 
     # Skip __pycache__ and other generated files
-    if '__pycache__' in str(path) or '.pyc' in str(path):
+    if "__pycache__" in str(path) or ".pyc" in str(path):
         return
 
     issues = []
@@ -125,7 +145,9 @@ def quick_check(file_path: str) -> None:
     # Check for complex CLI help text
     if "cli/commands" in str(path):
         if has_complex_help_text(path):
-            issues.append("💡 CLI help text contains multiline/unicode - may not render well")
+            issues.append(
+                "💡 CLI help text contains multiline/unicode - may not render well"
+            )
             issues.append("   Consider: Simple help text + link to documentation")
 
     # Check for missing type annotations

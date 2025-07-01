@@ -17,12 +17,13 @@ app.add_typer(module_app, name="module")
 
 @app.command("quick-check")
 def quick_check_command(
-    file_path: Annotated[str, typer.Argument(help="Path to the file to check")]
+    file_paths: Annotated[list[str], typer.Argument(help="Paths to the files to check")]
 ) -> None:
     """Provide quick development feedback without blocking."""
     from goldentooth_agent.dev.quick_check import quick_check
 
-    quick_check(file_path)
+    for file_path in file_paths:
+        quick_check(file_path)
 
 
 @module_app.command("update")

@@ -103,7 +103,7 @@ async def processing_pipeline():
 
 - **Complexity**: Medium
 - **Files**: 3 Python files
-- **Lines of Code**: ~331
+- **Lines of Code**: ~353
 - **Classes**: 2
 - **Functions**: 13
 

@@ -23,7 +23,7 @@
 21. Start thinking about integrating Goldentooth Agent with the Clog (https://github.com/goldentooth/clog/, https://clog.goldentooth.net/, ~/Projects/goldentooth/clog). We can use that to get a good picture of the journey thusfar, formulate longer-term strategies for the cluster, document things as we go, and so forth, e.g. `goldentooth-agent dev clog...`. Its markdown content should be injected into the RAG.
 22. Can we integrate asciinema or something similar to easily create screen recordings of command execution? e.g. `goldentooth-agent <command> --record=ascii` or `goldentooth-agent record <command>`?
 23. Write a script to run as part of pre-commit hooks to enforce the README.md file maintenance within modules, e.g. `goldentooth dev module readme update <path>`.
-24. I dislike this error: TypeVar "Input" appears only once in generic function signature; Use "object" insteadPylancereportInvalidTypeVarUse. Can we ignore it permanently?
+24. I dislike this error: TypeVar "Input" appears only once in generic function signature; Use "object" insteadPylancereportInvalidTypeVarUse. Can we ignore it permanently in Pyright, Pylance, etc?
 25. Create a script or command to list functions and classes with missing/low test coverage, e.g. `goldentooth-agent dev module coverage`.
 26. Maintain a README.meta.yaml in each and every module/submodule directory that collects useful information about a given module and that can be updated entirely by executing a script (i.e. without consuming unnecessary extra tokens), e.g. `goldentooth-agent dev module meta check <path>`. This should be used to determine that the README.md file in that module is outdated, e.g. `goldentooth-agent dev module readme check <path>`.
 27. Create a command that will retrieve the .py files in the codebase that have been touched least recently within the codebase and perform a deep audit of them, evaluating whether they should be refactored or otherwise improved, etc. After the file has been updated, a comment should be added to the foot of the document mentioning the date and indicating that the file was touched on that date. The command might be `goldentooth-agent dev audit stale-files` or something.
@@ -35,9 +35,8 @@
 33. Can we establish a policy of dividing the command implementation (which is mostly e.g. Typer configuration and
   parameter annotations) from the actual invocation of the commands (which should be just mapping those parameters to
   existing library code)? We should add this to guidelines too.
-1.  Add a link to the GitHub Pages site (https://goldentooth.github.io/agent/) in the README.
-2.  Let's try to prevent functions from exceeding about ten lines (or, more accurately, statements) in length. If a function exceeds that, we should complain about it.
-3.  Let's replace any use of `inject.me()` with `world[<Type>]`, e.g. `world[SomeServiceClass]`. The former seems to trigger Pylance/Pyright's `reportCallInDefaultInitializer` lint. This should be considered a guideline for future development.
-4.  Think the BG generation is shitting itself. Or did we disable that?
-5.  Are you able to effectively search within markdown documents, e.g. to get an idea of their structure and layout, with a minimal expenditure of tokens? For instance, getting a "table of contents" for a markdown file built from the headers?
-6.  In the activity you've just completed, did you encounter any unanticipated difficulties, obstacles, or inefficiencies? How much time and effort did it cost you to respond to them and adjust your plan? Are these issues resolved now, or will they continue to plague future instances of Claude Code unless you do something to alleviate them? Is it worth the effort to devise a plan to address these issues in a mature, resilient, and thoughtful way? If so, please devise a plan to address the issues you've encountered.
+34. Add a link to the GitHub Pages site (https://goldentooth.github.io/agent/) in the README.
+35. Let's try to prevent functions from exceeding about ten lines (or, more accurately, statements) in length. If a function exceeds that, we should complain about it.
+36. Let's replace any use of `inject.me()` with `world[<Type>]`, e.g. `world[SomeServiceClass]`. The former seems to trigger Pylance/Pyright's `reportCallInDefaultInitializer` lint. This should be considered a guideline for future development.
+37. Think the BG generation is shitting itself. Or did we disable that?
+38. Are you able to effectively search within markdown documents, e.g. to get an idea of their structure and layout, with a minimal expenditure of tokens? For instance, getting a "table of contents" for a markdown file built from the headers?

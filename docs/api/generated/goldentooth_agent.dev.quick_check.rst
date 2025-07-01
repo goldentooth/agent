@@ -1,4 +1,4 @@
-goldentooth\_agent.dev.quick\_check
+﻿goldentooth\_agent.dev.quick\_check
 ===================================
 
 .. automodule:: goldentooth_agent.dev.quick_check
@@ -28,7 +28,6 @@ goldentooth\_agent.dev.quick\_check
 
    .. autosummary::
    
-      Any
       Path
    
    

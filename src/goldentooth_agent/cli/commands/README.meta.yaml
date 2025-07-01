@@ -2,10 +2,10 @@ module_name: Commands
 description: Commands module
 complexity: Critical
 file_count: 16
-loc: ~6299
+loc: ~6475
 test_coverage: Medium
-class_count: 8
-function_count: 144
+class_count: 9
+function_count: 154
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies:
@@ -53,6 +53,7 @@ symbols:
 - PipelineResult
 - PipelineStep
 - PipelineStepConfig
+- SlashCommandHandler
 - StreamData
 - ToolInputData
 - ToolOutputData
@@ -126,6 +127,7 @@ symbols:
 - get_available_flows
 - get_available_instructor_agents
 - get_available_tools
+- get_command_handler
 - get_document_insights
 - index_codebase
 - initialize_system
@@ -228,6 +230,32 @@ classes:
 - name: EchoOutput
   docstring: Output schema for echo tool.
   methods: []
+  public: true
+- name: SlashCommandHandler
+  docstring: Extensible slash command handler for chat interface.
+  methods:
+  - name: register_command
+    signature: 'def register_command(self, names: list[str], handler: Callable[[str],
+      str], description: str, category: str, aliases: list[str] | None) -> None'
+    docstring: "Register a new command.\n\n        Args:\n            names: Primary\
+      \ command names (e.g., ['quit', 'exit'])\n            handler: Function to handle\
+      \ the command\n            description: Help text for the command\n        \
+      \    category: Category for grouping in help\n            aliases: Additional\
+      \ aliases for the command"
+    first_line: Register a new command
+    public: true
+  - name: handle_command
+    signature: 'def handle_command(self, user_input: str) -> str | None'
+    docstring: "Handle slash-prefixed commands.\n\n        Args:\n            user_input:\
+      \ The user input string\n\n        Returns:\n            Command result type\
+      \ or None if not a command"
+    first_line: Handle slash-prefixed commands
+    public: true
+  - name: show_help
+    signature: def show_help(self) -> None
+    docstring: Display available slash commands grouped by category.
+    first_line: Display available slash commands grouped by category
+    public: true
   public: true
 - name: TraceStep
   docstring: ''
@@ -504,6 +532,10 @@ functions:
   signature: def show_system_status() -> None
   docstring: Show overall system status and configuration.
   public: true
+- name: get_command_handler
+  signature: 'def get_command_handler(console: Console) -> SlashCommandHandler'
+  docstring: Get or create the command handler instance.
+  public: true
 - name: process_rag_input
   signature: 'async def process_rag_input(rag_agent: SimpleRAGAgent, question: str,
     conversation_history: list[dict[str, str]]) -> dict[str, Any]'
@@ -705,8 +737,8 @@ functions:
   docstring: Create a new pipeline from configuration.
   public: true
 - name: quick_check_command
-  signature: 'def quick_check_command(file_path: Annotated[str, typer.Argument(help=''Path
-    to the file to check'')]) -> None'
+  signature: 'def quick_check_command(file_paths: Annotated[list[str], typer.Argument(help=''Paths
+    to the files to check'')]) -> None'
   docstring: Provide quick development feedback without blocking.
   public: true
 - name: update_module_metadata

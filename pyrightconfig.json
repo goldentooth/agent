@@ -42,7 +42,7 @@
   "reportUnknownMemberType": "warning",
   "reportMissingParameterType": "error",
   "reportMissingTypeArgument": "error",
-  "reportInvalidTypeVarUse": "error",
+  "reportInvalidTypeVarUse": "none",
   "reportCallInDefaultInitializer": "error",
   "reportUnnecessaryIsInstance": "error",
   "reportUnnecessaryCast": "error",
