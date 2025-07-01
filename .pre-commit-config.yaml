@@ -1,8 +1,19 @@
 # Pre-commit hooks configuration
 # This ensures code quality checks run before every commit
+#
+# ORGANIZATION: Hooks are organized by speed and dependency:
+#   1. Fast formatting/linting checks (fail-fast on basic issues)
+#   2. Metadata and documentation updates
+#   3. Expensive checks (Sphinx, tests) only if formatting passes
 
 repos:
-  # Standard pre-commit hooks for basic code quality
+  # =============================================================================
+  # PHASE 1: FAST FORMATTING & LINTING CHECKS (FAIL-FAST)
+  # =============================================================================
+  # These run first and will abort early if basic formatting/style issues exist
+  # Avoids running expensive Sphinx/pytest when there are simple formatting problems
+
+  # Basic file formatting
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -35,35 +46,61 @@ repos:
         description: Check for case conflicts in filenames
         exclude: ^old/
 
-  # Python-specific code formatting and linting
-  # NOTE: Formatting hooks (black, isort, ruff --fix) are disabled here
-  # and handled by Claude Code hooks for automatic formatting during development.
-  # See docs/claude-code-hooks.md for setup instructions.
-  #
-  # - repo: https://github.com/psf/black
-  #   rev: 24.10.0
-  #   hooks:
-  #     - id: black
-  #       description: Format Python code with Black
-  #       language_version: python3
-  #       args: ['--line-length=88']
-  #       exclude: ^old/
-  #
-  # - repo: https://github.com/pycqa/isort
-  #   rev: 5.13.2
-  #   hooks:
-  #     - id: isort
-  #       description: Sort Python imports
-  #       args: ['--profile=black']
-  #       exclude: ^old/
-  #
-  # - repo: https://github.com/charliermarsh/ruff-pre-commit
-  #   rev: v0.8.4
-  #   hooks:
-  #     - id: ruff
-  #       description: Run Ruff linter
-  #       args: [--fix, --exit-non-zero-on-fix]
-  #       exclude: ^old/
+  # Python code formatting (complementary to Claude Code hooks)
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        description: Format Python code with Black
+        language_version: python3
+        args: ['--line-length=88']
+        exclude: ^old/
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        description: Sort Python imports
+        args: ['--profile=black']
+        exclude: ^old/
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        description: Run Ruff linter
+        args: [--fix, --exit-non-zero-on-fix]
+        exclude: ^old/
+
+  # Type checking (fast and critical)
+  - repo: local
+    hooks:
+      - id: mypy
+        name: MyPy Type Check
+        entry: poetry run mypy
+        language: system
+        types: [python]
+        args: ['src/goldentooth_agent', '--strict', '--show-error-codes', '--pretty']
+        description: Run MyPy type checking (critical - fail fast)
+        pass_filenames: false
+        always_run: true
+
+  # Quick development feedback
+  - repo: local
+    hooks:
+      - id: quick-checks
+        name: Quick Development Checks
+        entry: poetry run goldentooth-agent dev quick-check
+        language: system
+        types: [python]
+        description: Quick feedback on common issues (non-blocking)
+        pass_filenames: true
+        always_run: false
+
+  # =============================================================================
+  # PHASE 2: METADATA & DOCUMENTATION UPDATES
+  # =============================================================================
+  # These run after formatting passes and may auto-fix issues
 
   # Update module metadata for changed modules (auto-fixes stale metadata)
   - repo: local
@@ -77,30 +114,6 @@ repos:
         pass_filenames: false
         always_run: false
         stages: [pre-commit]
-
-  # Type checking with MyPy
-  - repo: local
-    hooks:
-      - id: mypy
-        name: MyPy Type Check
-        entry: poetry run mypy
-        language: system
-        types: [python]
-        args: ['src/goldentooth_agent', '--strict', '--show-error-codes', '--pretty']
-        description: Run MyPy type checking
-        pass_filenames: false
-        always_run: true
-
-  # Note: Pyright (Pylance equivalent) can be enabled but requires additional setup
-  # Uncomment the below section if you want more sophisticated type checking
-  # - repo: https://github.com/RobertCraigie/pyright-python
-  #   rev: v1.1.390
-  #   hooks:
-  #     - id: pyright
-  #       description: Run Pyright type checking (Pylance equivalent)
-  #       args: ['--pythonpath=src', '--project=pyproject.toml']
-  #       additional_dependencies: []
-  #       pass_filenames: false
 
   # Check for potentially unsafe dictionary attribute access
   - repo: local
@@ -176,6 +189,11 @@ repos:
         always_run: false
         stages: [pre-commit]
 
+  # =============================================================================
+  # PHASE 3: EXPENSIVE CHECKS (ONLY RUN IF FORMATTING/LINTING PASSES)
+  # =============================================================================
+  # These are the slowest checks and only run after all formatting issues are resolved
+
   # Build Sphinx documentation
   - repo: local
     hooks:
@@ -184,7 +202,7 @@ repos:
         entry: poetry run sphinx-build
         language: system
         args: ['-b', 'html', '-q', 'docs', 'docs/_build']
-        description: Build Sphinx documentation quietly
+        description: Build Sphinx documentation quietly (expensive - runs last)
         files: '(\.py|\.rst|\.md)$'
         pass_filenames: false
         always_run: false
@@ -214,7 +232,7 @@ repos:
         pass_filenames: false
         always_run: false
 
-  # Run pytest tests with coverage checking
+  # Run pytest tests with coverage checking (most expensive)
   - repo: local
     hooks:
       - id: pytest-coverage
@@ -222,7 +240,7 @@ repos:
         entry: poetry run pytest
         language: system
         types: [python]
-        description: Run pytest tests with minimum 60% coverage requirement
+        description: Run pytest tests with minimum 60% coverage requirement (most expensive)
         pass_filenames: false
         always_run: true
         args:
@@ -237,7 +255,7 @@ repos:
           - '-W'
           - 'error::DeprecationWarning'
 
-  # Optional: Additional security checks
+  # Security checks (final check)
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.10
     hooks:
@@ -252,5 +270,5 @@ default_language_version:
   python: python3.13
 
 # Global settings
-fail_fast: false
+fail_fast: true  # CRITICAL: Stop at first failure to avoid running expensive checks
 default_stages: [pre-commit]

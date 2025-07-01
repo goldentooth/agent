@@ -146,13 +146,16 @@ Hooks are completely optional. You can:
 
 ## Integration with Pre-commit
 
-This configuration works alongside the project's pre-commit hooks:
+This configuration works alongside the project's optimized pre-commit hooks:
 
-- **Claude Code hooks**: Handle formatting automatically
-- **Pre-commit hooks**: Focus on type checking, tests, and critical issues
-- **Result**: Faster, smoother development experience
+- **Claude Code hooks**: Handle formatting automatically during development
+- **Pre-commit hooks**: Run in fail-fast mode with three phases:
+  1. **Fast formatting/linting checks** (Black, isort, Ruff, MyPy) - fail immediately if issues found
+  2. **Metadata and documentation updates** - auto-fix stale documentation
+  3. **Expensive checks** (Sphinx, pytest) - only run if formatting passes
+- **Result**: Much faster feedback loop with early failure detection
 
-The pre-commit configuration has been updated to exclude formatting hooks since they're handled by Claude Code.
+With `fail_fast: true`, pre-commit stops at the first failure, avoiding expensive Sphinx builds and test runs when there are simple formatting issues.
 
 ## Advanced Usage
 
