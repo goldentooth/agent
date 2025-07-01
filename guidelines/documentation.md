@@ -21,6 +21,8 @@ This document defines the documentation standards and practices for the Goldento
 ## Module Documentation Standards
 
 ### README.md Requirements
+**ENFORCED RULE**: Every Python module or submodule should have a comprehensive README.md describing the contents of the module, usage examples, key components, dependencies, file count, lines-of-code and other statistics, test coverage statistics, etc. This file should be updated for accuracy whenever a Python file contained in the module is touched. The README.md must always contain a full specification of the public API.
+
 Every module directory must contain a comprehensive README.md file with the following sections:
 
 ```markdown
@@ -180,6 +182,8 @@ Recent significant changes to the module:
 - **Example validity**: Verify all code examples work with current implementation
 
 ### Module Metadata Requirements (README.meta.yaml)
+
+**AUTOMATED MANAGEMENT**: README.meta.yaml files are automatically generated and maintained by pre-commit hooks. Module metadata (symbols, dependencies, metrics) is kept current without manual intervention.
 
 Every Python module/submodule must include a `README.meta.yaml` file providing structured metadata for organization and symbol tracking. This ensures no symbol is defined in multiple places and provides quick module overview.
 

@@ -36,3 +36,4 @@
   parameter annotations) from the actual invocation of the commands (which should be just mapping those parameters to
   existing library code)? We should add this to guidelines too.
 34. Add a link to the GitHub Pages site (https://goldentooth.github.io/agent/) in the README.
+35. Let's try to prevent functions from exceeding about ten lines (or, more accurately, statements) in length. If a function exceeds that, we should complain about it.

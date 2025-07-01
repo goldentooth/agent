@@ -1152,8 +1152,8 @@ class ModuleMetadataGenerator:
             "external_dependencies",
         ]
 
-        for field in key_fields:
-            if old.get(field) != new.get(field):
+        for field_name in key_fields:
+            if old.get(field_name) != new.get(field_name):
                 return True
 
         return False
@@ -1163,11 +1163,11 @@ class ModuleMetadataGenerator:
         changes = []
 
         # Check numeric fields
-        for field in ["file_count", "class_count", "function_count"]:
-            old_val = old.get(field, 0)
-            new_val = new.get(field, 0)
+        for field_name in ["file_count", "class_count", "function_count"]:
+            old_val = old.get(field_name, 0)
+            new_val = new.get(field_name, 0)
             if old_val != new_val:
-                changes.append(f"{field}: {old_val} → {new_val}")
+                changes.append(f"{field_name}: {old_val} → {new_val}")
 
         # Check LOC (handle ~ prefix)
         old_loc = str(old.get("loc", "~0")).replace("~", "")
@@ -1176,22 +1176,22 @@ class ModuleMetadataGenerator:
             changes.append(f"loc: ~{old_loc} → ~{new_loc}")
 
         # Check list fields
-        for field in [
+        for field_name in [
             "symbols",
             "exports",
             "internal_dependencies",
             "external_dependencies",
         ]:
-            old_set = set(old.get(field, []))
-            new_set = set(new.get(field, []))
+            old_set = set(old.get(field_name, []))
+            new_set = set(new.get(field_name, []))
 
             added = new_set - old_set
             removed = old_set - new_set
 
             if added:
-                changes.append(f"{field}: added {sorted(added)}")
+                changes.append(f"{field_name}: added {sorted(added)}")
             if removed:
-                changes.append(f"{field}: removed {sorted(removed)}")
+                changes.append(f"{field_name}: removed {sorted(removed)}")
 
         # Check complexity
         old_complexity = old.get("complexity", "Low")
@@ -1691,7 +1691,7 @@ class ModuleMetadataGenerator:
                         "methods": [
                             item.name
                             for item in node.body
-                            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
+                            if isinstance(item, ast.FunctionDef | ast.AsyncFunctionDef)
                         ][
                             :5
                         ],  # Limit
@@ -1704,7 +1704,7 @@ class ModuleMetadataGenerator:
                     }
                     file_info["classes"].append(class_info)
 
-                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                elif isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
                     func_info = {
                         "name": node.name,
                         "docstring": self._extract_docstring(node),
@@ -1833,5 +1833,5 @@ class ModuleMetadataGenerator:
             concepts.extend(concept_words)
 
         # Clean up and deduplicate
-        concepts = list(set([c for c in concepts if len(c) > 2 and c.isalpha()]))
+        concepts = list({c for c in concepts if len(c) > 2 and c.isalpha()})
         return concepts[:10]  # Limit for context

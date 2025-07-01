@@ -2,6 +2,18 @@
 
 This document establishes the standard development workflow for the Goldentooth Agent project, including quality gates and automated checks that must be run before committing code.
 
+## Guidelines Reference Policy
+
+**IMPORTANT**: When referring to project guidelines in conversations, "the guidelines" should be understood as referring to the guidelines files stored in the `guidelines/` directory and included from `CLAUDE.md`. These comprehensive guidelines cover all aspects of development including code style, testing, architecture, performance, documentation, and more.
+
+## Project Characteristics
+
+### Private Project Policy
+This is a private project with a single user. Key implications:
+- **No backward compatibility requirements**: We do not need to maintain backward compatibility or legacy code
+- **Rapid iteration**: Our only responsibility is to ensure that the code always works on deployment
+- **Version-controlled resources**: Any resources (e.g. RAG source documents) must be maintained within a version-controlled repository
+
 ## Pre-Commit Quality Policy
 
 **MANDATORY**: All development tasks must complete with a successful run of quality checks to ensure code quality and prevent regressions.
@@ -35,6 +47,27 @@ The QA script validates:
 6. **Linting** - Ruff quality checks
 7. **Pre-commit Hooks** - All configured hooks must pass
 
+### Code Formatting Commands
+
+Apply all formatting transformations (requires `git add` afterwards):
+
+```bash
+# Auto-format all files (comprehensive)
+poetry run poe format
+
+# Individual formatting tools:
+poetry run poe format-black        # Apply Black formatting
+poetry run poe format-isort        # Sort imports with isort
+poetry run poe format-ruff         # Apply Ruff auto-fixes
+poetry run poe format-files        # Fix whitespace, line endings, etc.
+
+# Check formatting without changes:
+poetry run poe format-check        # Check all formatting
+poetry run poe format-black-check  # Check Black formatting only
+poetry run poe format-isort-check  # Check import sorting only
+poetry run poe format-ruff-check   # Check Ruff issues only
+```
+
 ### Individual Check Commands
 
 For development and debugging, you can run individual checks:
@@ -66,9 +99,11 @@ poetry run poe precommit-run-hook     # Staged files only
 When completing any development task, follow this workflow:
 
 1. **Complete the implementation**
-2. **Run quality checks**: `poetry run poe qa-check`
-3. **Fix any failures** before proceeding
-4. **Commit changes** only after all checks pass
+2. **Format code** (optional but recommended): `poetry run poe format`
+3. **Add formatted files**: `git add <files>` (if formatting was applied)
+4. **Run quality checks**: `poetry run poe qa-check`
+5. **Fix any failures** before proceeding
+6. **Commit changes** only after all checks pass
 
 **Automatic Issue Detection**: The QA script provides immediate feedback on issues introduced by your changes, with specific guidance for resolution.
 
@@ -268,7 +303,7 @@ The dedicated QA script (`scripts/qa_check.py`) provides several advantages over
 
 ### Enhanced Feedback
 - **Detailed error reporting** with actionable guidance
-- **Comprehensive summary** showing all issues at once  
+- **Comprehensive summary** showing all issues at once
 - **Auto-fix capabilities** for formatting and style issues
 - **Fast mode** for quick development iteration
 
@@ -295,3 +330,87 @@ The development workflow prioritizes quality through automated checks and clear 
 - **Style consistency** through automated formatting
 
 This workflow prevents regressions, improves code quality, and maintains the health of our large codebase (25K+ lines of code).
+
+## Code Formatting System
+
+### Comprehensive Formatting Command
+
+The `poetry run poe format` command applies all formatting transformations that pre-commit hooks would apply:
+
+#### Formatting Operations Applied:
+1. **Black**: Python code formatting with 88-character line length
+2. **isort**: Import sorting with Black-compatible configuration
+3. **Ruff**: Auto-fixable linting issues (unused imports, syntax improvements)
+4. **File Formatting**: Whitespace and line ending normalization
+   - Remove trailing whitespace from all lines
+   - Ensure files end with exactly one newline
+   - Normalize line endings to Unix style (`\n`)
+   - Process text files: `.py`, `.md`, `.yaml`, `.json`, `.toml`, etc.
+
+#### Usage Workflow:
+```bash
+# 1. Apply all formatting
+poetry run poe format
+
+# 2. Review changes
+git diff
+
+# 3. Stage formatted files
+git add <modified-files>
+
+# 4. Run quality checks
+poetry run poe qa-check
+
+# 5. Commit if all checks pass
+git commit -m "Apply code formatting and implement feature"
+```
+
+### Selective Formatting
+
+For granular control, individual formatting tools can be run separately:
+
+```bash
+# Python code formatting only
+poetry run poe format-black
+
+# Import sorting only
+poetry run poe format-isort
+
+# Linting auto-fixes only
+poetry run poe format-ruff
+
+# Whitespace and line endings only
+poetry run poe format-files
+```
+
+### Format Checking
+
+Check formatting compliance without making changes:
+
+```bash
+# Check all formatting standards
+poetry run poe format-check
+
+# Returns exit code 0 if compliant, 1 if changes needed
+# Useful for CI/CD and automated workflows
+```
+
+### Integration with Quality Assurance
+
+The formatting system integrates with the QA workflow:
+
+- **`qa-fix` command**: Includes automatic formatting as part of issue resolution
+- **Pre-commit hooks**: Automatically apply formatting during commit process
+- **CI/CD validation**: Format-check ensures consistent formatting in repository
+
+### File Coverage
+
+The formatting system processes:
+
+- **Source code**: `src/` directory (all Python files)
+- **Test code**: `tests/` directory (all Python files)
+- **Scripts**: `scripts/` directory (Python and shell scripts)
+- **Documentation**: Markdown, YAML, TOML, and text files
+- **Configuration files**: Root-level config files
+
+**Excluded**: `old/`, `docs/`, `.git/`, `__pycache__/`, build artifacts, and binary files (matches pre-commit exclusions)

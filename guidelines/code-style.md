@@ -6,7 +6,7 @@ This document defines the code style standards for the Goldentooth Agent project
 
 ### File Size Limits
 - **Preferred maximum**: 500 lines per file
-- **Absolute maximum**: 1000 lines per file
+- **Absolute maximum**: 1000 lines per file (ENFORCED RULE: No Python source file should ever be longer than about 1000 lines)
 - **Action required**: Start refactoring when approaching 800 lines
 
 ### Class Limits
@@ -174,6 +174,56 @@ config = {
     "retries": 3,
     "enabled": True,
 }
+```
+
+## Comment Guidelines
+
+### Comment Writing Principles
+- **Evergreen comments**: When writing comments, avoid referring to temporal context about refactors or recent changes. Comments should be evergreen and describe the code as it is, not how it evolved or was recently changed.
+- **Explain the 'why'**: Focus on why the code exists and the reasoning behind decisions, not what it does (which should be clear from the code itself).
+
+### Good vs Bad Comments
+```python
+# ❌ Bad - Temporal reference
+# Fixed this after the recent refactor to improve performance
+
+# ✅ Good - Evergreen explanation
+# Use exponential backoff to handle rate limiting gracefully
+
+# ❌ Bad - States the obvious
+user_count += 1  # Increment user count
+
+# ✅ Good - Explains reasoning
+user_count += 1  # Track total users for billing purposes
+```
+
+## Naming Conventions
+
+### Evergreen Naming Principles
+- **NEVER name things as 'improved', 'new', 'enhanced', etc.**: Code naming should be evergreen. What is new today will be "old" someday.
+- **Use descriptive, specific names**: Names should clearly indicate purpose and behavior.
+
+### Naming Examples
+```python
+# ❌ Avoid temporal names
+def new_process_documents():
+    pass
+
+def improved_search():
+    pass
+
+def enhanced_validator():
+    pass
+
+# ✅ Use descriptive, evergreen names
+def process_documents_concurrently():
+    pass
+
+def semantic_search():
+    pass
+
+def strict_validator():
+    pass
 ```
 
 ## Documentation Standards
@@ -399,6 +449,34 @@ multi_line_output = 3
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+```
+
+## Development Practices
+
+### Bug Fixing and Implementation Guidelines
+- **NEVER throw away old implementations**: When you are trying to fix a bug or compilation error or any other issue, YOU MUST NEVER throw away the old implementation and rewrite without explicit permission from the user. If you are going to do this, YOU MUST STOP and get explicit permission from the user.
+- **Preserve working code**: Always ensure changes maintain existing functionality unless explicitly changing behavior.
+- **Incremental changes**: Make small, targeted changes rather than wholesale rewrites.
+
+### Implementation Strategy
+```python
+# ✅ Good - Fix specific issue while preserving existing logic
+def process_document(doc: Document) -> ProcessedDocument:
+    # Existing validation logic (preserved)
+    if not doc.content:
+        raise ValueError("Document content cannot be empty")
+
+    # Fix: Add missing null check for metadata
+    metadata = doc.metadata or {}  # Fixed the bug here
+
+    # Existing processing logic (preserved)
+    processed_content = transform_content(doc.content)
+    return ProcessedDocument(content=processed_content, metadata=metadata)
+
+# ❌ Avoid - Complete rewrite without permission
+def process_document(doc: Document) -> ProcessedDocument:
+    # Completely new implementation that throws away existing logic
+    return new_processing_approach(doc)
 ```
 
 ## Anti-Patterns to Avoid

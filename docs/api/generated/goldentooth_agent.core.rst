@@ -1,4 +1,4 @@
-﻿goldentooth\_agent.core
+goldentooth\_agent.core
 =======================
 
 .. automodule:: goldentooth_agent.core

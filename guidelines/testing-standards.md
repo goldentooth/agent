@@ -10,11 +10,37 @@ This document defines the testing standards and practices for the Goldentooth Ag
 - **Fast and reliable**: Tests should run quickly and consistently
 - **Isolated**: Tests should not depend on external services or shared state
 
+### Test-Driven Development Process
+Follow the **Red-Green-Refactor** cycle:
+
+1. **Red**: Write a failing test that defines a desired function or improvement
+2. **Green**: Write minimal code to make the test pass
+3. **Refactor**: Improve design while keeping tests green
+
+#### TDD Implementation Steps
+1. Write a failing test that defines a desired function or improvement
+2. Run the test to confirm it fails as expected
+3. Write minimal code to make the test pass
+4. Run the test to confirm success
+5. Refactor code to improve design while keeping tests green
+6. Repeat the cycle for each new feature or bugfix
+
+#### TDD Guidelines
+- **Write tests before writing the implementation code**
+- **Only write enough code to make the failing test pass**
+- **Refactor code continuously while ensuring tests still pass**
+
 ### Coverage Requirements
 - **Minimum overall coverage**: 85%
 - **New code coverage**: 90%
 - **Critical path coverage**: 100%
 - **Public API coverage**: 100% of all public methods and functions
+- **API coverage requirement**: We aim for 100% coverage of all API functionality. Do not write brittle tests that focus too much on implementation details; instead, ensure all functionality can be tested through module-level APIs. We want 100% coverage of every public API reachable from outside a given module.
+
+### Testing Policies
+- **NO EXCEPTIONS POLICY**: Under no circumstances should you mark any test type as "not applicable". Every project, regardless of size or complexity, MUST have unit tests, integration tests, AND end-to-end tests. If you believe a test type doesn't apply, you need the human to say exactly "I AUTHORIZE YOU TO SKIP WRITING TESTS THIS TIME"
+- **Test output quality**: TEST OUTPUT MUST BE PRISTINE TO PASS
+- **Error testing**: If the logs are supposed to contain errors, capture and test it.
 
 ## Test Organization
 

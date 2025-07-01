@@ -47,7 +47,7 @@ class TypeSafeMockVectorStore:
     ) -> list[str]:
         """Store document chunks and their embeddings."""
         chunk_ids = []
-        for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
+        for i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False)):
             chunk_id = f"{store_type}:{document_id}:chunk_{i}"
             self.documents[chunk_id] = {
                 "text": str(chunk),
@@ -72,7 +72,10 @@ class TypeSafeMockVectorStore:
         self.call_log.append(("add_document", document_id, len(text)))
 
     async def search(
-        self, query: str, limit: int = 10, metadata_filters: dict[str, Any] | None = None
+        self,
+        query: str,
+        limit: int = 10,
+        metadata_filters: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         """Search for similar documents."""
         results = []
@@ -89,11 +92,11 @@ class TypeSafeMockVectorStore:
         return results[:limit]
 
     def search_similar(
-        self, 
-        query_embedding: list[float], 
-        limit: int = 10, 
+        self,
+        query_embedding: list[float],
+        limit: int = 10,
         store_type: str | None = None,
-        include_chunks: bool = False
+        include_chunks: bool = False,
     ) -> list[dict[str, Any]]:
         """Search for documents similar to the query embedding."""
         # Simple mock - return documents based on store_type filter
@@ -101,12 +104,14 @@ class TypeSafeMockVectorStore:
         for doc_id, doc_data in self.documents.items():
             if store_type and doc_data.get("store_type") != store_type:
                 continue
-            results.append({
-                "document_id": doc_id,
-                "content": doc_data["text"],
-                "score": 0.8,  # Mock similarity score
-                "metadata": doc_data.get("metadata", {}),
-            })
+            results.append(
+                {
+                    "document_id": doc_id,
+                    "content": doc_data["text"],
+                    "score": 0.8,  # Mock similarity score
+                    "metadata": doc_data.get("metadata", {}),
+                }
+            )
         return results[:limit]
 
     def get_document(self, doc_id: str) -> dict[str, Any] | None:

@@ -158,6 +158,18 @@ qa-verbose = "python scripts/qa_check.py --verbose"
 qa-fix = "python scripts/qa_check.py --fix"
 qa-check = "python scripts/qa_check.py"
 
+# Code formatting tasks - auto-fix files (requires git add afterwards)
+format-black = "black src/ tests/"
+format-isort = "isort src/ tests/"
+format-ruff = "ruff check src/ tests/ --fix"
+format-files = "python scripts/format_files.py"
+format = ["format-black", "format-isort", "format-ruff", "format-files"]
+
+format-black-check = "black --check src/ tests/"
+format-isort-check = "isort --check-only src/ tests/"
+format-ruff-check = "ruff check src/ tests/"
+format-check = ["format-black-check", "format-isort-check", "format-ruff-check"]
+
 [tool.mypy]
 # Strict type checking configuration aligned with Pylance standards
 python_version = "3.13"

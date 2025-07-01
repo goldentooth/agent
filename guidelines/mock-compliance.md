@@ -46,7 +46,7 @@ class VectorStoreProtocol(Protocol):
 ```python
 class TypeSafeMockVectorStore:
     """Type-safe mock implementation of VectorStoreProtocol."""
-    
+
 def create_vector_store_mock() -> VectorStoreProtocol:
     return TypeSafeMockVectorStore()
 ```

@@ -12,7 +12,7 @@ Professional Python dead code detector integrated with pre-commit hooks.
 # High confidence check (80% threshold)
 poetry run poe deadcode
 
-# All potential issues (60% confidence)  
+# All potential issues (60% confidence)
 poetry run poe deadcode-all
 
 # Smart diff check (only NEW dead code)

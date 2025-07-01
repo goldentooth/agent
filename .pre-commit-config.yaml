@@ -146,6 +146,19 @@ repos:
         always_run: false
         stages: [pre-commit]
 
+  # Check CLAUDE.md guideline references
+  - repo: local
+    hooks:
+      - id: check-claude-guidelines
+        name: Check CLAUDE.md Guidelines
+        entry: python scripts/check_claude_guidelines.py
+        language: system
+        description: Verify CLAUDE.md properly references all guidelines with include directives
+        files: ^(CLAUDE\.md|guidelines/.*\.md)$
+        pass_filenames: false
+        always_run: false
+        stages: [pre-commit]
+
   # Build Sphinx documentation
   - repo: local
     hooks:

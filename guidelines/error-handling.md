@@ -10,6 +10,7 @@ This document defines error handling patterns, exception strategies, and async e
 - **Error context**: Preserve context and chain exceptions appropriately
 - **User experience**: Provide meaningful error messages to users
 - **Debugging support**: Include sufficient information for troubleshooting
+- **No pre-existing issues**: There is no such thing as "pre-existing issues" in this codebase. Every error is top priority and should be considered as though we are about to introduce it to prod.
 
 ### Error Categories
 1. **Configuration errors**: Invalid configuration, missing settings

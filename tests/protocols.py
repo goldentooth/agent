@@ -2,8 +2,8 @@
 Test protocols to ensure mock signature compliance.
 """
 
-from typing import Any, Protocol, runtime_checkable
 from collections.abc import Awaitable
+from typing import Any, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -39,7 +39,10 @@ class VectorStoreProtocol(Protocol):
         ...
 
     async def search(
-        self, query: str, limit: int = 10, metadata_filters: dict[str, Any] | None = None
+        self,
+        query: str,
+        limit: int = 10,
+        metadata_filters: dict[str, Any] | None = None,
     ) -> list[dict[str, Any]]:
         """Search for similar documents."""
         ...

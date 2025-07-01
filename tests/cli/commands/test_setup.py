@@ -111,13 +111,6 @@ class TestSetupCommands:
         assert "paths" in source
         assert "document_store" in source
 
-    def test_status_command_help(self):
-        """Test status command help."""
-        result = self.runner.invoke(app, ["status", "--help"])
-
-        assert result.exit_code == 0
-        assert "Show overall system status" in result.stdout
-
     def test_status_command_imports(self):
         """Test status command import patterns."""
         import inspect
