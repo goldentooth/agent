@@ -198,6 +198,18 @@ repos:
         always_run: false
         args: ['scripts/test_structure_validator.py', '--strict']
 
+  # Check if poetry.lock is up-to-date with pyproject.toml
+  - repo: local
+    hooks:
+      - id: poetry-lock-check
+        name: Check Poetry Lock File
+        entry: poetry check --lock
+        language: system
+        description: Ensure poetry.lock is up-to-date with pyproject.toml
+        files: '^(pyproject\.toml|poetry\.lock)$'
+        pass_filenames: false
+        always_run: false
+
   # Run pytest tests with coverage checking
   - repo: local
     hooks:
