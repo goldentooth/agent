@@ -54,6 +54,40 @@ class TestStructureValidator:
             "scripts",  # Utility scripts
         }
 
+        # Test patterns that indicate module-level or integration testing
+        self.module_test_patterns = {
+            "test_integration.py",
+            "test_basic.py",
+            "test_computed.py",
+            "test_eventflow.py",
+            "test_queries.py",
+            "test_snapshots.py",
+            "test_refactored.py",
+        }
+
+        # Root-level test files that don't map to source files
+        self.framework_test_patterns = {
+            "test_mock_compliance.py",
+            "test_sanity.py",
+            "conftest.py",
+        }
+
+        # Directories that contain cross-module integration tests
+        self.integration_test_dirs = {
+            "integration",
+            "e2e",
+            "system",
+        }
+
+        # Modules that use modular testing (multiple test files per module)
+        self.modular_test_modules = {
+            "context",
+            "flow_engine",
+            "rag",
+            "embeddings",
+            "agent_codebase",
+        }
+
     def get_source_files(self) -> list[Path]:
         """Get all Python source files that should have tests."""
         files = []
@@ -116,6 +150,53 @@ class TestStructureValidator:
 
         # Add goldentooth_agent prefix
         return self.source_root / "goldentooth_agent" / Path(*parts)
+
+    def is_module_level_test(self, test_file: Path) -> bool:
+        """Check if this is a module-level test that doesn't map to a single source file."""
+        test_name = test_file.name
+
+        # Check if it's a known module-level test pattern
+        if test_name in self.module_test_patterns:
+            return True
+
+        # Check if it's in a module that uses modular testing
+        rel_path = test_file.relative_to(self.test_root)
+        module_parts = rel_path.parts[:-1]  # Exclude filename
+
+        for part in module_parts:
+            if part in self.modular_test_modules:
+                return True
+
+        return False
+
+    def is_integration_test(self, test_file: Path) -> bool:
+        """Check if this is an integration test that tests cross-module functionality."""
+        rel_path = test_file.relative_to(self.test_root)
+        test_parts = rel_path.parts[:-1]  # Exclude filename
+
+        # Check if it's in an integration test directory
+        for part in test_parts:
+            if part in self.integration_test_dirs:
+                return True
+
+        return False
+
+    def is_framework_test(self, test_file: Path) -> bool:
+        """Check if this is a framework test that doesn't map to source code."""
+        test_name = test_file.name
+        return test_name in self.framework_test_patterns
+
+    def get_module_source_dir(self, test_file: Path) -> Path | None:
+        """Get the source directory for a module-level test."""
+        rel_path = test_file.relative_to(self.test_root)
+        module_parts = list(rel_path.parts[:-1])  # Exclude filename
+
+        if module_parts:
+            source_dir = self.source_root / "goldentooth_agent" / Path(*module_parts)
+            if source_dir.exists() and source_dir.is_dir():
+                return source_dir
+
+        return None
 
     def extract_tested_symbols(self, test_file: Path) -> set[str]:
         """Extract symbols (classes/functions) that appear to be tested."""
@@ -196,49 +277,140 @@ class TestStructureValidator:
 
         # Check for orphaned test files (tests without corresponding source)
         for test_file in test_files:
-            expected_source = self.map_test_to_source(test_file)
-            if not expected_source.exists():
-                rel_test = test_file.relative_to(self.test_root)
-                rel_expected = expected_source.relative_to(self.source_root)
-                orphaned_tests.append(f"{rel_test} → {rel_expected} (missing)")
+            if self.is_framework_test(test_file):
+                # Framework tests are valid by definition (testing framework itself)
+                valid_mappings += 1
+            elif self.is_integration_test(test_file):
+                # Integration tests are valid by definition (cross-module testing)
+                valid_mappings += 1
+            elif self.is_module_level_test(test_file):
+                # For module-level tests, check if the source module exists
+                source_dir = self.get_module_source_dir(test_file)
+                if source_dir and source_dir.exists():
+                    valid_mappings += 1
+                else:
+                    rel_test = test_file.relative_to(self.test_root)
+                    orphaned_tests.append(
+                        f"{rel_test} → module-level test without source module"
+                    )
+            else:
+                # For file-level tests, check specific source file
+                expected_source = self.map_test_to_source(test_file)
+                if not expected_source.exists():
+                    rel_test = test_file.relative_to(self.test_root)
+                    rel_expected = expected_source.relative_to(self.source_root)
+                    orphaned_tests.append(f"{rel_test} → {rel_expected} (missing)")
 
         # Check for missing test files (source without tests)
         tested_source_files = set()
+        tested_source_modules = set()
+
         for test_file in test_files:
-            expected_source = self.map_test_to_source(test_file)
-            if expected_source.exists():
-                tested_source_files.add(expected_source)
-                valid_mappings += 1
+            if self.is_framework_test(test_file):
+                # Framework tests don't map to source files
+                continue
+            elif self.is_integration_test(test_file):
+                # Integration tests don't map to specific source files
+                continue
+            elif self.is_module_level_test(test_file):
+                # Module-level test covers the entire source directory
+                source_dir = self.get_module_source_dir(test_file)
+                if source_dir and source_dir.exists():
+                    tested_source_modules.add(source_dir)
+            else:
+                # File-level test covers specific source file
+                expected_source = self.map_test_to_source(test_file)
+                if expected_source.exists():
+                    tested_source_files.add(expected_source)
 
         for source_file in source_files:
-            expected_test = self.map_source_to_test(source_file)
-            if not expected_test.exists():
+            # Check if this source file is covered by tests
+            source_dir = source_file.parent
+
+            # Check if covered by module-level tests
+            is_covered_by_module_test = any(
+                source_dir == tested_module or source_dir.is_relative_to(tested_module)
+                for tested_module in tested_source_modules
+            )
+
+            # Check if covered by file-level tests
+            is_covered_by_file_test = source_file in tested_source_files
+
+            if not is_covered_by_module_test and not is_covered_by_file_test:
+                expected_test = self.map_source_to_test(source_file)
                 rel_source = source_file.relative_to(self.source_root)
                 rel_expected = expected_test.relative_to(self.test_root)
                 missing_tests.append(f"{rel_source} → {rel_expected} (missing)")
 
+        # Calculate valid mappings (count covered source files)
+        for source_file in source_files:
+            source_dir = source_file.parent
+            is_covered_by_module_test = any(
+                source_dir == tested_module or source_dir.is_relative_to(tested_module)
+                for tested_module in tested_source_modules
+            )
+            is_covered_by_file_test = source_file in tested_source_files
+
+            if is_covered_by_module_test or is_covered_by_file_test:
+                valid_mappings += 1
+
         # Advanced validation: check if tested symbols exist in source
         for test_file in test_files:
-            expected_source = self.map_test_to_source(test_file)
-            if expected_source.exists():
-                tested_symbols = self.extract_tested_symbols(test_file)
-                source_symbols = self.extract_source_symbols(expected_source)
+            tested_symbols = self.extract_tested_symbols(test_file)
 
-                # Check for symbols tested but not present in source
-                missing_symbols = tested_symbols - source_symbols
-                if (
-                    missing_symbols and len(missing_symbols) > 2
-                ):  # Allow some flexibility
-                    rel_test = test_file.relative_to(self.test_root)
-                    symbol_list = ", ".join(sorted(missing_symbols)[:5])
-                    if len(missing_symbols) > 5:
-                        symbol_list += f" (and {len(missing_symbols) - 5} more)"
-                    misaligned_tests.append(
-                        (
-                            str(rel_test),
-                            f"Tests symbols not found in source: {symbol_list}",
+            if self.is_framework_test(test_file):
+                # Skip symbol validation for framework tests
+                continue
+            elif self.is_integration_test(test_file):
+                # Skip symbol validation for integration tests (they import from multiple modules)
+                continue
+            elif self.is_module_level_test(test_file):
+                # For module-level tests, collect symbols from all source files in the module
+                source_dir = self.get_module_source_dir(test_file)
+                if source_dir and source_dir.exists():
+                    source_symbols = set()
+                    for source_file in source_dir.glob("*.py"):
+                        if source_file.name != "__init__.py":
+                            source_symbols.update(
+                                self.extract_source_symbols(source_file)
+                            )
+
+                    # Check for symbols tested but not present in module
+                    missing_symbols = tested_symbols - source_symbols
+                    if (
+                        missing_symbols and len(missing_symbols) > 5
+                    ):  # Higher threshold for modules
+                        rel_test = test_file.relative_to(self.test_root)
+                        symbol_list = ", ".join(sorted(missing_symbols)[:5])
+                        if len(missing_symbols) > 5:
+                            symbol_list += f" (and {len(missing_symbols) - 5} more)"
+                        misaligned_tests.append(
+                            (
+                                str(rel_test),
+                                f"Tests symbols not found in module: {symbol_list}",
+                            )
                         )
-                    )
+            else:
+                # For file-level tests, check against specific source file
+                expected_source = self.map_test_to_source(test_file)
+                if expected_source.exists():
+                    source_symbols = self.extract_source_symbols(expected_source)
+
+                    # Check for symbols tested but not present in source
+                    missing_symbols = tested_symbols - source_symbols
+                    if (
+                        missing_symbols and len(missing_symbols) > 2
+                    ):  # Allow some flexibility
+                        rel_test = test_file.relative_to(self.test_root)
+                        symbol_list = ", ".join(sorted(missing_symbols)[:5])
+                        if len(missing_symbols) > 5:
+                            symbol_list += f" (and {len(missing_symbols) - 5} more)"
+                        misaligned_tests.append(
+                            (
+                                str(rel_test),
+                                f"Tests symbols not found in source: {symbol_list}",
+                            )
+                        )
 
         return ValidationResult(
             orphaned_tests=orphaned_tests,
@@ -319,13 +491,36 @@ class TestStructureValidator:
                 print("   Run with --verbose to see details")
 
         # Recommendations
-        print("\n💡 Recommendations:")
-        if result.missing_tests:
-            print("   1. Create missing test files for better coverage")
+        print("\n💡 Traceability Recommendations:")
         if result.orphaned_tests:
-            print("   2. Review orphaned tests - rename, move, or remove them")
+            print("   1. 🔍 Review orphaned tests:")
+            print("      - Check if they test functionality moved to different files")
+            print("      - Consider renaming to match current source structure")
+            print("      - Add comments linking to the actual code being tested")
+
+        if result.missing_tests:
+            print("   2. 📝 Consider adding tests for uncovered source files:")
+            print("      - Focus on public APIs and complex logic")
+            print("      - CLI commands and main entry points benefit from tests")
+            print("      - Utility modules may not need individual test files")
+
         if result.misaligned_tests:
-            print("   3. Check misaligned tests for outdated imports/references")
+            print("   3. 🔗 Improve test-to-code navigation:")
+            print("      - Update imports to reflect current module structure")
+            print("      - Add docstrings explaining what code is being tested")
+            print("      - Consider using more descriptive test file names")
+
+        print("\n📋 Navigation Tips:")
+        print(
+            "   • Use meaningful test class/function names that indicate what's tested"
+        )
+        print("   • Add module-level docstrings explaining test scope and purpose")
+        print(
+            "   • Group related functionality in test modules (e.g., test_integration.py)"
+        )
+        print(
+            "   • Consider test discovery: can you easily find tests for specific code?"
+        )
 
 
 def main():

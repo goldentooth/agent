@@ -1,3 +1,9 @@
+"""Integration tests for YamlStore module components.
+
+Tests the interaction between YamlStore, YamlStoreAdapter, and YamlStoreInstaller
+to ensure they work together correctly for YAML-based data persistence.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
