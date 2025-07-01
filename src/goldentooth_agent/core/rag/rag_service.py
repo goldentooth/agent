@@ -253,7 +253,7 @@ class RAGService:
         context_parts = []
 
         # Group chunks by parent document for better context
-        chunks_by_doc = {}
+        chunks_by_doc: dict[str, list[dict[str, Any]]] = {}
         standalone_docs = []
 
         for doc in documents:
@@ -797,8 +797,8 @@ Provide a structured analysis that helps understand how these chunks relate to e
 
     async def analyze_document_relationships(
         self,
-        store_type: str = None,
-        document_id: str = None,
+        store_type: str | None = None,
+        document_id: str | None = None,
         include_cross_document: bool = True,
     ) -> dict[str, Any]:
         """Analyze relationships between chunks in documents.
@@ -1077,7 +1077,7 @@ Provide a structured analysis that helps understand how these chunks relate to e
 
         return "\n".join(context_parts)
 
-    def _get_all_chunks(self, store_type: str = None) -> list[dict[str, Any]]:
+    def _get_all_chunks(self, store_type: str | None = None) -> list[dict[str, Any]]:
         """Get all chunks, optionally filtered by store type.
 
         Args:
@@ -1139,7 +1139,7 @@ Provide a structured analysis that helps understand how these chunks relate to e
             relationships = self.vector_store.get_chunk_relationships(chunk_id=chunk_id)
 
             # Analyze relationship patterns
-            relationship_types = {}
+            relationship_types: dict[str, int] = {}
             strength_distribution = {"strong": 0, "moderate": 0, "weak": 0}
 
             for rel in relationships:
@@ -1220,7 +1220,7 @@ Provide a structured analysis that helps understand how these chunks relate to e
             )
 
         # Relationship type insights
-        rel_types = {}
+        rel_types: dict[str, int] = {}
         for rel in relationships:
             rel_types[rel["relationship_type"]] = (
                 rel_types.get(rel["relationship_type"], 0) + 1
@@ -1686,8 +1686,8 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
     async def tune_hybrid_search(
         self,
         test_queries: list[str],
-        semantic_weights: list[float] = None,
-        keyword_weights: list[float] = None,
+        semantic_weights: list[float] | None = None,
+        keyword_weights: list[float] | None = None,
     ) -> dict[str, Any]:
         """Tune hybrid search parameters using test queries.
 

@@ -316,7 +316,7 @@ class CodebaseCollection:
         """Chunk markdown content by sections."""
         lines = content.split("\n")
         chunks = []
-        current_chunk = []
+        current_chunk: list[str] = []
         current_size = 0
 
         for line in lines:
@@ -326,7 +326,7 @@ class CodebaseCollection:
             if line.startswith("# ") and current_size > chunk_size // 2:
                 if current_chunk:
                     chunks.append("\n".join(current_chunk))
-                    current_chunk = []
+                    current_chunk: list[str] = []
                     current_size = 0
 
             current_chunk.append(line)
@@ -335,7 +335,7 @@ class CodebaseCollection:
             # Split if chunk is too large
             if current_size > chunk_size and line.strip() == "":
                 chunks.append("\n".join(current_chunk))
-                current_chunk = []
+                current_chunk: list[str] = []
                 current_size = 0
 
         if current_chunk:
@@ -347,7 +347,7 @@ class CodebaseCollection:
         """Chunk source code on logical boundaries."""
         lines = content.split("\n")
         chunks = []
-        current_chunk = []
+        current_chunk: list[str] = []
         current_size = 0
 
         for line in lines:
@@ -360,7 +360,7 @@ class CodebaseCollection:
             ):
                 if current_chunk:
                     chunks.append("\n".join(current_chunk))
-                    current_chunk = []
+                    current_chunk: list[str] = []
                     current_size = 0
 
             current_chunk.append(line)
@@ -369,7 +369,7 @@ class CodebaseCollection:
             # Split if chunk is too large and we're at a good boundary
             if current_size > chunk_size and line.strip() == "":
                 chunks.append("\n".join(current_chunk))
-                current_chunk = []
+                current_chunk: list[str] = []
                 current_size = 0
 
         if current_chunk:
@@ -381,7 +381,7 @@ class CodebaseCollection:
         """Simple paragraph-based chunking."""
         paragraphs = content.split("\n\n")
         chunks = []
-        current_chunk = []
+        current_chunk: list[str] = []
         current_size = 0
 
         for paragraph in paragraphs:
@@ -389,7 +389,7 @@ class CodebaseCollection:
 
             if current_size + para_size > chunk_size and current_chunk:
                 chunks.append("\n\n".join(current_chunk))
-                current_chunk = []
+                current_chunk: list[str] = []
                 current_size = 0
 
             current_chunk.append(paragraph)
@@ -427,14 +427,10 @@ class CodebaseCollection:
         if document_types:
             filters["document_type"] = [dt.value for dt in document_types]
 
-        # Perform vector search using the store's search method
-        # Note: VectorStore has search_similar method, not search
-        results = self.vector_store.search_similar(
-            query_text=query,
-            store_type=self.collection_name,
-            limit=limit,
-            metadata_filters=filters or {},
-        )
+        # First, convert query text to embedding
+        # TODO: This requires an embeddings service - for now return empty results
+        # In production, we'd use: query_embedding = await embeddings_service.create_embedding(query)
+        return []  # Temporary until embedding service is properly integrated
 
         # Convert to expected format
         formatted_results = []

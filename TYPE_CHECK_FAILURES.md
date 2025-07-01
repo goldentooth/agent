@@ -1,278 +1,93 @@
-src/goldentooth_agent/core/flow_agent/instructor_integration.py:64: error:
-Returning Any from function declared to return "R"  [no-any-return]
-                return self.mock_responses[response_model]
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/flow_agent/instructor_integration.py:258: error:
-Returning Any from function declared to return "FlowIOSchema"  [no-any-return]
-                return response
-                ^~~~~~~~~~~~~~~
-src/goldentooth_agent/core/tools/file_tools.py:185: error: No overload variant
-of "open" matches argument types "str", "str"  [call-overload]
-                async with aiofiles.open(str(file_path), mode) as f:
-                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/tools/file_tools.py:185: note: Possible overload variants:
-src/goldentooth_agent/core/tools/file_tools.py:185: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['r+', '+r', 'rt+', 'r+t', '+rt', 'tr+', 't+r', '+tr', 'w+', '+w', 'wt+', 'w+t', '+wt', 'tw+', 't+w', '+tw', 'a+', '+a', 'at+', 'a+t', '+at', 'ta+', 't+a', '+ta', 'x+', '+x', 'xt+', 'x+t', '+xt', 'tx+', 't+x', '+tx'] | Literal['w', 'wt', 'tw', 'a', 'at', 'ta', 'x', 'xt', 'tx'] | Literal['r', 'rt', 'tr', 'U', 'rU', 'Ur', 'rtU', 'rUt', 'Urt', 'trU', 'tUr', 'Utr'] = ..., buffering: int = ..., encoding: str | None = ..., errors: str | None = ..., newline: str | None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[AsyncTextIOWrapper]
-src/goldentooth_agent/core/tools/file_tools.py:185: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['rb+', 'r+b', '+rb', 'br+', 'b+r', '+br', 'wb+', 'w+b', '+wb', 'bw+', 'b+w', '+bw', 'ab+', 'a+b', '+ab', 'ba+', 'b+a', '+ba', 'xb+', 'x+b', '+xb', 'bx+', 'b+x', '+bx'] | Literal['rb', 'br', 'rbU', 'rUb', 'Urb', 'brU', 'bUr', 'Ubr'] | Literal['wb', 'bw', 'ab', 'ba', 'xb', 'bx'], buffering: Literal[0], encoding: None = ..., errors: None = ..., newline: None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[AsyncFileIO]
-src/goldentooth_agent/core/tools/file_tools.py:185: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['rb', 'br', 'rbU', 'rUb', 'Urb', 'brU', 'bUr', 'Ubr'] | Literal['rb+', 'r+b', '+rb', 'br+', 'b+r', '+br', 'wb+', 'w+b', '+wb', 'bw+', 'b+w', '+bw', 'ab+', 'a+b', '+ab', 'ba+', 'b+a', '+ba', 'xb+', 'x+b', '+xb', 'bx+', 'b+x', '+bx'], buffering: Literal[-1, 1] = ..., encoding: None = ..., errors: None = ..., newline: None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[AsyncBufferedReader]
-src/goldentooth_agent/core/tools/file_tools.py:185: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['wb', 'bw', 'ab', 'ba', 'xb', 'bx'], buffering: Literal[-1, 1] = ..., encoding: None = ..., errors: None = ..., newline: None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[AsyncBufferedIOBase]
-src/goldentooth_agent/core/tools/file_tools.py:185: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['rb+', 'r+b', '+rb', 'br+', 'b+r', '+br', 'wb+', 'w+b', '+wb', 'bw+', 'b+w', '+bw', 'ab+', 'a+b', '+ab', 'ba+', 'b+a', '+ba', 'xb+', 'x+b', '+xb', 'bx+', 'b+x', '+bx'] | Literal['rb', 'br', 'rbU', 'rUb', 'Urb', 'brU', 'bUr', 'Ubr'] | Literal['wb', 'bw', 'ab', 'ba', 'xb', 'bx'], buffering: int = ..., encoding: None = ..., errors: None = ..., newline: None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[_UnknownAsyncBinaryIO]
-src/goldentooth_agent/core/tools/file_tools.py:189: error: No overload variant
-of "open" matches argument types "str", "str", "str"  [call-overload]
-                async with aiofiles.open(
-                           ^
-src/goldentooth_agent/core/tools/file_tools.py:189: note: Possible overload variants:
-src/goldentooth_agent/core/tools/file_tools.py:189: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['r+', '+r', 'rt+', 'r+t', '+rt', 'tr+', 't+r', '+tr', 'w+', '+w', 'wt+', 'w+t', '+wt', 'tw+', 't+w', '+tw', 'a+', '+a', 'at+', 'a+t', '+at', 'ta+', 't+a', '+ta', 'x+', '+x', 'xt+', 'x+t', '+xt', 'tx+', 't+x', '+tx'] | Literal['w', 'wt', 'tw', 'a', 'at', 'ta', 'x', 'xt', 'tx'] | Literal['r', 'rt', 'tr', 'U', 'rU', 'Ur', 'rtU', 'rUt', 'Urt', 'trU', 'tUr', 'Utr'] = ..., buffering: int = ..., encoding: str | None = ..., errors: str | None = ..., newline: str | None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[AsyncTextIOWrapper]
-src/goldentooth_agent/core/tools/file_tools.py:189: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['rb+', 'r+b', '+rb', 'br+', 'b+r', '+br', 'wb+', 'w+b', '+wb', 'bw+', 'b+w', '+bw', 'ab+', 'a+b', '+ab', 'ba+', 'b+a', '+ba', 'xb+', 'x+b', '+xb', 'bx+', 'b+x', '+bx'] | Literal['rb', 'br', 'rbU', 'rUb', 'Urb', 'brU', 'bUr', 'Ubr'] | Literal['wb', 'bw', 'ab', 'ba', 'xb', 'bx'], buffering: Literal[0], encoding: None = ..., errors: None = ..., newline: None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[AsyncFileIO]
-src/goldentooth_agent/core/tools/file_tools.py:189: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['rb', 'br', 'rbU', 'rUb', 'Urb', 'brU', 'bUr', 'Ubr'] | Literal['rb+', 'r+b', '+rb', 'br+', 'b+r', '+br', 'wb+', 'w+b', '+wb', 'bw+', 'b+w', '+bw', 'ab+', 'a+b', '+ab', 'ba+', 'b+a', '+ba', 'xb+', 'x+b', '+xb', 'bx+', 'b+x', '+bx'], buffering: Literal[-1, 1] = ..., encoding: None = ..., errors: None = ..., newline: None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[AsyncBufferedReader]
-src/goldentooth_agent/core/tools/file_tools.py:189: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['wb', 'bw', 'ab', 'ba', 'xb', 'bx'], buffering: Literal[-1, 1] = ..., encoding: None = ..., errors: None = ..., newline: None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[AsyncBufferedIOBase]
-src/goldentooth_agent/core/tools/file_tools.py:189: note:     def open(file: int | str | bytes | PathLike[str] | PathLike[bytes], mode: Literal['rb+', 'r+b', '+rb', 'br+', 'b+r', '+br', 'wb+', 'w+b', '+wb', 'bw+', 'b+w', '+bw', 'ab+', 'a+b', '+ab', 'ba+', 'b+a', '+ba', 'xb+', 'x+b', '+xb', 'bx+', 'b+x', '+bx'] | Literal['rb', 'br', 'rbU', 'rUb', 'Urb', 'brU', 'bUr', 'Ubr'] | Literal['wb', 'bw', 'ab', 'ba', 'xb', 'bx'], buffering: int = ..., encoding: None = ..., errors: None = ..., newline: None = ..., closefd: bool = ..., opener: Callable[[str, int], int] | None = ..., *, loop: AbstractEventLoop | None = ..., executor: Executor | None = ...) -> AiofilesContextManager[_UnknownAsyncBinaryIO]
-src/goldentooth_agent/core/security/input_validation.py:475: error: Returning
-Any from function declared to return "dict[str, Any]"  [no-any-return]
-        return validated_data
-        ^~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/security/input_validation.py:510: error: Returning
-Any from function declared to return "str"  [no-any-return]
-        return sanitizer.sanitize_string(value)
-        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/tools/performance.py:144: error: Incompatible types
-in assignment (expression has type "float", target has type "int")  [assignment]
-                stats["hits"] / stats["requests"] if stats["requests"] > 0...
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
-src/goldentooth_agent/core/tools/web_tools.py:361: error: Argument
-"implementation" to "FlowTool" has incompatible type
-"Callable[[WebScrapeInput], Coroutine[Any, Any, WebScrapeOutput]]"; expected
-"Callable[[WebScrapeInput], WebScrapeOutput] | Callable[[WebScrapeInput], Future[WebScrapeOutput]]"
- [arg-type]
-        implementation=web_scrape_implementation,
-                       ^~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/tools/web_tools.py:369: error: Argument
-"implementation" to "FlowTool" has incompatible type
-"Callable[[JsonApiInput], Coroutine[Any, Any, JsonApiOutput]]"; expected
-"Callable[[JsonApiInput], JsonApiOutput] | Callable[[JsonApiInput], Future[JsonApiOutput]]"
- [arg-type]
-        implementation=json_api_implementation,
-                       ^~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/embeddings_service.py:74: error: Item
-"ToolUseBlock" of
-"TextBlock | ToolUseBlock | ServerToolUseBlock | WebSearchToolResultBlock | ThinkingBlock | RedactedThinkingBlock"
-has no attribute "text"  [union-attr]
-                semantic_features = semantic_response.content[0].text
-                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/embeddings_service.py:74: error: Item
-"ServerToolUseBlock" of
-"TextBlock | ToolUseBlock | ServerToolUseBlock | WebSearchToolResultBlock | ThinkingBlock | RedactedThinkingBlock"
-has no attribute "text"  [union-attr]
-                semantic_features = semantic_response.content[0].text
-                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/embeddings_service.py:74: error: Item
-"WebSearchToolResultBlock" of
-"TextBlock | ToolUseBlock | ServerToolUseBlock | WebSearchToolResultBlock | ThinkingBlock | RedactedThinkingBlock"
-has no attribute "text"  [union-attr]
-                semantic_features = semantic_response.content[0].text
-                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/embeddings_service.py:74: error: Item
-"ThinkingBlock" of
-"TextBlock | ToolUseBlock | ServerToolUseBlock | WebSearchToolResultBlock | ThinkingBlock | RedactedThinkingBlock"
-has no attribute "text"  [union-attr]
-                semantic_features = semantic_response.content[0].text
-                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/embeddings_service.py:74: error: Item
-"RedactedThinkingBlock" of
-"TextBlock | ToolUseBlock | ServerToolUseBlock | WebSearchToolResultBlock | ThinkingBlock | RedactedThinkingBlock"
-has no attribute "text"  [union-attr]
-                semantic_features = semantic_response.content[0].text
-                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/embeddings_service.py:80: error:
-Returning Any from function declared to return "list[float]"  [no-any-return]
-                return feature_vector.tolist()
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:131: error: Incompatible
-default for argument "store_type" (default has type "None", argument has type
-"str")  [assignment]
-            store_type: str = None,
-                              ^~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:131: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-src/goldentooth_agent/core/embeddings/hybrid_search.py:131: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
-src/goldentooth_agent/core/embeddings/hybrid_search.py:133: error: Incompatible
-default for argument "semantic_weight" (default has type "None", argument has
-type "float")  [assignment]
-            semantic_weight: float = None,
-                                     ^~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:133: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-src/goldentooth_agent/core/embeddings/hybrid_search.py:133: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
-src/goldentooth_agent/core/embeddings/hybrid_search.py:134: error: Incompatible
-default for argument "keyword_weight" (default has type "None", argument has
-type "float")  [assignment]
-            keyword_weight: float = None,
-                                    ^~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:134: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-src/goldentooth_agent/core/embeddings/hybrid_search.py:134: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
-src/goldentooth_agent/core/embeddings/hybrid_search.py:159: error: Statement is
-unreachable  [unreachable]
-                semantic_weight = self.semantic_weight
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:161: error: Statement is
-unreachable  [unreachable]
-                keyword_weight = self.keyword_weight
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:250: error: Statement is
-unreachable  [unreachable]
-                bm25_scores = self._calculate_bm25_scores(query)
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: error: Unpacked
+dict entry 0 has incompatible type "str"; expected
+"SupportsKeysAndGetItem[str, object]"  [dict-item]
+                            **doc_info,
+                              ^~~~~~~~
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note: "str" is missing following "SupportsKeysAndGetItem" protocol member:
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:     keys
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note: Following member(s) of "str" have conflicts:
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:     Expected:
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:         def __getitem__(self, str, /) -> object
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:     Got:
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:         def __getitem__(self, SupportsIndex | slice[Any, Any, Any], /) -> str
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:     Expected:
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:         def __getitem__(self, str, /) -> object
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:     Got:
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:         def __getitem__(self, SupportsIndex | slice[Any, Any, Any], /) -> str
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:     Expected:
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:         def __getitem__(self, str, /) -> object
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:     Got:
+src/goldentooth_agent/core/embeddings/hybrid_search.py:262: note:         def __getitem__(self, SupportsIndex | slice[Any, Any, Any], /) -> str
 src/goldentooth_agent/core/embeddings/hybrid_search.py:353: error: Returning
 Any from function declared to return "str"  [no-any-return]
                 return result["chunk_id"]
                 ^~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:422: error: Incompatible
-types in assignment (expression has type "dict[Never, Never]", variable has type
-"None")  [assignment]
-                self._document_corpus = {}
-                                        ^~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:430: error: Unsupported
-target for indexed assignment ("None")  [index]
+src/goldentooth_agent/core/embeddings/hybrid_search.py:430: error: Incompatible
+types in assignment (expression has type "dict[str, Any]", target has type
+"str")  [assignment]
                     self._document_corpus[doc_id] = doc
-                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:440: error: Incompatible
-types in assignment (expression has type "dict[Never, Never]", variable has type
-"None")  [assignment]
-                self._document_corpus = {}
-                                        ^~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:454: error: Incompatible
-types in assignment (expression has type "list[int]", variable has type "None") 
-[assignment]
-            self._document_lengths = [len(tokens) for tokens in tokenized_...
-                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
-src/goldentooth_agent/core/embeddings/hybrid_search.py:455: error: No overload
-variant of "sum" matches argument type "None"  [call-overload]
-            avg_doc_length = sum(self._document_lengths) / len(self._docum...
-                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:455: note: Possible overload variants:
-src/goldentooth_agent/core/embeddings/hybrid_search.py:455: note:     def sum(Iterable[bool], /, start: int = ...) -> int
-src/goldentooth_agent/core/embeddings/hybrid_search.py:455: note:     def [_SupportsSumNoDefaultT: _SupportsSumWithNoDefaultGiven] sum(Iterable[_SupportsSumNoDefaultT], /) -> _SupportsSumNoDefaultT | Literal[0]
-src/goldentooth_agent/core/embeddings/hybrid_search.py:455: note:     def [_AddableT1: SupportsAdd[Any, Any], _AddableT2: SupportsAdd[Any, Any]] sum(Iterable[_AddableT1], /, start: _AddableT2) -> _AddableT1 | _AddableT2
-src/goldentooth_agent/core/embeddings/hybrid_search.py:455: error: Argument 1
-to "len" has incompatible type "None"; expected "Sized"  [arg-type]
-    ...g_doc_length = sum(self._document_lengths) / len(self._document_length...
-                                                        ^~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:458: error: Incompatible
-types in assignment (expression has type "list[Never]", variable has type
-"None")  [assignment]
-            self._term_frequencies = []
-                                     ^~
+                                                    ^~~
 src/goldentooth_agent/core/embeddings/hybrid_search.py:459: error: Need type
 annotation for "document_frequencies"  [var-annotated]
             document_frequencies = defaultdict(int)
             ^~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:463: error: "None" has
-no attribute "append"  [attr-defined]
-                self._term_frequencies.append(term_freq)
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:471: error: Incompatible
-types in assignment (expression has type "dict[str, Any]", variable has type
-"None")  [assignment]
-            self._corpus_stats = {
-                                 ^
-src/goldentooth_agent/core/embeddings/hybrid_search.py:480: error: Right
-operand of "or" is never evaluated  [unreachable]
-                not self._corpus_stats
-                ^
-src/goldentooth_agent/core/embeddings/hybrid_search.py:486: error: Statement is
-unreachable  [unreachable]
-            query_terms = self._tokenize(query.lower())
-            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 src/goldentooth_agent/core/embeddings/hybrid_search.py:508: error: Argument 1
-to "len" has incompatible type "None"; expected "Sized"  [arg-type]
+to "len" has incompatible type "list[dict[str, int]] | None"; expected "Sized" 
+[arg-type]
             if doc_index >= len(self._term_frequencies) or doc_index >= le...
                                 ^~~~~~~~~~~~~~~~~~~~~~
 src/goldentooth_agent/core/embeddings/hybrid_search.py:509: error: Argument 1
-to "len" has incompatible type "None"; expected "Sized"  [arg-type]
+to "len" has incompatible type "list[int] | None"; expected "Sized"  [arg-type]
                 self._document_lengths
                 ^~~~~~~~~~~~~~~~~~~~~~
 src/goldentooth_agent/core/embeddings/hybrid_search.py:513: error: Value of
-type "None" is not indexable  [index]
+type "list[dict[str, int]] | None" is not indexable  [index]
             term_freq = self._term_frequencies[doc_index]
                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 src/goldentooth_agent/core/embeddings/hybrid_search.py:514: error: Value of
-type "None" is not indexable  [index]
+type "list[int] | None" is not indexable  [index]
             doc_length = self._document_lengths[doc_index]
                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 src/goldentooth_agent/core/embeddings/hybrid_search.py:515: error: Value of
-type "None" is not indexable  [index]
+type "dict[str, Any] | None" is not indexable  [index]
             avg_doc_length = self._corpus_stats["average_document_length"]
                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 src/goldentooth_agent/core/embeddings/hybrid_search.py:516: error: Value of
-type "None" is not indexable  [index]
+type "dict[str, Any] | None" is not indexable  [index]
             total_docs = self._corpus_stats["total_documents"]
                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 src/goldentooth_agent/core/embeddings/hybrid_search.py:517: error: Value of
-type "None" is not indexable  [index]
+type "dict[str, Any] | None" is not indexable  [index]
             doc_frequencies = self._corpus_stats["document_frequencies"]
                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:576: error: Statement is
-unreachable  [unreachable]
-            return {
-            ^
-src/goldentooth_agent/core/embeddings/hybrid_search.py:608: error: Incompatible
-default for argument "k1" (default has type "None", argument has type "float") 
-[assignment]
-        def update_bm25_parameters(self, k1: float = None, b: float = None...
-                                                     ^~~~
-src/goldentooth_agent/core/embeddings/hybrid_search.py:608: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-src/goldentooth_agent/core/embeddings/hybrid_search.py:608: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
-src/goldentooth_agent/core/embeddings/hybrid_search.py:608: error: Incompatible
-default for argument "b" (default has type "None", argument has type "float") 
-[assignment]
-    ...date_bm25_parameters(self, k1: float = None, b: float = None) -> None:
-                                                               ^~~~
-src/goldentooth_agent/core/embeddings/chunk_relationships.py:95: error: Missing
-type parameters for generic type "ndarray"  [type-arg]
-    ...f _calculate_similarity_matrix(self, embeddings: np.ndarray) -> np.nda...
-                                                        ^
-src/goldentooth_agent/core/embeddings/chunk_relationships.py:104: error:
-Returning Any from function declared to return "ndarray[Any, Any]" 
-[no-any-return]
-            return similarity_matrix
-            ^~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/embeddings/chunk_relationships.py:145: error:
-Missing type parameters for generic type "ndarray"  [type-arg]
-    ...      self, chunks: list[DocumentChunk], similarity_matrix: np.ndarray
-                                                                   ^
-src/goldentooth_agent/core/embeddings/chunk_relationships.py:232: error:
-Missing type parameters for generic type "ndarray"  [type-arg]
-    ...      self, chunks: list[DocumentChunk], similarity_matrix: np.ndarray
-                                                                   ^
-src/goldentooth_agent/core/embeddings/chunk_relationships.py:347: error:
-Missing type parameters for generic type "ndarray"  [type-arg]
-            similarity_matrix: np.ndarray,
-                               ^
-src/goldentooth_agent/core/embeddings/chunk_relationships.py:361: error: Need
-type annotation for "chunk_connections"  [var-annotated]
-            chunk_connections = defaultdict(int)
-            ^~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/agent_codebase/collection.py:319: error: Need type
-annotation for "current_chunk" (hint: "current_chunk: list[<type>] = ...") 
-[var-annotated]
-            current_chunk = []
-            ^~~~~~~~~~~~~
-src/goldentooth_agent/core/agent_codebase/collection.py:350: error: Need type
-annotation for "current_chunk" (hint: "current_chunk: list[<type>] = ...") 
-[var-annotated]
-            current_chunk = []
-            ^~~~~~~~~~~~~
-src/goldentooth_agent/core/agent_codebase/collection.py:384: error: Need type
-annotation for "current_chunk" (hint: "current_chunk: list[<type>] = ...") 
-[var-annotated]
-            current_chunk = []
-            ^~~~~~~~~~~~~
-src/goldentooth_agent/core/agent_codebase/collection.py:432: error: Unexpected
-keyword argument "query_text" for "search_similar" of "VectorStore"  [call-arg]
-            results = self.vector_store.search_similar(
-                      ^
-src/goldentooth_agent/core/agent_codebase/collection.py:432: error: Unexpected
-keyword argument "metadata_filters" for "search_similar" of "VectorStore" 
-[call-arg]
-            results = self.vector_store.search_similar(
-                      ^
+src/goldentooth_agent/core/agent_codebase/collection.py:329: error: Name
+"current_chunk" already defined on line 319  [no-redef]
+                        current_chunk: list[str] = []
+                        ^~~~~~~~~~~~~
+src/goldentooth_agent/core/agent_codebase/collection.py:338: error: Name
+"current_chunk" already defined on line 319  [no-redef]
+                    current_chunk: list[str] = []
+                    ^~~~~~~~~~~~~
+src/goldentooth_agent/core/agent_codebase/collection.py:363: error: Name
+"current_chunk" already defined on line 350  [no-redef]
+                        current_chunk: list[str] = []
+                        ^~~~~~~~~~~~~
+src/goldentooth_agent/core/agent_codebase/collection.py:372: error: Name
+"current_chunk" already defined on line 350  [no-redef]
+                    current_chunk: list[str] = []
+                    ^~~~~~~~~~~~~
+src/goldentooth_agent/core/agent_codebase/collection.py:392: error: Name
+"current_chunk" already defined on line 384  [no-redef]
+                    current_chunk: list[str] = []
+                    ^~~~~~~~~~~~~
+src/goldentooth_agent/core/agent_codebase/collection.py:436: error: Statement
+is unreachable  [unreachable]
+            formatted_results = []
+            ^~~~~~~~~~~~~~~~~~~~~~
+src/goldentooth_agent/core/agent_codebase/collection.py:437: error: Name
+"results" is not defined  [name-defined]
+            for result in results:
+                          ^~~~~~~
 src/goldentooth_agent/core/agent_codebase/introspection.py:186: error:
 "dict[str, Any]" has no attribute "content"  [attr-defined]
                     "content": result.content,
@@ -359,11 +174,6 @@ src/goldentooth_agent/cli/commands/git_sync.py:199: error: Item "None" of
 "GitHubClient | None" has no attribute "sync_organization"  [union-attr]
                     github_result = github_client.sync_organization(
                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/rag/rag_service.py:256: error: Need type annotation
-for "chunks_by_doc" (hint: "chunks_by_doc: dict[<type>, <type>] = ...") 
-[var-annotated]
-            chunks_by_doc = {}
-            ^~~~~~~~~~~~~
 src/goldentooth_agent/core/rag/rag_service.py:465: error: Name "docs" may be
 undefined  [possibly-undefined]
                         "documents_analyzed": len(docs) if store_type else...
@@ -372,20 +182,6 @@ src/goldentooth_agent/core/rag/rag_service.py:465: error: Name "total_docs" may
 be undefined  [possibly-undefined]
     ...        "documents_analyzed": len(docs) if store_type else total_docs,
                                                                   ^~~~~~~~~~
-src/goldentooth_agent/core/rag/rag_service.py:800: error: Incompatible default
-for argument "store_type" (default has type "None", argument has type "str") 
-[assignment]
-            store_type: str = None,
-                              ^~~~
-src/goldentooth_agent/core/rag/rag_service.py:800: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-src/goldentooth_agent/core/rag/rag_service.py:800: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
-src/goldentooth_agent/core/rag/rag_service.py:801: error: Incompatible default
-for argument "document_id" (default has type "None", argument has type "str") 
-[assignment]
-            document_id: str = None,
-                               ^~~~
-src/goldentooth_agent/core/rag/rag_service.py:801: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-src/goldentooth_agent/core/rag/rag_service.py:801: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
 src/goldentooth_agent/core/rag/rag_service.py:862: error: Argument 1 to
 "ChunkRelationshipAnalyzer" has incompatible type
 "OpenAIEmbeddingsService | EmbeddingsService"; expected "EmbeddingsService" 
@@ -406,13 +202,6 @@ src/goldentooth_agent/core/rag/rag_service.py:959: error: Unexpected keyword
 argument "chunk_id" for "get_document_chunks" of "VectorStore"  [call-arg]
                         chunk_details = self.vector_store.get_document_chu...
                                         ^
-src/goldentooth_agent/core/rag/rag_service.py:1080: error: Incompatible default
-for argument "store_type" (default has type "None", argument has type "str") 
-[assignment]
-        def _get_all_chunks(self, store_type: str = None) -> list[dict[str...
-                                                    ^~~~
-src/goldentooth_agent/core/rag/rag_service.py:1080: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-src/goldentooth_agent/core/rag/rag_service.py:1080: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
 src/goldentooth_agent/core/rag/rag_service.py:1097: error: "DocumentStore" has
 no attribute "get_store"  [attr-defined]
                 documents = self.document_store.get_store(store_type).list...
@@ -421,19 +210,10 @@ src/goldentooth_agent/core/rag/rag_service.py:1110: error: "DocumentStore" has
 no attribute "get_store"  [attr-defined]
                         store = self.document_store.get_store(store_name)
                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/rag/rag_service.py:1142: error: Need type annotation
-for "relationship_types" (hint:
-"relationship_types: dict[<type>, <type>] = ...")  [var-annotated]
-                relationship_types = {}
-                ^~~~~~~~~~~~~~~~~~
 src/goldentooth_agent/core/rag/rag_service.py:1158: error: Unexpected keyword
 argument "chunk_id" for "get_document_chunks" of "VectorStore"  [call-arg]
                 chunk_details = self.vector_store.get_document_chunks(
                                 ^
-src/goldentooth_agent/core/rag/rag_service.py:1223: error: Need type annotation
-for "rel_types" (hint: "rel_types: dict[<type>, <type>] = ...")  [var-annotated]
-            rel_types = {}
-            ^~~~~~~~~
 src/goldentooth_agent/core/rag/rag_service.py:1255: note: "hybrid_query" of "RAGService" defined here
 src/goldentooth_agent/core/rag/rag_service.py:1259: error: Incompatible default
 for argument "store_type" (default has type "None", argument has type "str") 
@@ -457,28 +237,6 @@ src/goldentooth_agent/core/rag/rag_service.py:1633: error: Returning Any from
 function declared to return "float"  [no-any-return]
             return sum(scores) / len(scores)
             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/rag/rag_service.py:1689: error: Incompatible default
-for argument "semantic_weights" (default has type "None", argument has type
-"list[float]")  [assignment]
-            semantic_weights: list[float] = None,
-                                            ^~~~
-src/goldentooth_agent/core/rag/rag_service.py:1689: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-src/goldentooth_agent/core/rag/rag_service.py:1689: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
-src/goldentooth_agent/core/rag/rag_service.py:1690: error: Incompatible default
-for argument "keyword_weights" (default has type "None", argument has type
-"list[float]")  [assignment]
-            keyword_weights: list[float] = None,
-                                           ^~~~
-src/goldentooth_agent/core/rag/rag_service.py:1690: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
-src/goldentooth_agent/core/rag/rag_service.py:1690: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
-src/goldentooth_agent/core/rag/rag_service.py:1703: error: Statement is
-unreachable  [unreachable]
-                semantic_weights = [0.5, 0.6, 0.7, 0.8, 0.9]
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-src/goldentooth_agent/core/rag/rag_service.py:1705: error: Statement is
-unreachable  [unreachable]
-                keyword_weights = [0.1, 0.2, 0.3, 0.4, 0.5]
-                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 src/goldentooth_agent/core/rag/rag_service.py:1815: error: Unexpected keyword
 argument "include_metadata" for "hybrid_query" of "RAGService"  [call-arg]
                 hybrid_result = await self.hybrid_query(

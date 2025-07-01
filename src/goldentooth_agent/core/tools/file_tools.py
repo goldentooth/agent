@@ -182,15 +182,27 @@ async def file_write_implementation(input_data: FileWriteInput) -> FileWriteOutp
                     error=f"Invalid base64 content: {str(e)}",
                 )
 
-            async with aiofiles.open(str(file_path), mode) as f:
-                await f.write(content_bytes)
-                bytes_written = len(content_bytes)
+            # Handle binary modes explicitly
+            if mode == "ab":
+                async with aiofiles.open(str(file_path), "ab") as f:
+                    await f.write(content_bytes)
+            else:  # mode == "wb"
+                async with aiofiles.open(str(file_path), "wb") as f:
+                    await f.write(content_bytes)
+            bytes_written = len(content_bytes)
         else:
-            async with aiofiles.open(
-                str(file_path), mode, encoding=input_data.encoding
-            ) as f:
-                await f.write(input_data.content)
-                bytes_written = len(input_data.content.encode(input_data.encoding))
+            # Handle text modes explicitly
+            if mode == "a":
+                async with aiofiles.open(
+                    str(file_path), "a", encoding=input_data.encoding
+                ) as f:
+                    await f.write(input_data.content)
+            else:  # mode == "w"
+                async with aiofiles.open(
+                    str(file_path), "w", encoding=input_data.encoding
+                ) as f:
+                    await f.write(input_data.content)
+            bytes_written = len(input_data.content.encode(input_data.encoding))
 
         return FileWriteOutput(
             file_path=input_data.file_path,

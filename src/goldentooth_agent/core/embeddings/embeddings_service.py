@@ -71,13 +71,20 @@ class EmbeddingsService:
                 ],
             )
 
-            semantic_features = semantic_response.content[0].text
+            # Extract text from the first content block if it's a TextBlock
+            first_content = semantic_response.content[0]
+            if hasattr(first_content, 'text'):
+                semantic_features = first_content.text
+            else:
+                # Fallback to original text if we can't extract semantic features
+                semantic_features = text
 
             # Convert semantic features to a simple hash-based vector
             # This is a basic approach - in production we'd want a proper embedding model
             feature_vector = self._text_to_vector(semantic_features)
 
-            return feature_vector.tolist()
+            # Convert numpy array to list of floats
+            return list(feature_vector.tolist())
 
         except Exception as e:
             raise ValueError(f"Failed to create embedding: {e}") from e

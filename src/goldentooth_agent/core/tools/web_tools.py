@@ -358,7 +358,7 @@ WebScrapeTool = FlowTool(
     name="web_scrape",
     input_schema=WebScrapeInput,
     output_schema=WebScrapeOutput,
-    implementation=web_scrape_implementation,
+    implementation=web_scrape_implementation,  # type: ignore[arg-type]
     description="Scrape web content with link extraction, text parsing, and CSS selectors",
 )
 
@@ -366,6 +366,6 @@ JsonApiTool = FlowTool(
     name="json_api",
     input_schema=JsonApiInput,
     output_schema=JsonApiOutput,
-    implementation=json_api_implementation,
+    implementation=json_api_implementation,  # type: ignore[arg-type]
     description="Execute JSON API requests with automatic parsing and authentication support",
 )

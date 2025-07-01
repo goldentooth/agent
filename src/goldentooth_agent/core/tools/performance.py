@@ -138,7 +138,7 @@ async def clear_cache() -> None:
 async def get_cache_stats() -> dict[str, Any]:
     """Get cache statistics."""
     async with _cache_lock:
-        stats = dict(_cache_stats)
+        stats: dict[str, Any] = dict(_cache_stats)
         stats["size"] = len(_cache)
         stats["hit_rate"] = (
             stats["hits"] / stats["requests"] if stats["requests"] > 0 else 0.0

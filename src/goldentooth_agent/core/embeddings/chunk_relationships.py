@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from antidote import inject, injectable
 
 from .document_chunker import DocumentChunk
@@ -92,7 +93,7 @@ class ChunkRelationshipAnalyzer:
             "similarity_matrix": similarity_matrix.tolist(),
         }
 
-    def _calculate_similarity_matrix(self, embeddings: np.ndarray) -> np.ndarray:
+    def _calculate_similarity_matrix(self, embeddings: NDArray[np.float64]) -> NDArray[np.float64]:
         """Calculate cosine similarity matrix between embeddings."""
         # Normalize embeddings for cosine similarity
         norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
@@ -101,6 +102,8 @@ class ChunkRelationshipAnalyzer:
         # Calculate cosine similarity matrix
         similarity_matrix = np.dot(normalized, normalized.T)
 
+        # Type assertion for return
+        assert isinstance(similarity_matrix, np.ndarray)
         return similarity_matrix
 
     def _find_sequential_relationships(
@@ -142,7 +145,7 @@ class ChunkRelationshipAnalyzer:
         return relationships
 
     def _find_topical_relationships(
-        self, chunks: list[DocumentChunk], similarity_matrix: np.ndarray
+        self, chunks: list[DocumentChunk], similarity_matrix: NDArray[np.float64]
     ) -> list[dict[str, Any]]:
         """Find topical relationships based on semantic similarity."""
         relationships = []
@@ -229,7 +232,7 @@ class ChunkRelationshipAnalyzer:
         return relationships
 
     def _find_cross_document_relationships(
-        self, chunks: list[DocumentChunk], similarity_matrix: np.ndarray
+        self, chunks: list[DocumentChunk], similarity_matrix: NDArray[np.float64]
     ) -> list[dict[str, Any]]:
         """Find relationships that span across different documents."""
         relationships = []
@@ -344,7 +347,7 @@ class ChunkRelationshipAnalyzer:
         self,
         chunks: list[DocumentChunk],
         relationships: dict[str, list[dict[str, Any]]],
-        similarity_matrix: np.ndarray,
+        similarity_matrix: NDArray[np.float64],
     ) -> dict[str, Any]:
         """Generate insights about chunk relationships."""
         total_relationships = sum(len(rel_list) for rel_list in relationships.values())
@@ -358,7 +361,7 @@ class ChunkRelationshipAnalyzer:
         )
 
         # Find most connected chunks
-        chunk_connections = defaultdict(int)
+        chunk_connections: defaultdict[str, int] = defaultdict(int)
         for rel_list in relationships.values():
             for rel in rel_list:
                 chunk_connections[rel["source_chunk_id"]] += 1

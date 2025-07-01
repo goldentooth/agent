@@ -38,10 +38,10 @@ class HybridSearchEngine:
         self.keyword_weight = 0.3  # Weight for BM25 keyword score
 
         # Document corpus for BM25 (cached)
-        self._document_corpus = None
-        self._corpus_stats = None
-        self._term_frequencies = None
-        self._document_lengths = None
+        self._document_corpus: dict[str, str] | None = None
+        self._corpus_stats: dict[str, Any] | None = None
+        self._term_frequencies: list[dict[str, int]] | None = None
+        self._document_lengths: list[int] | None = None
 
         # Text preprocessing
         self.stop_words = {
@@ -128,10 +128,10 @@ class HybridSearchEngine:
         self,
         query: str,
         max_results: int = 10,
-        store_type: str = None,
+        store_type: str | None = None,
         include_chunks: bool = True,
-        semantic_weight: float = None,
-        keyword_weight: float = None,
+        semantic_weight: float | None = None,
+        keyword_weight: float | None = None,
         min_semantic_score: float = 0.1,
         min_keyword_score: float = 0.0,
         boost_exact_matches: bool = True,
@@ -168,12 +168,12 @@ class HybridSearchEngine:
 
         # Get semantic search results
         semantic_results = await self._get_semantic_results(
-            query, max_results * 2, store_type, include_chunks, min_semantic_score
+            query, max_results * 2, store_type or "", include_chunks, min_semantic_score
         )
 
         # Get keyword search results
         keyword_results = await self._get_keyword_results(
-            query, max_results * 2, store_type, include_chunks, min_keyword_score
+            query, max_results * 2, store_type or "", include_chunks, min_keyword_score
         )
 
         # Combine and score results
@@ -605,7 +605,7 @@ class HybridSearchEngine:
             self.semantic_weight = 0.7
             self.keyword_weight = 0.3
 
-    def update_bm25_parameters(self, k1: float = None, b: float = None) -> None:
+    def update_bm25_parameters(self, k1: float | None = None, b: float | None = None) -> None:
         """Update BM25 parameters.
 
         Args:

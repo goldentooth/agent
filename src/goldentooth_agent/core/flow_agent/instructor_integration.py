@@ -61,7 +61,11 @@ class MockLLMClient:
             ValueError: If no mock response is configured for the response model
         """
         if response_model in self.mock_responses:
-            return self.mock_responses[response_model]
+            mock_response = self.mock_responses[response_model]
+            # Type assertion - the mock should be of the correct type
+            if not isinstance(mock_response, response_model):
+                raise ValueError(f"Mock response for {response_model} is not of correct type")
+            return mock_response
 
         # Try to create a default instance if possible
         try:
@@ -255,6 +259,9 @@ class InstructorFlow:
                 max_retries=self.max_retries,
             )
 
+            # Type assertion - instructor should return the correct type
+            if not isinstance(response, self.output_schema):
+                raise ValueError(f"Instructor returned incorrect type: {type(response)}")
             return response
 
         except Exception as e:

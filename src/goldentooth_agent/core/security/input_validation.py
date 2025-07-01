@@ -472,6 +472,14 @@ def validate_json_payload(
     validator = InputValidator(config)
     validated_data = validator.validate_any(data)
 
+    # Type validation - should be a dict since we parsed JSON
+    if not isinstance(validated_data, dict):
+        raise ValidationError(
+            "Invalid data structure: expected object after validation",
+            validation_type="structure",
+            input_value=str(validated_data)[:200],
+        )
+    
     return validated_data
 
 
@@ -507,4 +515,7 @@ def validate_flow_input(
 def sanitize_string(value: str, config: SanitizationConfig | None = None) -> str:
     """Standalone string sanitization function."""
     sanitizer = InputSanitizer(config)
-    return sanitizer.sanitize_string(value)
+    result = sanitizer.sanitize_string(value)
+    # Type assertion - should be str since input is str
+    assert isinstance(result, str), f"Expected str, got {type(result)}"
+    return result
