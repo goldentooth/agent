@@ -268,7 +268,7 @@ class TestSecretMetadata:
         assert metadata.created_at is not None
 
     def test_secret_metadata_is_expired(self):
-        from datetime import datetime, timedelta, UTC
+        from datetime import UTC, datetime, timedelta
 
         # Recent metadata should not be expired
         recent_metadata = SecretMetadata(secret_type="test")
@@ -280,7 +280,7 @@ class TestSecretMetadata:
         assert old_metadata.is_expired(max_age_days=30)
 
     def test_secret_metadata_needs_rotation(self):
-        from datetime import datetime, timedelta, UTC
+        from datetime import UTC, datetime, timedelta
 
         # New secret should not need rotation
         new_metadata = SecretMetadata(secret_type="test", rotation_days=30)
@@ -499,7 +499,7 @@ class TestSecretRotation:
         assert retrieved.metadata.last_rotated is not None
 
     def test_find_secrets_needing_rotation(self):
-        from datetime import datetime, timedelta, UTC
+        from datetime import UTC, datetime, timedelta
 
         config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
