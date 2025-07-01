@@ -15,6 +15,16 @@ module_app = typer.Typer(help="Module management commands.")
 app.add_typer(module_app, name="module")
 
 
+@app.command("quick-check")
+def quick_check_command(
+    file_path: Annotated[str, typer.Argument(help="Path to the file to check")]
+) -> None:
+    """Provide quick development feedback without blocking."""
+    from goldentooth_agent.dev.quick_check import quick_check
+
+    quick_check(file_path)
+
+
 @module_app.command("update")
 def update_module_metadata(
     module_path: Annotated[

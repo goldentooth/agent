@@ -2,10 +2,10 @@ module_name: Util
 description: Util module
 complexity: Medium
 file_count: 3
-loc: ~102
+loc: ~183
 test_coverage: Medium
 class_count: 1
-function_count: 4
+function_count: 5
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies: []
@@ -33,21 +33,34 @@ functions:
 - name: safe_getattr
   signature: 'def safe_getattr(obj: Any, attr: str, default: Any, context: dict[str,
     Any] | None) -> Any'
-  docstring: "Safe attribute access with enhanced error reporting.\n\n    Args:\n\
-    \        obj: Object to access attribute from\n        attr: Attribute name to\
-    \ access\n        default: Default value if attribute doesn't exist\n        context:\
-    \ Additional context for error reporting\n\n    Returns:\n        The attribute\
-    \ value or default\n\n    Raises:\n        DetailedAttributeError: When attribute\
-    \ doesn't exist and no default"
+  docstring: "Safe attribute access with enhanced error reporting.\n\n    This function\
+    \ provides enhanced debugging context when attribute access fails,\n    including\
+    \ suggestions for debugging tools and common fixes.\n\n    Args:\n        obj:\
+    \ Object to access attribute from\n        attr: Attribute name to access\n  \
+    \      default: Default value if attribute doesn't exist\n        context: Additional\
+    \ context for error reporting\n\n    Returns:\n        The attribute value or\
+    \ default\n\n    Raises:\n        DetailedAttributeError: When attribute doesn't\
+    \ exist and no default.\n                              The error includes debugging\
+    \ suggestions and tool recommendations.\n\n    Example:\n        >>> # Safe access\
+    \ with debugging context\n        >>> value = safe_getattr(response, \"response\"\
+    , context={\n        ...     \"operation\": \"agent_processing\",\n        ...\
+    \     \"expected_type\": \"AgentResponse object\"\n        ... })"
   public: true
 - name: safe_dict_access
   signature: 'def safe_dict_access(obj: dict[str, Any], key: str, default: Any, context:
     dict[str, Any] | None) -> Any'
-  docstring: "Safe dictionary access with error reporting.\n\n    Args:\n        obj:\
+  docstring: "Safe dictionary access with enhanced error reporting.\n\n    This function\
+    \ provides enhanced debugging context when dictionary access fails,\n    including\
+    \ suggestions for debugging tools and common fixes.\n\n    Args:\n        obj:\
     \ Dictionary to access\n        key: Key to look up\n        default: Default\
     \ value if key doesn't exist\n        context: Additional context for error reporting\n\
     \n    Returns:\n        The value or default\n\n    Raises:\n        DetailedAttributeError:\
-    \ When key doesn't exist and no default"
+    \ When key doesn't exist and no default.\n                              The error\
+    \ includes debugging suggestions and tool recommendations.\n\n    Example:\n \
+    \       >>> # Safe access with debugging context\n        >>> value = safe_dict_access(response_dict,\
+    \ \"response\", context={\n        ...     \"operation\": \"agent_response_parsing\"\
+    ,\n        ...     \"expected_keys\": [\"response\", \"sources\", \"metadata\"\
+    ]\n        ... })"
   public: true
 - name: maybe_await
   signature: 'async def maybe_await(func: Callable[..., T], *args: object, **kwargs:

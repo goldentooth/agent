@@ -48,9 +48,9 @@ The commands module integrates with the broader system through well-defined inte
 
 - **Complexity**: Critical
 - **Files**: 16 Python files
-- **Lines of Code**: ~6272
+- **Lines of Code**: ~6299
 - **Classes**: 8
-- **Functions**: 143
+- **Functions**: 144
 
 ## API Reference
 
@@ -315,11 +315,34 @@ List all available context keys.
 #### `def system_health(component: Annotated[str | None, typer.Option('--component', help='Specific component to check: flows, tools, agents, all')], format: Annotated[str, typer.Option('--format', '-f', help='Output format: rich, json')], export: Annotated[str | None, typer.Option('--export', help='Export health report to file')]) -> None`
 Check system health and component status.
 
+    🔗 RELATED TOOLS:
+    • Trace execution: goldentooth-agent debug trace --agent [type] '[query]'
+    • Profile performance: goldentooth-agent debug profile [command]
+    • Advanced health monitoring: HealthCheck in flow_engine/observability/health.py
+
+    📚 See: guidelines/debugging-guide.md#system-health
+
 #### `def trace_execution(flow: Annotated[str | None, typer.Option('--flow', help='Flow name to trace')], agent: Annotated[str | None, typer.Option('--agent', help='Agent name to trace')], input_data: Annotated[str | None, typer.Option('--input', help='JSON input data')], verbose: Annotated[bool, typer.Option('--verbose', help='Enable verbose output')]) -> None`
 Trace flow or agent execution for debugging.
 
+    🔗 RELATED TOOLS:
+    • System health: goldentooth-agent debug health
+    • Performance analysis: goldentooth-agent debug profile [command]
+    • Interactive debugging: FlowDebugger in flow_engine/observability/debugging.py
+    • Stream tracing: trace_stream() combinator in flow_engine/combinators/observability.py
+
+    📚 See: guidelines/debugging-guide.md#execution-tracing
+
 #### `def profile_performance(command: Annotated[str, typer.Argument(help="Command to profile (e.g., 'agents run echo')")], iterations: Annotated[int, typer.Option('--iterations', '-n', help='Number of iterations')], input_data: Annotated[str | None, typer.Option('--input', help='JSON input data')]) -> None`
 Profile command performance and resource usage.
+
+    🔗 RELATED TOOLS:
+    • System health: goldentooth-agent debug health
+    • Execution tracing: goldentooth-agent debug trace --agent [type] '[query]'
+    • Real-time monitoring: PerformanceMonitor in flow_engine/observability/performance.py
+    • Flow benchmarking: benchmark_stream() combinator in flow_engine/combinators/observability.py
+
+    📚 See: guidelines/debugging-guide.md#performance-analysis
 
 #### `def run_health_checks(component: str | None, console: Console) -> HealthStatus`
 Run comprehensive health checks.
@@ -362,6 +385,9 @@ Execute a pipeline with input data.
 
 #### `def create_pipeline(name: Annotated[str, typer.Argument(help='Name for the new pipeline')], config_file: Annotated[str | None, typer.Option('--config', help='JSON config file path')]) -> None`
 Create a new pipeline from configuration.
+
+#### `def quick_check_command(file_path: Annotated[str, typer.Argument(help='Path to the file to check')]) -> None`
+Provide quick development feedback without blocking.
 
 #### `def update_module_metadata(module_path: Annotated[str, typer.Argument(help='Path to the module directory to update')], force: Annotated[bool, typer.Option('--force', '-f', help='Force update even if no changes detected')], dry_run: Annotated[bool, typer.Option('--dry-run', '-n', help='Show what would be updated without making changes')]) -> None`
 Update README.meta.yaml for a specific module.

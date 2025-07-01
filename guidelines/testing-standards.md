@@ -142,6 +142,51 @@ def test_vector_search_performance(benchmark, sample_vectors):
     assert len(result) == 10
 ```
 
+### CLI Command Tests
+**MANDATORY**: Any test that adds or modifies a CLI command MUST execute that command to validate it functions as intended.
+
+```python
+def test_new_cli_command_execution(cli_runner):
+    """Test that new CLI command executes successfully."""
+    # Test basic execution
+    result = cli_runner.invoke(main_app, ["new-command", "--help"])
+    assert result.exit_code == 0
+    assert "Expected help text" in result.output
+
+    # Test actual functionality
+    result = cli_runner.invoke(main_app, ["new-command", "arg1", "--option", "value"])
+    assert result.exit_code == 0
+    assert "Expected output" in result.output
+
+    # Test error cases
+    result = cli_runner.invoke(main_app, ["new-command", "--invalid-option"])
+    assert result.exit_code != 0
+    assert "Error" in result.output
+
+def test_cli_help_text_displays_correctly(cli_runner):
+    """Verify help text appears as intended in terminal."""
+    # Test main help
+    result = cli_runner.invoke(main_app, ["--help"])
+    assert result.exit_code == 0
+    assert "Expected description" in result.output
+
+    # Test subcommand help
+    result = cli_runner.invoke(main_app, ["subcommand", "--help"])
+    assert result.exit_code == 0
+    assert "Subcommand description" in result.output
+
+    # Verify no formatting issues (e.g., stripped newlines)
+    assert result.output.count("\n") > 5  # Ensure multiline help works
+```
+
+**CLI Testing Requirements:**
+- Test `--help` output for all new/modified commands
+- Execute commands with valid arguments to verify functionality
+- Test error cases with invalid arguments
+- Verify output formatting (no stripped newlines, proper spacing)
+- Test both stdout and stderr outputs
+- Check exit codes for success/failure cases
+
 ## Test Implementation Patterns
 
 ### Test Structure (AAA Pattern)

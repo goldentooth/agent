@@ -62,14 +62,24 @@ class DebugContext:
         )
 
         if exc_type:
+            # Generate debugging suggestions for errors
+            debugging_suggestions = ""
+            if exc_val is not None:
+                debugging_suggestions = self._generate_error_debugging_suggestions(
+                    exc_type, exc_val
+                )
+
             logger.error(
-                f"{self.operation_name} failed after {duration:.2f}s",
+                f"{self.operation_name} failed after {duration:.2f}s\n\n"
+                f"🔧 DEBUGGING SUGGESTIONS:\n{debugging_suggestions}\n\n"
+                f"📚 See: guidelines/debugging-guide.md for complete debugging reference",
                 extra={
                     "operation": self.operation_name,
                     "duration": duration,
                     "error_type": exc_type.__name__,
                     "error_message": str(exc_val),
                     "metadata": self.metadata,
+                    "debugging_suggestions": debugging_suggestions,
                 },
                 exc_info=True,
             )
@@ -90,6 +100,76 @@ class DebugContext:
             **kwargs: Metadata to add
         """
         self.metadata.update(kwargs)
+
+    def _generate_error_debugging_suggestions(
+        self, exc_type: type[Exception], exc_val: Exception
+    ) -> str:
+        """Generate context-aware debugging suggestions based on error type."""
+        suggestions = []
+
+        # Error-specific suggestions
+        if exc_type.__name__ == "AttributeError":
+            suggestions.extend(
+                [
+                    "• Check for dict vs object access patterns (result.attr vs result['attr'])",
+                    "• Use DetailedAttributeError from core/util/error_reporting.py for enhanced context",
+                    "• Trace execution: goldentooth-agent debug trace --verbose",
+                ]
+            )
+        elif exc_type.__name__ == "KeyError":
+            suggestions.extend(
+                [
+                    "• Verify dictionary structure and available keys",
+                    "• Use safe_dict_access() from core/util/error_reporting.py",
+                    "• Check system health: goldentooth-agent debug health",
+                ]
+            )
+        elif exc_type.__name__ in ["TimeoutError", "asyncio.TimeoutError"]:
+            suggestions.extend(
+                [
+                    "• Profile performance: goldentooth-agent debug profile [command]",
+                    "• Use PerformanceMonitor for detailed timing analysis",
+                    "• Check for deadlocks or blocking operations",
+                ]
+            )
+        elif "Flow" in exc_type.__name__:
+            suggestions.extend(
+                [
+                    "• Use FlowDebugger for interactive debugging",
+                    "• Add observability with monitored_stream() combinator",
+                    "• Analyze flow composition with flow_engine/observability/analysis.py",
+                ]
+            )
+        else:
+            suggestions.extend(
+                [
+                    "• General health check: goldentooth-agent debug health",
+                    "• Trace execution: goldentooth-agent debug trace --verbose",
+                ]
+            )
+
+        # Operation-specific suggestions based on metadata
+        if "agent" in self.operation_name.lower():
+            suggestions.append(
+                "• Agent-specific: goldentooth-agent debug health --component agents"
+            )
+        elif "flow" in self.operation_name.lower():
+            suggestions.append(
+                "• Flow-specific: Use flow observability tools in flow_engine/observability/"
+            )
+
+        # Always add general debugging tools
+        suggestions.extend(
+            [
+                "",
+                "🔍 ADVANCED DEBUGGING:",
+                "• Interactive debugging: FlowDebugger in flow_engine/observability/debugging.py",
+                "• Performance analysis: PerformanceMonitor in flow_engine/observability/performance.py",
+                "• Stream inspection: Use inspect_stream() combinator for runtime analysis",
+            ]
+        )
+
+        return "\n".join(suggestions)
 
 
 @contextmanager

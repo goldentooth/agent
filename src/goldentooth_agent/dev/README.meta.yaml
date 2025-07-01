@@ -1,29 +1,39 @@
 module_name: Dev
 description: Dev module
-complexity: Low
-file_count: 2
-loc: ~133
+complexity: Medium
+file_count: 3
+loc: ~331
 test_coverage: Medium
 class_count: 2
-function_count: 6
+function_count: 13
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies: []
 external_dependencies:
+- ast
 - collections
 - contextlib
 - dataclasses
 - debugging
 - logging
+- pathlib
+- re
+- sys
 - time
 - typing
 symbols:
 - DebugContext
 - DebugStats
 - __all__
+- check_dict_access_patterns
+- check_import_organization
+- count_missing_return_types
 - debug_operation
+- has_complex_help_text
 - log_function_call
 - logger
+- main
+- quick_check
 exports:
 - DebugContext
 - debug_operation
@@ -44,6 +54,30 @@ classes:
     public: true
   public: true
 functions:
+- name: has_complex_help_text
+  signature: 'def has_complex_help_text(file_path: Path) -> bool'
+  docstring: Check if file has complex CLI help text that may not render well.
+  public: true
+- name: count_missing_return_types
+  signature: 'def count_missing_return_types(file_path: Path) -> int'
+  docstring: Count functions missing return type annotations.
+  public: true
+- name: check_dict_access_patterns
+  signature: 'def check_dict_access_patterns(file_path: Path) -> list[str]'
+  docstring: Check for potential dict.attribute access patterns.
+  public: true
+- name: check_import_organization
+  signature: 'def check_import_organization(file_path: Path) -> list[str]'
+  docstring: Check for import organization issues.
+  public: true
+- name: quick_check
+  signature: 'def quick_check(file_path: str) -> None'
+  docstring: Provide quick development feedback without blocking.
+  public: true
+- name: main
+  signature: def main() -> None
+  docstring: CLI entry point for quick check.
+  public: true
 - name: debug_operation
   signature: 'def debug_operation(operation_name: str, **metadata: Any) -> Iterator[DebugContext]'
   docstring: "Context manager for tracking operation execution.\n\n    Args:\n   \

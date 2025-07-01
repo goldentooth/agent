@@ -16,7 +16,7 @@ from goldentooth_agent.cli.commands.agents import get_available_agents
 from goldentooth_agent.cli.commands.flow import get_available_flows
 from goldentooth_agent.cli.commands.tools import get_available_tools
 
-app = typer.Typer()
+app = typer.Typer(no_args_is_help=True)
 
 # Type aliases for debug system
 HealthStatus = dict[str, Any]  # Health data can be any type
@@ -65,7 +65,15 @@ def system_health(
         str | None, typer.Option("--export", help="Export health report to file")
     ] = None,
 ) -> None:
-    """Check system health and component status."""
+    """Check system health and component status.
+
+    🔗 RELATED TOOLS:
+    • Trace execution: goldentooth-agent debug trace --agent [type] '[query]'
+    • Profile performance: goldentooth-agent debug profile [command]
+    • Advanced health monitoring: HealthCheck in flow_engine/observability/health.py
+
+    📚 See: guidelines/debugging-guide.md#system-health
+    """
 
     @inject
     def handle() -> None:
@@ -123,7 +131,16 @@ def trace_execution(
         bool, typer.Option("--verbose", help="Enable verbose output")
     ] = False,
 ) -> None:
-    """Trace flow or agent execution for debugging."""
+    """Trace flow or agent execution for debugging.
+
+    🔗 RELATED TOOLS:
+    • System health: goldentooth-agent debug health
+    • Performance analysis: goldentooth-agent debug profile [command]
+    • Interactive debugging: FlowDebugger in flow_engine/observability/debugging.py
+    • Stream tracing: trace_stream() combinator in flow_engine/combinators/observability.py
+
+    📚 See: guidelines/debugging-guide.md#execution-tracing
+    """
 
     @inject
     def handle() -> None:
@@ -170,7 +187,16 @@ def profile_performance(
         str | None, typer.Option("--input", help="JSON input data")
     ] = None,
 ) -> None:
-    """Profile command performance and resource usage."""
+    """Profile command performance and resource usage.
+
+    🔗 RELATED TOOLS:
+    • System health: goldentooth-agent debug health
+    • Execution tracing: goldentooth-agent debug trace --agent [type] '[query]'
+    • Real-time monitoring: PerformanceMonitor in flow_engine/observability/performance.py
+    • Flow benchmarking: benchmark_stream() combinator in flow_engine/combinators/observability.py
+
+    📚 See: guidelines/debugging-guide.md#performance-analysis
+    """
 
     @inject
     def handle() -> None:

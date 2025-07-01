@@ -115,6 +115,110 @@ async with executor.parallel_context():
 - **High Performance**: Optimized for throughput with intelligent caching
 - **Observability**: Comprehensive logging, metrics, and debugging tools
 
+## 🔧 Debugging & Development
+
+Goldentooth Agent includes comprehensive debugging tools for rapid issue resolution and development productivity:
+
+### **🏥 System Health Monitoring**
+```bash
+# Quick system overview
+goldentooth-agent debug health
+
+# Component-specific analysis
+goldentooth-agent debug health --component agents --export health.json
+
+# Monitor specific components
+goldentooth-agent debug health --component flows
+```
+
+### **🔍 Execution Tracing**
+```bash
+# Trace agent execution with detailed output
+goldentooth-agent debug trace --agent rag "test query" --verbose
+
+# Trace flow execution
+goldentooth-agent debug trace --flow my_flow --input '{"test": "data"}'
+
+# Debug specific operations
+goldentooth-agent debug trace --agent simple "debug test" --verbose
+```
+
+### **⚡ Performance Analysis**
+```bash
+# Profile command performance
+goldentooth-agent debug profile chat --iterations 10
+
+# Benchmark specific operations
+goldentooth-agent debug profile "agents run rag" --iterations 20
+
+# Performance comparison testing
+goldentooth-agent debug profile "flow exec pipeline" --iterations 5
+```
+
+### **🧩 Advanced Debugging Tools**
+
+**Interactive Flow Debugging:**
+```python
+from goldentooth_agent.flow_engine.observability.debugging import FlowDebugger
+
+debugger = FlowDebugger()
+debugger.set_breakpoint("my_flow", condition=lambda x: x.id == "target")
+
+# Interactive debugging session with breakpoints
+async for item in debugger.debug_stream(my_flow, input_stream):
+    # Step-through debugging with inspection
+    pass
+```
+
+**Real-Time Performance Monitoring:**
+```python
+from goldentooth_agent.flow_engine.observability.performance import PerformanceMonitor
+from goldentooth_agent.flow_engine.combinators.observability import monitored_stream
+
+monitor = PerformanceMonitor()
+
+# Automatic performance tracking
+async for item in monitored_stream(my_flow, monitor):
+    # Real-time metrics collection
+    pass
+
+# Get detailed statistics
+stats = monitor.get_statistics()
+print(f"Average duration: {stats['average_duration']:.3f}s")
+```
+
+**Enhanced Error Reporting:**
+```python
+from goldentooth_agent.core.util.error_reporting import DetailedAttributeError
+
+# Automatic enhanced error context with debugging suggestions
+try:
+    value = response.attribute  # May fail if response is dict
+except AttributeError as e:
+    # Enhanced error with tool suggestions and fixes
+    pass
+```
+
+### **📊 Debugging Tool Matrix**
+
+| Problem Type | CLI Tool | Advanced Tool | Use Case |
+|--------------|----------|---------------|----------|
+| **System Issues** | `debug health` | HealthCheck monitoring | Component validation, configuration |
+| **Execution Problems** | `debug trace` | FlowDebugger + breakpoints | Step-through analysis, error location |
+| **Performance Issues** | `debug profile` | PerformanceMonitor | Timing analysis, bottleneck detection |
+| **Flow Composition** | N/A | Flow analysis tools | Architecture review, optimization |
+| **Runtime Errors** | Enhanced exceptions | Error context + suggestions | Immediate debugging guidance |
+
+### **🎯 Quick Debugging Workflow**
+
+1. **Start with health check**: `goldentooth-agent debug health`
+2. **Trace problematic operation**: `goldentooth-agent debug trace --verbose`
+3. **Profile if performance-related**: `goldentooth-agent debug profile [command]`
+4. **Use advanced tools for deep analysis**: FlowDebugger, PerformanceMonitor
+5. **Follow error suggestions**: Enhanced error reporting provides specific guidance
+
+📖 **Complete debugging reference**: [Debugging Guide](guidelines/debugging-guide.md)
+
 ## 🚀 Quick Start
 
 ### Installation
@@ -259,6 +363,34 @@ poetry run poe typecheck
 # Run all quality checks
 poetry run poe qa
 ```
+
+### 🚀 Recommended: Claude Code Hooks Setup
+
+For the smoothest development experience, configure Claude Code hooks to automatically format code:
+
+```json
+{
+  "hooks": {
+    "after_edit": [
+      "black {file}",
+      "isort {file}",
+      "ruff check --fix {file} || true",
+      "goldentooth-agent dev quick-check {file} || true"
+    ],
+    "after_write": [
+      "black {file}",
+      "isort {file}"
+    ]
+  }
+}
+```
+
+**Benefits**:
+- ✅ **Zero pre-commit friction** - formatting applied automatically
+- ✅ **Instant feedback** - see issues as you code
+- ✅ **Faster commits** - no formatting failures to fix
+
+See [docs/claude-code-hooks.md](docs/claude-code-hooks.md) for complete setup instructions.
 
 ### Code Quality Standards
 

@@ -24,6 +24,7 @@ goldentooth\_agent.cli.commands.dev
       generate_readme
       generate_readme_for_commit
       pre_commit_update
+      quick_check_command
       update_all_modules
       update_changed_modules
       update_module_metadata

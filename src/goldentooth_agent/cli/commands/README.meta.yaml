@@ -2,10 +2,10 @@ module_name: Commands
 description: Commands module
 complexity: Critical
 file_count: 16
-loc: ~6272
+loc: ~6299
 test_coverage: Medium
 class_count: 8
-function_count: 143
+function_count: 144
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies:
@@ -148,6 +148,7 @@ symbols:
 - process_single_message
 - profile_performance
 - query_codebase
+- quick_check_command
 - rag_query
 - run_agent
 - run_agent_async
@@ -604,7 +605,11 @@ functions:
     typer.Option(''--format'', ''-f'', help=''Output format: rich, json'')], export:
     Annotated[str | None, typer.Option(''--export'', help=''Export health report to
     file'')]) -> None'
-  docstring: Check system health and component status.
+  docstring: "Check system health and component status.\n\n    \U0001F517 RELATED\
+    \ TOOLS:\n    • Trace execution: goldentooth-agent debug trace --agent [type]\
+    \ '[query]'\n    • Profile performance: goldentooth-agent debug profile [command]\n\
+    \    • Advanced health monitoring: HealthCheck in flow_engine/observability/health.py\n\
+    \n    \U0001F4DA See: guidelines/debugging-guide.md#system-health"
   public: true
 - name: trace_execution
   signature: 'def trace_execution(flow: Annotated[str | None, typer.Option(''--flow'',
@@ -612,14 +617,24 @@ functions:
     help=''Agent name to trace'')], input_data: Annotated[str | None, typer.Option(''--input'',
     help=''JSON input data'')], verbose: Annotated[bool, typer.Option(''--verbose'',
     help=''Enable verbose output'')]) -> None'
-  docstring: Trace flow or agent execution for debugging.
+  docstring: "Trace flow or agent execution for debugging.\n\n    \U0001F517 RELATED\
+    \ TOOLS:\n    • System health: goldentooth-agent debug health\n    • Performance\
+    \ analysis: goldentooth-agent debug profile [command]\n    • Interactive debugging:\
+    \ FlowDebugger in flow_engine/observability/debugging.py\n    • Stream tracing:\
+    \ trace_stream() combinator in flow_engine/combinators/observability.py\n\n  \
+    \  \U0001F4DA See: guidelines/debugging-guide.md#execution-tracing"
   public: true
 - name: profile_performance
   signature: 'def profile_performance(command: Annotated[str, typer.Argument(help="Command
     to profile (e.g., ''agents run echo'')")], iterations: Annotated[int, typer.Option(''--iterations'',
     ''-n'', help=''Number of iterations'')], input_data: Annotated[str | None, typer.Option(''--input'',
     help=''JSON input data'')]) -> None'
-  docstring: Profile command performance and resource usage.
+  docstring: "Profile command performance and resource usage.\n\n    \U0001F517 RELATED\
+    \ TOOLS:\n    • System health: goldentooth-agent debug health\n    • Execution\
+    \ tracing: goldentooth-agent debug trace --agent [type] '[query]'\n    • Real-time\
+    \ monitoring: PerformanceMonitor in flow_engine/observability/performance.py\n\
+    \    • Flow benchmarking: benchmark_stream() combinator in flow_engine/combinators/observability.py\n\
+    \n    \U0001F4DA See: guidelines/debugging-guide.md#performance-analysis"
   public: true
 - name: run_health_checks
   signature: 'def run_health_checks(component: str | None, console: Console) -> HealthStatus'
@@ -688,6 +703,11 @@ functions:
     for the new pipeline'')], config_file: Annotated[str | None, typer.Option(''--config'',
     help=''JSON config file path'')]) -> None'
   docstring: Create a new pipeline from configuration.
+  public: true
+- name: quick_check_command
+  signature: 'def quick_check_command(file_path: Annotated[str, typer.Argument(help=''Path
+    to the file to check'')]) -> None'
+  docstring: Provide quick development feedback without blocking.
   public: true
 - name: update_module_metadata
   signature: 'def update_module_metadata(module_path: Annotated[str, typer.Argument(help=''Path

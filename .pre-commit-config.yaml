@@ -36,30 +36,34 @@ repos:
         exclude: ^old/
 
   # Python-specific code formatting and linting
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
-    hooks:
-      - id: black
-        description: Format Python code with Black
-        language_version: python3
-        args: ['--line-length=88']
-        exclude: ^old/
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        description: Sort Python imports
-        args: ['--profile=black']
-        exclude: ^old/
-
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.8.4
-    hooks:
-      - id: ruff
-        description: Run Ruff linter
-        args: [--fix, --exit-non-zero-on-fix]
-        exclude: ^old/
+  # NOTE: Formatting hooks (black, isort, ruff --fix) are disabled here
+  # and handled by Claude Code hooks for automatic formatting during development.
+  # See docs/claude-code-hooks.md for setup instructions.
+  #
+  # - repo: https://github.com/psf/black
+  #   rev: 24.10.0
+  #   hooks:
+  #     - id: black
+  #       description: Format Python code with Black
+  #       language_version: python3
+  #       args: ['--line-length=88']
+  #       exclude: ^old/
+  #
+  # - repo: https://github.com/pycqa/isort
+  #   rev: 5.13.2
+  #   hooks:
+  #     - id: isort
+  #       description: Sort Python imports
+  #       args: ['--profile=black']
+  #       exclude: ^old/
+  #
+  # - repo: https://github.com/charliermarsh/ruff-pre-commit
+  #   rev: v0.8.4
+  #   hooks:
+  #     - id: ruff
+  #       description: Run Ruff linter
+  #       args: [--fix, --exit-non-zero-on-fix]
+  #       exclude: ^old/
 
   # Update module metadata for changed modules (auto-fixes stale metadata)
   - repo: local

@@ -101,11 +101,11 @@ async def processing_pipeline():
 
 ## Overview
 
-- **Complexity**: Low
-- **Files**: 2 Python files
-- **Lines of Code**: ~133
+- **Complexity**: Medium
+- **Files**: 3 Python files
+- **Lines of Code**: ~331
 - **Classes**: 2
-- **Functions**: 6
+- **Functions**: 13
 
 ## API Reference
 
@@ -121,6 +121,24 @@ Context manager for enhanced debugging information.
 - `add_metadata(self, **kwargs: Any) -> None` - Add additional metadata during execution
 
 ### Functions
+
+#### `def has_complex_help_text(file_path: Path) -> bool`
+Check if file has complex CLI help text that may not render well.
+
+#### `def count_missing_return_types(file_path: Path) -> int`
+Count functions missing return type annotations.
+
+#### `def check_dict_access_patterns(file_path: Path) -> list[str]`
+Check for potential dict.attribute access patterns.
+
+#### `def check_import_organization(file_path: Path) -> list[str]`
+Check for import organization issues.
+
+#### `def quick_check(file_path: str) -> None`
+Provide quick development feedback without blocking.
+
+#### `def main() -> None`
+CLI entry point for quick check.
 
 #### `def debug_operation(operation_name: str, **metadata: Any) -> Iterator[DebugContext]`
 Context manager for tracking operation execution.
@@ -143,11 +161,15 @@ Log a function call with arguments (safely).
 ## Dependencies
 
 ### External Dependencies
+- `ast`
 - `collections`
 - `contextlib`
 - `dataclasses`
 - `debugging`
 - `logging`
+- `pathlib`
+- `re`
+- `sys`
 - `time`
 - `typing`
 

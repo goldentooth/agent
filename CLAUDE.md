@@ -34,6 +34,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   @guidelines/mock-compliance.md
 - **[Background Documentation](guidelines/background-documentation.md)**: Background processes and documentation
   @guidelines/background-documentation.md
+- **[Debugging Guide](guidelines/debugging-guide.md)**: Comprehensive debugging tools, techniques, and workflows
+  @guidelines/debugging-guide.md
 - **[VS Code Setup](guidelines/vscode-setup.md)**: Development environment configuration
   @guidelines/vscode-setup.md
 

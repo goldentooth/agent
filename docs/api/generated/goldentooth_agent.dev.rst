@@ -1,4 +1,4 @@
-goldentooth\_agent.dev
+﻿goldentooth\_agent.dev
 ======================
 
 .. automodule:: goldentooth_agent.dev
@@ -41,4 +41,5 @@ goldentooth\_agent.dev
    :recursive:
 
    goldentooth_agent.dev.debugging
+   goldentooth_agent.dev.quick_check
 

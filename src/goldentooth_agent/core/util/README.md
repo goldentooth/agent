@@ -47,9 +47,9 @@ The util module integrates with the broader system through well-defined interfac
 
 - **Complexity**: Medium
 - **Files**: 3 Python files
-- **Lines of Code**: ~102
+- **Lines of Code**: ~183
 - **Classes**: 1
-- **Functions**: 4
+- **Functions**: 5
 
 ## API Reference
 
@@ -63,6 +63,9 @@ Enhanced AttributeError with context for better debugging.
 #### `def safe_getattr(obj: Any, attr: str, default: Any, context: dict[str, Any] | None) -> Any`
 Safe attribute access with enhanced error reporting.
 
+    This function provides enhanced debugging context when attribute access fails,
+    including suggestions for debugging tools and common fixes.
+
     Args:
         obj: Object to access attribute from
         attr: Attribute name to access
@@ -73,10 +76,21 @@ Safe attribute access with enhanced error reporting.
         The attribute value or default
 
     Raises:
-        DetailedAttributeError: When attribute doesn't exist and no default
+        DetailedAttributeError: When attribute doesn't exist and no default.
+                              The error includes debugging suggestions and tool recommendations.
+
+    Example:
+        >>> # Safe access with debugging context
+        >>> value = safe_getattr(response, "response", context={
+        ...     "operation": "agent_processing",
+        ...     "expected_type": "AgentResponse object"
+        ... })
 
 #### `def safe_dict_access(obj: dict[str, Any], key: str, default: Any, context: dict[str, Any] | None) -> Any`
-Safe dictionary access with error reporting.
+Safe dictionary access with enhanced error reporting.
+
+    This function provides enhanced debugging context when dictionary access fails,
+    including suggestions for debugging tools and common fixes.
 
     Args:
         obj: Dictionary to access
@@ -88,7 +102,15 @@ Safe dictionary access with error reporting.
         The value or default
 
     Raises:
-        DetailedAttributeError: When key doesn't exist and no default
+        DetailedAttributeError: When key doesn't exist and no default.
+                              The error includes debugging suggestions and tool recommendations.
+
+    Example:
+        >>> # Safe access with debugging context
+        >>> value = safe_dict_access(response_dict, "response", context={
+        ...     "operation": "agent_response_parsing",
+        ...     "expected_keys": ["response", "sources", "metadata"]
+        ... })
 
 #### `async def maybe_await(func: Callable[..., T], *args: object, **kwargs: object) -> T`
 Call a function and conditionally await its result if it returns a coroutine.
