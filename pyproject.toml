@@ -78,6 +78,13 @@ python_functions = "test_*"
 addopts = "-v"
 # Exclude old directory from test discovery
 norecursedirs = ["old", "*.egg", ".eggs", "dist", "build", ".tox", ".git", "__pycache__"]
+markers = [
+    "integration: marks tests as integration tests",
+    "performance: marks tests as performance benchmarks",
+    "slow: marks tests as slow running tests",
+    "benchmark: marks tests as benchmark tests",
+    "e2e: marks tests as end-to-end tests"
+]
 
 [tool.coverage.run]
 source = ["src/goldentooth_agent"]
