@@ -75,7 +75,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "-v"
+addopts = "-v -W error::ResourceWarning -W error::DeprecationWarning"
 # Exclude old directory from test discovery
 norecursedirs = ["old", "*.egg", ".eggs", "dist", "build", ".tox", ".git", "__pycache__"]
 markers = [
@@ -136,6 +136,12 @@ test-flow-core = "pytest tests/flow_engine/core/ -v"
 test-flow-combinators = "pytest tests/flow_engine/combinators/ -v"
 test-flow-observability = "pytest tests/flow_engine/observability/ -v"
 test-flow-registry = "pytest tests/flow_engine/registry/ -v"
+
+# Warning-strict testing
+test-strict = "pytest tests/ -W error"
+test-strict-resource = "pytest tests/ -W error::ResourceWarning"
+test-strict-deprecation = "pytest tests/ -W error::DeprecationWarning"
+
 typecheck = "mypy src/goldentooth_agent --strict --show-error-codes --pretty"
 typecheck-all = "mypy . --strict --show-error-codes --pretty"
 

@@ -228,6 +228,10 @@ repos:
           - '--cov-report=term-missing'
           - '-v'
           - '--tb=short'
+          - '-W'
+          - 'error::ResourceWarning'
+          - '-W'
+          - 'error::DeprecationWarning'
 
   # Optional: Additional security checks
   - repo: https://github.com/PyCQA/bandit
