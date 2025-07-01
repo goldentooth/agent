@@ -2,7 +2,7 @@ module_name: Commands
 description: Commands module
 complexity: Critical
 file_count: 16
-loc: ~6263
+loc: ~6272
 test_coverage: Medium
 class_count: 8
 function_count: 143
@@ -505,8 +505,9 @@ functions:
   public: true
 - name: process_rag_input
   signature: 'async def process_rag_input(rag_agent: SimpleRAGAgent, question: str,
-    conversation_history: list[dict[str, str]]) -> Any'
-  docstring: Process input through a RAG agent.
+    conversation_history: list[dict[str, str]]) -> dict[str, Any]'
+  docstring: "Process input through a RAG agent.\n\n    Returns:\n        Dictionary\
+    \ with keys: 'response', 'sources', 'confidence', 'suggestions', 'metadata'"
   public: true
 - name: process_agent_input
   signature: 'async def process_agent_input(agent: FlowAgent, input_data: AgentInput)

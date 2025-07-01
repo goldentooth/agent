@@ -43,9 +43,11 @@ goldentooth\_agent.core
    goldentooth_agent.core.rag
    goldentooth_agent.core.rules
    goldentooth_agent.core.sample_data
+   goldentooth_agent.core.schema
    goldentooth_agent.core.schemas
    goldentooth_agent.core.security
    goldentooth_agent.core.tools
    goldentooth_agent.core.util
+   goldentooth_agent.core.validation
    goldentooth_agent.core.yaml_store
 

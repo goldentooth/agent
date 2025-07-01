@@ -1,4 +1,4 @@
-goldentooth\_agent.core.util
+﻿goldentooth\_agent.core.util
 ============================
 
 .. automodule:: goldentooth_agent.core.util
@@ -26,4 +26,12 @@ goldentooth\_agent.core.util
    
 
 
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   goldentooth_agent.core.util.error_reporting
 

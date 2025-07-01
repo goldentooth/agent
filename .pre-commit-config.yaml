@@ -98,6 +98,19 @@ repos:
   #       additional_dependencies: []
   #       pass_filenames: false
 
+  # Check for potentially unsafe dictionary attribute access
+  - repo: local
+    hooks:
+      - id: check-dict-attribute-access
+        name: Check Dictionary Attribute Access
+        entry: python scripts/check_dict_access.py
+        language: system
+        types: [python]
+        description: Detect potential dict.attribute access patterns that may cause AttributeError
+        pass_filenames: false
+        always_run: false
+        args: ['--staged']
+
   # Dead code detection with Vulture (only NEW issues)
   - repo: local
     hooks:

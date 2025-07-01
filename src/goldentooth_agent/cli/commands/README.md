@@ -48,7 +48,7 @@ The commands module integrates with the broader system through well-defined inte
 
 - **Complexity**: Critical
 - **Files**: 16 Python files
-- **Lines of Code**: ~6263
+- **Lines of Code**: ~6272
 - **Classes**: 8
 - **Functions**: 143
 
@@ -253,8 +253,11 @@ Initialize the Goldentooth Agent system with sample data.
 #### `def show_system_status() -> None`
 Show overall system status and configuration.
 
-#### `async def process_rag_input(rag_agent: SimpleRAGAgent, question: str, conversation_history: list[dict[str, str]]) -> Any`
+#### `async def process_rag_input(rag_agent: SimpleRAGAgent, question: str, conversation_history: list[dict[str, str]]) -> dict[str, Any]`
 Process input through a RAG agent.
+
+    Returns:
+        Dictionary with keys: 'response', 'sources', 'confidence', 'suggestions', 'metadata'
 
 #### `async def process_agent_input(agent: FlowAgent, input_data: AgentInput) -> AgentOutput`
 Process input through a FlowAgent using the correct Flow pattern.

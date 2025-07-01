@@ -1,11 +1,11 @@
 module_name: Util
 description: Util module
-complexity: Low
-file_count: 2
-loc: ~29
+complexity: Medium
+file_count: 3
+loc: ~102
 test_coverage: Medium
-class_count: 0
-function_count: 1
+class_count: 1
+function_count: 4
 coverage_target: 90%+
 test_perf: All tests <200ms
 internal_dependencies: []
@@ -15,12 +15,40 @@ external_dependencies:
 - maybe_await
 - typing
 symbols:
+- DetailedAttributeError
 - T
+- _SENTINEL
 - __all__
 - maybe_await
+- safe_dict_access
+- safe_getattr
 exports:
 - maybe_await
+classes:
+- name: DetailedAttributeError
+  docstring: Enhanced AttributeError with context for better debugging.
+  methods: []
+  public: true
 functions:
+- name: safe_getattr
+  signature: 'def safe_getattr(obj: Any, attr: str, default: Any, context: dict[str,
+    Any] | None) -> Any'
+  docstring: "Safe attribute access with enhanced error reporting.\n\n    Args:\n\
+    \        obj: Object to access attribute from\n        attr: Attribute name to\
+    \ access\n        default: Default value if attribute doesn't exist\n        context:\
+    \ Additional context for error reporting\n\n    Returns:\n        The attribute\
+    \ value or default\n\n    Raises:\n        DetailedAttributeError: When attribute\
+    \ doesn't exist and no default"
+  public: true
+- name: safe_dict_access
+  signature: 'def safe_dict_access(obj: dict[str, Any], key: str, default: Any, context:
+    dict[str, Any] | None) -> Any'
+  docstring: "Safe dictionary access with error reporting.\n\n    Args:\n        obj:\
+    \ Dictionary to access\n        key: Key to look up\n        default: Default\
+    \ value if key doesn't exist\n        context: Additional context for error reporting\n\
+    \n    Returns:\n        The value or default\n\n    Raises:\n        DetailedAttributeError:\
+    \ When key doesn't exist and no default"
+  public: true
 - name: maybe_await
   signature: 'async def maybe_await(func: Callable[..., T], *args: object, **kwargs:
     object) -> T'

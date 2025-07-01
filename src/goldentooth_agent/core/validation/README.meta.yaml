@@ -1,0 +1,50 @@
+module_name: Validation
+description: Validation module
+complexity: Low
+file_count: 2
+loc: ~89
+test_coverage: Medium
+class_count: 0
+function_count: 2
+coverage_target: 90%+
+test_perf: All tests <200ms
+internal_dependencies: []
+external_dependencies:
+- collections
+- functools
+- inspect
+- logging
+- runtime_types
+- typing
+symbols:
+- T
+- __all__
+- logger
+- validate_dict_response
+- validate_return_type
+exports:
+- validate_dict_response
+- validate_return_type
+functions:
+- name: validate_return_type
+  signature: 'def validate_return_type(func: Callable[..., Any]) -> Callable[...,
+    Any]'
+  docstring: "Decorator to validate function return types at runtime.\n\n    This\
+    \ helps catch type mismatches early during development,\n    preventing issues\
+    \ like the dict/object attribute access error.\n\n    Args:\n        func: Function\
+    \ to wrap with type validation\n\n    Returns:\n        Wrapped function with\
+    \ runtime type checking"
+  public: true
+- name: validate_dict_response
+  signature: 'def validate_dict_response(response: Any, required_keys: list[str] |
+    None, optional_keys: list[str] | None) -> dict[str, Any]'
+  docstring: "Validate that a response is a dictionary with expected keys.\n\n   \
+    \ Args:\n        response: The response to validate\n        required_keys: Keys\
+    \ that must be present\n        optional_keys: Keys that may be present\n\n  \
+    \  Returns:\n        The validated dictionary\n\n    Raises:\n        TypeError:\
+    \ If response is not a dictionary\n        KeyError: If required keys are missing"
+  public: true
+constants:
+- name: T
+  value: ''
+  public: true

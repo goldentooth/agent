@@ -28,8 +28,12 @@ async def process_rag_input(
     rag_agent: SimpleRAGAgent,
     question: str,
     conversation_history: list[dict[str, str]],
-) -> Any:
-    """Process input through a RAG agent."""
+) -> dict[str, Any]:
+    """Process input through a RAG agent.
+
+    Returns:
+        Dictionary with keys: 'response', 'sources', 'confidence', 'suggestions', 'metadata'
+    """
     return await rag_agent.process_question(
         question=question,
         conversation_history=conversation_history,
@@ -267,36 +271,40 @@ async def chat_loop(
                         console=console,
                         refresh_per_second=10,
                     ) as live:
-                        result = await process_rag_input(
+                        rag_result = await process_rag_input(
                             rag_agent, user_input, conversation_history
                         )
                         live.update(
-                            Text(f"[bold blue]RAG Agent[/bold blue]: {result.response}")
+                            Text(
+                                f"[bold blue]RAG Agent[/bold blue]: {rag_result['response']}"
+                            )
                         )
                         await asyncio.sleep(0.1)
                 else:
                     with console.status("[dim]🔍 Searching documents...[/dim]"):
-                        result = await process_rag_input(
+                        rag_result = await process_rag_input(
                             rag_agent, user_input, conversation_history
                         )
 
-                console.print(f"[bold blue]RAG Agent[/bold blue]: {result.response}")
+                console.print(
+                    f"[bold blue]RAG Agent[/bold blue]: {rag_result['response']}"
+                )
 
                 # Show RAG-specific metadata
-                if result.sources:
+                if rag_result.get("sources"):
                     console.print(
-                        f"[dim]Sources: {len(result.sources)} documents | Confidence: {result.confidence:.2f}[/dim]"
+                        f"[dim]Sources: {len(rag_result['sources'])} documents | Confidence: {rag_result['confidence']:.2f}[/dim]"
                     )
 
-                if result.suggestions:
+                if rag_result.get("suggestions"):
                     console.print(
-                        f"[dim]Suggestions: {', '.join(result.suggestions[:2])}[/dim]"
+                        f"[dim]Suggestions: {', '.join(rag_result['suggestions'][:2])}[/dim]"
                     )
 
                 # Add to conversation history
                 conversation_history.append({"role": "user", "content": user_input})
                 conversation_history.append(
-                    {"role": "assistant", "content": result.response}
+                    {"role": "assistant", "content": rag_result["response"]}
                 )
 
                 # Keep conversation history manageable
@@ -316,21 +324,23 @@ async def chat_loop(
                         refresh_per_second=10,
                     ) as live:
                         await asyncio.sleep(0.5)
-                        result = await process_agent_input(agent, input_data)
+                        agent_result = await process_agent_input(agent, input_data)
                         live.update(
-                            Text(f"[bold blue]Agent[/bold blue]: {result.response}")
+                            Text(
+                                f"[bold blue]Agent[/bold blue]: {agent_result.response}"
+                            )
                         )
                         await asyncio.sleep(0.1)
                 else:
                     with console.status("[dim]🤖 Processing...[/dim]"):
-                        result = await process_agent_input(agent, input_data)
+                        agent_result = await process_agent_input(agent, input_data)
 
-                console.print(f"[bold blue]Agent[/bold blue]: {result.response}")
+                console.print(f"[bold blue]Agent[/bold blue]: {agent_result.response}")
 
                 # Show standard metadata
-                if result.metadata:
+                if agent_result.metadata:
                     metadata_text = " | ".join(
-                        [f"{k}: {v}" for k, v in result.metadata.items()]
+                        [f"{k}: {v}" for k, v in agent_result.metadata.items()]
                     )
                     console.print(f"[dim]{metadata_text}[/dim]")
 
@@ -427,10 +437,10 @@ async def process_single_message(
                 rag_result = await process_rag_input(rag_agent, message, [])
                 # Convert RAG result to AgentOutput for compatibility
                 return AgentOutput(
-                    response=rag_result.response,
+                    response=rag_result["response"],
                     metadata={
-                        "sources": len(rag_result.sources),
-                        "confidence": rag_result.confidence,
+                        "sources": len(rag_result.get("sources", [])),
+                        "confidence": rag_result.get("confidence", 0.0),
                         "agent_type": "rag",
                     },
                 )
