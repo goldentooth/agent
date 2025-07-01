@@ -39,5 +39,3 @@
 35. Let's try to prevent functions from exceeding about ten lines (or, more accurately, statements) in length. If a function exceeds that, we should complain about it.
 36. Let's replace any use of `inject.me()` with `world[<Type>]`, e.g. `world[SomeServiceClass]`. The former seems to trigger Pylance/Pyright's `reportCallInDefaultInitializer` lint. This should be considered a guideline for future development.
 37. Think the BG generation is shitting itself. Or did we disable that?
-38. Need to fix the test structure issue.
-39. Struggled to find the test-structure hook; what can we do to make that more obvious?

@@ -44,7 +44,8 @@ class EmbeddingCache:
         """Initialize SQLite cache database."""
         self.cache_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with sqlite3.connect(self.cache_file) as conn:
+        conn = sqlite3.connect(self.cache_file)
+        try:
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS embeddings (
@@ -68,12 +69,15 @@ class EmbeddingCache:
             )
 
             conn.commit()
+        finally:
+            conn.close()
 
     def get_embedding(self, content_hash: str, model_name: str) -> list[float] | None:
         """Get cached embedding if available."""
         from datetime import datetime
 
-        with sqlite3.connect(self.cache_file) as conn:
+        conn = sqlite3.connect(self.cache_file)
+        try:
             cursor = conn.cursor()
 
             # Look up embedding
@@ -105,7 +109,9 @@ class EmbeddingCache:
                 embedding_array = np.frombuffer(embedding_bytes, dtype=np.float32)
                 return list(embedding_array.tolist())
 
-        return None
+            return None
+        finally:
+            conn.close()
 
     def store_embedding(
         self, content_hash: str, model_name: str, embedding: list[float]
@@ -119,7 +125,8 @@ class EmbeddingCache:
 
         now = datetime.now().isoformat()
 
-        with sqlite3.connect(self.cache_file) as conn:
+        conn = sqlite3.connect(self.cache_file)
+        try:
             cursor = conn.cursor()
 
             # Store embedding (replace if exists)
@@ -133,13 +140,16 @@ class EmbeddingCache:
             )
 
             conn.commit()
+        finally:
+            conn.close()
 
         # Cleanup if cache is too large
         self._cleanup_cache()
 
     def _cleanup_cache(self) -> None:
         """Remove least recently used embeddings if cache is too large."""
-        with sqlite3.connect(self.cache_file) as conn:
+        conn = sqlite3.connect(self.cache_file)
+        try:
             cursor = conn.cursor()
 
             # Check cache size
@@ -163,10 +173,13 @@ class EmbeddingCache:
                 )
 
                 conn.commit()
+        finally:
+            conn.close()
 
     def get_cache_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
-        with sqlite3.connect(self.cache_file) as conn:
+        conn = sqlite3.connect(self.cache_file)
+        try:
             cursor = conn.cursor()
 
             # Total entries
@@ -201,21 +214,29 @@ class EmbeddingCache:
                 "cache_size_mb": round(cache_size_mb, 2),
                 "max_cache_size": self.max_cache_size,
             }
+        finally:
+            conn.close()
 
     def clear_cache(self) -> None:
         """Clear all cached embeddings."""
-        with sqlite3.connect(self.cache_file) as conn:
+        conn = sqlite3.connect(self.cache_file)
+        try:
             conn.execute("DELETE FROM embeddings")
             conn.commit()
+        finally:
+            conn.close()
 
     def remove_model_cache(self, model_name: str) -> int:
         """Remove all embeddings for a specific model."""
-        with sqlite3.connect(self.cache_file) as conn:
+        conn = sqlite3.connect(self.cache_file)
+        try:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM embeddings WHERE model_name = ?", (model_name,))
             removed_count = cursor.rowcount
             conn.commit()
             return removed_count
+        finally:
+            conn.close()
 
 
 class CachedEmbeddingService:
