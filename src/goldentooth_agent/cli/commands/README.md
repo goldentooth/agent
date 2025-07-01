@@ -48,7 +48,7 @@ The commands module integrates with the broader system through well-defined inte
 
 - **Complexity**: Critical
 - **Files**: 16 Python files
-- **Lines of Code**: ~6232
+- **Lines of Code**: ~6263
 - **Classes**: 8
 - **Functions**: 143
 

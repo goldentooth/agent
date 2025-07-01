@@ -6,7 +6,7 @@ import asyncio
 import json
 import sys
 from collections.abc import AsyncIterator
-from typing import Annotated, Any
+from typing import Annotated, Any, cast
 
 import typer
 from antidote import inject
@@ -275,7 +275,7 @@ async def run_instructor_agent_async(
             results.append(output_data)
 
         if results:
-            return results[-1]
+            return cast(FlowIOSchema, results[-1])
         else:
             raise RuntimeError("Instructor agent produced no output")
 

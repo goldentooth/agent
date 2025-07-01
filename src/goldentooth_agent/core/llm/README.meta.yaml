@@ -2,7 +2,7 @@ module_name: Llm
 description: Llm module
 complexity: Medium
 file_count: 3
-loc: ~325
+loc: ~323
 test_coverage: Medium
 class_count: 4
 function_count: 11
@@ -103,8 +103,8 @@ classes:
     public: true
   - name: create_chat_completion
     signature: 'async def create_chat_completion(self, messages: list[dict[str, Any]],
-      model: str | None, temperature: float, max_tokens: int | None, stream: bool,
-      system: str | None, **kwargs: Any) -> str | StreamingResponse'
+      model: str, temperature: float, max_tokens: int, stream: bool, **kwargs: Any)
+      -> str | StreamingResponse'
     docstring: "Create a chat completion without structured output.\n\n        Args:\n\
       \            messages: List of message dictionaries\n            model: Model\
       \ name (defaults to default_model)\n            temperature: Sampling temperature\n\

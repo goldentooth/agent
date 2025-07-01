@@ -861,7 +861,10 @@ Provide a structured analysis that helps understand how these chunks relate to e
 
             # Analyze relationships
             from typing import cast
-            analyzer = ChunkRelationshipAnalyzer(cast(EmbeddingsService, self.embeddings_service))
+
+            analyzer = ChunkRelationshipAnalyzer(
+                cast(EmbeddingsService, self.embeddings_service)
+            )
             relationship_data = await analyzer.analyze_chunk_relationships(
                 chunks, embeddings, include_cross_document
             )
@@ -950,7 +953,10 @@ Provide a structured analysis that helps understand how these chunks relate to e
 
             # Expand chunk context
             from typing import cast
-            analyzer = ChunkRelationshipAnalyzer(cast(EmbeddingsService, self.embeddings_service))
+
+            analyzer = ChunkRelationshipAnalyzer(
+                cast(EmbeddingsService, self.embeddings_service)
+            )
             expanded_chunk_ids = analyzer.get_chunk_context_expansion(
                 initial_chunk_ids, relationship_data, relationship_expansion_radius
             )
@@ -1821,8 +1827,7 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                 store_type=store_type,
                 semantic_weight=semantic_weight,
                 keyword_weight=keyword_weight,
-                include_metadata=True,
-                include_explanations=True,
+                explain_results=True,
             )
 
             retrieved_docs = hybrid_result.get("retrieved_documents", [])
@@ -2325,7 +2330,7 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                             chunk_type=doc.get("chunk_type", "unknown"),
                         )
 
-                        search_result: SearchResult = SearchResult(
+                        search_result_obj: SearchResult = SearchResult(
                             chunk=chunk,
                             relevance_score=doc.get(
                                 "weighted_score", doc.get("hybrid_score", 0.5)
@@ -2335,7 +2340,7 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                                 "query_variant": doc.get("query_variant", question),
                             },
                         )
-                        search_results.append(search_result)
+                        search_results.append(search_result_obj)
 
                 if len(search_results) >= self.chunk_fusion.min_chunks_for_fusion:
                     fused_answers = self.chunk_fusion.fuse_chunks(
@@ -2366,31 +2371,13 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
                 "expanded_query": (
                     {
                         "original_query": question,
-                        "expanded_queries": (
-                            expansion_result.expanded_queries
-                            if expansion_result is not None
-                            else [question]
-                        ),
-                        "intent": (
-                            expansion_result.intent.value
-                            if expansion_result is not None
-                            else "general"
-                        ),
-                        "key_terms": (
-                            expansion_result.key_terms if expansion_result is not None else []
-                        ),
-                        "synonyms": (
-                            expansion_result.synonyms if expansion_result is not None else {}
-                        ),
-                        "related_terms": (
-                            expansion_result.related_terms if expansion_result is not None else []
-                        ),
-                        "confidence": (
-                            expansion_result.confidence if expansion_result is not None else 0.5
-                        ),
-                        "suggestions": (
-                            expansion_result.suggestions if expansion_result is not None else []
-                        ),
+                        "expanded_queries": expansion_result.expanded_queries,
+                        "intent": expansion_result.intent.value,
+                        "key_terms": expansion_result.key_terms,
+                        "synonyms": expansion_result.synonyms,
+                        "related_terms": expansion_result.related_terms,
+                        "confidence": expansion_result.confidence,
+                        "suggestions": expansion_result.suggestions,
                     }
                     if expansion_result is not None
                     else None
@@ -2658,7 +2645,9 @@ Provide a comprehensive, accurate response based on the hybrid search results.""
     def _build_enhanced_context(
         self,
         documents: list[dict[str, Any]],
-        fused_answers: list[Any],  # Should be list[FusedAnswer] but avoiding import cycle
+        fused_answers: list[
+            Any
+        ],  # Should be list[FusedAnswer] but avoiding import cycle
         expansion: QueryExpansion | None,
         original_question: str,
     ) -> str:

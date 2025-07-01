@@ -57,6 +57,8 @@ def list_documents(
                     docs = document_store.goldentooth_services.list()
                 elif store_type == "notes":
                     docs = document_store.notes.list()
+                else:
+                    docs = []
 
                 if limit:
                     docs = docs[:limit]

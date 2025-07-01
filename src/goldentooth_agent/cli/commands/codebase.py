@@ -239,6 +239,9 @@ def codebase_overview(
 
     async def _overview() -> None:
         introspection_service = world.get(CodebaseIntrospectionService)
+        if introspection_service is None:
+            console.print("❌ CodebaseIntrospectionService not available", style="red")
+            return
 
         with console.status("📊 Generating codebase overview..."):
             overview = await introspection_service.get_codebase_overview(codebase_name)
@@ -259,6 +262,9 @@ def compare_codebases(
 
     async def _compare() -> None:
         introspection_service = world.get(CodebaseIntrospectionService)
+        if introspection_service is None:
+            console.print("❌ CodebaseIntrospectionService not available", style="red")
+            return
 
         codebase_list = [name.strip() for name in codebases.split(",")]
 
@@ -288,6 +294,9 @@ def add_codebase(
 
     async def _add() -> None:
         introspection_service = world.get(CodebaseIntrospectionService)
+        if introspection_service is None:
+            console.print("❌ CodebaseIntrospectionService not available", style="red")
+            return
 
         codebase_path = Path(path)
         if not codebase_path.exists():
@@ -322,8 +331,11 @@ def list_codebases() -> None:
 
     async def _list() -> None:
         introspection_service = world.get(CodebaseIntrospectionService)
-        await introspection_service.initialize()
+        if introspection_service is None:
+            console.print("❌ CodebaseIntrospectionService not available", style="red")
+            return
 
+        await introspection_service.initialize()
         codebases = introspection_service.list_available_codebases()
 
         if not codebases:
@@ -367,8 +379,11 @@ def token_analysis(
 
     async def _analyze() -> None:
         introspection_service = world.get(CodebaseIntrospectionService)
-        await introspection_service.initialize()
+        if introspection_service is None:
+            console.print("❌ CodebaseIntrospectionService not available", style="red")
+            return
 
+        await introspection_service.initialize()
         token_tracker = introspection_service.collection.token_tracker
 
         # Get comprehensive statistics
@@ -462,8 +477,11 @@ def budget_management(
 
     async def _budget() -> None:
         introspection_service = world.get(CodebaseIntrospectionService)
-        await introspection_service.initialize()
+        if introspection_service is None:
+            console.print("❌ CodebaseIntrospectionService not available", style="red")
+            return
 
+        await introspection_service.initialize()
         token_tracker = introspection_service.collection.token_tracker
 
         # Update budget settings if provided

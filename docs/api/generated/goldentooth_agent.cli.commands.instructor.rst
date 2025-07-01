@@ -13,6 +13,7 @@ goldentooth\_agent.cli.commands.instructor
 
    .. autosummary::
    
+      cast
       create_code_reviewer_agent
       create_data_extractor_agent
       create_recipe_generator_agent

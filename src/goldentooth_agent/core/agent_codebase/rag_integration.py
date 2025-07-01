@@ -146,8 +146,8 @@ class CodebaseRAGIntegration:
     async def _search_documents(self, query: str, limit: int) -> dict[str, Any]:
         """Search document store using RAG service."""
         try:
-            # Use RAG service's search capability
-            result = await self.rag_service.search(query, limit=limit)
+            # Use RAG service's query capability
+            result = await self.rag_service.query(query, max_results=limit)
 
             # Format results to match codebase format
             formatted_results = []
@@ -246,7 +246,7 @@ class CodebaseRAGIntegration:
             return "No relevant information found in the codebase or documents."
 
         # Extract content from top results
-        content_pieces = []
+        content_pieces: list[str] = []
         code_examples = []
         documentation = []
 
@@ -282,11 +282,14 @@ Please provide a clear, practical answer that combines conceptual understanding 
 
         try:
             # Use RAG service's LLM to synthesize answer
-            response = await self.rag_service.claude_client.generate_response(
+            response = await self.rag_service.claude_client.create_chat_completion(
                 messages=[{"role": "user", "content": synthesis_prompt}],
                 max_tokens=1000,
             )
-            return response.get("content", "Unable to generate synthesis.")
+            if isinstance(response, str):
+                return response
+            else:
+                return "Unable to generate synthesis."
         except Exception:
             # Fallback to simple concatenation
             return "Based on the available information:\n\n" + "\n\n".join(

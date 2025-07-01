@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Any, cast
 
 from pydantic import Field
 
@@ -99,8 +99,8 @@ class RAGAgent:
             # Extract input data
             try:
                 question = context["schema.RAGInput.question"]
-                conversation_history = context.get(
-                    "schema.RAGInput.conversation_history", []
+                conversation_history: list[dict[str, str]] = (
+                    context.get("schema.RAGInput.conversation_history", []) or []
                 )
                 # Note: domain_context could be used for future enhancements
                 # domain_context = context.get("schema.RAGInput.domain_context")
@@ -119,7 +119,8 @@ class RAGAgent:
                 analysis_key = ContextKey.create(
                     "rag.query_analysis", dict, "Analysis of the user's query"
                 )
-                context = context.fork().set(analysis_key.path, query_analysis)
+                context = context.fork()
+                context.set(analysis_key.path, query_analysis)
 
             except Exception:
                 # If query analysis fails, continue without it
@@ -133,7 +134,8 @@ class RAGAgent:
                 conv_key = ContextKey.create(
                     "rag.conversation_context", str, "Conversation history context"
                 )
-                context = context.fork().set(conv_key.path, conversation_context)
+                context = context.fork()
+                context.set(conv_key.path, conversation_context)
 
             yield context
 
@@ -145,20 +147,26 @@ class RAGAgent:
             try:
                 # Extract input parameters
                 question = context["schema.RAGInput.question"]
-                max_results = context.get("schema.RAGInput.max_results", 10)
-                enable_expansion = context.get("schema.RAGInput.enable_expansion", True)
-                enable_fusion = context.get("schema.RAGInput.enable_fusion", True)
+                max_results: int = context.get("schema.RAGInput.max_results", 10) or 10
+                enable_expansion: bool = (
+                    context.get("schema.RAGInput.enable_expansion", True) or True
+                )
+                enable_fusion: bool = (
+                    context.get("schema.RAGInput.enable_fusion", True) or True
+                )
                 domain_context = context.get("schema.RAGInput.domain_context")
 
                 # Get conversation context if available
-                conversation_context = context.get("rag.conversation_context")
+                conversation_context: str | None = context.get(
+                    "rag.conversation_context"
+                )
 
                 # Enhance question with conversation context if available
-                enhanced_question = question
-                if conversation_context:
-                    enhanced_question = (
-                        f"Context: {conversation_context}\n\nQuestion: {question}"
-                    )
+                enhanced_question = (
+                    f"Context: {conversation_context}\n\nQuestion: {question}"
+                    if conversation_context
+                    else question
+                )
 
                 # Perform enhanced RAG query
                 rag_result = await self.rag_service.enhanced_query(
@@ -178,7 +186,9 @@ class RAGAgent:
                 confidence = self._calculate_confidence(rag_result)
 
                 # Get query analysis from context or result
-                query_analysis = context.get("rag.query_analysis", {})
+                query_analysis: dict[str, Any] = (
+                    context.get("rag.query_analysis", {}) or {}
+                )
                 if not query_analysis and "expanded_query" in rag_result:
                     query_analysis = rag_result["expanded_query"]
 
@@ -423,7 +433,7 @@ class RAGAgent:
 
         # Return the last result
         if results:
-            return results[-1]
+            return cast(RAGOutput, results[-1])
         else:
             # Fallback if no results
             return RAGOutput(
@@ -437,4 +447,4 @@ class RAGAgent:
 
     def as_flow(self) -> Flow[RAGInput, RAGOutput]:
         """Convert the RAG agent to a Flow for composition."""
-        return self.flow_agent.as_flow()
+        return cast(Flow[RAGInput, RAGOutput], self.flow_agent.as_flow())

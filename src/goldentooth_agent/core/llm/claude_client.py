@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import AsyncIterator
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 import instructor
 from anthropic import AsyncAnthropic
@@ -131,13 +131,12 @@ class ClaudeFlowClient(LLMClient):
     async def create_chat_completion(
         self,
         messages: list[dict[str, Any]],
-        model: str | None = None,
+        model: str = "claude-3-5-sonnet-20241022",
         temperature: float = 0.7,
-        max_tokens: int | None = None,
+        max_tokens: int = 1000,
         stream: bool = False,
-        system: str | None = None,
         **kwargs: Any,
-    ) -> str | ClaudeStreamingResponse:
+    ) -> str | StreamingResponse:
         """Create a chat completion without structured output.
 
         Args:
@@ -151,9 +150,6 @@ class ClaudeFlowClient(LLMClient):
         Returns:
             Response text or streaming response
         """
-        model = model or self.default_model
-        max_tokens = max_tokens or self.default_max_tokens
-
         try:
             # Prepare Claude API parameters
             claude_params = {
@@ -164,7 +160,8 @@ class ClaudeFlowClient(LLMClient):
                 **kwargs,
             }
 
-            # Add system message if provided
+            # Add system message if provided in kwargs
+            system = kwargs.get("system")
             if system:
                 claude_params["system"] = system
 
@@ -172,7 +169,7 @@ class ClaudeFlowClient(LLMClient):
                 # Create streaming response
                 claude_params["stream"] = True
                 response_stream = await self._client.messages.create(**claude_params)
-                return ClaudeStreamingResponse(response_stream)
+                return cast(StreamingResponse, ClaudeStreamingResponse(response_stream))
             else:
                 # Create non-streaming response
                 response = await self._client.messages.create(**claude_params)

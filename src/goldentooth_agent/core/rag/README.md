@@ -49,7 +49,7 @@ The rag module integrates with the broader system through well-defined interface
 
 - **Complexity**: Critical
 - **Files**: 7 Python files
-- **Lines of Code**: ~4557
+- **Lines of Code**: ~4553
 - **Classes**: 13
 - **Functions**: 109
 
@@ -68,12 +68,12 @@ Retrieval-Augmented Generation service for intelligent document querying.
 - `async search_chunks_by_type(self, chunk_types: list[str], question: str | None, max_results: int, store_type: str | None) -> dict[str, Any]` - Search for chunks of specific types, optionally with semantic similarity
 - `async get_document_chunk_summary(self, store_type: str, document_id: str, include_content_preview: bool) -> dict[str, Any]` - Get a summary of all chunks for a specific document
 - `async compare_chunks(self, chunk_ids: list[str], comparison_question: str | None) -> dict[str, Any]` - Compare multiple chunks, optionally with a specific comparison question
-- `async analyze_document_relationships(self, store_type: str, document_id: str, include_cross_document: bool) -> dict[str, Any]` - Analyze relationships between chunks in documents
-- `async query_with_relationships(self, question: str, max_results: int, expand_with_related: bool, relationship_expansion_radius: int, include_relationship_context: bool, **kwargs) -> dict[str, Any]` - Enhanced query that leverages chunk relationships for better context
+- `async analyze_document_relationships(self, store_type: str | None, document_id: str | None, include_cross_document: bool) -> dict[str, Any]` - Analyze relationships between chunks in documents
+- `async query_with_relationships(self, question: str, max_results: int, expand_with_related: bool, relationship_expansion_radius: int, include_relationship_context: bool, **kwargs: Any) -> dict[str, Any]` - Enhanced query that leverages chunk relationships for better context
 - `async get_chunk_relationship_insights(self, chunk_id: str) -> dict[str, Any]` - Get insights about a specific chunk's relationships
-- `async hybrid_query(self, question: str, max_results: int, store_type: str, include_chunks: bool, semantic_weight: float, keyword_weight: float, min_semantic_score: float, min_keyword_score: float, boost_exact_matches: bool, boost_title_matches: bool, explain_results: bool) -> dict[str, Any]` - Enhanced query using hybrid search (semantic + keyword)
-- `async compare_search_methods(self, question: str, max_results: int, store_type: str, include_chunks: bool) -> dict[str, Any]` - Compare results from different search methods
-- `async tune_hybrid_search(self, test_queries: list[str], semantic_weights: list[float], keyword_weights: list[float]) -> dict[str, Any]` - Tune hybrid search parameters using test queries
+- `async hybrid_query(self, question: str, max_results: int, store_type: str | None, include_chunks: bool, semantic_weight: float, keyword_weight: float, min_semantic_score: float, min_keyword_score: float, boost_exact_matches: bool, boost_title_matches: bool, explain_results: bool) -> dict[str, Any]` - Enhanced query using hybrid search (semantic + keyword)
+- `async compare_search_methods(self, question: str, max_results: int, store_type: str | None, include_chunks: bool) -> dict[str, Any]` - Compare results from different search methods
+- `async tune_hybrid_search(self, test_queries: list[str], semantic_weights: list[float] | None, keyword_weights: list[float] | None) -> dict[str, Any]` - Tune hybrid search parameters using test queries
 - `async query_with_fusion(self, question: str, max_results: int, store_type: str | None, semantic_weight: float, keyword_weight: float, max_clusters: int, fusion_coherence_threshold: float, include_unfused: bool) -> dict[str, Any]` - Execute a hybrid query with intelligent chunk fusion
 - `async analyze_fusion_quality(self, question: str, max_results: int, test_configurations: list[dict[str, float]] | None) -> dict[str, Any]` - Analyze and compare different fusion configurations
 - `async enhanced_query(self, question: str, max_results: int, store_type: str | None, domain_context: str | None, enable_expansion: bool, enable_fusion: bool, expansion_strategies: int, auto_reformulate: bool) -> dict[str, Any]` - Enhanced query with intelligent expansion, multi-strategy search, and fusion

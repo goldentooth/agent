@@ -1,4 +1,4 @@
-goldentooth\_agent.core.sample\_data.installer
+﻿goldentooth\_agent.core.sample\_data.installer
 ==============================================
 
 .. automodule:: goldentooth_agent.core.sample_data.installer
@@ -28,6 +28,7 @@ goldentooth\_agent.core.sample\_data.installer
       GitHubOrgAdapter
       GitHubRepoAdapter
       NoteAdapter
+      Path
       Paths
    
    

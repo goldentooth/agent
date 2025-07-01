@@ -305,6 +305,10 @@ async def chat_loop(
 
             else:
                 # Standard FlowAgent processing
+                if agent is None:
+                    console.print("❌ No agent available", style="red")
+                    continue
+
                 if stream_enabled:
                     with Live(
                         Text("🤖 Thinking...", style="dim"),

@@ -61,12 +61,8 @@ def get_agent_metadata(agent_name: str, agent: FlowAgent) -> AgentMetadata:
         "type": "FlowAgent",
         "input_schema": agent.input_schema.__name__,
         "output_schema": agent.output_schema.__name__,
-        "system_flow": (
-            agent.system_flow.name if agent.system_flow is not None else "None"
-        ),
-        "processing_flow": (
-            agent.processing_flow.name if agent.processing_flow is not None else "None"
-        ),
+        "system_flow": agent.system_flow.name,
+        "processing_flow": agent.processing_flow.name,
         "model": getattr(agent, "model", "default"),
         "description": get_agent_description(agent_name),
     }

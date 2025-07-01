@@ -13,6 +13,7 @@ goldentooth\_agent.core.llm.claude\_client
 
    .. autosummary::
    
+      cast
       create_claude_agent
    
    

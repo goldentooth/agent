@@ -2,7 +2,7 @@ module_name: Rag
 description: Rag module
 complexity: Critical
 file_count: 7
-loc: ~4557
+loc: ~4553
 test_coverage: Medium
 class_count: 13
 function_count: 109
@@ -131,8 +131,8 @@ classes:
     first_line: Compare multiple chunks, optionally with a specific comparison question
     public: true
   - name: analyze_document_relationships
-    signature: 'async def analyze_document_relationships(self, store_type: str, document_id:
-      str, include_cross_document: bool) -> dict[str, Any]'
+    signature: 'async def analyze_document_relationships(self, store_type: str | None,
+      document_id: str | None, include_cross_document: bool) -> dict[str, Any]'
     docstring: "Analyze relationships between chunks in documents.\n\n        Args:\n\
       \            store_type: Optional store type to filter documents\n         \
       \   document_id: Optional specific document to analyze\n            include_cross_document:\
@@ -143,7 +143,7 @@ classes:
   - name: query_with_relationships
     signature: 'async def query_with_relationships(self, question: str, max_results:
       int, expand_with_related: bool, relationship_expansion_radius: int, include_relationship_context:
-      bool, **kwargs) -> dict[str, Any]'
+      bool, **kwargs: Any) -> dict[str, Any]'
     docstring: "Enhanced query that leverages chunk relationships for better context.\n\
       \n        Args:\n            question: The question to ask\n            max_results:\
       \ Maximum number of initial results\n            expand_with_related: Whether\
@@ -164,9 +164,9 @@ classes:
     public: true
   - name: hybrid_query
     signature: 'async def hybrid_query(self, question: str, max_results: int, store_type:
-      str, include_chunks: bool, semantic_weight: float, keyword_weight: float, min_semantic_score:
-      float, min_keyword_score: float, boost_exact_matches: bool, boost_title_matches:
-      bool, explain_results: bool) -> dict[str, Any]'
+      str | None, include_chunks: bool, semantic_weight: float, keyword_weight: float,
+      min_semantic_score: float, min_keyword_score: float, boost_exact_matches: bool,
+      boost_title_matches: bool, explain_results: bool) -> dict[str, Any]'
     docstring: "Enhanced query using hybrid search (semantic + keyword).\n\n     \
       \   Args:\n            question: The question to ask\n            max_results:\
       \ Maximum number of results to return\n            store_type: Optional store\
@@ -183,7 +183,7 @@ classes:
     public: true
   - name: compare_search_methods
     signature: 'async def compare_search_methods(self, question: str, max_results:
-      int, store_type: str, include_chunks: bool) -> dict[str, Any]'
+      int, store_type: str | None, include_chunks: bool) -> dict[str, Any]'
     docstring: "Compare results from different search methods.\n\n        Args:\n\
       \            question: The question to search for\n            max_results:\
       \ Maximum results per method\n            store_type: Optional store type filter\n\
@@ -193,7 +193,7 @@ classes:
     public: true
   - name: tune_hybrid_search
     signature: 'async def tune_hybrid_search(self, test_queries: list[str], semantic_weights:
-      list[float], keyword_weights: list[float]) -> dict[str, Any]'
+      list[float] | None, keyword_weights: list[float] | None) -> dict[str, Any]'
     docstring: "Tune hybrid search parameters using test queries.\n\n        Args:\n\
       \            test_queries: List of test queries to evaluate\n            semantic_weights:\
       \ List of semantic weights to test\n            keyword_weights: List of keyword\

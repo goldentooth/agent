@@ -6,7 +6,7 @@ Agent Codebase module
 
 - **Complexity**: Critical
 - **Files**: 10 Python files
-- **Lines of Code**: ~2442
+- **Lines of Code**: ~2435
 - **Classes**: 22
 - **Functions**: 100
 

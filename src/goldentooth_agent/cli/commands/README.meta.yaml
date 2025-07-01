@@ -2,7 +2,7 @@ module_name: Commands
 description: Commands module
 complexity: Critical
 file_count: 16
-loc: ~6232
+loc: ~6263
 test_coverage: Medium
 class_count: 8
 function_count: 143
