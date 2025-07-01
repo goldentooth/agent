@@ -413,7 +413,7 @@ class RAGAgent:
         flow = self.flow_agent.as_flow()
 
         # Create input stream
-        async def input_stream():
+        async def input_stream() -> AsyncIterator[RAGInput]:
             yield input_data
 
         # Process and get result

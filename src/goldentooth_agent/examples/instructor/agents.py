@@ -79,6 +79,9 @@ def create_data_extractor_agent(
             except Exception as e:
                 error_result = PersonData(
                     name="Error",
+                    age=None,
+                    occupation=None,
+                    location=None,
                     contact_info={"error": str(e)},
                 )
                 yield error_result.to_context(context)
@@ -148,8 +151,15 @@ def create_sentiment_analyzer_agent(
                     raise RuntimeError("Unexpected streaming response")
 
             except Exception as e:
+                # Handle case where input_data might not be defined
+                try:
+                    input_data = AgentInput.from_context(context)
+                    text = input_data.message
+                except (NameError, Exception):
+                    text = "Unknown"
+                
                 error_result = SentimentAnalysis(
-                    text=input_data.message if "input_data" in locals() else "Unknown",
+                    text=text,
                     sentiment=Sentiment.NEUTRAL,
                     confidence=0.0,
                     reasoning=f"Error occurred: {str(e)}",

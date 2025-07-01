@@ -49,19 +49,15 @@ class SimpleRAGAgent:
         )
 
         # Convert to expected format (compatible with existing CLI)
-        response_obj = type(
-            "RAGResponse",
-            (),
-            {
-                "response": result["answer"],
-                "sources": result["retrieved_documents"],
-                "confidence": self._calculate_confidence(result),
-                "suggestions": self._generate_suggestions(result),
-                "metadata": result["metadata"],
-            },
-        )()
+        response_dict: dict[str, Any] = {
+            "response": result["answer"],
+            "sources": result["retrieved_documents"],
+            "confidence": self._calculate_confidence(result),
+            "suggestions": self._generate_suggestions(result),
+            "metadata": result["metadata"],
+        }
 
-        return response_obj
+        return response_dict
 
     def _calculate_confidence(self, result: dict[str, Any]) -> float:
         """Calculate confidence score based on retrieval results."""
@@ -80,7 +76,7 @@ class SimpleRAGAgent:
         )  # Up to 0.2 bonus for multiple sources
 
         confidence = min(1.0, avg_similarity + source_bonus)
-        return round(confidence, 2)
+        return float(round(confidence, 2))
 
     def _generate_suggestions(self, result: dict[str, Any]) -> list[str]:
         """Generate helpful suggestions based on the result."""

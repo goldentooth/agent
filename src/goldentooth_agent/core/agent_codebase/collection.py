@@ -326,7 +326,7 @@ class CodebaseCollection:
             if line.startswith("# ") and current_size > chunk_size // 2:
                 if current_chunk:
                     chunks.append("\n".join(current_chunk))
-                    current_chunk: list[str] = []
+                    current_chunk = []
                     current_size = 0
 
             current_chunk.append(line)
@@ -335,7 +335,7 @@ class CodebaseCollection:
             # Split if chunk is too large
             if current_size > chunk_size and line.strip() == "":
                 chunks.append("\n".join(current_chunk))
-                current_chunk: list[str] = []
+                current_chunk = []
                 current_size = 0
 
         if current_chunk:
@@ -360,7 +360,7 @@ class CodebaseCollection:
             ):
                 if current_chunk:
                     chunks.append("\n".join(current_chunk))
-                    current_chunk: list[str] = []
+                    current_chunk = []
                     current_size = 0
 
             current_chunk.append(line)
@@ -369,7 +369,7 @@ class CodebaseCollection:
             # Split if chunk is too large and we're at a good boundary
             if current_size > chunk_size and line.strip() == "":
                 chunks.append("\n".join(current_chunk))
-                current_chunk: list[str] = []
+                current_chunk = []
                 current_size = 0
 
         if current_chunk:
@@ -389,7 +389,7 @@ class CodebaseCollection:
 
             if current_size + para_size > chunk_size and current_chunk:
                 chunks.append("\n\n".join(current_chunk))
-                current_chunk: list[str] = []
+                current_chunk = []
                 current_size = 0
 
             current_chunk.append(paragraph)
@@ -431,20 +431,6 @@ class CodebaseCollection:
         # TODO: This requires an embeddings service - for now return empty results
         # In production, we'd use: query_embedding = await embeddings_service.create_embedding(query)
         return []  # Temporary until embedding service is properly integrated
-
-        # Convert to expected format
-        formatted_results = []
-        for result in results:
-            formatted_results.append(
-                {
-                    "document_id": result.get("document_id", ""),
-                    "content": result.get("content", ""),
-                    "score": result.get("similarity_score", 0.0),
-                    "metadata": result.get("metadata", {}),
-                }
-            )
-
-        return formatted_results
 
     def get_codebase_info(self, codebase_name: str) -> CodebaseInfo | None:
         """Get information about a specific codebase."""

@@ -73,7 +73,7 @@ class ClaudeFlowClient(LLMClient):
         if base_url:
             client_kwargs["base_url"] = base_url
 
-        self._client = AsyncAnthropic(**client_kwargs)
+        self._client = AsyncAnthropic(**client_kwargs)  # type: ignore[arg-type]
 
         # Patch with instructor for structured output
         self._instructor_client = instructor.from_anthropic(self._client)
@@ -118,7 +118,7 @@ class ClaudeFlowClient(LLMClient):
         try:
             response = await self._instructor_client.messages.create(
                 model=model,
-                messages=messages,
+                messages=messages,  # type: ignore[arg-type]
                 response_model=response_model,
                 temperature=temperature,
                 max_tokens=max_tokens,
@@ -137,7 +137,7 @@ class ClaudeFlowClient(LLMClient):
         stream: bool = False,
         system: str | None = None,
         **kwargs: Any,
-    ) -> str | StreamingResponse:
+    ) -> str | ClaudeStreamingResponse:
         """Create a chat completion without structured output.
 
         Args:

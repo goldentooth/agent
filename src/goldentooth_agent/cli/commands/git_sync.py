@@ -196,6 +196,10 @@ def auto_sync_after_github_sync(
                 from ...core.github import GitHubClient
 
                 github_client = world.get(GitHubClient)
+                if github_client is None:
+                    console.print("[red]Error: GitHubClient not available[/red]")
+                    return
+                    
                 github_result = github_client.sync_organization(
                     org_name, include_repos=True
                 )

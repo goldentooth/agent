@@ -51,6 +51,9 @@ def index_codebase(
 
     async def _index() -> None:
         introspection_service = world.get(CodebaseIntrospectionService)
+        if introspection_service is None:
+            console.print("❌ CodebaseIntrospectionService not available", style="red")
+            return
 
         if codebase_name:
             # Index specific codebase (assumes it's already added)
@@ -140,6 +143,9 @@ def query_codebase(
 
     async def _query() -> None:
         introspection_service = world.get(CodebaseIntrospectionService)
+        if introspection_service is None:
+            console.print("❌ CodebaseIntrospectionService not available", style="red")
+            return
 
         # Build query
         document_types = None
@@ -201,6 +207,9 @@ def rag_query(
 
     async def _rag_query() -> None:
         rag_integration = world.get(CodebaseRAGIntegration)
+        if rag_integration is None:
+            console.print("❌ CodebaseRAGIntegration not available", style="red")
+            return
 
         rag_query_obj = CodebaseRAGQuery(
             query=query,

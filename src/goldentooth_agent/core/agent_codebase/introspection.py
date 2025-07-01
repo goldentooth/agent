@@ -182,26 +182,28 @@ class CodebaseIntrospectionService:
         # Process results
         processed_results = []
         for result in search_results:
+            # Extract metadata safely
+            metadata = result.get("metadata", {})
             processed_result = {
-                "content": result.content,
-                "score": result.score,
-                "metadata": result.metadata,
+                "content": result.get("content", ""),
+                "score": result.get("score", 0.0),
+                "metadata": metadata,
                 "source": {
-                    "file_path": result.metadata.get("file_path", ""),
-                    "module_path": result.metadata.get("module_path", ""),
-                    "line_start": result.metadata.get("line_start", 0),
-                    "line_end": result.metadata.get("line_end", 0),
+                    "file_path": metadata.get("file_path", ""),
+                    "module_path": metadata.get("module_path", ""),
+                    "line_start": metadata.get("line_start", 0),
+                    "line_end": metadata.get("line_end", 0),
                 },
             }
 
             # Add source code if requested
-            if query.include_source and result.metadata.get("document_type") not in [
+            if query.include_source and metadata.get("document_type") not in [
                 "source_code",
                 "function_definition",
                 "class_definition",
             ]:
                 # Try to find related source code
-                source_content = await self._find_related_source(result.metadata)
+                source_content = await self._find_related_source(metadata)
                 if source_content:
                     processed_result["related_source"] = source_content
 
@@ -358,9 +360,10 @@ class CodebaseIntrospectionService:
         try:
             result = await self.query(source_query)
             if result.results:
-                return (
-                    result.results[0]["content"][:500] + "..."
-                )  # Truncate for display
+                content = result.results[0]["content"]
+                if isinstance(content, str):
+                    return content[:500] + "..."  # Truncate for display
+                return str(content)[:500] + "..."
         except Exception:
             pass
 

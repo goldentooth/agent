@@ -38,7 +38,7 @@ class HybridSearchEngine:
         self.keyword_weight = 0.3  # Weight for BM25 keyword score
 
         # Document corpus for BM25 (cached)
-        self._document_corpus: dict[str, str] | None = None
+        self._document_corpus: dict[str, dict[str, Any]] | None = None
         self._corpus_stats: dict[str, Any] | None = None
         self._term_frequencies: list[dict[str, int]] | None = None
         self._document_lengths: list[int] | None = None
@@ -350,7 +350,10 @@ class HybridSearchEngine:
     def _get_doc_id(self, result: dict[str, Any]) -> str:
         """Get a unique document ID for result deduplication."""
         if result.get("is_chunk") and result.get("chunk_id"):
-            return result["chunk_id"]
+            chunk_id = result["chunk_id"]
+            if isinstance(chunk_id, str):
+                return chunk_id
+            return str(chunk_id)
         else:
             return f"{result.get('store_type', 'unknown')}.{result.get('document_id', 'unknown')}"
 
@@ -456,7 +459,7 @@ class HybridSearchEngine:
 
         # Calculate term frequencies
         self._term_frequencies = []
-        document_frequencies = defaultdict(int)
+        document_frequencies: defaultdict[str, int] = defaultdict(int)
 
         for tokens in tokenized_docs:
             term_freq = Counter(tokens)
@@ -505,6 +508,14 @@ class HybridSearchEngine:
         self, query_terms: list[str], doc_index: int
     ) -> float:
         """Calculate BM25 score for a single document."""
+        # Check if required data is available
+        if (
+            self._term_frequencies is None
+            or self._document_lengths is None
+            or self._corpus_stats is None
+        ):
+            return 0.0
+            
         if doc_index >= len(self._term_frequencies) or doc_index >= len(
             self._document_lengths
         ):
