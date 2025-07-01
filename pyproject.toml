@@ -67,6 +67,7 @@ myst-parser = "^2.0"
 sphinx-autobuild = "^2024.2.4"
 vulture = "^2.14"
 pytest-mock = "^3.14.1"
+radon = "^6.0.1"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -138,6 +139,9 @@ deadcode-report = "python scripts/find_orphaned_code.py"
 
 # Code size analysis
 module-sizes = "python scripts/show_module_sizes.py"
+
+# Code complexity analysis
+complexity = "python scripts/analyze_complexity.py"
 
 # Pre-commit management tasks
 precommit-install = "pre-commit install"
