@@ -136,6 +136,9 @@ deadcode-all = "vulture src/goldentooth_agent --min-confidence 60"
 deadcode-diff = "python scripts/vulture_diff.py"
 deadcode-report = "python scripts/find_orphaned_code.py"
 
+# Code size analysis
+module-sizes = "python scripts/show_module_sizes.py"
+
 # Pre-commit management tasks
 precommit-install = "pre-commit install"
 precommit-update = "pre-commit autoupdate"
