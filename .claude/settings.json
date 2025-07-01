@@ -1,0 +1,10 @@
+{
+    "hooks": {
+      "after_edit": [
+        "poetry run black {file}",
+        "poetry run isort {file}",
+        "poetry run ruff check --fix {file} || true",
+        "goldentooth-agent dev quick-check {file} || true"
+      ]
+    }
+}
