@@ -334,14 +334,50 @@ class CodebaseCollection:
                     current_chunk = []
                     current_size = 0
 
-            current_chunk.append(line)
-            current_size += line_size
-
-            # Split if chunk is too large
-            if current_size > chunk_size and line.strip() == "":
+            # Check if adding this line would make chunk too large
+            if current_chunk and current_size + line_size > chunk_size * 1.15:
+                # Force split before adding the line
                 chunks.append("\n".join(current_chunk))
                 current_chunk = []
                 current_size = 0
+
+            # Handle extremely long individual lines by splitting them
+            if line_size > chunk_size * 1.15:
+                # If we have existing content, flush it first
+                if current_chunk:
+                    chunks.append("\n".join(current_chunk))
+                    current_chunk = []
+                    current_size = 0
+
+                # Split the long line into smaller pieces
+                words = line.split()
+                temp_line = ""
+                for word in words:
+                    if len(temp_line + " " + word) > chunk_size:
+                        if temp_line:  # Add the current line chunk
+                            chunks.append(temp_line.strip())
+                        temp_line = word
+                    else:
+                        if temp_line:
+                            temp_line += " " + word
+                        else:
+                            temp_line = word
+
+                # Add any remaining content as the start of next chunk
+                if temp_line:
+                    current_chunk = [temp_line.strip()]
+                    current_size = len(temp_line.strip()) + 1
+            else:
+                current_chunk.append(line)
+                current_size += line_size
+
+            # Split if chunk is too large at good break points
+            if current_size > chunk_size:
+                # Prefer empty lines for clean breaks
+                if line.strip() == "":
+                    chunks.append("\n".join(current_chunk))
+                    current_chunk = []
+                    current_size = 0
 
         if current_chunk:
             chunks.append("\n".join(current_chunk))

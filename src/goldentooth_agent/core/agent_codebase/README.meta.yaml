@@ -2,7 +2,7 @@ module_name: Agent Codebase
 description: Agent Codebase module
 complexity: Critical
 file_count: 10
-loc: ~2441
+loc: ~2474
 test_coverage: Medium
 class_count: 22
 function_count: 100

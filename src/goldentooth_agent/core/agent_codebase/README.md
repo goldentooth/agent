@@ -35,7 +35,7 @@ Explain how this module fits into the larger system and typical usage patterns.
 
 - **Complexity**: Critical
 - **Files**: 10 Python files
-- **Lines of Code**: ~2441
+- **Lines of Code**: ~2474
 - **Classes**: 22
 - **Functions**: 100
 
