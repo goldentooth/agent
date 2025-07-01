@@ -7,11 +7,6 @@ This section provides in-depth background information about the design decisions
    :maxdepth: 2
    :caption: Module Backgrounds:
 
-   context
-   rag
-   embeddings
-   llm
-
 Overview
 --------
 
@@ -31,30 +26,29 @@ Context Management
 
 The context system manages state, snapshots, and history across agent interactions.
 
-.. include:: ../../src/goldentooth_agent/core/context/README.bg.md
-   :parser: myst_parser.sphinx_
-
+*Background documentation for the context module is available in the source code at:*
+``src/goldentooth_agent/core/context/README.bg.md``
 
 RAG System
 ~~~~~~~~~~
 
 The RAG (Retrieval-Augmented Generation) system combines document retrieval with language generation.
 
-.. include:: ../../src/goldentooth_agent/core/rag/README.bg.md
-   :parser: myst_parser.sphinx_
+*Background documentation for the RAG module is available in the source code at:*
+``src/goldentooth_agent/core/rag/README.bg.md``
 
 Embeddings System
 ~~~~~~~~~~~~~~~~~
 
 The embeddings system handles vector representations and semantic search.
 
-.. include:: ../../src/goldentooth_agent/core/embeddings/README.bg.md
-   :parser: myst_parser.sphinx_
+*Background documentation for the embeddings module is available in the source code at:*
+``src/goldentooth_agent/core/embeddings/README.bg.md``
 
 LLM Integration
 ~~~~~~~~~~~~~~~
 
 The LLM system provides interfaces to language models like Claude.
 
-.. include:: ../../src/goldentooth_agent/core/llm/README.bg.md
-   :parser: myst_parser.sphinx_
+*Background documentation for the LLM module is available in the source code at:*
+``src/goldentooth_agent/core/llm/README.bg.md``

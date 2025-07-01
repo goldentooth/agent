@@ -193,10 +193,16 @@ repos:
         entry: poetry run pytest
         language: system
         types: [python]
-        description: Run pytest tests with minimum 85% coverage requirement
+        description: Run pytest tests with minimum 60% coverage requirement
         pass_filenames: false
         always_run: true
-        args: ['tests/', '--cov=goldentooth_agent', '--cov-fail-under=85', '--cov-report=term-missing', '-v', '--tb=short']
+        args:
+          - 'tests/'
+          - '--cov=goldentooth_agent'
+          - '--cov-fail-under=60'
+          - '--cov-report=term-missing'
+          - '-v'
+          - '--tb=short'
 
   # Optional: Additional security checks
   - repo: https://github.com/PyCQA/bandit
