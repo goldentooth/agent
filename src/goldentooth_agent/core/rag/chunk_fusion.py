@@ -77,7 +77,7 @@ class ChunkFusion:
         completeness_weight: float = 0.3,
         coherence_weight: float = 0.4,
         relevance_weight: float = 0.3,
-    ):
+    ) -> None:
         """Initialize chunk fusion engine.
 
         Args:

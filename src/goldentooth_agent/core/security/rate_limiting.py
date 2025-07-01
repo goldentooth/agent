@@ -28,7 +28,7 @@ class RateLimitError(Exception):
         retry_after: float | None = None,
         remaining: int = 0,
         reset_time: float | None = None,
-    ):
+    ) -> None:
         super().__init__(message)
         self.retry_after = retry_after
         self.remaining = remaining
@@ -98,7 +98,7 @@ class RateLimitStore(ABC):
 class MemoryRateLimitStore(RateLimitStore):
     """In-memory rate limit store with TTL support."""
 
-    def __init__(self, cleanup_interval: float = 60.0):
+    def __init__(self, cleanup_interval: float = 60.0) -> None:
         self._data: dict[str, tuple[dict[str, Any], float]] = {}
         self._cleanup_interval = cleanup_interval
         self._last_cleanup = time.time()
@@ -170,7 +170,9 @@ class MemoryRateLimitStore(RateLimitStore):
 class RateLimiter(ABC):
     """Abstract base class for rate limiting algorithms."""
 
-    def __init__(self, config: RateLimitConfig, store: RateLimitStore | None = None):
+    def __init__(
+        self, config: RateLimitConfig, store: RateLimitStore | None = None
+    ) -> None:
         self.config = config
         self.store = store or MemoryRateLimitStore()
 
@@ -183,7 +185,9 @@ class RateLimiter(ABC):
 class TokenBucketLimiter(RateLimiter):
     """Token bucket rate limiting algorithm."""
 
-    def __init__(self, config: RateLimitConfig, store: RateLimitStore | None = None):
+    def __init__(
+        self, config: RateLimitConfig, store: RateLimitStore | None = None
+    ) -> None:
         super().__init__(config, store)
         self.bucket_capacity = config.burst_capacity
         self.refill_rate = config.requests_per_minute / 60.0  # tokens per second

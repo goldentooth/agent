@@ -132,7 +132,7 @@ class SecretMetadata:
 class SecretValue:
     """Wrapper for secret values with memory protection."""
 
-    def __init__(self, value: str, metadata: SecretMetadata):
+    def __init__(self, value: str, metadata: SecretMetadata) -> None:
         # Store value with minimal obfuscation for memory protection
         self._obfuscated = self._obfuscate(value)
         self.metadata = metadata
@@ -189,7 +189,7 @@ class EncryptionProvider(ABC):
 class FernetEncryptionProvider(EncryptionProvider):
     """Fernet symmetric encryption provider using cryptography library."""
 
-    def __init__(self, key: bytes | None = None):
+    def __init__(self, key: bytes | None = None) -> None:
         if not CRYPTOGRAPHY_AVAILABLE:
             raise SecretError(
                 "cryptography library not available. Install with: pip install cryptography"
@@ -309,7 +309,7 @@ class EnvironmentSecretStore(SecretStore):
 class FileSecretStore(SecretStore):
     """Store secrets in encrypted files."""
 
-    def __init__(self, store_path: Path):
+    def __init__(self, store_path: Path) -> None:
         self.store_path = Path(store_path)
         self.store_path.mkdir(parents=True, exist_ok=True)
 
@@ -391,7 +391,7 @@ class InMemorySecretStore(SecretStore):
 class SecretManager:
     """Main secret management class."""
 
-    def __init__(self, config: SecretConfig):
+    def __init__(self, config: SecretConfig) -> None:
         self.config = config
 
         # Initialize encryption provider

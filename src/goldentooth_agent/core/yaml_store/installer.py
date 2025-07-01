@@ -14,7 +14,7 @@ class YamlStoreInstaller(Generic[T]):
         source: YamlStore[T],
         destination: YamlStore[T],
         adapter: type[YamlStoreAdapter[T]],
-    ):
+    ) -> None:
         """Initialize the installer with a source store, a destination store, and an adapter."""
         self.source = source
         self.destination = destination

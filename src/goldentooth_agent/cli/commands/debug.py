@@ -24,7 +24,7 @@ HealthStatus = dict[str, Any]  # Health data can be any type
 
 # More specific type for trace data to avoid union-attr errors
 class TraceStep:
-    def __init__(self, step: str, status: str, timestamp: float, details: str):
+    def __init__(self, step: str, status: str, timestamp: float, details: str) -> None:
         self.step = step
         self.status = status
         self.timestamp = timestamp

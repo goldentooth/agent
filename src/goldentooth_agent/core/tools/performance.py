@@ -390,7 +390,7 @@ async def http_client_context(
 class ResourcePool:
     """Generic resource pool with lifecycle management."""
 
-    def __init__(self, max_size: int = 10, idle_timeout: float = 300.0):
+    def __init__(self, max_size: int = 10, idle_timeout: float = 300.0) -> None:
         self.max_size = max_size
         self.idle_timeout = idle_timeout
         self._pool: list[tuple[Any, float]] = []  # (resource, last_used)

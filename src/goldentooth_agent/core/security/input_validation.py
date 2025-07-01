@@ -37,7 +37,7 @@ class ValidationError(Exception):
         validation_type: str = "unknown",
         input_value: Any = None,
         field_name: str | None = None,
-    ):
+    ) -> None:
         super().__init__(message)
         self.validation_type = validation_type
         self.input_value = input_value
@@ -102,7 +102,7 @@ class SanitizationConfig:
 class InputValidator:
     """Comprehensive input validator with security-focused validation rules."""
 
-    def __init__(self, config: SecurityConfig | None = None):
+    def __init__(self, config: SecurityConfig | None = None) -> None:
         self.config = config or SecurityConfig()
 
         # Compile regex patterns for performance
@@ -293,7 +293,7 @@ class InputValidator:
 class InputSanitizer:
     """Input sanitizer for cleaning potentially malicious or dirty input."""
 
-    def __init__(self, config: SanitizationConfig | None = None):
+    def __init__(self, config: SanitizationConfig | None = None) -> None:
         self.config = config or SanitizationConfig()
 
     def sanitize_string(self, value: Any) -> Any:

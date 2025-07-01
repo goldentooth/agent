@@ -35,7 +35,7 @@ class PipelineStepConfig:
         input_mapping: dict[str, str] | None = None,
         static_input: dict[str, Any] | None = None,
         output_key: str | None = None,
-    ):
+    ) -> None:
         self.tool_name = tool_name
         self.input_mapping = input_mapping or {}
         self.static_input = static_input or {}
@@ -45,7 +45,7 @@ class PipelineStepConfig:
 class Pipeline:
     """Pipeline orchestrator for chaining tools together."""
 
-    def __init__(self, name: str, description: str = ""):
+    def __init__(self, name: str, description: str = "") -> None:
         self.name = name
         self.description = description
         self.steps: list[PipelineStepConfig] = []

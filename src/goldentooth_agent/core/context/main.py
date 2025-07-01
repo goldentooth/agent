@@ -45,7 +45,7 @@ T = TypeVar("T")
 class ContextSnapshot:
     """Represents a snapshot of context state at a specific point in time."""
 
-    def __init__(self, context: Context, name: str):
+    def __init__(self, context: Context, name: str) -> None:
         """Create a snapshot of the current context state.
 
         Args:
@@ -116,7 +116,9 @@ class ContextSnapshot:
 class ComputedProperty:
     """Represents a computed property that automatically updates when its dependencies change."""
 
-    def __init__(self, func: ComputedFunction, dependencies: list[str] | None = None):
+    def __init__(
+        self, func: ComputedFunction, dependencies: list[str] | None = None
+    ) -> None:
         """Initialize a computed property.
 
         Args:
@@ -159,7 +161,7 @@ class ComputedProperty:
 class Transformation:
     """Represents a value transformation applied to context keys."""
 
-    def __init__(self, func: TransformFunction, key: str):
+    def __init__(self, func: TransformFunction, key: str) -> None:
         """Initialize a transformation.
 
         Args:
@@ -177,7 +179,7 @@ class Transformation:
 class Context:
     """A layered, reactive, symbolic context with scoped access and EventFlow integration."""
 
-    def __init__(self, frames: list[ContextFrame] | None = None):
+    def __init__(self, frames: list[ContextFrame] | None = None) -> None:
         """Initialize the context with optional initial frames."""
         self.frames: list[ContextFrame] = frames or [ContextFrame()]
 

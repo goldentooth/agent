@@ -34,7 +34,7 @@ class FlowTool:
         output_schema: type[R],
         implementation: Callable[[T], R] | Callable[[T], asyncio.Future[R]],
         description: str = "",
-    ):
+    ) -> None:
         """Initialize a FlowTool.
 
         Args:

@@ -2,7 +2,7 @@ module_name: Security
 description: Security module
 complexity: Critical
 file_count: 4
-loc: ~1261
+loc: ~1275
 test_coverage: Medium
 class_count: 26
 function_count: 96

@@ -28,7 +28,7 @@ class ParallelConfig:
         retry_delay: float = 1.0,
         use_process_pool: bool = False,
         worker_ttl: float = 3600.0,  # Worker time-to-live in seconds
-    ):
+    ) -> None:
         self.max_concurrent = max_concurrent
         self.batch_size = batch_size
         self.timeout = timeout
@@ -41,7 +41,7 @@ class ParallelConfig:
 class WorkerPool:
     """Manage a pool of async workers with lifecycle management."""
 
-    def __init__(self, config: ParallelConfig):
+    def __init__(self, config: ParallelConfig) -> None:
         self.config = config
         self.semaphore = asyncio.Semaphore(config.max_concurrent)
         self.active_workers = 0
@@ -106,7 +106,7 @@ class WorkerPool:
 class ParallelExecutor:
     """Execute tasks in parallel with advanced batching and error handling."""
 
-    def __init__(self, config: ParallelConfig | None = None):
+    def __init__(self, config: ParallelConfig | None = None) -> None:
         self.config = config or ParallelConfig()
         self.worker_pool = WorkerPool(self.config)
         self.stream_processor = StreamProcessor(

@@ -26,7 +26,7 @@ class StreamingConfig:
         memory_threshold_mb: int = 100,
         gc_interval: int = 1000,
         backpressure_threshold: float = 0.8,
-    ):
+    ) -> None:
         self.chunk_size = chunk_size
         self.buffer_size = buffer_size
         self.memory_threshold_bytes = memory_threshold_mb * 1024 * 1024
@@ -37,7 +37,7 @@ class StreamingConfig:
 class MemoryMonitor:
     """Monitor memory usage and trigger cleanup when needed."""
 
-    def __init__(self, config: StreamingConfig):
+    def __init__(self, config: StreamingConfig) -> None:
         self.config = config
         self.operation_count = 0
         self.peak_memory = 0
@@ -70,7 +70,7 @@ class MemoryMonitor:
 class BackpressureController:
     """Control backpressure in streaming operations."""
 
-    def __init__(self, config: StreamingConfig):
+    def __init__(self, config: StreamingConfig) -> None:
         self.config = config
         self.pending_operations = 0
         self.max_pending = int(config.buffer_size * config.backpressure_threshold)
@@ -96,7 +96,7 @@ class BackpressureController:
 class StreamProcessor:
     """Memory-efficient stream processor with automatic resource management."""
 
-    def __init__(self, config: StreamingConfig | None = None):
+    def __init__(self, config: StreamingConfig | None = None) -> None:
         self.config = config or StreamingConfig()
         self.memory_monitor = MemoryMonitor(self.config)
         self.backpressure = BackpressureController(self.config)

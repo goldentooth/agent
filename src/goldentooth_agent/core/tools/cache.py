@@ -130,7 +130,7 @@ class IntelligentCache:
         default_ttl: float | None = 3600.0,  # 1 hour
         strategy: CacheStrategy = CacheStrategy.ADAPTIVE,
         max_memory_mb: int = 100,
-    ):
+    ) -> None:
         self.max_size = max_size
         self.default_ttl = default_ttl
         self.strategy = strategy
@@ -343,7 +343,7 @@ class SmartCacheDecorator:
         cache: IntelligentCache | None = None,
         ttl: float | None = None,
         key_func: Callable[..., str] | None = None,
-    ):
+    ) -> None:
         self.cache = cache or IntelligentCache()
         self.ttl = ttl
         self.key_func = key_func
@@ -485,7 +485,7 @@ async def clear_all_caches() -> None:
 class FlowCacheManager:
     """Specialized cache manager for Flow operations."""
 
-    def __init__(self, cache: IntelligentCache | None = None):
+    def __init__(self, cache: IntelligentCache | None = None) -> None:
         self.cache = cache or flow_cache
 
     async def cache_flow_result(

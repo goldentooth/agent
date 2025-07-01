@@ -2,7 +2,7 @@ module_name: Flow Agent
 description: Flow Agent module
 complexity: Medium
 file_count: 5
-loc: ~593
+loc: ~604
 test_coverage: Medium
 class_count: 7
 function_count: 22

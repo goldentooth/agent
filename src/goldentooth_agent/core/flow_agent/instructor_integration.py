@@ -31,7 +31,7 @@ class MockLLMClient:
 
     def __init__(
         self, mock_responses: dict[type[FlowIOSchema], MockResponse] | None = None
-    ):
+    ) -> None:
         """Initialize the mock client.
 
         Args:
@@ -118,7 +118,7 @@ class InstructorFlow:
         system_prompt: str | None = None,
         max_retries: int = 3,
         temperature: float = 0.1,
-    ):
+    ) -> None:
         """Initialize an InstructorFlow.
 
         Args:

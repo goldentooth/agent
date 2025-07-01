@@ -34,7 +34,7 @@ class FlowAgent:
         processing_flow: Flow[Context, Context],
         client: LLMClient = None,
         model: str = "gpt-4",
-    ):
+    ) -> None:
         """Initialize a FlowAgent.
 
         Args:

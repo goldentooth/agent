@@ -23,7 +23,7 @@ class ClaudeStreamingResponse:
 
     def __init__(
         self, stream: AsyncIterator[Any], usage_info: dict[str, Any] | None = None
-    ):
+    ) -> None:
         self._stream = stream
         self._usage = usage_info or {}
 
@@ -52,7 +52,7 @@ class ClaudeFlowClient(LLMClient):
         base_url: str | None = None,
         default_model: str = "claude-3-5-sonnet-20241022",
         default_max_tokens: int = 1000,
-    ):
+    ) -> None:
         """Initialize Claude client.
 
         Args:

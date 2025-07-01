@@ -62,7 +62,7 @@ class RAGAgent:
         rag_service: RAGService,
         name: str = "RAGAgent",
         conversation_memory_size: int = 10,
-    ):
+    ) -> None:
         """Initialize the RAG agent.
 
         Args:

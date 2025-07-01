@@ -26,7 +26,7 @@ class StreamNotification:
 
 
 class OnNext(StreamNotification):
-    def __init__(self, value: AnyValue):
+    def __init__(self, value: AnyValue) -> None:
         self.value = value
 
     def __repr__(self) -> str:
@@ -34,7 +34,7 @@ class OnNext(StreamNotification):
 
 
 class OnError(StreamNotification):
-    def __init__(self, error: Exception):
+    def __init__(self, error: Exception) -> None:
         self.error = error
 
     def __repr__(self) -> str:

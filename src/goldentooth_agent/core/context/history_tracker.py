@@ -21,7 +21,7 @@ class ContextChangeEvent:
         old_value: TrackedValue,
         new_value: TrackedValue,
         context_id: int,
-    ):
+    ) -> None:
         """Create a change event.
 
         Args:

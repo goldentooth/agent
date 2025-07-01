@@ -15,7 +15,7 @@ class RuleEngine(Generic[TIn]):
     to a Flow for stream processing or used directly for single context evaluation.
     """
 
-    def __init__(self, rules: list[Rule[TIn]]):
+    def __init__(self, rules: list[Rule[TIn]]) -> None:
         """Initialize the rule engine with a list of rules."""
         self.rules = sorted(rules, key=lambda r: -r.priority)
 
