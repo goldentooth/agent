@@ -452,27 +452,29 @@ class TokenTracker:
         """Get cost breakdown over time."""
         cutoff_date = (datetime.now() - timedelta(days=days)).isoformat()
 
-        # SQL date formatting based on grouping
-        date_format = {"day": "%Y-%m-%d", "week": "%Y-W%W", "month": "%Y-%m"}.get(
-            group_by, "%Y-%m-%d"
-        )
+        # Build SQL query safely without f-string interpolation
+        if group_by == "week":
+            date_format = "%Y-W%W"
+        elif group_by == "month":
+            date_format = "%Y-%m"
+        else:
+            date_format = "%Y-%m-%d"
+
+        query = """
+            SELECT
+                strftime(?, timestamp) as period,
+                COUNT(*) as operations,
+                SUM(token_count) as tokens,
+                SUM(estimated_cost_usd) as cost
+            FROM token_usage
+            WHERE timestamp >= ?
+            GROUP BY period
+            ORDER BY period
+        """
 
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                f"""
-                SELECT
-                    strftime('{date_format}', timestamp) as period,
-                    COUNT(*) as operations,
-                    SUM(token_count) as tokens,
-                    SUM(estimated_cost_usd) as cost
-                FROM token_usage
-                WHERE timestamp >= ?
-                GROUP BY period
-                ORDER BY period
-            """,
-                (cutoff_date,),
-            )
+            cursor.execute(query, (date_format, cutoff_date))
 
             results = cursor.fetchall()
 

@@ -1,4 +1,4 @@
-goldentooth\_agent.flow\_engine.integrations.context\_bridge
+﻿goldentooth\_agent.flow\_engine.integrations.context\_bridge
 ============================================================
 
 .. automodule:: goldentooth_agent.flow_engine.integrations.context_bridge
@@ -26,6 +26,7 @@ goldentooth\_agent.flow\_engine.integrations.context\_bridge
    .. autosummary::
    
       Any
+      Callable
       ContextFlowBridge
       ContextKeyProtocol
       ContextProtocol

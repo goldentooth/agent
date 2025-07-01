@@ -330,7 +330,7 @@ class CodebaseDocumentExtractor:
     def _generate_doc_id(self, file_path: Path, doc_type: str) -> str:
         """Generate unique document ID."""
         path_str = str(file_path)
-        hash_obj = hashlib.md5(f"{path_str}:{doc_type}".encode())
+        hash_obj = hashlib.md5(f"{path_str}:{doc_type}".encode(), usedforsecurity=False)
         return f"{file_path.stem}_{doc_type}_{hash_obj.hexdigest()[:8]}"
 
     def _extract_imports(self, tree: ast.AST) -> list[str]:

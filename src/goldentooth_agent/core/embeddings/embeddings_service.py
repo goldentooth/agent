@@ -73,7 +73,7 @@ class EmbeddingsService:
 
             # Extract text from the first content block if it's a TextBlock
             first_content = semantic_response.content[0]
-            if hasattr(first_content, 'text'):
+            if hasattr(first_content, "text"):
                 semantic_features = first_content.text
             else:
                 # Fallback to original text if we can't extract semantic features

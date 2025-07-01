@@ -64,7 +64,9 @@ class MockLLMClient:
             mock_response = self.mock_responses[response_model]
             # Type assertion - the mock should be of the correct type
             if not isinstance(mock_response, response_model):
-                raise ValueError(f"Mock response for {response_model} is not of correct type")
+                raise ValueError(
+                    f"Mock response for {response_model} is not of correct type"
+                )
             return mock_response
 
         # Try to create a default instance if possible
@@ -261,7 +263,9 @@ class InstructorFlow:
 
             # Type assertion - instructor should return the correct type
             if not isinstance(response, self.output_schema):
-                raise ValueError(f"Instructor returned incorrect type: {type(response)}")
+                raise ValueError(
+                    f"Instructor returned incorrect type: {type(response)}"
+                )
             return response
 
         except Exception as e:

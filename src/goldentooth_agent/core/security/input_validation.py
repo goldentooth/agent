@@ -479,7 +479,7 @@ def validate_json_payload(
             validation_type="structure",
             input_value=str(validated_data)[:200],
         )
-    
+
     return validated_data
 
 

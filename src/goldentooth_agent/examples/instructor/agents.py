@@ -157,7 +157,7 @@ def create_sentiment_analyzer_agent(
                     text = input_data.message
                 except (NameError, Exception):
                     text = "Unknown"
-                
+
                 error_result = SentimentAnalysis(
                     text=text,
                     sentiment=Sentiment.NEUTRAL,

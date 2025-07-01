@@ -219,7 +219,7 @@ class QualityChecker:
         # Run all checks
         all_checks = critical_checks + style_checks + integration_checks
 
-        for check_name, check_func in all_checks:
+        for _check_name, check_func in all_checks:
             check_func()
             if self.verbose:
                 print()  # Extra spacing in verbose mode

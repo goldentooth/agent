@@ -250,7 +250,7 @@ def load_yaml_config() -> dict[str, Any]:
 async def emit_results():
     yield item
 
-# ✅ Proper async generator typing  
+# ✅ Proper async generator typing
 async def emit_results() -> AsyncIterator[ResultType]:
     yield item
 ```

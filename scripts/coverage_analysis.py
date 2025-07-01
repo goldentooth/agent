@@ -150,7 +150,7 @@ def analyze_coverage(
     print(f"{'File':<50} {'Coverage':<10} {'Lines':<8} {'Missed':<8}")
     print(f"{'-'*76}")
 
-    for i, (file_path, total_lines, missed_lines, coverage_pct) in enumerate(
+    for _i, (file_path, total_lines, missed_lines, coverage_pct) in enumerate(
         lowest_coverage[:limit]
     ):
         # Shorten long file paths
@@ -205,13 +205,13 @@ def analyze_coverage(
 
     if high_impact:
         print("   3. High-impact opportunities (many uncovered lines):")
-        for file_path, total_lines, missed_lines, coverage_pct in high_impact:
+        for file_path, _total_lines, missed_lines, coverage_pct in high_impact:
             module_name = (
                 file_path.replace("src/goldentooth_agent/", "")
                 .replace(".py", "")
                 .replace("/", ".")
             )
-            impact_score = missed_lines
+            # impact_score = missed_lines  # Not used currently
             print(
                 f"      • {module_name} ({missed_lines} uncovered lines, {coverage_pct:.1f}%)"
             )

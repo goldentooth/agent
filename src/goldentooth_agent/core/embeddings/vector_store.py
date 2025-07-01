@@ -1529,10 +1529,10 @@ class VectorStore:
                                metadata, created_at, updated_at
                         FROM chunks WHERE chunk_id = ?
                         """,
-                        (related_chunk_id,)
+                        (related_chunk_id,),
                     )
                     chunk_row = cursor.fetchone()
-                    
+
                 if chunk_row:
                     chunk_info = {
                         "chunk_id": chunk_row[0],

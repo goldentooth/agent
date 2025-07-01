@@ -37,3 +37,4 @@
   existing library code)? We should add this to guidelines too.
 34. Add a link to the GitHub Pages site (https://goldentooth.github.io/agent/) in the README.
 35. Let's try to prevent functions from exceeding about ten lines (or, more accurately, statements) in length. If a function exceeds that, we should complain about it.
+36. Let's replace any use of `inject.me()` with `world[<Type>]`, e.g. `world[SomeServiceClass]`. The former seems to trigger Pylance/Pyright's `reportCallInDefaultInitializer` lint. This should be considered a guideline for future development.

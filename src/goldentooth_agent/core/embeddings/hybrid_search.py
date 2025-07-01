@@ -515,7 +515,7 @@ class HybridSearchEngine:
             or self._corpus_stats is None
         ):
             return 0.0
-            
+
         if doc_index >= len(self._term_frequencies) or doc_index >= len(
             self._document_lengths
         ):
@@ -616,7 +616,9 @@ class HybridSearchEngine:
             self.semantic_weight = 0.7
             self.keyword_weight = 0.3
 
-    def update_bm25_parameters(self, k1: float | None = None, b: float | None = None) -> None:
+    def update_bm25_parameters(
+        self, k1: float | None = None, b: float | None = None
+    ) -> None:
         """Update BM25 parameters.
 
         Args:

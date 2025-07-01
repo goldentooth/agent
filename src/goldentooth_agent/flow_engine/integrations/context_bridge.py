@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from ..extensions import flow_registry
 from ..lazy_imports import create_context_key
@@ -87,7 +88,9 @@ class ContextFlowBridge:
         """Create method for setting exit signal."""
         exit_key = self.get_trampoline_key("SHOULD_EXIT_KEY")
 
-        def set_should_exit(_: Any, context: ContextProtocol, value: bool = True) -> None:
+        def set_should_exit(
+            _: Any, context: ContextProtocol, value: bool = True
+        ) -> None:
             """Set the exit signal in the context."""
             if exit_key:
                 context.set(exit_key, value)
@@ -98,7 +101,9 @@ class ContextFlowBridge:
         """Create method for setting break signal."""
         break_key = self.get_trampoline_key("SHOULD_BREAK_KEY")
 
-        def set_should_break(_: Any, context: ContextProtocol, value: bool = True) -> None:
+        def set_should_break(
+            _: Any, context: ContextProtocol, value: bool = True
+        ) -> None:
             """Set the break signal in the context."""
             if break_key:
                 context.set(break_key, value)
@@ -109,7 +114,9 @@ class ContextFlowBridge:
         """Create method for setting skip signal."""
         skip_key = self.get_trampoline_key("SHOULD_SKIP_KEY")
 
-        def set_should_skip(_: Any, context: ContextProtocol, value: bool = True) -> None:
+        def set_should_skip(
+            _: Any, context: ContextProtocol, value: bool = True
+        ) -> None:
             """Set the skip signal in the context."""
             if skip_key:
                 context.set(skip_key, value)

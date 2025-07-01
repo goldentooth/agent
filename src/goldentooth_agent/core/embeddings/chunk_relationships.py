@@ -4,8 +4,8 @@ from collections import defaultdict
 from typing import Any
 
 import numpy as np
-from numpy.typing import NDArray
 from antidote import inject, injectable
+from numpy.typing import NDArray
 
 from .document_chunker import DocumentChunk
 from .embeddings_service import EmbeddingsService
@@ -93,7 +93,9 @@ class ChunkRelationshipAnalyzer:
             "similarity_matrix": similarity_matrix.tolist(),
         }
 
-    def _calculate_similarity_matrix(self, embeddings: NDArray[np.float64]) -> NDArray[np.float64]:
+    def _calculate_similarity_matrix(
+        self, embeddings: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
         """Calculate cosine similarity matrix between embeddings."""
         # Normalize embeddings for cosine similarity
         norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
