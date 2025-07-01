@@ -357,7 +357,7 @@ async def text_summary_implementation(
             words = re.findall(r"\b\w+\b", text.lower())
             word_freq = Counter(words)
 
-            sentence_scores = []
+            sentence_scores: list[tuple[float, int, str]] = []
             for i, sentence in enumerate(sentences):
                 sentence_words = re.findall(r"\b\w+\b", sentence.lower())
                 if not sentence_words:
@@ -393,7 +393,7 @@ async def text_summary_implementation(
 
         elif input_data.summary_type == "bullet_points":
             # Create bullet point summary
-            sentence_scores: list[tuple[float, str]] = []
+            bullet_scores: list[tuple[float, str]] = []
             for sentence in sentences:
                 sentence_words = re.findall(r"\b\w+\b", sentence.lower())
                 if len(sentence_words) < 3:  # Skip very short sentences
@@ -403,13 +403,13 @@ async def text_summary_implementation(
                 score = (
                     len(set(sentence_words)) / len(sentence_words)
                     if sentence_words
-                    else 0
+                    else 0.0
                 )
-                sentence_scores.append((score, sentence))
+                bullet_scores.append((score, sentence))
 
-            sentence_scores.sort(reverse=True)
+            bullet_scores.sort(reverse=True)
             selected_bullet_sentences = [
-                sentence for _, sentence in sentence_scores[: input_data.max_sentences]
+                sentence for _, sentence in bullet_scores[: input_data.max_sentences]
             ]
 
             summary = "\n".join(
@@ -474,7 +474,7 @@ TextAnalysisTool = FlowTool(
     name="text_analysis",
     input_schema=TextAnalysisInput,
     output_schema=TextAnalysisOutput,
-    implementation=text_analysis_implementation,
+    implementation=text_analysis_implementation,  # type: ignore[arg-type]
     description="Analyze text with statistics, keyword extraction, sentiment analysis, and readability metrics",
 )
 
@@ -482,6 +482,6 @@ TextSummaryTool = FlowTool(
     name="text_summary",
     input_schema=TextSummaryInput,
     output_schema=TextSummaryOutput,
-    implementation=text_summary_implementation,
+    implementation=text_summary_implementation,  # type: ignore[arg-type]
     description="Generate extractive text summaries with configurable length and format options",
 )

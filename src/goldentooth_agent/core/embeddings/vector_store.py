@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-import sqlite_vec
+import sqlite_vec  # type: ignore[import-untyped]
 from antidote import inject, injectable
 
 from ..paths import Paths
@@ -350,7 +350,8 @@ class VectorStore:
         try:
             metadata = json.loads(self.metadata_path.read_text())
             doc_key = f"{store_type}.{document_id}"
-            return metadata.get("embeddings", {}).get(doc_key, {}).get("checksum")
+            checksum = metadata.get("embeddings", {}).get(doc_key, {}).get("checksum")
+            return str(checksum) if checksum is not None else None
         except (FileNotFoundError, json.JSONDecodeError):
             return None
 
@@ -374,7 +375,7 @@ class VectorStore:
             with gzip.open(sidecar_path, "rb") as f:
                 data = f.read()
             embedding_array = np.frombuffer(data, dtype=np.float32)
-            return embedding_array.tolist()
+            return list(embedding_array.tolist())
         except Exception:
             return None
 
@@ -817,7 +818,7 @@ class VectorStore:
         """Search vec0 table for similar embeddings."""
         # Build WHERE clause based on filters
         where_conditions = []
-        params = [query_bytes]
+        params: list[Any] = [query_bytes]
 
         if store_type:
             where_conditions.append("store_type = ?")
@@ -1328,7 +1329,7 @@ class VectorStore:
                 )
                 row = cursor.fetchone()
                 if row:
-                    return row[0]
+                    return list(row[0]) if row[0] else None
             except sqlite3.OperationalError:
                 pass
 
@@ -1342,7 +1343,7 @@ class VectorStore:
             row = cursor.fetchone()
             if row:
                 embedding_array = np.frombuffer(row[0], dtype=np.float32)
-                return embedding_array.tolist()
+                return list(embedding_array.tolist())
 
         return None
 
@@ -1353,7 +1354,7 @@ class VectorStore:
             Metadata dictionary
         """
         try:
-            return json.loads(self.metadata_path.read_text())
+            return dict(json.loads(self.metadata_path.read_text()))
         except (FileNotFoundError, json.JSONDecodeError):
             return {"embeddings": {}}
 
@@ -1413,10 +1414,10 @@ class VectorStore:
 
     def get_chunk_relationships(
         self,
-        chunk_id: str = None,
-        relationship_types: list[str] = None,
+        chunk_id: str | None = None,
+        relationship_types: list[str] | None = None,
         min_strength: float = 0.0,
-        limit: int = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
         """Get chunk relationships from the database.
 
@@ -1435,7 +1436,7 @@ class VectorStore:
             FROM chunk_relationships
             WHERE strength >= ?
         """
-        params = [min_strength]
+        params: list[Any] = [min_strength]
 
         # Add chunk ID filter
         if chunk_id:
@@ -1484,7 +1485,7 @@ class VectorStore:
         chunk_id: str,
         max_related: int = 10,
         min_strength: float = 0.5,
-        relationship_types: list[str] = None,
+        relationship_types: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         """Get chunks related to a specific chunk.
 
@@ -1519,12 +1520,35 @@ class VectorStore:
             if related_chunk_id and related_chunk_id not in seen_chunks:
                 seen_chunks.add(related_chunk_id)
 
-                # Get chunk details
-                chunk_details = self.get_document_chunks(
-                    "", "", chunk_id=related_chunk_id
-                )
-                if chunk_details:
-                    chunk_info = chunk_details[0]
+                # Get chunk details by ID
+                with self._get_connection() as conn:
+                    cursor = conn.execute(
+                        """
+                        SELECT chunk_id, parent_document_id, parent_store_type, chunk_type,
+                               chunk_index, title, content, size_chars, start_position, end_position,
+                               metadata, created_at, updated_at
+                        FROM chunks WHERE chunk_id = ?
+                        """,
+                        (related_chunk_id,)
+                    )
+                    chunk_row = cursor.fetchone()
+                    
+                if chunk_row:
+                    chunk_info = {
+                        "chunk_id": chunk_row[0],
+                        "parent_document_id": chunk_row[1],
+                        "parent_store_type": chunk_row[2],
+                        "chunk_type": chunk_row[3],
+                        "chunk_index": chunk_row[4],
+                        "title": chunk_row[5],
+                        "content": chunk_row[6],
+                        "size_chars": chunk_row[7],
+                        "start_position": chunk_row[8],
+                        "end_position": chunk_row[9],
+                        "metadata": json.loads(chunk_row[10]) if chunk_row[10] else {},
+                        "created_at": chunk_row[11],
+                        "updated_at": chunk_row[12],
+                    }
                     chunk_info["relationship_type"] = rel["relationship_type"]
                     chunk_info["relationship_strength"] = rel["strength"]
                     chunk_info["relationship_metadata"] = rel["metadata"]
@@ -1538,8 +1562,8 @@ class VectorStore:
 
     def delete_chunk_relationships(
         self,
-        chunk_id: str = None,
-        relationship_type: str = None,
+        chunk_id: str | None = None,
+        relationship_type: str | None = None,
     ) -> int:
         """Delete chunk relationships.
 
@@ -1553,7 +1577,7 @@ class VectorStore:
         if not chunk_id and not relationship_type:
             # Delete all relationships
             query = "DELETE FROM chunk_relationships"
-            params = []
+            params: list[Any] = []
         elif chunk_id and not relationship_type:
             # Delete all relationships for a chunk
             query = "DELETE FROM chunk_relationships WHERE source_chunk_id = ? OR target_chunk_id = ?"
@@ -1687,7 +1711,7 @@ class VectorStore:
         visited = set()
         components = 0
 
-        def dfs(node):
+        def dfs(node: str) -> None:
             if node in visited:
                 return
             visited.add(node)

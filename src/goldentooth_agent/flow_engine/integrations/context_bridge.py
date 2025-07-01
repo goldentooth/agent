@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 from ..extensions import flow_registry
 from ..lazy_imports import create_context_key
@@ -83,44 +83,44 @@ class ContextFlowBridge:
             "check_should_skip", self._create_check_skip_method()
         )
 
-    def _create_set_exit_method(self):
+    def _create_set_exit_method(self) -> Callable[[Any, ContextProtocol, bool], None]:
         """Create method for setting exit signal."""
         exit_key = self.get_trampoline_key("SHOULD_EXIT_KEY")
 
-        def set_should_exit(_, context: ContextProtocol, value: bool = True) -> None:
+        def set_should_exit(_: Any, context: ContextProtocol, value: bool = True) -> None:
             """Set the exit signal in the context."""
             if exit_key:
                 context.set(exit_key, value)
 
         return set_should_exit
 
-    def _create_set_break_method(self):
+    def _create_set_break_method(self) -> Callable[[Any, ContextProtocol, bool], None]:
         """Create method for setting break signal."""
         break_key = self.get_trampoline_key("SHOULD_BREAK_KEY")
 
-        def set_should_break(_, context: ContextProtocol, value: bool = True) -> None:
+        def set_should_break(_: Any, context: ContextProtocol, value: bool = True) -> None:
             """Set the break signal in the context."""
             if break_key:
                 context.set(break_key, value)
 
         return set_should_break
 
-    def _create_set_skip_method(self):
+    def _create_set_skip_method(self) -> Callable[[Any, ContextProtocol, bool], None]:
         """Create method for setting skip signal."""
         skip_key = self.get_trampoline_key("SHOULD_SKIP_KEY")
 
-        def set_should_skip(_, context: ContextProtocol, value: bool = True) -> None:
+        def set_should_skip(_: Any, context: ContextProtocol, value: bool = True) -> None:
             """Set the skip signal in the context."""
             if skip_key:
                 context.set(skip_key, value)
 
         return set_should_skip
 
-    def _create_check_exit_method(self):
+    def _create_check_exit_method(self) -> Callable[[Any, ContextProtocol], bool]:
         """Create method for checking exit signal."""
         exit_key = self.get_trampoline_key("SHOULD_EXIT_KEY")
 
-        def check_should_exit(_, context: ContextProtocol) -> bool:
+        def check_should_exit(_: Any, context: ContextProtocol) -> bool:
             """Check if exit has been signaled."""
             if exit_key and context.contains(exit_key):
                 return context.get(exit_key)
@@ -128,11 +128,11 @@ class ContextFlowBridge:
 
         return check_should_exit
 
-    def _create_check_break_method(self):
+    def _create_check_break_method(self) -> Callable[[Any, ContextProtocol], bool]:
         """Create method for checking break signal."""
         break_key = self.get_trampoline_key("SHOULD_BREAK_KEY")
 
-        def check_should_break(_, context: ContextProtocol) -> bool:
+        def check_should_break(_: Any, context: ContextProtocol) -> bool:
             """Check if break has been signaled."""
             if break_key and context.contains(break_key):
                 return context.get(break_key)
@@ -140,11 +140,11 @@ class ContextFlowBridge:
 
         return check_should_break
 
-    def _create_check_skip_method(self):
+    def _create_check_skip_method(self) -> Callable[[Any, ContextProtocol], bool]:
         """Create method for checking skip signal."""
         skip_key = self.get_trampoline_key("SHOULD_SKIP_KEY")
 
-        def check_should_skip(_, context: ContextProtocol) -> bool:
+        def check_should_skip(_: Any, context: ContextProtocol) -> bool:
             """Check if skip has been signaled."""
             if skip_key and context.contains(skip_key):
                 return context.get(skip_key)

@@ -142,7 +142,7 @@ class TokenTracker:
         This gives us precise token counts for cost calculation.
         """
         try:
-            import tiktoken
+            import tiktoken  # type: ignore[import-not-found]
 
             # Map model names to tiktoken encodings
             encoding_map = {

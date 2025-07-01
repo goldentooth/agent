@@ -555,7 +555,7 @@ class ModuleMetadataGenerator:
 
     def _find_module_directories(self, project_root: Path) -> list[Path]:
         """Find all Python module directories in src/goldentooth_agent/."""
-        module_dirs = []
+        module_dirs: list[Path] = []
 
         # Only look in src/goldentooth_agent/
         src_path = project_root / "src" / "goldentooth_agent"
@@ -1428,7 +1428,7 @@ class ModuleMetadataGenerator:
 
     def update_all_readmes(self, project_root: Path) -> list[Path]:
         """Generate README.md files for all modules that have metadata."""
-        updated_readmes = []
+        updated_readmes: list[Path] = []
 
         # Only process modules in src/goldentooth_agent/
         src_path = project_root / "src" / "goldentooth_agent"
@@ -1486,7 +1486,7 @@ class ModuleMetadataGenerator:
 
     def check_background_files(self, project_root: Path) -> list[str]:
         """Check for missing README.bg.md files in all modules."""
-        missing_background = []
+        missing_background: list[str] = []
 
         # Only check modules in src/goldentooth_agent/
         src_path = project_root / "src" / "goldentooth_agent"
@@ -1613,7 +1613,7 @@ class ModuleMetadataGenerator:
 
     def analyze_module_for_background(self, module_path: Path) -> dict[str, Any]:
         """Analyze a module in depth for AI-powered background generation."""
-        analysis_data = {
+        analysis_data: dict[str, Any] = {
             "module_path": str(module_path),
             "module_name": module_path.name,
             "files": [],
@@ -1664,7 +1664,7 @@ class ModuleMetadataGenerator:
             content = file_path.read_text(encoding="utf-8")
             tree = ast.parse(content)
 
-            file_info = {
+            file_info: dict[str, Any] = {
                 "name": file_path.name,
                 "loc": len([line for line in content.splitlines() if line.strip()]),
                 "classes": [],

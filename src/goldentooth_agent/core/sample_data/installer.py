@@ -1,6 +1,7 @@
 """Sample data installer for demonstrating the RAG system."""
 
 import importlib.resources
+from pathlib import Path
 from typing import Any
 
 from ..document_store import DocumentStore
@@ -39,7 +40,7 @@ def install_sample_data(paths: Paths) -> dict[str, Any]:
                 for yaml_file in org_files.iterdir():
                     if yaml_file.name.endswith(".yaml"):
                         content = yaml_file.read_text()
-                        org_id = yaml_file.stem
+                        org_id = Path(yaml_file.name).stem
 
                         # Parse and save the organization
                         import yaml
@@ -60,7 +61,7 @@ def install_sample_data(paths: Paths) -> dict[str, Any]:
                 for yaml_file in repo_files.iterdir():
                     if yaml_file.name.endswith(".yaml"):
                         content = yaml_file.read_text()
-                        repo_id = yaml_file.stem
+                        repo_id = Path(yaml_file.name).stem
 
                         # Parse and save the repository
                         import yaml
@@ -81,7 +82,7 @@ def install_sample_data(paths: Paths) -> dict[str, Any]:
                 for yaml_file in note_files.iterdir():
                     if yaml_file.name.endswith(".yaml"):
                         content = yaml_file.read_text()
-                        note_id = yaml_file.stem
+                        note_id = Path(yaml_file.name).stem
 
                         # Parse and save the note
                         import yaml

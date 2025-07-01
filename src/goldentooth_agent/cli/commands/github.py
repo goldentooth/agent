@@ -55,7 +55,7 @@ def sync_organization(
             if embed:
                 console.print("[cyan]Embedding documents...[/cyan]")
 
-                async def embed_docs() -> None:
+                async def embed_docs() -> int:
                     # Embed organization
                     org_doc = github_client.document_store.github_orgs.load(org_name)
                     org_embedding = await embeddings_service.create_document_embedding(
@@ -159,7 +159,7 @@ def sync_user_repos(
             if embed and result["repos_synced"] > 0:
                 console.print("[cyan]Embedding repositories...[/cyan]")
 
-                async def embed_repos() -> None:
+                async def embed_repos() -> int:
                     embedded_count = 0
                     repo_ids = github_client.document_store.github_repos.list()
 

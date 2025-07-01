@@ -84,7 +84,7 @@ def window_stream(size: int, step: int = 1) -> Flow[Input, list[Input]]:
 
     async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[list[Input]]:
         """Generate sliding windows over the stream."""
-        window = deque(maxlen=size)
+        window: deque[Input] = deque(maxlen=size)
         items_seen = 0
 
         async for item in stream:
@@ -263,7 +263,7 @@ def buffer_stream(
             finally:
                 stream_done = True
 
-        async def emit_on_trigger() -> None:
+        async def emit_on_trigger() -> AsyncIterator[list[Input]]:
             """Emit buffer when trigger fires."""
             nonlocal buffer, trigger_done
             try:

@@ -103,7 +103,7 @@ class EmbeddingCache:
                 # Deserialize embedding
                 embedding_bytes = result[0]
                 embedding_array = np.frombuffer(embedding_bytes, dtype=np.float32)
-                return embedding_array.tolist()
+                return list(embedding_array.tolist())
 
         return None
 
@@ -263,15 +263,18 @@ class CachedEmbeddingService:
         """Call the actual embedding service."""
         # This would be customized based on the actual embedding service interface
         if hasattr(self.embedding_service, "embed_text"):
-            return await self.embedding_service.embed_text(text)
+            result = await self.embedding_service.embed_text(text)
+            return list(result)
         elif hasattr(self.embedding_service, "get_embedding"):
-            return await self.embedding_service.get_embedding(text)
+            result = await self.embedding_service.get_embedding(text)
+            return list(result)
         elif hasattr(self.embedding_service, "embed"):
-            return await self.embedding_service.embed(text)
+            result = await self.embedding_service.embed(text)
+            return list(result)
         else:
             # Fallback for OpenAI-style interface
             response = await self.embedding_service.create_embedding(text)
-            return response.data[0].embedding
+            return list(response.data[0].embedding)
 
     def get_cache_stats(self) -> dict[str, Any]:
         """Get cache statistics."""

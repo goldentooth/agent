@@ -293,7 +293,7 @@ def merge_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
                 await result_queue.put(None)  # Signal completion
 
         # Start collection tasks
-        collection_tasks = [
+        collection_tasks: list[asyncio.Task[None]] = [
             asyncio.create_task(collect_from_flow(task)) for task in tasks
         ]
 
@@ -312,7 +312,7 @@ def merge_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
                     yield result
         finally:
             # Clean up
-            for task in collection_tasks:
+            for task in collection_tasks:  # type: ignore[assignment]
                 if not task.done():
                     task.cancel()
                     try:

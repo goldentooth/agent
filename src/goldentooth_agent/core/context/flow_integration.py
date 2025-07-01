@@ -450,8 +450,8 @@ def extend_flow_with_context() -> None:
         """Chain this flow with another flow (alias for >> operator)."""
         return self >> other
 
-    Flow.run = run
-    Flow.then = then
+    Flow.run = run  # type: ignore[attr-defined]
+    Flow.then = then  # type: ignore[attr-defined]
 
 
 # Decorator for creating context-aware flows
@@ -490,7 +490,7 @@ def context_flow(
                 if asyncio.iscoroutine(result):
                     # Handle async case - this is a simplification for now
                     result = await result
-                yield result  # type: ignore[misc]
+                yield result
 
         main_flow = Flow(main_flow_impl, name=name or func.__name__)
 

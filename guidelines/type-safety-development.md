@@ -31,6 +31,57 @@ async def async_process() -> list[str]:
 
 **Rule**: Every function and method must have a return type annotation, even if it's `-> None`.
 
+### 2.1 **Use Union Types Instead of Implicit Optional**
+**Problem**: PEP 484 prohibits implicit Optional types
+
+```python
+# ❌ Bad - Implicit Optional (mypy error)
+def process_data(value: str = None) -> str:
+    return value or "default"
+
+# ✅ Good - Explicit Union type
+def process_data(value: str | None = None) -> str:
+    return value or "default"
+
+# ✅ Also good - Using Optional (but Union preferred)
+from typing import Optional
+def process_data(value: Optional[str] = None) -> str:
+    return value or "default"
+```
+
+### 2.2 **Handle Any Returns from External Libraries**
+**Problem**: `[no-any-return]` errors from external libraries
+
+```python
+# ❌ Bad - yaml.safe_load returns Any
+def load_config() -> dict[str, str]:
+    return yaml.safe_load(file_content)
+
+# ✅ Good - Cast or validate the return
+def load_config() -> dict[str, str]:
+    data = yaml.safe_load(file_content)
+    return dict(data)  # Cast to expected type
+
+# ✅ Better - Use assertion for known structure
+def load_config() -> dict[str, str]:
+    data = yaml.safe_load(file_content)
+    assert isinstance(data, dict)
+    return data
+```
+
+### 2.3 **Handle numpy Array Returns**
+**Problem**: `numpy.ndarray.tolist()` returns Any
+
+```python
+# ❌ Bad - tolist() returns Any
+def get_embedding() -> list[float]:
+    return embedding_array.tolist()
+
+# ✅ Good - Cast to expected type
+def get_embedding() -> list[float]:
+    return list(embedding_array.tolist())
+```
+
 ### 2. **Always Annotate Variable Types When Unclear**
 **Problem**: 9 `[var-annotated]` errors
 
@@ -176,6 +227,66 @@ def handle_json_response(response: dict[str, Any]) -> None:
 ```
 
 ### 2. **Don't Use Bare `except:`**
+
+## 📋 Common Type Error Patterns & Solutions
+
+Based on mypy analysis of the codebase, here are the most frequent patterns and their solutions:
+
+### **External Library Integration**
+```python
+# Handle untyped imports
+import tiktoken  # type: ignore[import-not-found]
+import sqlite_vec  # type: ignore[import-untyped]
+
+# Handle third-party returns
+def load_yaml_config() -> dict[str, Any]:
+    data = yaml.safe_load(content)
+    return dict(data) if data else {}  # Cast Any to expected type
+```
+
+### **Async Generator Return Types**
+```python
+# ❌ Missing return type
+async def emit_results():
+    yield item
+
+# ✅ Proper async generator typing  
+async def emit_results() -> AsyncIterator[ResultType]:
+    yield item
+```
+
+### **Mixed Type Lists**
+```python
+# ❌ Wrong - mixing types without annotation
+params = [query_bytes]  # bytes
+params.append(store_type)  # str
+params.append(limit)  # int
+
+# ✅ Correct - annotate as Any for mixed types
+params: list[Any] = [query_bytes]
+params.append(store_type)
+params.append(limit)
+```
+
+### **Dynamic Attribute Access**
+```python
+# ❌ Dynamic calls return Any
+return await self.service.some_method(text)
+
+# ✅ Cast dynamic results
+result = await self.service.some_method(text)
+return list(result)  # or appropriate casting
+```
+
+### **Dictionary Access**
+```python
+# ❌ .get() returns Any
+return metadata.get("embeddings", {}).get("checksum")
+
+# ✅ Handle Any returns
+checksum = metadata.get("embeddings", {}).get("checksum")
+return str(checksum) if checksum is not None else None
+```
 ```python
 # ❌ Bad - Catches everything, unclear types
 try:

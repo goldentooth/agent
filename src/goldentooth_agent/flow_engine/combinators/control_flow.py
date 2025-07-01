@@ -116,7 +116,7 @@ def recover_stream(
         """Process stream with exception handling."""
         try:
             async for item in stream:
-                yield item  # type: ignore[misc]  # Assume Input and Output are compatible
+                yield item
         except Exception as e:
             # If we can determine what item caused the issue, call handler
             # For now, we'll pass None as the item since we can't determine it

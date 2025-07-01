@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import mimetypes
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import aiofiles
 from pydantic import Field
@@ -155,15 +155,15 @@ async def file_write_implementation(input_data: FileWriteInput) -> FileWriteOutp
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Determine file mode
-        mode = (
-            "ab"
-            if input_data.append_mode and input_data.binary_mode
-            else (
-                "a"
-                if input_data.append_mode
-                else "wb" if input_data.binary_mode else "w"
-            )
-        )
+        mode: Literal["ab", "a", "wb", "w"]
+        if input_data.append_mode and input_data.binary_mode:
+            mode = "ab"
+        elif input_data.append_mode:
+            mode = "a"
+        elif input_data.binary_mode:
+            mode = "wb"
+        else:
+            mode = "w"
 
         # Write content
         bytes_written = 0
@@ -182,12 +182,12 @@ async def file_write_implementation(input_data: FileWriteInput) -> FileWriteOutp
                     error=f"Invalid base64 content: {str(e)}",
                 )
 
-            async with aiofiles.open(file_path, mode) as f:
+            async with aiofiles.open(str(file_path), mode) as f:
                 await f.write(content_bytes)
                 bytes_written = len(content_bytes)
         else:
             async with aiofiles.open(
-                file_path, mode, encoding=input_data.encoding
+                str(file_path), mode, encoding=input_data.encoding
             ) as f:
                 await f.write(input_data.content)
                 bytes_written = len(input_data.content.encode(input_data.encoding))
@@ -310,7 +310,7 @@ async def json_process_implementation(
                     error="No JSON data provided for validation",
                 )
 
-            validation_errors = []
+            validation_errors: list[str] = []
             try:
                 json.loads(input_data.json_data)
                 return JsonProcessOutput(
@@ -352,7 +352,7 @@ async def json_process_implementation(
 
             # Simple path extraction (e.g., "$.key", "$.items[0].name")
             path = input_data.json_path.lstrip("$.")
-            extracted_values = []
+            extracted_values: list[Any] = []
 
             try:
                 # Basic path traversal
@@ -364,7 +364,7 @@ async def json_process_implementation(
                         index = int(index_part.rstrip("]"))
                         if key:
                             current = current[key]
-                        current = current[index]
+                        current = current[index]  # type: ignore[index]
                     else:
                         current = current[part]
 

@@ -167,9 +167,9 @@ class SecretValue:
 
     def __del__(self) -> None:
         """Secure cleanup when object is destroyed."""
-        if hasattr(self, "_value"):
+        if hasattr(self, "_obfuscated") and isinstance(self._obfuscated, bytes):
             # Overwrite memory (Python string interning makes this limited)
-            self._value = "0" * len(self._value)
+            self._obfuscated = b"0" * len(self._obfuscated)
 
 
 class EncryptionProvider(ABC):

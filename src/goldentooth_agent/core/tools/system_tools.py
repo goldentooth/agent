@@ -86,7 +86,7 @@ async def process_execute_implementation(
         try:
             process = (
                 await asyncio.create_subprocess_exec(
-                    *cmd if not input_data.shell else [],
+                    *cmd if not input_data.shell else [],  # type: ignore[redundant-expr]
                     shell=input_data.shell,  # nosec B604 - shell execution is intentional for system tool
                     stdout=subprocess.PIPE if input_data.capture_output else None,
                     stderr=subprocess.PIPE if input_data.capture_output else None,
@@ -235,10 +235,10 @@ async def system_info_implementation(input_data: SystemInfoInput) -> SystemInfoO
                 "physical_cores": psutil.cpu_count(logical=False),
                 "logical_cores": psutil.cpu_count(logical=True),
                 "current_frequency": (
-                    psutil.cpu_freq().current if psutil.cpu_freq() else None
+                    psutil.cpu_freq().current if psutil.cpu_freq() else None  # type: ignore[redundant-expr]
                 ),
-                "min_frequency": psutil.cpu_freq().min if psutil.cpu_freq() else None,
-                "max_frequency": psutil.cpu_freq().max if psutil.cpu_freq() else None,
+                "min_frequency": psutil.cpu_freq().min if psutil.cpu_freq() else None,  # type: ignore[redundant-expr]
+                "max_frequency": psutil.cpu_freq().max if psutil.cpu_freq() else None,  # type: ignore[redundant-expr]
                 "cpu_usage_percent": psutil.cpu_percent(interval=1),
                 "cpu_usage_per_core": psutil.cpu_percent(interval=1, percpu=True),
                 "load_average": os.getloadavg() if hasattr(os, "getloadavg") else None,
@@ -289,7 +289,7 @@ async def system_info_implementation(input_data: SystemInfoInput) -> SystemInfoO
                     continue
 
         # Network information
-        network_info = {}
+        network_info: dict[str, Any] = {}
         if input_data.include_network:
             network_stats = psutil.net_io_counters()
             network_connections = len(psutil.net_connections())

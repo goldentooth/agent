@@ -105,7 +105,7 @@ class HealthCheck:
             return False
         else:
             # It's a regular coroutine
-            return await check_result
+            return bool(await check_result)
 
 
 @dataclass

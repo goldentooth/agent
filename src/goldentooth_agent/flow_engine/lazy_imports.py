@@ -16,16 +16,16 @@ def get_context_module() -> Any:
     return importlib.import_module("goldentooth_agent.core.context")
 
 
-def get_context_key_class() -> type[ContextKey]:
+def get_context_key_class() -> type[ContextKey[Any]]:
     """Lazily get the ContextKey class."""
     context_module = get_context_module()
-    return context_module.ContextKey
+    return context_module.ContextKey  # type: ignore[no-any-return]
 
 
 def get_context_class() -> type[Context]:
     """Lazily get the Context class."""
     context_module = get_context_module()
-    return context_module.Context
+    return context_module.Context  # type: ignore[no-any-return]
 
 
 def create_context_key(

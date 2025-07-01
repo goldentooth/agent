@@ -294,7 +294,7 @@ def registered_flow(name: str, category: str | None = None) -> Callable[[Any], A
                     # Register the Flow and return a function that always returns the same instance
                     register_flow(name, flow, category)
 
-                    def cached_factory():
+                    def cached_factory() -> Flow[Any, Any]:
                         return flow
 
                     return cached_factory

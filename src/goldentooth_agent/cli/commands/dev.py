@@ -1097,7 +1097,7 @@ def _generate_ai_background_content(analysis_data: dict[str, Any]) -> str:
         template_data = yaml.safe_load(f)
 
     # Generate content using template
-    template_content = template_data["background_template"].format(
+    template_content = str(template_data["background_template"]).format(
         module_name=module_name
     )
 
