@@ -47,6 +47,75 @@ The QA script validates:
 6. **Linting** - Ruff quality checks
 7. **Pre-commit Hooks** - All configured hooks must pass
 
+### Required Static Analysis Tools (Mandatory)
+
+**All developers must use these static analysis tools as part of the development workflow:**
+
+#### Pre-commit Hooks (Automatically Enforced)
+```bash
+# Dictionary access pattern detection (prevents dict.attr errors)
+scripts/check_dict_access.py --staged
+# Outcome: Catches potential 'dict' object has no attribute errors
+
+# Type annotation completeness audit
+scripts/audit_type_annotations.py
+# Outcome: Ensures all functions have return type annotations
+
+# Standard quality tools
+poetry run poe typecheck    # mypy strict type checking
+poetry run poe format       # black, isort, ruff auto-fixes
+poetry run poe test-cov     # pytest with coverage validation
+```
+
+#### Development-Time Analysis (Run Regularly)
+```bash
+# Response handling consistency check
+scripts/analyze_response_patterns.py
+# Outcome: Identifies mixed dict/object access patterns across codebase
+
+# Dead code detection (incremental)
+poetry run poe deadcode-diff
+# Outcome: Finds newly introduced unused code
+
+# Mock compliance validation
+poetry run poe test-mocks
+# Outcome: Ensures mocks stay synchronized with real implementations
+
+# Dependency analysis
+poetry run rg "from goldentooth_agent" src/ | cut -d: -f2 | sort | uniq -c
+# Outcome: Identifies circular imports and heavy coupling
+```
+
+#### Integration Analysis (Before Major Changes)
+```bash
+# Comprehensive response pattern analysis
+scripts/analyze_response_patterns.py > response_analysis.txt
+# Review for consistency issues before implementing changes
+
+# Full type annotation audit
+scripts/audit_type_annotations.py > type_coverage.txt
+# Ensure type safety baseline before major refactoring
+
+# Architectural dependency review
+find src/ -name "*.py" -exec wc -l {} \; | sort -nr | head -20
+# Identify largest modules that may need attention
+```
+
+#### Quality Gate Enforcement
+**Pre-commit hooks WILL PREVENT commits that:**
+- Introduce dictionary attribute access patterns (`result.response` on dict objects)
+- Add functions without return type annotations
+- Fail type checking with mypy --strict
+- Reduce test coverage below 85%
+- Introduce new dead code
+- Violate code formatting standards
+
+**Development workflow MUST include:**
+- Running `poetry run poe qa-check` before every commit
+- Addressing all static analysis warnings
+- Using enhanced error reporting for new exception handling
+- Following response handling standards for new agent interfaces
+
 ### Code Formatting Commands
 
 Apply all formatting transformations (requires `git add` afterwards):
@@ -90,6 +159,150 @@ poetry run poe deadcode-diff          # Check for new dead code only
 # Pre-commit hooks
 poetry run poe precommit-run          # All hooks on all files
 poetry run poe precommit-run-hook     # Staged files only
+```
+
+## Pre-Development Investigation Protocol
+
+**CRITICAL**: Always perform systematic investigation before implementing fixes or features. This prevents partial solutions and ensures comprehensive improvements.
+
+### For Bug Fixes
+
+#### 1. **Systematic Error Reproduction**
+```bash
+# Document the exact error
+echo "Error: 'dict' object has no attribute 'response'" > bug_report.md
+echo "Command: goldentooth-agent chat --agent rag" >> bug_report.md
+echo "Stack trace: [paste full stack trace]" >> bug_report.md
+```
+
+#### 2. **Codebase Investigation Strategy**
+```bash
+# Use Task agent for broad pattern discovery
+# Example: "Search for all files handling agent responses"
+# Example: "Find all occurrences of result.response in the codebase"
+
+# Use specific tools for targeted analysis
+poetry run rg "\.response" src/  # Find attribute access patterns
+poetry run rg "result\[" src/   # Find dictionary access patterns
+```
+
+#### 3. **Root Cause Analysis Process**
+1. **Identify the failure point** - Exact line and function where error occurs
+2. **Trace data flow** - Follow the data from source to failure point
+3. **Check type consistency** - Verify expected vs actual data types
+4. **Find similar patterns** - Look for the same issue in other parts of codebase
+5. **Assess scope** - Is this a local fix or a systemic issue?
+
+#### 4. **Comprehensive Solution Planning**
+```markdown
+# Required sections for bug fix planning:
+
+## Root Cause
+- Specific technical reason for the failure
+- Data type mismatches or interface inconsistencies
+
+## Immediate Fix
+- Minimum changes needed to resolve the error
+- File-by-file changes with before/after examples
+
+## Prevention Strategy
+- How to prevent this category of error in the future
+- Static analysis tools, runtime validation, etc.
+
+## Improvement Opportunities
+- Related technical debt that should be addressed
+- System-wide improvements that would help
+
+## Implementation Plan
+1. Phase 1: Fix immediate issue
+2. Phase 2: Add prevention mechanisms
+3. Phase 3: Implement broader improvements
+```
+
+### For Feature Development
+
+#### 1. **Architecture Investigation**
+```bash
+# Understand existing patterns
+poetry run scripts/analyze_response_patterns.py  # Check response handling
+poetry run scripts/audit_type_annotations.py     # Check type coverage
+
+# Review related modules
+find src/ -name "*.py" -path "*agent*" | head -10  # Find agent-related files
+```
+
+#### 2. **Integration Point Analysis**
+- **Identify all touch points** - What existing code will this feature interact with?
+- **Check interface consistency** - Do existing interfaces support this feature?
+- **Assess compatibility** - Will this break existing functionality?
+- **Plan migration path** - How to integrate without disruption?
+
+#### 3. **Implementation Strategy**
+```python
+# Required: Plan before coding
+"""
+Feature: Enhanced Agent Response Handling
+
+Touch Points:
+- src/goldentooth_agent/cli/commands/chat.py (main interface)
+- src/goldentooth_agent/core/rag/ (RAG agent implementation)
+- tests/integration/ (response validation tests)
+
+Interface Changes:
+- All agents must return AgentResponse schema
+- Chat command needs response.response -> response["response"] fixes
+- Integration tests need schema validation
+
+Migration Plan:
+1. Create AgentResponse schema (new)
+2. Update agents to support both dict and schema returns (compatible)
+3. Update consumers to handle schema objects (breaking but controlled)
+4. Remove dictionary support (cleanup)
+"""
+```
+
+### Investigation Tools and Commands
+
+#### Required Static Analysis Tools
+```bash
+# Type and interface analysis
+poetry run poe typecheck                    # Check type consistency
+scripts/audit_type_annotations.py           # Find missing type annotations
+scripts/check_dict_access.py --staged       # Check for dict.attr patterns
+scripts/analyze_response_patterns.py        # Find response handling inconsistencies
+
+# Dependency and architecture analysis
+poetry run rg "from.*import" src/ | grep -E "(agent|response)" # Find imports
+poetry run rg "class.*Agent" src/          # Find all agent classes
+poetry run rg "def.*response" src/         # Find response-handling functions
+```
+
+#### Development-Time Validation
+```bash
+# Before making changes - establish baseline
+poetry run poe qa-check > baseline_qa.log
+
+# During development - check incrementally
+poetry run poe qa-fast                     # Quick feedback loop
+poetry run poe typecheck                   # Type safety validation
+
+# Before commit - comprehensive validation
+poetry run poe qa-check                    # Full quality assurance
+```
+
+#### Research Commands for Complex Issues
+```bash
+# Pattern discovery across codebase
+poetry run rg "response\." src/ -A 3 -B 3  # Context around response access
+poetry run rg "result\[" src/ -A 2         # Dictionary access patterns
+poetry run rg "return.*dict" src/ -A 1     # Functions returning dicts
+
+# Dependency analysis
+poetry run rg "from goldentooth_agent" src/ | cut -d: -f2 | sort | uniq -c
+poetry run find src/ -name "*.py" -exec wc -l {} \; | sort -nr | head -20
+
+# Test coverage analysis
+poetry run pytest --cov-report=term-missing --cov=src/ tests/
 ```
 
 ## Task Completion Workflow

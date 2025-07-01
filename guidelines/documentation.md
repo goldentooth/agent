@@ -17,6 +17,7 @@ This document defines the documentation standards and practices for the Goldento
 3. **Architecture Documentation**: High-level system design and patterns
 4. **User Documentation**: How to use the system (CLI, agents, workflows)
 5. **Developer Documentation**: Contributing, setup, development workflow
+6. **Debugging Documentation**: Error scenarios, troubleshooting, common issues
 
 ## Module Documentation Standards
 
@@ -881,6 +882,241 @@ def validate_documentation_examples():
 - **docstring-parser**: For extracting API documentation
 - **mermaid**: For diagrams and flowcharts
 - **plantuml**: For complex architectural diagrams
+
+## Debugging Documentation Standards
+
+### Error Context Documentation Requirements
+
+**All complex functions and public APIs must include debugging information in their docstrings:**
+
+#### Required Debugging Sections
+```python
+def process_agent_response(response_data: Any, expected_format: str) -> ProcessedResponse:
+    """Process agent response with comprehensive error documentation.
+
+    Args:
+        response_data: Raw response from agent (dict or object)
+        expected_format: Expected response format ("dict" or "object")
+
+    Returns:
+        ProcessedResponse with validated data
+
+    Raises:
+        ValidationError: If response_data format is invalid
+        AttributeError: If accessing response_data.attribute on dict object
+        TypeError: If response_data is not dict or compatible object
+
+    Common Issues:
+        - **Dict vs Object Access**: If getting AttributeError, check if response_data
+          is a dictionary. Use response_data["key"] instead of response_data.key
+        - **Missing Fields**: Check response_data.keys() or dir(response_data) for
+          available fields
+        - **Type Mismatch**: Verify response_data type matches expected_format
+
+    Debugging:
+        - Print type(response_data) to check actual type
+        - Use hasattr(response_data, 'attribute') to check for attributes
+        - Check response_data.__dict__ for object contents
+        - Validate with isinstance(response_data, dict) for dictionaries
+
+    Example:
+        >>> # Dictionary response
+        >>> response = {"text": "hello", "confidence": 0.8}
+        >>> result = process_agent_response(response, "dict")
+
+        >>> # Object response
+        >>> response = AgentResponse(text="hello", confidence=0.8)
+        >>> result = process_agent_response(response, "object")
+
+    See Also:
+        - docs/debugging-improvements.md#dict-vs-object-access
+        - guidelines/error-handling.md#enhanced-error-context
+    """
+```
+
+#### Response Interface Documentation
+```python
+class AgentResponse(BaseModel):
+    """Standard agent response schema with debugging guidance.
+
+    This class prevents common dict/object access confusion by providing
+    a consistent interface for all agent responses.
+
+    Attributes:
+        response: Main response text from the agent
+        sources: List of source documents or references
+        confidence: Confidence score (0.0 to 1.0)
+        suggestions: List of follow-up suggestions for the user
+        metadata: Additional processing metadata
+
+    Common Usage Patterns:
+        # ✅ Correct object access
+        agent_response = AgentResponse(response="Hello")
+        text = agent_response.response
+
+        # ✅ Dictionary conversion when needed
+        response_dict = agent_response.model_dump()
+        text = response_dict["response"]
+
+        # ❌ Common mistake: mixing patterns
+        # Don't access .response on dictionaries
+        # Don't access ["response"] on AgentResponse objects
+
+    Migration Guide:
+        If migrating from dictionary responses:
+
+        # Old pattern (dict)
+        result = {"response": "text", "confidence": 0.8}
+        text = result["response"]
+
+        # New pattern (object)
+        result = AgentResponse(response="text", confidence=0.8)
+        text = result.response
+
+        # Migration helper
+        result = AgentResponse.from_dict(legacy_dict_response)
+
+    Troubleshooting:
+        - AttributeError on .response: Check if you have a dict instead of AgentResponse
+        - KeyError on ["response"]: Check if you have AgentResponse instead of dict
+        - Type confusion: Use isinstance(obj, AgentResponse) to verify type
+
+    See Also:
+        - guidelines/code-style.md#response-handling-standards
+        - src/goldentooth_agent/core/schema/README.md
+    """
+```
+
+### Error Scenario Documentation
+
+#### Function-Level Error Documentation
+```python
+def parse_llm_response(raw_response: str) -> dict[str, Any]:
+    """Parse LLM response with error scenario documentation.
+
+    Args:
+        raw_response: Raw text response from LLM
+
+    Returns:
+        Parsed response dictionary
+
+    Error Scenarios:
+        1. **Invalid JSON**: If raw_response is not valid JSON
+           - Symptom: JSONDecodeError raised
+           - Cause: LLM returned malformed JSON or plain text
+           - Solution: Check if response starts with '{' or validate format
+           - Debug: Print raw_response[:100] to see actual content
+
+        2. **Missing Required Fields**: If parsed JSON lacks expected keys
+           - Symptom: KeyError when accessing result["field"]
+           - Cause: LLM didn't include all required response fields
+           - Solution: Use .get() with defaults or validate schema
+           - Debug: Print list(parsed.keys()) to see available fields
+
+        3. **Type Mismatch**: If field values have wrong types
+           - Symptom: TypeError in downstream processing
+           - Cause: LLM returned string where number expected
+           - Solution: Add type conversion or validation
+           - Debug: Check type(parsed["field"]) for each field
+
+    Recovery Strategies:
+        - Retry with modified prompt if parsing fails
+        - Use default values for missing optional fields
+        - Log original response for manual review
+        - Fallback to simpler response format
+
+    Example Debug Session:
+        ```python
+        try:
+            result = parse_llm_response(raw_response)
+        except JSONDecodeError:
+            print(f"Invalid JSON: {raw_response[:200]}")
+            # Check if response is plain text
+        except KeyError as e:
+            print(f"Missing field {e}, available: {list(result.keys())}")
+            # Use defaults or request field from LLM
+        ```
+    """
+```
+
+### Module-Level Troubleshooting
+
+#### README Troubleshooting Sections
+Each module README must include a comprehensive troubleshooting section:
+
+```markdown
+## Troubleshooting
+
+### Common Issues
+
+#### Issue: 'dict' object has no attribute 'response'
+**Symptoms:**
+```
+AttributeError: 'dict' object has no attribute 'response'
+```
+
+**Root Cause:**
+Code is trying to access `result.response` when `result` is a dictionary, not an object with attributes.
+
+**Solutions:**
+1. **Use dictionary access**: Change `result.response` to `result["response"]`
+2. **Convert to object**: Use `AgentResponse.from_dict(result)` to create typed object
+3. **Check caller**: Verify the function returns what you expect
+
+**Prevention:**
+- Use type hints: `-> AgentResponse` instead of `-> dict[str, Any]`
+- Add runtime validation with `isinstance(result, dict)`
+- Use static analysis: `scripts/check_dict_access.py`
+
+#### Issue: Missing required keys in response dictionary
+**Symptoms:**
+```
+KeyError: 'sources'
+```
+
+**Root Cause:**
+Expected dictionary key is missing from the response.
+
+**Solutions:**
+1. **Use safe access**: `result.get("sources", [])` instead of `result["sources"]`
+2. **Validate response**: Check `"sources" in result` before accessing
+3. **Use schema validation**: `AgentResponse.model_validate(result)`
+
+**Prevention:**
+- Define required vs optional keys clearly
+- Use Pydantic models for validation
+- Add integration tests for response formats
+
+### Performance Issues
+
+#### Issue: Slow response processing
+**Debugging Steps:**
+1. **Time each step**: Add timing logs around major operations
+2. **Check data size**: Log `len(response_data)` for large responses
+3. **Profile bottlenecks**: Use `cProfile` on processing functions
+
+### Development Issues
+
+#### Issue: Pre-commit hooks failing
+**Common Solutions:**
+1. **Dictionary access patterns**: Run `scripts/check_dict_access.py --staged`
+2. **Type annotation missing**: Run `scripts/audit_type_annotations.py`
+3. **Format issues**: Run `poetry run poe format`
+
+#### Issue: Mock compliance failures
+**Debugging:**
+```bash
+poetry run poe test-mocks
+# Check which mocks are out of sync with real implementations
+```
+
+### Getting Help
+
+1. **Check logs**: Review error context in exception messages
+2. **Run diagnostics**: Use debugging utilities in `src/goldentooth_agent/dev/debugging.py`
+3. **Static analysis**: Run analysis scripts in `scripts/` directory
+4. **Review guidelines**: Check relevant files in `guidelines/` directory
+```
 
 ## Documentation Anti-Patterns
 

@@ -479,6 +479,182 @@ def process_document(doc: Document) -> ProcessedDocument:
     return new_processing_approach(doc)
 ```
 
+## Response Handling Standards
+
+### Consistent Return Types
+All agent methods and functions that return response data must use structured objects rather than raw dictionaries to prevent runtime attribute access errors.
+
+#### Required Patterns
+```python
+# ✅ Good: Structured response with Pydantic
+from goldentooth_agent.core.schema import AgentResponse
+
+async def process_query(self, query: str) -> AgentResponse:
+    """Process query and return structured response."""
+    result = await self._internal_processing(query)
+    return AgentResponse(
+        response=result["text"],
+        sources=result.get("sources", []),
+        confidence=result.get("confidence", 0.0),
+        metadata=result.get("metadata", {})
+    )
+
+# ✅ Good: Explicit dictionary typing when needed
+def get_config_data() -> dict[str, Any]:
+    """Return configuration as dictionary."""
+    return {"timeout": 30, "retries": 3}
+
+# Usage with explicit dict access
+config = get_config_data()
+timeout = config["timeout"]  # Clear dictionary access
+```
+
+#### Prohibited Patterns
+```python
+# ❌ Bad: Mixed access patterns (runtime error prone)
+def process_query(self, query: str) -> dict[str, Any]:
+    """Returns dict but caller expects object."""
+    return {"response": "text", "sources": []}
+
+# Usage (DANGEROUS - will fail at runtime)
+result = process_query("test")
+text = result.response  # AttributeError: 'dict' has no attribute 'response'
+
+# ❌ Bad: Unclear return type
+def process_data(self, data: Any) -> Any:
+    """Unclear what this returns."""
+    return some_processing(data)
+```
+
+### Dictionary vs Object Access Guidelines
+
+#### When to Use Dictionary Access
+```python
+# ✅ External API responses (unknown structure)
+api_response = await external_service.call()
+status = api_response.get("status", "unknown")
+
+# ✅ Configuration data
+config = load_config()
+timeout = config["database"]["timeout"]
+
+# ✅ JSON-like data structures
+metadata = {"created_at": "2024-01-01", "version": "1.0"}
+version = metadata["version"]
+```
+
+#### When to Use Object Access
+```python
+# ✅ Internal domain objects
+document = Document(title="Test", content="Content")
+title = document.title
+
+# ✅ Pydantic models
+response = AgentResponse(response="text")
+text = response.response
+
+# ✅ Well-defined service objects
+context = get_context()
+user_id = context.user_id
+```
+
+### Response Type Evolution Strategy
+
+#### Migration from Dictionaries to Objects
+```python
+# Phase 1: Add type hints to existing dict returns
+def legacy_function() -> dict[str, Any]:
+    """Legacy function returning dictionary."""
+    return {"result": "data", "status": "ok"}
+
+# Phase 2: Create structured alternative
+def new_function() -> ProcessingResult:
+    """New function with structured return."""
+    return ProcessingResult(result="data", status="ok")
+
+# Phase 3: Deprecate dictionary version
+@deprecated("Use new_function() instead")
+def legacy_function() -> dict[str, Any]:
+    """Legacy function - use new_function() instead."""
+    result = new_function()
+    return result.model_dump()  # Convert to dict for compatibility
+```
+
+#### Error Prevention Strategies
+```python
+# ✅ Use type guards for external data
+from typing import TypeGuard
+
+def is_valid_response(data: Any) -> TypeGuard[dict[str, Any]]:
+    """Check if data has expected response structure."""
+    return (
+        isinstance(data, dict) and
+        "response" in data and
+        isinstance(data["response"], str)
+    )
+
+# Usage
+external_data = await external_call()
+if is_valid_response(external_data):
+    text = external_data["response"]  # Type-safe access
+else:
+    raise ValueError("Invalid response structure")
+
+# ✅ Use runtime validation for critical paths
+from goldentooth_agent.core.validation import validate_dict_response
+
+result = await risky_operation()
+validated = validate_dict_response(
+    result,
+    required_keys=["response", "status"],
+    optional_keys=["metadata", "sources"]
+)
+response_text = validated["response"]  # Guaranteed to exist
+```
+
+### Interface Consistency Requirements
+
+#### Agent Response Standards
+All agents must implement consistent response interfaces using the standardized `AgentResponse` schema:
+
+```python
+# ✅ Required: Standard agent interface
+from goldentooth_agent.core.schema import AgentResponse
+
+class MyAgent:
+    async def process_request(self, request: str) -> AgentResponse:
+        """All agents must return AgentResponse."""
+        # Processing logic
+        return AgentResponse(
+            response="Generated response text",
+            sources=[{"title": "Source 1", "url": "..."}],
+            confidence=0.85,
+            suggestions=["Try asking about X", "Consider Y"],
+            metadata={"processing_time": 0.5, "model": "claude-3"}
+        )
+
+# ✅ Required: Type annotations for external interfaces
+async def chat_with_agent(agent_type: str, message: str) -> AgentResponse:
+    """Chat interface must return structured response."""
+    agent = get_agent(agent_type)
+    return await agent.process_request(message)
+```
+
+#### Legacy Compatibility
+```python
+# ✅ Acceptable: Gradual migration with compatibility layer
+class LegacyAgent:
+    def process(self, query: str) -> dict[str, Any]:
+        """Legacy method returning dict."""
+        # Keep existing dict-based implementation
+        return {"response": "text", "confidence": 0.8}
+
+    async def process_request(self, query: str) -> AgentResponse:
+        """New structured interface."""
+        legacy_result = self.process(query)
+        return AgentResponse.from_dict(legacy_result)
+```
+
 ## Anti-Patterns to Avoid
 
 ### Code Smells

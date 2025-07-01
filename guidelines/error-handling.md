@@ -11,6 +11,143 @@ This document defines error handling patterns, exception strategies, and async e
 - **User experience**: Provide meaningful error messages to users
 - **Debugging support**: Include sufficient information for troubleshooting
 - **No pre-existing issues**: There is no such thing as "pre-existing issues" in this codebase. Every error is top priority and should be considered as though we are about to introduce it to prod.
+- **Enhanced debugging context**: All errors must provide maximum context for rapid debugging
+
+### Enhanced Error Context Requirements
+
+#### Mandatory Context Information
+All custom exceptions **MUST** include comprehensive debugging context:
+
+```python
+# ✅ Required: Rich error context for debugging
+raise ProcessingError(
+    f"Failed to process document {doc.id}",
+    context={
+        # Object identification
+        "document_id": doc.id,
+        "document_type": doc.type,
+        "file_path": doc.source_path,
+
+        # Object state information
+        "document_size": len(doc.content) if doc.content else 0,
+        "has_metadata": bool(doc.metadata),
+        "available_attributes": sorted(vars(doc).keys()),
+
+        # Processing context
+        "processing_stage": "validation",
+        "processor_type": self.__class__.__name__,
+        "config_used": self.config.model_dump() if hasattr(self.config, 'model_dump') else str(self.config),
+
+        # Environment context
+        "timestamp": datetime.now().isoformat(),
+        "function_name": inspect.currentframe().f_code.co_name,
+        "module_name": __name__,
+
+        # Debug aids
+        "suggested_fixes": [
+            "Check document.content is not None",
+            "Verify document.metadata structure",
+            "Ensure processor config is valid"
+        ],
+        "related_documentation": "guidelines/error-handling.md#document-processing"
+    }
+) from original_error
+
+# ❌ Forbidden: Minimal error context
+raise ProcessingError("Processing failed")  # No debugging information
+```
+
+#### Context Categories by Error Type
+
+**Type/Attribute Errors:**
+```python
+# Enhanced AttributeError replacement
+from goldentooth_agent.core.util.error_reporting import DetailedAttributeError
+
+try:
+    value = response.attribute
+except AttributeError as e:
+    raise DetailedAttributeError(
+        response,
+        "attribute",
+        context={
+            "expected_type": "object with .attribute",
+            "actual_type": type(response).__name__,
+            "available_attributes": sorted(dir(response)),
+            "available_keys": sorted(response.keys()) if hasattr(response, 'keys') else None,
+            "access_pattern": "response.attribute",
+            "suggested_fix": f"Use response['attribute'] if response is a dict, or ensure response is an object with .attribute",
+            "troubleshooting_url": "docs/debugging-improvements.md#dict-vs-object-access"
+        }
+    ) from e
+```
+
+**Service/API Errors:**
+```python
+# Enhanced service error context
+raise ServiceError(
+    f"External API call failed: {endpoint}",
+    context={
+        # Request details
+        "endpoint": endpoint,
+        "method": request_method,
+        "headers": sanitized_headers,  # Remove sensitive data
+        "payload_size": len(payload) if payload else 0,
+
+        # Response details
+        "status_code": response.status_code if response else None,
+        "response_headers": dict(response.headers) if response else None,
+        "response_size": len(response.content) if response else 0,
+
+        # Retry context
+        "attempt_number": retry_attempt,
+        "max_retries": max_retries,
+        "backoff_delay": current_delay,
+
+        # Recovery suggestions
+        "retry_recommended": status_code >= 500,
+        "check_api_key": status_code == 401,
+        "check_rate_limits": status_code == 429,
+        "suggested_actions": [
+            "Verify API endpoint is correct",
+            "Check network connectivity",
+            "Validate API credentials"
+        ]
+    }
+) from original_error
+```
+
+**Data Validation Errors:**
+```python
+# Enhanced validation error context
+raise ValidationError(
+    f"Input validation failed for {field_name}",
+    context={
+        # Input details
+        "field_name": field_name,
+        "field_value": str(field_value)[:100],  # Truncate large values
+        "field_type": type(field_value).__name__,
+        "expected_type": expected_type.__name__ if hasattr(expected_type, '__name__') else str(expected_type),
+
+        # Validation details
+        "validation_rule": validation_rule,
+        "min_value": getattr(validation_rule, 'min', None),
+        "max_value": getattr(validation_rule, 'max', None),
+        "pattern": getattr(validation_rule, 'pattern', None),
+
+        # Input analysis
+        "input_structure": analyze_input_structure(field_value),
+        "similar_valid_examples": get_similar_valid_examples(field_name),
+
+        # Fix suggestions
+        "common_fixes": [
+            f"Ensure {field_name} is of type {expected_type}",
+            f"Check {field_name} meets validation criteria",
+            "Review input data format"
+        ]
+    }
+)
+```
 
 ### Error Categories
 1. **Configuration errors**: Invalid configuration, missing settings

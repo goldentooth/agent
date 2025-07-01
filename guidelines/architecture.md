@@ -10,6 +10,7 @@ This document defines the architectural principles and patterns for the Goldento
 - **Type safety**: Strict typing throughout the system
 - **Modularity**: Clear separation of concerns between modules
 - **Testability**: Design for easy testing and mocking
+- **Interface consistency**: Standardized interfaces prevent runtime errors
 
 ### High-Level Architecture
 
@@ -257,6 +258,248 @@ async def process_with_context(
             config=config
         )
         yield processed
+```
+
+## Interface Consistency Standards
+
+### Mandatory Interface Requirements
+
+**All agents and major service interfaces MUST conform to standardized patterns to prevent runtime errors and ensure maintainability.**
+
+#### Agent Response Interface Standard
+```python
+# ✅ Required: All agents must implement this interface
+from goldentooth_agent.core.schema import AgentResponse
+from typing import Protocol
+
+class Agent(Protocol):
+    """Standard protocol for all agent implementations."""
+
+    async def process_request(self, request: str, context: dict[str, Any] | None = None) -> AgentResponse:
+        """Process user request and return standardized response.
+
+        Args:
+            request: User input/query string
+            context: Optional context data for processing
+
+        Returns:
+            AgentResponse with standardized fields:
+            - response: Main response text
+            - sources: List of source documents/references
+            - confidence: Float 0.0-1.0 indicating confidence
+            - suggestions: List of follow-up suggestions
+            - metadata: Additional processing metadata
+
+        Raises:
+            ValidationError: If request format is invalid
+            ProcessingError: If processing fails
+        """
+        ...
+
+# ✅ Implementation example
+@injectable
+class RAGAgent:
+    """RAG agent implementing standard interface."""
+
+    def __init__(
+        self,
+        rag_service: RAGService = inject.me(),
+        llm_client: LLMClient = inject.me()
+    ) -> None:
+        self.rag_service = rag_service
+        self.llm_client = llm_client
+
+    async def process_request(self, request: str, context: dict[str, Any] | None = None) -> AgentResponse:
+        """Process request using RAG pipeline."""
+        # Retrieve relevant documents
+        documents = await self.rag_service.query(request, max_results=10)
+
+        # Generate response using LLM
+        llm_response = await self.llm_client.generate(
+            prompt=request,
+            context=documents,
+            metadata=context or {}
+        )
+
+        # Return standardized response
+        return AgentResponse(
+            response=llm_response.content,
+            sources=[{"title": doc.title, "content": doc.content[:200]} for doc in documents],
+            confidence=0.85,  # Based on retrieval quality
+            suggestions=["Ask about specific details", "Try a more specific question"],
+            metadata={
+                "model": llm_response.model,
+                "tokens_used": llm_response.usage.total_tokens,
+                "retrieval_time": 0.2,
+                "generation_time": 1.1
+            }
+        )
+```
+
+#### Service Interface Standards
+```python
+# ✅ Required: Use protocols for service interfaces
+from typing import Protocol, runtime_checkable
+
+@runtime_checkable
+class DocumentStore(Protocol):
+    """Standard protocol for document storage services."""
+
+    async def store_document(self, document: Document) -> str:
+        """Store document and return document ID."""
+        ...
+
+    async def get_document(self, document_id: str) -> Document | None:
+        """Retrieve document by ID, return None if not found."""
+        ...
+
+    async def search_documents(self, query: str, limit: int = 10) -> list[Document]:
+        """Search documents by text query."""
+        ...
+
+@runtime_checkable
+class VectorStore(Protocol):
+    """Standard protocol for vector storage services."""
+
+    def store_embedding(
+        self,
+        document_id: str,
+        embedding: list[float],
+        metadata: dict[str, Any] | None = None
+    ) -> str:
+        """Store document embedding."""
+        ...
+
+    def search_similar(
+        self,
+        query_embedding: list[float],
+        limit: int = 10,
+        similarity_threshold: float = 0.0
+    ) -> list[dict[str, Any]]:
+        """Search for similar embeddings."""
+        ...
+```
+
+#### Response Type Evolution Strategy
+```python
+# ✅ Migration pattern for legacy interfaces
+class LegacyRAGAgent:
+    """Legacy agent being migrated to standard interface."""
+
+    def process(self, query: str) -> dict[str, Any]:
+        """Legacy method returning dictionary (deprecated)."""
+        # Keep existing implementation
+        return {
+            "response": "Generated text",
+            "sources": [],
+            "confidence": 0.8,
+            "metadata": {"legacy": True}
+        }
+
+    async def process_request(self, request: str, context: dict[str, Any] | None = None) -> AgentResponse:
+        """Standard interface implementation."""
+        # Use legacy method internally
+        legacy_result = self.process(request)
+
+        # Convert to standard response
+        return AgentResponse.from_dict(legacy_result)
+
+# ✅ Graceful migration support
+class AgentResponse(BaseModel):
+    """Standard agent response schema."""
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "AgentResponse":
+        """Create AgentResponse from legacy dictionary format."""
+        return cls(
+            response=data.get("response", ""),
+            sources=data.get("sources", []),
+            confidence=data.get("confidence", 0.0),
+            suggestions=data.get("suggestions", []),
+            metadata=data.get("metadata", {})
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dictionary for backward compatibility."""
+        return self.model_dump()
+```
+
+### Interface Validation Requirements
+
+#### Runtime Interface Checking
+```python
+# ✅ Validate interfaces at runtime during development
+from goldentooth_agent.core.validation import validate_interface_compliance
+
+@injectable
+class ServiceRegistry:
+    """Registry that validates service interface compliance."""
+
+    def register_agent(self, name: str, agent: Any) -> None:
+        """Register agent with interface validation."""
+        # Validate agent implements required protocol
+        if not isinstance(agent, Agent):
+            raise InterfaceComplianceError(
+                f"Agent {name} does not implement Agent protocol",
+                context={
+                    "agent_type": type(agent).__name__,
+                    "required_methods": ["process_request"],
+                    "available_methods": [m for m in dir(agent) if not m.startswith('_')],
+                    "missing_methods": self._find_missing_methods(agent, Agent)
+                }
+            )
+
+        self._agents[name] = agent
+
+    def _find_missing_methods(self, obj: Any, protocol: type) -> list[str]:
+        """Find methods missing from protocol implementation."""
+        protocol_methods = set(protocol.__annotations__.keys())
+        obj_methods = set(dir(obj))
+        return list(protocol_methods - obj_methods)
+```
+
+#### Type Safety Enforcement
+```python
+# ✅ Enforce type safety in interface implementations
+from typing import TypeGuard
+
+def is_valid_agent_response(obj: Any) -> TypeGuard[AgentResponse]:
+    """Type guard for AgentResponse validation."""
+    if not isinstance(obj, AgentResponse):
+        return False
+
+    # Validate required fields
+    required_fields = ["response", "sources", "confidence", "suggestions", "metadata"]
+    for field in required_fields:
+        if not hasattr(obj, field):
+            return False
+
+    # Validate field types
+    if not isinstance(obj.response, str):
+        return False
+    if not isinstance(obj.sources, list):
+        return False
+    if not isinstance(obj.confidence, (int, float)) or not (0.0 <= obj.confidence <= 1.0):
+        return False
+
+    return True
+
+# Usage in critical paths
+async def process_agent_request(agent: Agent, request: str) -> AgentResponse:
+    """Process request with response validation."""
+    response = await agent.process_request(request)
+
+    if not is_valid_agent_response(response):
+        raise InterfaceComplianceError(
+            "Agent returned invalid response format",
+            context={
+                "agent_type": type(agent).__name__,
+                "response_type": type(response).__name__,
+                "response_data": str(response)[:200]
+            }
+        )
+
+    return response
 ```
 
 ## Agent Architecture
