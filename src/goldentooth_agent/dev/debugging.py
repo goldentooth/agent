@@ -104,9 +104,13 @@ def debug_operation(operation_name: str, **metadata: Any) -> Iterator[DebugConte
         DebugContext instance
     """
     ctx = DebugContext(operation_name, **metadata)
+    ctx.__enter__()
     try:
         yield ctx
-    finally:
+    except Exception as e:
+        ctx.__exit__(type(e), e, e.__traceback__)
+        raise
+    else:
         ctx.__exit__(None, None, None)
 
 
@@ -142,5 +146,9 @@ def log_function_call(func_name: str, *args: Any, **kwargs: Any) -> None:
 
     logger.debug(
         f"Calling {func_name}",
-        extra={"function": func_name, "args": safe_args, "kwargs": safe_kwargs},
+        extra={
+            "function": func_name,
+            "function_args": safe_args,
+            "function_kwargs": safe_kwargs,
+        },
     )

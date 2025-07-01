@@ -105,6 +105,26 @@ class TestAgentResponseConsistency:
         assert obj_response.response == "Object response"
         assert obj_response.model_dump()["response"] == "Object response"
 
+    def test_to_dict_method(self) -> None:
+        """Test the to_dict() convenience method."""
+        response = AgentResponse(
+            response="Test response",
+            confidence=0.75,
+            sources=[{"title": "Test"}],
+            suggestions=["Question 1"],
+            metadata={"key": "value"},
+        )
+
+        # Test to_dict method
+        result_dict = response.to_dict()
+
+        assert isinstance(result_dict, dict)
+        assert result_dict["response"] == "Test response"
+        assert result_dict["confidence"] == 0.75
+        assert result_dict["sources"] == [{"title": "Test"}]
+        assert result_dict["suggestions"] == ["Question 1"]
+        assert result_dict["metadata"] == {"key": "value"}
+
 
 @pytest.fixture
 def mock_rag_dependencies(mocker: Any) -> dict[str, Any]:

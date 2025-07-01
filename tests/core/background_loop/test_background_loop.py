@@ -254,3 +254,57 @@ class TestIntegration:
 
         # Since it's a daemon thread, it will be cleaned up on exit
         assert loop.thread.daemon
+
+
+class TestBackgroundEventLoopShutdown:
+    """Test shutdown and error handling for BackgroundEventLoop."""
+
+    def test_submit_after_shutdown_raises_error(self):
+        """Submit should raise RuntimeError after shutdown."""
+        loop = BackgroundEventLoop()
+
+        # Shutdown the loop
+        loop.shutdown(timeout=2.0)
+
+        async def test_coroutine():
+            return "should_not_run"
+
+        # Should raise RuntimeError since loop is not running
+        with pytest.raises(RuntimeError, match="Background event loop is not running"):
+            loop.submit(test_coroutine())
+
+    def test_shutdown_graceful(self):
+        """Test graceful shutdown of background event loop."""
+        loop = BackgroundEventLoop()
+
+        # Verify it's running initially
+        assert loop.is_running
+
+        # Shutdown gracefully
+        loop.shutdown(timeout=2.0)
+
+        # Should not be running after shutdown
+        assert not loop.is_running
+
+    def test_shutdown_multiple_calls_safe(self):
+        """Multiple shutdown calls should be safe."""
+        loop = BackgroundEventLoop()
+
+        # First shutdown
+        loop.shutdown(timeout=1.0)
+        assert not loop.is_running
+
+        # Second shutdown should not raise error
+        loop.shutdown(timeout=1.0)
+        assert not loop.is_running
+
+    def test_is_running_property(self):
+        """Test is_running property in various states."""
+        loop = BackgroundEventLoop()
+
+        # Should be running when created
+        assert loop.is_running
+
+        # Should not be running after shutdown
+        loop.shutdown(timeout=2.0)
+        assert not loop.is_running
