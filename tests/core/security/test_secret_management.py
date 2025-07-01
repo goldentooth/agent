@@ -268,7 +268,7 @@ class TestSecretMetadata:
         assert metadata.created_at is not None
 
     def test_secret_metadata_is_expired(self):
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, UTC
 
         # Recent metadata should not be expired
         recent_metadata = SecretMetadata(secret_type="test")
@@ -276,11 +276,11 @@ class TestSecretMetadata:
 
         # Old metadata should be expired
         old_metadata = SecretMetadata(secret_type="test")
-        old_metadata.created_at = datetime.utcnow() - timedelta(days=40)
+        old_metadata.created_at = datetime.now(UTC) - timedelta(days=40)
         assert old_metadata.is_expired(max_age_days=30)
 
     def test_secret_metadata_needs_rotation(self):
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, UTC
 
         # New secret should not need rotation
         new_metadata = SecretMetadata(secret_type="test", rotation_days=30)
@@ -288,7 +288,7 @@ class TestSecretMetadata:
 
         # Old secret should need rotation
         old_metadata = SecretMetadata(secret_type="test", rotation_days=30)
-        old_metadata.last_rotated = datetime.utcnow() - timedelta(days=35)
+        old_metadata.last_rotated = datetime.now(UTC) - timedelta(days=35)
         assert old_metadata.needs_rotation()
 
     def test_secret_metadata_to_dict(self):
@@ -499,14 +499,14 @@ class TestSecretRotation:
         assert retrieved.metadata.last_rotated is not None
 
     def test_find_secrets_needing_rotation(self):
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, UTC
 
         config = SecretConfig(store_type="memory", require_metadata=False)
         manager = SecretManager(config)
 
         # Create secrets with different rotation needs
         old_metadata = SecretMetadata(secret_type="api_key", rotation_days=30)
-        old_metadata.last_rotated = datetime.utcnow() - timedelta(days=35)
+        old_metadata.last_rotated = datetime.now(UTC) - timedelta(days=35)
 
         new_metadata = SecretMetadata(secret_type="api_key", rotation_days=30)
 

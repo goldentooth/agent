@@ -16,7 +16,7 @@ import json
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Any
 
@@ -74,15 +74,15 @@ class SecretMetadata:
     secret_type: str
     description: str = ""
     tags: list[str] = field(default_factory=list)
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    last_rotated: datetime | None = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    last_rotated: datetime | None = field(default_factory=lambda: datetime.now(UTC))
     rotation_days: int | None = None
     owner: str = ""
     environment: str = ""
 
     def is_expired(self, max_age_days: int) -> bool:
         """Check if secret has exceeded maximum age."""
-        age = datetime.utcnow() - self.created_at
+        age = datetime.now(UTC) - self.created_at
         return age.days > max_age_days
 
     def needs_rotation(self) -> bool:
@@ -90,7 +90,7 @@ class SecretMetadata:
         if not self.rotation_days or not self.last_rotated:
             return False
 
-        age = datetime.utcnow() - self.last_rotated
+        age = datetime.now(UTC) - self.last_rotated
         return age.days >= self.rotation_days
 
     def to_dict(self) -> dict[str, Any]:
@@ -523,7 +523,7 @@ class SecretManager:
         metadata = self.get_secret_metadata(name)
 
         # Update rotation timestamp
-        metadata.last_rotated = datetime.utcnow()
+        metadata.last_rotated = datetime.now(UTC)
 
         # Store with new value and updated metadata
         self.store_secret(name, new_value, metadata)
