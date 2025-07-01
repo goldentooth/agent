@@ -7,8 +7,10 @@ import typer
 from typer.testing import CliRunner
 
 from goldentooth_agent.cli.commands.chat import (
+    SlashCommandHandler,
     app,
     create_echo_agent,
+    get_command_handler,
     process_agent_input,
 )
 from goldentooth_agent.core.flow_agent import AgentInput, AgentOutput
@@ -106,3 +108,149 @@ class TestChatCommands:
         # The exact commands depend on the implementation, but we can check
         # that help is available and shows some command structure
         assert "Usage:" in result.stdout or "Commands:" in result.stdout
+
+
+class TestSlashCommandHandler:
+    """Test the new slash command handler system."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        from io import StringIO
+
+        from rich.console import Console
+
+        # Create console that captures output
+        self.output = StringIO()
+        self.console = Console(file=self.output, width=80)
+        self.handler = SlashCommandHandler(self.console)
+
+    def get_output(self) -> str:
+        """Get captured console output."""
+        return self.output.getvalue()
+
+    def test_handler_initialization(self):
+        """Test that handler initializes with core commands."""
+        # Check that core commands are registered
+        assert "quit" in self.handler.commands
+        assert "exit" in self.handler.commands
+        assert "help" in self.handler.commands
+        assert "clear" in self.handler.commands
+        assert "status" in self.handler.commands
+
+        # Check command info structure
+        quit_cmd = self.handler.commands["quit"]
+        assert "handler" in quit_cmd
+        assert "description" in quit_cmd
+        assert "category" in quit_cmd
+        assert quit_cmd["category"] == "exit"
+
+    def test_slash_command_detection(self):
+        """Test detection of slash commands vs regular input."""
+        # Slash commands should be detected
+        assert self.handler.handle_command("/help") is not None
+        assert self.handler.handle_command("/quit") is not None
+
+        # Regular input should return None
+        assert self.handler.handle_command("hello world") is None
+        assert self.handler.handle_command("quit") is None  # Legacy handled elsewhere
+
+    def test_exit_commands(self):
+        """Test exit command variations."""
+        for cmd in ["/quit", "/exit", "/bye"]:
+            result = self.handler.handle_command(cmd)
+            assert result == "exit", f"Command {cmd} should return 'exit'"
+
+    def test_help_command(self):
+        """Test help command."""
+        result = self.handler.handle_command("/help")
+        assert result == "continue"
+
+        # Check that help output was generated
+        output = self.get_output()
+        assert "Available Slash Commands" in output
+        assert "/quit" in output
+        assert "/help" in output
+
+    def test_clear_command(self):
+        """Test clear command."""
+        with patch("os.system") as mock_system:
+            result = self.handler.handle_command("/clear")
+            assert result == "continue"
+            mock_system.assert_called_once()
+
+    def test_status_command(self):
+        """Test status command."""
+        result = self.handler.handle_command("/status")
+        assert result == "continue"
+
+        # Check that status output was generated
+        output = self.get_output()
+        assert "System Status" in output
+        assert "Python Version" in output
+        assert "Platform" in output
+
+    def test_unknown_command(self):
+        """Test handling of unknown commands."""
+        result = self.handler.handle_command("/unknowncommand")
+        assert result == "continue"
+
+        output = self.get_output()
+        assert "Unknown command: /unknowncommand" in output
+        assert "Type /help" in output
+
+    def test_empty_slash_command(self):
+        """Test handling of empty slash command."""
+        result = self.handler.handle_command("/")
+        assert result == "continue"
+
+        output = self.get_output()
+        assert "Empty command" in output
+
+    def test_command_with_arguments(self):
+        """Test commands that accept arguments."""
+        # Status command should ignore arguments gracefully
+        result = self.handler.handle_command("/status some args")
+        assert result == "continue"
+
+    def test_command_registration(self):
+        """Test custom command registration."""
+
+        def test_handler(args: str) -> str:
+            return "test_result"
+
+        # Register a test command
+        self.handler.register_command(
+            names=["test"],
+            handler=test_handler,
+            description="Test command",
+            category="testing",
+        )
+
+        # Verify command was registered
+        assert "test" in self.handler.commands
+
+        # Test command execution
+        result = self.handler.handle_command("/test")
+        assert result == "test_result"
+
+    def test_command_aliases(self):
+        """Test command aliases."""
+        # Clear command should work with both 'clear' and 'cls'
+        with patch("os.system"):
+            result1 = self.handler.handle_command("/clear")
+            result2 = self.handler.handle_command("/cls")
+            assert result1 == result2 == "continue"
+
+    def test_case_insensitive_commands(self):
+        """Test that commands are case insensitive."""
+        with patch("os.system"):
+            assert self.handler.handle_command("/CLEAR") == "continue"
+            assert self.handler.handle_command("/Clear") == "continue"
+            assert self.handler.handle_command("/help") == "continue"
+            assert self.handler.handle_command("/HELP") == "continue"
+
+    def test_get_command_handler_singleton(self):
+        """Test that get_command_handler returns singleton."""
+        handler1 = get_command_handler(self.console)
+        handler2 = get_command_handler(self.console)
+        assert handler1 is handler2  # Should be the same instance

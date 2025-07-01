@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import sys
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any, Callable
 
 import typer
 from antidote import inject
@@ -22,6 +22,203 @@ if TYPE_CHECKING:
     from goldentooth_agent.core.rag.simple_rag_agent import SimpleRAGAgent
 
 app = typer.Typer()
+
+
+class SlashCommandHandler:
+    """Extensible slash command handler for chat interface."""
+
+    def __init__(self, console: Console) -> None:
+        self.console = console
+        self.commands: dict[str, dict[str, Any]] = {}
+        self._register_core_commands()
+
+    def _register_core_commands(self) -> None:
+        """Register core built-in commands."""
+        # Exit commands
+        self.register_command(
+            names=["quit", "exit", "bye"],
+            handler=self._handle_exit,
+            description="End the chat session",
+            category="exit",
+        )
+
+        # Help commands
+        self.register_command(
+            names=["help", "h"],
+            handler=self._handle_help,
+            description="Show this help message",
+            category="help",
+        )
+
+        # Clear screen command
+        self.register_command(
+            names=["clear", "cls"],
+            handler=self._handle_clear,
+            description="Clear the screen",
+            category="utility",
+        )
+
+        # Status command
+        self.register_command(
+            names=["status"],
+            handler=self._handle_status,
+            description="Show system status and information",
+            category="utility",
+        )
+
+    def register_command(
+        self,
+        names: list[str],
+        handler: Callable[[str], str],
+        description: str,
+        category: str = "general",
+        aliases: list[str] | None = None,
+    ) -> None:
+        """Register a new command.
+
+        Args:
+            names: Primary command names (e.g., ['quit', 'exit'])
+            handler: Function to handle the command
+            description: Help text for the command
+            category: Category for grouping in help
+            aliases: Additional aliases for the command
+        """
+        all_names = names + (aliases or [])
+        command_info = {
+            "handler": handler,
+            "description": description,
+            "category": category,
+            "primary_names": names,
+        }
+
+        for name in all_names:
+            self.commands[name.lower()] = command_info
+
+    def handle_command(self, user_input: str) -> str | None:
+        """Handle slash-prefixed commands.
+
+        Args:
+            user_input: The user input string
+
+        Returns:
+            Command result type or None if not a command
+        """
+        if not user_input.startswith("/"):
+            return None
+
+        # Extract command and arguments
+        command_part = user_input[1:].strip()
+        if not command_part:
+            self.console.print(
+                "[yellow]Empty command. Type /help for available commands.[/yellow]"
+            )
+            return "continue"
+
+        # Split into command and args
+        parts = command_part.split(" ", 1)
+        command_name = parts[0].lower()
+        args = parts[1] if len(parts) > 1 else ""
+
+        # Find and execute command
+        if command_name in self.commands:
+            handler = self.commands[command_name]["handler"]
+            result = handler(args)
+            return str(result) if result is not None else None
+        else:
+            self.console.print(f"[yellow]Unknown command: /{command_name}[/yellow]")
+            self.console.print("[dim]Type /help for available commands[/dim]")
+            return "continue"
+
+    def _handle_exit(self, args: str) -> str:
+        """Handle exit commands."""
+        return "exit"
+
+    def _handle_help(self, args: str) -> str:
+        """Handle help commands."""
+        self.show_help()
+        return "continue"
+
+    def _handle_clear(self, args: str) -> str:
+        """Handle clear screen commands."""
+        import os
+
+        os.system("cls" if os.name == "nt" else "clear")
+        return "continue"
+
+    def _handle_status(self, args: str) -> str:
+        """Handle status command."""
+        import platform
+        import sys
+
+        from rich.table import Table
+
+        table = Table(title="System Status", show_header=True)
+        table.add_column("Property", style="cyan", width=20)
+        table.add_column("Value", style="green")
+
+        table.add_row("Python Version", sys.version.split()[0])
+        table.add_row("Platform", platform.system())
+        table.add_row("Available Commands", str(len(set(self.commands.keys()))))
+
+        # Show registered command categories
+        categories = set(cmd["category"] for cmd in self.commands.values())
+        table.add_row("Command Categories", ", ".join(sorted(categories)))
+
+        self.console.print(table)
+        return "continue"
+
+    def show_help(self) -> None:
+        """Display available slash commands grouped by category."""
+        from rich.table import Table
+
+        # Group commands by category
+        categories: dict[str, list[tuple[list[str], str]]] = {}
+        seen_commands = set()
+
+        for cmd_name, cmd_info in self.commands.items():
+            if cmd_name in seen_commands:
+                continue
+
+            category = cmd_info["category"]
+            primary_names = cmd_info["primary_names"]
+            description = cmd_info["description"]
+
+            if category not in categories:
+                categories[category] = []
+
+            categories[category].append((primary_names, description))
+            seen_commands.update(primary_names)
+
+        # Create help table
+        table = Table(title="Available Slash Commands", show_header=True)
+        table.add_column("Command", style="green", width=20)
+        table.add_column("Description", style="cyan")
+
+        # Add commands by category
+        for category in sorted(categories.keys()):
+            if len(categories) > 1:
+                table.add_row(f"[bold yellow]{category.upper()}[/bold yellow]", "")
+
+            for names, description in sorted(categories[category]):
+                command_str = "/" + ", /".join(names)
+                table.add_row(f"  {command_str}", description)
+
+        self.console.print(table)
+        self.console.print(
+            "\n[dim]Legacy commands (quit, exit, bye) also work without /[/dim]"
+        )
+
+
+# Global command handler instance
+_command_handler: SlashCommandHandler | None = None
+
+
+def get_command_handler(console: Console) -> SlashCommandHandler:
+    """Get or create the command handler instance."""
+    global _command_handler
+    if _command_handler is None:
+        _command_handler = SlashCommandHandler(console)
+    return _command_handler
 
 
 async def process_rag_input(
@@ -151,7 +348,7 @@ def chat(
         console.print(
             Panel.fit(
                 "[bold blue]🤖 Goldentooth Agent Interactive Chat[/bold blue]\n"
-                "[dim]Type 'quit', 'exit', or press Ctrl+C to end the session[/dim]\n"
+                "[dim]Type '/help' for commands, '/quit' to exit, or press Ctrl+C to end the session[/dim]\n"
                 f"[dim]Agent: {agent or 'echo'} | Session: {session or 'default'}[/dim]",
                 border_style="blue",
             )
@@ -244,7 +441,16 @@ async def chat_loop(
             # Get user input
             user_input = Prompt.ask("[bold green]You[/bold green]", console=console)
 
-            # Check for exit commands
+            # Handle slash commands using extensible command handler
+            command_handler = get_command_handler(console)
+            command_result = command_handler.handle_command(user_input)
+
+            if command_result == "exit":
+                break
+            elif command_result == "continue":
+                continue
+
+            # Check for legacy exit commands (backwards compatibility)
             if user_input.lower() in ["quit", "exit", "bye"]:
                 break
 

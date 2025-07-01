@@ -35,7 +35,9 @@
 33. Can we establish a policy of dividing the command implementation (which is mostly e.g. Typer configuration and
   parameter annotations) from the actual invocation of the commands (which should be just mapping those parameters to
   existing library code)? We should add this to guidelines too.
-34. Add a link to the GitHub Pages site (https://goldentooth.github.io/agent/) in the README.
-35. Let's try to prevent functions from exceeding about ten lines (or, more accurately, statements) in length. If a function exceeds that, we should complain about it.
-36. Let's replace any use of `inject.me()` with `world[<Type>]`, e.g. `world[SomeServiceClass]`. The former seems to trigger Pylance/Pyright's `reportCallInDefaultInitializer` lint. This should be considered a guideline for future development.
-37. Think the BG generation is shitting itself. Or did we disable that?
+1.  Add a link to the GitHub Pages site (https://goldentooth.github.io/agent/) in the README.
+2.  Let's try to prevent functions from exceeding about ten lines (or, more accurately, statements) in length. If a function exceeds that, we should complain about it.
+3.  Let's replace any use of `inject.me()` with `world[<Type>]`, e.g. `world[SomeServiceClass]`. The former seems to trigger Pylance/Pyright's `reportCallInDefaultInitializer` lint. This should be considered a guideline for future development.
+4.  Think the BG generation is shitting itself. Or did we disable that?
+5.  Are you able to effectively search within markdown documents, e.g. to get an idea of their structure and layout, with a minimal expenditure of tokens? For instance, getting a "table of contents" for a markdown file built from the headers?
+6.  In the activity you've just completed, did you encounter any unanticipated difficulties, obstacles, or inefficiencies? How much time and effort did it cost you to respond to them and adjust your plan? Are these issues resolved now, or will they continue to plague future instances of Claude Code unless you do something to alleviate them? Is it worth the effort to devise a plan to address these issues in a mature, resilient, and thoughtful way? If so, please devise a plan to address the issues you've encountered.
