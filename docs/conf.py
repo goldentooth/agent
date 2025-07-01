@@ -44,7 +44,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The suffix(es) of source filenames.
 source_suffix = {
     ".rst": None,
-    ".md": "myst_parser",
+    ".md": None,
 }
 
 # The master toctree document.
