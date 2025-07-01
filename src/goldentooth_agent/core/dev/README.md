@@ -48,7 +48,7 @@ The dev module integrates with the broader system through well-defined interface
 
 - **Complexity**: High
 - **Files**: 2 Python files
-- **Lines of Code**: ~1520
+- **Lines of Code**: ~1518
 - **Classes**: 5
 - **Functions**: 50
 

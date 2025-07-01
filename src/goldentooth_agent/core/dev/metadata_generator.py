@@ -988,9 +988,7 @@ class ModuleMetadataGenerator:
 
                     if isinstance(node.value, ast.List):
                         for item in node.value.elts:
-                            if isinstance(item, ast.Str):
-                                exports.add(item.s)
-                            elif isinstance(item, ast.Constant) and isinstance(
+                            if isinstance(item, ast.Constant) and isinstance(
                                 item.value, str
                             ):
                                 exports.add(item.value)

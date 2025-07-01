@@ -2,7 +2,7 @@ module_name: Dev
 description: Dev module
 complexity: High
 file_count: 2
-loc: ~1520
+loc: ~1518
 test_coverage: Medium
 class_count: 5
 function_count: 50
