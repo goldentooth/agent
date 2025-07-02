@@ -44,4 +44,4 @@
 42. Let's remove that code that checks if the embedding length is equal to 0 in 'src/goldentooth_agent/core/embeddings/vector_store.py'. Instead, while we're in "development mode", let's just nuke the DB semi-regularly and rebuild it.
 43. Why are RAG imports timing out after two minutes? What can we do to address this?
 44. Add a `docs types` command to list the types of documents supported in our RAG implementation.
-45. Never run `git reset`. Seriously, never. Add this to a hook to block you from ever running that command.
+45. Does the file-length check give you adequate information about how to address the issue? If not, we should extend the script to ensure you address the issue appropriately. Would it be appropriate to warn once we reach 800 lines, so that you can begin to formulate plans to refactor the file before it becomes pressing?

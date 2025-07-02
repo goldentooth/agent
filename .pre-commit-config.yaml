@@ -93,8 +93,17 @@ repos:
         entry: poetry run pytest tests/git/hooks/test_check_file_length.py -v
         language: system
         description: Test the file length hook before using it
-        files: '^(git/hooks/check_file_length\.sh|tests/git/hooks/test_check_file_length\.py)$'
+        files: '^(git/hooks/check_file_length.*\.sh|tests/git/hooks/test_check_file_length.*\.py)$'
         pass_filenames: false
+
+      - id: file-length-warnings
+        name: File Length Warning Check
+        entry: git/hooks/check_file_length_warnings.sh
+        language: script
+        description: Show proactive warnings for files approaching size limits
+        pass_filenames: false
+        always_run: true
+        verbose: true
 
       - id: file-length-check
         name: File Length Validation

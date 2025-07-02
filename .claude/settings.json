@@ -2,6 +2,10 @@
   "hooks": {
   },
   "permissions": {
+    "additionalDirectories": [
+        "/tmp",
+        "/var/folders"
+    ],
     "allow": [
       "Bash(/dev/null)",
       "Bash(chmod:*)",
