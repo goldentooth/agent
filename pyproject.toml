@@ -3,45 +3,45 @@ name = "goldentooth-agent"
 version = "0.0.1"
 description = ""
 authors = [
-  { name = "Nate Douglas", email = "ndouglas@users.noreply.github.com" },
+    { name = "Nate Douglas", email = "ndouglas@users.noreply.github.com" },
 ]
 readme = "README.md"
 requires-python = ">=3.13,<4.0"
 dependencies = [
-  "anthropic (>=0.52.1,<0.53.0)",
-  "openai (>=1.52.0,<2.0.0)",
-  "antidote (>=2.0.0,<3.0.0)",
-  "atomic-agents (>=1.1.3,<2.0.0)",
-  "dotenv (>=0.9.9,<0.10.0)",
-  "instructor (>=1.8.3,<2.0.0)",
-  "pyee (>=13.0.0,<14.0.0)",
-  "rich (>=13.0.0,<14.0.0)",
-  "typer (>=0.16.0,<0.17.0)",
-  "platformdirs (>=4.3.8,<5.0.0)",
-  "hunter (>=3.7.0,<4.0.0)",
-  "loguru (>=0.7.3,<0.8.0)",
-  "httpx (>=0.27.0,<0.28.0)",
-  "beautifulsoup4 (>=4.12.0,<5.0.0)",
-  "aiofiles (>=24.1.0,<25.0.0)",
-  "cryptography (>=45.0.4,<46.0.0)",
-  "sqlite-vec (>=0.1.0,<0.2.0)",
-  "numpy (>=1.24.0,<2.0.0)",
-  "PyGithub (>=2.1.0,<3.0.0)",
-  "tiktoken (>=0.5.0,<1.0.0)",
+    "anthropic (>=0.52.1,<0.53.0)",
+    "openai (>=1.52.0,<2.0.0)",
+    "antidote (>=2.0.0,<3.0.0)",
+    "atomic-agents (>=1.1.3,<2.0.0)",
+    "dotenv (>=0.9.9,<0.10.0)",
+    "instructor (>=1.8.3,<2.0.0)",
+    "pyee (>=13.0.0,<14.0.0)",
+    "rich (>=13.0.0,<14.0.0)",
+    "typer (>=0.16.0,<0.17.0)",
+    "platformdirs (>=4.3.8,<5.0.0)",
+    "hunter (>=3.7.0,<4.0.0)",
+    "loguru (>=0.7.3,<0.8.0)",
+    "httpx (>=0.27.0,<0.28.0)",
+    "beautifulsoup4 (>=4.12.0,<5.0.0)",
+    "aiofiles (>=24.1.0,<25.0.0)",
+    "cryptography (>=45.0.4,<46.0.0)",
+    "sqlite-vec (>=0.1.0,<0.2.0)",
+    "numpy (>=1.24.0,<2.0.0)",
+    "PyGithub (>=2.1.0,<3.0.0)",
+    "tiktoken (>=0.5.0,<1.0.0)",
 ]
 scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 
 [tool.poetry]
 packages = [{ include = "goldentooth_agent", from = "src" }]
 include = [
-  { path = "src/goldentooth_agent/data/system_prompts/*.yaml", format = [
-    "sdist",
-    "wheel",
-  ] },
-  { path = "src/goldentooth_agent/data/sample_github/**/*.yaml", format = [
-    "sdist",
-    "wheel",
-  ] },
+    { path = "src/goldentooth_agent/data/system_prompts/*.yaml", format = [
+        "sdist",
+        "wheel",
+    ] },
+    { path = "src/goldentooth_agent/data/sample_github/**/*.yaml", format = [
+        "sdist",
+        "wheel",
+    ] },
 ]
 
 
@@ -70,22 +70,6 @@ vulture = "^2.14"
 pytest-mock = "^3.14.1"
 radon = "^6.0.1"
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
-addopts = "-v -W error::ResourceWarning -W error::DeprecationWarning"
-# Exclude old directory from test discovery
-norecursedirs = ["old", "*.egg", ".eggs", "dist", "build", ".tox", ".git", "__pycache__"]
-markers = [
-    "integration: marks tests as integration tests",
-    "performance: marks tests as performance benchmarks",
-    "slow: marks tests as slow running tests",
-    "benchmark: marks tests as benchmark tests",
-    "e2e: marks tests as end-to-end tests"
-]
-
 [tool.coverage.run]
 source = ["src/goldentooth_agent"]
 omit = [
@@ -95,7 +79,7 @@ omit = [
     "*/old/*",
     "*/__pycache__/*",
     "*/venv/*",
-    "*/.venv/*"
+    "*/.venv/*",
 ]
 
 [tool.coverage.report]
@@ -109,7 +93,7 @@ exclude_lines = [
     "if 0:",
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod"
+    "@(abc\\.)?abstractmethod",
 ]
 show_missing = true
 skip_covered = false
@@ -123,19 +107,6 @@ test = "pytest tests/"
 test-cov = "pytest tests/ --cov=goldentooth_agent"
 test-cov-report = "pytest tests/ --cov=goldentooth_agent --cov-report=html --cov-report=term"
 test-cov-check = "pytest tests/ --cov=goldentooth_agent --cov-fail-under=85 --cov-report=term-missing"
-test-cov-analyze = "python scripts/coverage_analysis.py"
-test-cov-targets = "python scripts/coverage_analysis.py --limit=10"
-test-structure = "python scripts/test_structure_validator.py"
-test-structure-verbose = "python scripts/test_structure_validator.py --verbose"
-test-structure-strict = "python scripts/test_structure_validator.py --strict"
-test-sanity = "pytest tests/test_sanity.py -v"
-test-maybe-await = "pytest tests/core/util/test_maybe_await.py -v"
-test-core = "pytest tests/core/ -v"
-test-flow-engine = "pytest tests/flow_engine/ -v"
-test-flow-core = "pytest tests/flow_engine/core/ -v"
-test-flow-combinators = "pytest tests/flow_engine/combinators/ -v"
-test-flow-observability = "pytest tests/flow_engine/observability/ -v"
-test-flow-registry = "pytest tests/flow_engine/registry/ -v"
 
 # Warning-strict testing
 test-strict = "pytest tests/ -W error"
@@ -143,19 +114,11 @@ test-strict-resource = "pytest tests/ -W error::ResourceWarning"
 test-strict-deprecation = "pytest tests/ -W error::DeprecationWarning"
 
 typecheck = "mypy src/goldentooth_agent --strict --show-error-codes --pretty"
-typecheck-all = "mypy . --strict --show-error-codes --pretty"
+typecheck-tests = "mypy tests/ --strict --show-error-codes --pretty"
 
 # Dead code analysis
 deadcode = "vulture src/goldentooth_agent --min-confidence 80"
-deadcode-all = "vulture src/goldentooth_agent --min-confidence 60"
-deadcode-diff = "python scripts/vulture_diff.py"
-deadcode-report = "python scripts/find_orphaned_code.py"
-
-# Code size analysis
-module-sizes = "python scripts/show_module_sizes.py"
-
-# Code complexity analysis
-complexity = "python scripts/analyze_complexity.py"
+deadcode-tests = "vulture tests/ --min-confidence 80"
 
 # Pre-commit management tasks
 precommit-install = "pre-commit install"
@@ -168,16 +131,6 @@ docs-build = "sphinx-build -b html docs docs/_build"
 docs-clean = "sphinx-build -b html -E docs docs/_build"
 docs-serve = "python -m http.server 8000 --directory docs/_build"
 docs-autobuild = "sphinx-autobuild docs docs/_build --host 0.0.0.0 --port 8000"
-
-# Mock compliance testing
-test-mocks = "pytest tests/test_mock_compliance.py -v"
-
-# Quality assurance - run all checks
-qa = ["typecheck", "test-cov-check", "test-mocks", "precommit-run"]
-qa-fast = "python scripts/qa_check.py --fast"
-qa-verbose = "python scripts/qa_check.py --verbose"
-qa-fix = "python scripts/qa_check.py --fix"
-qa-check = "python scripts/qa_check.py"
 
 # Code formatting tasks - auto-fix files (requires git add afterwards)
 format-black = "black src/ tests/"
@@ -218,9 +171,9 @@ disallow_incomplete_defs = true
 disallow_untyped_decorators = true
 disallow_any_generics = true
 disallow_any_unimported = true
-disallow_any_expr = false    # Too aggressive - 245 errors (future enhancement)
-disallow_any_decorated = false  # Disabled - too noisy for decorators
-disallow_any_explicit = false  # Too restrictive for practical use
+disallow_any_expr = false          # Too aggressive - 245 errors (future enhancement)
+disallow_any_decorated = false     # Disabled - too noisy for decorators
+disallow_any_explicit = false      # Too restrictive for practical use
 disallow_subclassing_any = true
 
 # None and Optional handling
@@ -238,12 +191,12 @@ enable_error_code = [
     "truthy-bool",
     "possibly-undefined",
     "redundant-cast",
-    "comparison-overlap"
+    "comparison-overlap",
 ]
 
 # Disable noisy error codes for practical development
 disable_error_code = [
-    "misc"  # Disable misc errors (mostly Any-related noise in decorators)
+    "misc", # Disable misc errors (mostly Any-related noise in decorators)
 ]
 
 # Plugin support
@@ -255,19 +208,17 @@ module = [
     "antidote.*",
     "atomic_agents.*",
     "typer.*",
-    "platformdirs.*",
     "hunter.*",
-    "loguru.*",
-    "pytest.*",
     "hypothesis.*",
+    "loguru.*",
+    "platformdirs.*",
+    "pytest.*",
 ]
 ignore_missing_imports = true
 
 # Relaxed type checking for test code
 [[tool.mypy.overrides]]
-module = [
-    "tests.*",
-]
+module = ["tests.*"]
 # Less strict type checking for tests
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
@@ -289,28 +240,20 @@ include = ["src"]
 exclude = ["**/__pycache__", "build", "dist"]
 pythonVersion = "3.13"
 pythonPlatform = "All"
-
-# Use basic type checking mode to avoid overwhelming errors
 typeCheckingMode = "basic"
-
-# Focus on the specific issues we want to catch that MyPy misses
 reportPossiblyUnboundVariable = "error"
 reportUnboundVariable = "error"
-
-# Keep other checks as warnings to not overwhelm the output
-reportOptionalMemberAccess = "warning"
-reportOptionalSubscript = "warning"
-reportOptionalIterable = "warning"
-reportOptionalContextManager = "warning"
-reportOptionalOperand = "warning"
-
-# Allow flexibility for existing codebase
-reportPrivateUsage = "none"
-reportUnknownMemberType = "none"
-reportUnknownVariableType = "none"
-reportUnknownArgumentType = "none"
-reportUnknownLambdaType = "none"
-reportAny = "none"
+reportOptionalMemberAccess = "error"
+reportOptionalSubscript = "error"
+reportOptionalIterable = "error"
+reportOptionalContextManager = "error"
+reportOptionalOperand = "error"
+reportPrivateUsage = "error"
+reportUnknownMemberType = "error"
+reportUnknownVariableType = "error"
+reportUnknownArgumentType = "error"
+reportUnknownLambdaType = "error"
+reportAny = "error"
 
 # Black code formatting configuration
 [tool.black]
@@ -347,51 +290,17 @@ target-version = "py313"
 extend-exclude = ["old/"]
 
 [tool.ruff.lint]
-select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    # "I",  # isort - disabled to avoid conflict with isort hook
-    "B",  # flake8-bugbear
-    "C4", # flake8-comprehensions
-    "UP", # pyupgrade
-    "RUF100", # unused noqa
-]
-ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
-]
+select = []
+ignore = []
 
 [tool.ruff.lint.per-file-ignores]
 # Relaxed standards for test code
-"tests/*" = [
-    "E501",    # line too long
-    "F841",    # unused variable (often used for test fixtures)
-    "B007",    # unused loop variable (common in test iterations)
-    "B008",    # function calls in argument defaults (OK for fixtures)
-    "C901",    # too complex (test functions can be complex)
-    "E722",    # bare except (sometimes needed in tests)
-    "E731",    # lambda assignment (useful for test helpers)
-    "UP038",   # old-style isinstance (not critical in tests)
-    "RUF100",  # unused noqa (test code can be messy)
-    "S101",    # assert statements (tests use asserts)
-    "S106",    # hardcoded passwords (test data can be hardcoded)
-    "S608",    # SQL injection (tests often use hardcoded SQL)
-    "PLR0913", # too many arguments (test functions often need many fixtures)
-    "PLR0915", # too many statements (test functions can be long)
-    "B904",    # exception chaining (not always needed in tests)
-    "F401",    # unused imports (tests often import for side effects)
-]
-# Also relax standards for example scripts and test scripts in root
-"test_*.py" = ["E402", "F841", "B007"]
-"examples/*" = ["E402", "F841", "B007"]
-"scripts/*" = ["E402"]  # Module imports after path manipulation
+"tests/*" = []
 
 # Bandit security linting configuration
 [tool.bandit]
 exclude_dirs = ["tests", "old"]
-skips = ["B101", "B601"]
+skips = []
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

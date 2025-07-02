@@ -1,8 +1,0 @@
-# Vulture baseline - intentional dead code patterns
-# This file contains intentional dead code that should be ignored by vulture
-
-# Intentional unsatisfiable conditions (used to create empty generators)
-src/goldentooth_agent/core/event/flow.py:212: unsatisfiable 'if' condition (100% confidence)
-src/goldentooth_agent/core/event/flow.py:250: unsatisfiable 'if' condition (100% confidence)
-src/goldentooth_agent/core/event/flow.py:288: unsatisfiable 'if' condition (100% confidence)
-src/goldentooth_agent/flow_engine/combinators/sources.py:55: unsatisfiable 'if' condition (100% confidence)

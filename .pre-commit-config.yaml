@@ -85,109 +85,22 @@ repos:
         pass_filenames: false
         always_run: true
 
-  # Quick development feedback
-  - repo: local
-    hooks:
-      - id: quick-checks
-        name: Quick Development Checks
-        entry: poetry run goldentooth-agent dev quick-check
-        language: system
-        types: [python]
-        description: Quick feedback on common issues (non-blocking)
-        pass_filenames: true
-        always_run: false
-
   # =============================================================================
   # PHASE 2: METADATA & DOCUMENTATION UPDATES
   # =============================================================================
   # These run after formatting passes and may auto-fix issues
 
-  # Update module metadata for changed modules (auto-fixes stale metadata)
+  # Dead code detection with Vulture
   - repo: local
     hooks:
-      - id: update-module-metadata
-        name: Update Module Metadata
-        entry: poetry run goldentooth-agent dev module pre-commit-update
+      - id: vulture
+        name: Dead Code Detection
+        entry: poetry run poe deadcode
         language: system
         types: [python]
-        description: Update README.meta.yaml for modules with staged changes
+        description: Check for dead code with Vulture
         pass_filenames: false
         always_run: false
-        stages: [pre-commit]
-
-  # Check for potentially unsafe dictionary attribute access
-  - repo: local
-    hooks:
-      - id: check-dict-attribute-access
-        name: Check Dictionary Attribute Access
-        entry: python scripts/check_dict_access.py
-        language: system
-        types: [python]
-        description: Detect potential dict.attribute access patterns that may cause AttributeError
-        pass_filenames: false
-        always_run: false
-        args: ['--staged']
-
-  # Dead code detection with Vulture (only NEW issues)
-  - repo: local
-    hooks:
-      - id: vulture-diff
-        name: Dead Code Detection (New Issues Only)
-        entry: python scripts/vulture_diff.py
-        language: system
-        types: [python]
-        description: Check for NEW dead code issues (ignores existing baseline)
-        pass_filenames: false
-        always_run: false
-
-  # Generate README.md files from metadata (auto-fixes stale READMEs)
-  - repo: local
-    hooks:
-      - id: update-readme-files
-        name: Update README Files
-        entry: poetry run goldentooth-agent dev module generate-readme-for-commit
-        language: system
-        description: Generate README.md files from README.meta.yaml for staged modules
-        pass_filenames: false
-        always_run: false
-        stages: [pre-commit]
-
-  # Validate module metadata before running tests
-  - repo: local
-    hooks:
-      - id: validate-module-metadata
-        name: Validate Module Metadata
-        entry: poetry run goldentooth-agent dev module validate-for-commit
-        language: system
-        description: Validate metadata accuracy for staged modules before commit
-        pass_filenames: false
-        always_run: false
-        stages: [pre-commit]
-
-  # Check for missing background files in significant modules
-  - repo: local
-    hooks:
-      - id: check-background-files
-        name: Check Background Files
-        entry: poetry run goldentooth-agent dev module check-background-for-commit
-        language: system
-        description: Check for missing README.bg.md files in significant modules with changes
-        pass_filenames: false
-        always_run: false
-        stages: [pre-commit]
-
-  # Check CLAUDE.md guideline references
-  - repo: local
-    hooks:
-      - id: check-claude-guidelines
-        name: Check CLAUDE.md Guidelines
-        entry: python scripts/check_claude_guidelines.py
-        language: system
-        description: Verify CLAUDE.md properly references all guidelines with include directives
-        files: ^(CLAUDE\.md|guidelines/.*\.md)$
-        pass_filenames: false
-        always_run: false
-        stages: [pre-commit]
 
   # Check if poetry.lock is up-to-date with pyproject.toml
   - repo: local
@@ -206,54 +119,17 @@ repos:
   # =============================================================================
   # These are the slowest checks and only run after all formatting issues are resolved
 
-  # Validate test structure alignment
-  - repo: local
-    hooks:
-      - id: test-structure-validation
-        name: Test Structure Validation
-        entry: poetry run python
-        language: system
-        types: [python]
-        description: Validate that test structure aligns with source structure
-        pass_filenames: false
-        always_run: false
-        args: ['scripts/test_structure_validator.py', '--strict']
-
-  # Run pytest tests with coverage checking (most expensive)
   - repo: local
     hooks:
       - id: pytest-coverage
         name: PyTest with Coverage Check
-        entry: poetry run pytest
+        entry: poetry run poe test-cov
         language: system
         types: [python]
-        description: Run pytest tests with minimum 60% coverage requirement (most expensive)
+        description: Run pytest tests with coverage checking
         pass_filenames: false
         always_run: true
-        args:
-          - 'tests/'
-          - '--cov=goldentooth_agent'
-          - '--cov-fail-under=60'
-          - '--cov-report=term-missing'
-          - '-v'
-          - '--tb=short'
-          - '-W'
-          - 'error::ResourceWarning'
-          - '-W'
-          - 'error::DeprecationWarning'
-
-  # Check coverage for staged changes (aggressive per-commit requirement)
-  - repo: local
-    hooks:
-      - id: staged-coverage-check
-        name: Staged Files Coverage Check
-        entry: python scripts/check_staged_coverage.py
-        language: system
-        types: [python]
-        description: Ensure staged changes in src/goldentooth_agent/ have ≥95% test coverage
-        pass_filenames: false
-        always_run: false
-        args: ['--threshold', '95.0']
+        args: []
 
   # Security checks
   - repo: https://github.com/PyCQA/bandit

@@ -35,8 +35,7 @@
     "**/*.pyc": true,
     "**/node_modules": true,
     "**/.mypy_cache": true,
-    "**/.pytest_cache": true,
-    "**/old": true
+    "**/.pytest_cache": true
   },
   "git.ignoreLimitWarning": true,
   "search.exclude": {
