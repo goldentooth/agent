@@ -1,0 +1,9 @@
+[run]
+branch = True
+source = src
+data_file = .coverage/coverage
+
+[report]
+skip_empty = True
+fail_under = 99
+format = markdown

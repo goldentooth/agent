@@ -71,7 +71,7 @@ pytest-mock = "^3.14.1"
 radon = "^6.0.1"
 
 [tool.coverage.run]
-source = ["src/goldentooth_agent"]
+source = ["src/goldentooth_agent", "src/git_hooks"]
 omit = [
     "*/tests/*",
     "*/test_*",
@@ -103,15 +103,7 @@ precision = 2
 directory = "htmlcov"
 
 [tool.poe.tasks]
-test = "pytest tests/"
-test-cov = "pytest tests/ --cov=goldentooth_agent"
-test-cov-report = "pytest tests/ --cov=goldentooth_agent --cov-report=html --cov-report=term"
-test-cov-check = "pytest tests/ --cov=goldentooth_agent --cov-fail-under=85 --cov-report=term-missing"
-
-# Warning-strict testing
-test-strict = "pytest tests/ -W error"
-test-strict-resource = "pytest tests/ -W error::ResourceWarning"
-test-strict-deprecation = "pytest tests/ -W error::DeprecationWarning"
+pytest = "pytest"
 
 typecheck = "mypy src/goldentooth_agent --strict --show-error-codes --pretty"
 typecheck-tests = "mypy tests/ --strict --show-error-codes --pretty"
@@ -143,6 +135,12 @@ format-black-check = "black --check src/ tests/"
 format-isort-check = "isort --check-only src/ tests/"
 format-ruff-check = "ruff check src/ tests/"
 format-check = ["format-black-check", "format-isort-check", "format-ruff-check"]
+
+# Git hooks tasks for file and module size validation
+file-length = "python -m src.git_hooks.cli file_length"
+file-length-warnings = "python -m src.git_hooks.cli file_length_warnings"
+module-size = "python -m src.git_hooks.cli module_size"
+module-size-warnings = "python -m src.git_hooks.cli module_size_warnings"
 
 [tool.mypy]
 # Strict type checking configuration aligned with Pylance standards
