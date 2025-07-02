@@ -85,6 +85,25 @@ repos:
         pass_filenames: false
         always_run: true
 
+  # File length validation (enforce guideline #4)
+  - repo: local
+    hooks:
+      - id: file-length-hook-test
+        name: File Length Hook Tests
+        entry: poetry run pytest tests/git/hooks/test_check_file_length.py -v
+        language: system
+        description: Test the file length hook before using it
+        files: '^(git/hooks/check_file_length\.sh|tests/git/hooks/test_check_file_length\.py)$'
+        pass_filenames: false
+
+      - id: file-length-check
+        name: File Length Validation
+        entry: git/hooks/check_file_length.sh
+        language: script
+        description: Ensure files don't exceed 1000 lines (guideline #4)
+        pass_filenames: false
+        always_run: true
+
   # =============================================================================
   # PHASE 2: METADATA & DOCUMENTATION UPDATES
   # =============================================================================
