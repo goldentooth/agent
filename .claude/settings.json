@@ -1,4 +1,44 @@
 {
   "hooks": {
+  },
+  "permissions": {
+    "allow": [
+      "Bash(/dev/null)",
+      "Bash(chmod:*)",
+      "Bash(cp:*)",
+      "Bash(diff:*)",
+      "Bash(do)",
+      "Bash(done)",
+      "Bash(echo:*)",
+      "Bash(find:*)",
+      "Bash(for:*)",
+      "Bash(git add:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(git mv:*)",
+      "Bash(goldentooth-agent:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(poetry:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(rg:*)",
+      "Bash(rm:*)",
+      "Bash(sed:*)",
+      "Bash(pre-commit:*)",
+      "Bash(pyright:*)",
+      "Bash(pytest:*)",
+      "Bash(ruff:*)",
+      "Bash(sqlite3:*)",
+      "Bash(touch:*)",
+      "Bash(tree:*)",
+      "Bash(true)"
+    ],
+    "defaultMode": "acceptEdits",
+    "deny": [
+      "Bash(git reset:*)"
+    ]
   }
 }
