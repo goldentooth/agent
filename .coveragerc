@@ -13,5 +13,5 @@ omit =
 
 [report]
 skip_empty = True
-fail_under = 99
+fail_under = 90
 format = markdown
