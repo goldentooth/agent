@@ -1,18 +1,12 @@
 """Tests for the core validation framework."""
 
-import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 from unittest.mock import patch
 
-import pytest
-
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-
-from git_hooks.core import ValidationResult, ValidationSeverity, Validator
-from git_hooks.file_validator import FileLengthValidator
-from git_hooks.module_validator import ModuleSizeValidator
+from src.git_hooks.core import ValidationResult, ValidationSeverity, Validator
+from src.git_hooks.file_validator import FileLengthValidator
+from src.git_hooks.module_validator import ModuleSizeValidator
 
 from .conftest import create_file_with_lines, create_module_with_total_lines
 
@@ -52,7 +46,7 @@ class TestValidationFramework:
             def __init__(self) -> None:
                 super().__init__(limit=100, exclude_patterns=[])
 
-            def validate(self, file_path: Path) -> Optional[ValidationResult]:
+            def validate(self, path: Path) -> Optional[ValidationResult]:
                 return None
 
         # Should be able to instantiate concrete class

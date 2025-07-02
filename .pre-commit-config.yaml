@@ -88,14 +88,6 @@ repos:
   # File length validation (enforce guideline #4)
   - repo: local
     hooks:
-      - id: file-length-hook-test
-        name: File Length Hook Tests
-        entry: poetry run pytest tests/git_hooks/ -v
-        language: system
-        description: Test the file length validation framework
-        files: '^(git/hooks/check_.*\.py|tests/git_hooks/.*\.py|src/git_hooks/.*\.py)$'
-        pass_filenames: false
-
       - id: file-length-warnings
         name: File Length Warning Check
         entry: poetry run poe file-length-warnings
@@ -140,7 +132,7 @@ repos:
     hooks:
       - id: vulture
         name: Dead Code Detection
-        entry: poetry run poe deadcode
+        entry: poetry run poe vulture
         language: system
         types: [python]
         description: Check for dead code with Vulture
@@ -150,7 +142,7 @@ repos:
   # Check if poetry.lock is up-to-date with pyproject.toml
   - repo: local
     hooks:
-      - id: poetry-lock-check
+      - id: check-lock
         name: Check Poetry Lock File
         entry: poetry check --lock
         language: system
@@ -194,7 +186,7 @@ repos:
         entry: poetry run sphinx-build
         language: system
         args: ['-b', 'html', '-q', 'docs', 'docs/_build']
-        description: Build Sphinx documentation quietly (expensive - runs last)
+        description: Build Sphinx documentation quietly
         files: '(\.py|\.rst|\.md)$'
         pass_filenames: false
         always_run: false

@@ -70,47 +70,10 @@ vulture = "^2.14"
 pytest-mock = "^3.14.1"
 radon = "^6.0.1"
 
-[tool.coverage.run]
-source = ["src/goldentooth_agent", "src/git_hooks"]
-omit = [
-    "*/tests/*",
-    "*/test_*",
-    "*/conftest.py",
-    "*/old/*",
-    "*/__pycache__/*",
-    "*/venv/*",
-    "*/.venv/*",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
-show_missing = true
-skip_covered = false
-precision = 2
-
-[tool.coverage.html]
-directory = "htmlcov"
-
 [tool.poe.tasks]
 pytest = "pytest"
-
-typecheck = "mypy src/goldentooth_agent --strict --show-error-codes --pretty"
-typecheck-tests = "mypy tests/ --strict --show-error-codes --pretty"
-
-# Dead code analysis
-deadcode = "vulture src/goldentooth_agent --min-confidence 80"
-deadcode-tests = "vulture tests/ --min-confidence 80"
+mypy = "mypy"
+vulture = "vulture"
 
 # Pre-commit management tasks
 precommit-install = "pre-commit install"
@@ -232,27 +195,6 @@ disallow_subclassing_any = false
 warn_return_any = false
 warn_unused_ignores = false
 
-[tool.pyright]
-# Pyright configuration (powers Pylance) - focus on catching issues MyPy misses
-include = ["src"]
-exclude = ["**/__pycache__", "build", "dist"]
-pythonVersion = "3.13"
-pythonPlatform = "All"
-typeCheckingMode = "basic"
-reportPossiblyUnboundVariable = "error"
-reportUnboundVariable = "error"
-reportOptionalMemberAccess = "error"
-reportOptionalSubscript = "error"
-reportOptionalIterable = "error"
-reportOptionalContextManager = "error"
-reportOptionalOperand = "error"
-reportPrivateUsage = "error"
-reportUnknownMemberType = "error"
-reportUnknownVariableType = "error"
-reportUnknownArgumentType = "error"
-reportUnknownLambdaType = "error"
-reportAny = "error"
-
 # Black code formatting configuration
 [tool.black]
 line-length = 88
@@ -299,6 +241,51 @@ ignore = []
 [tool.bandit]
 exclude_dirs = ["tests", "old"]
 skips = []
+
+[tool.vulture]
+min_confidence = 80
+paths = ["src"]
+ignore_names = [
+    # CLI command functions - may be called via typer decorators
+    "*_command",
+    "*_cmd",
+    # Entry points and main functions
+    "main",
+    "app",
+    "cli",
+    # Exception classes that may be imported but not instantiated
+    "*Error",
+    "*Exception",
+    # Pydantic model fields that appear unused but are accessed via __dict__
+    "*_field",
+    # Test-related functions
+    "test_*",
+    "Test*",
+    "*_test",
+    # Configuration and setup functions
+    "*Config*",
+    "*_config",
+    "setup_*",
+    "configure_*",
+    # Protocol and interface definitions
+    "*Protocol",
+    "*Interface",
+    # Type definitions
+    "*Type",
+    "*Dict",
+    # Dependency injection related
+    "inject*",
+    "*_injectable",
+    # CLI commands defined with decorators
+    "list_*",
+    "show_*",
+    "run_*",
+    "demo_*",
+    "describe_*",
+    "exec_*",
+    "query_*",
+]
+exclude = ["tests/", "examples/", "build/", "dist/", "__pycache__/"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

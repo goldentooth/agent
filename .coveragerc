@@ -2,6 +2,14 @@
 branch = True
 source = src
 data_file = .coverage/coverage
+omit =
+    */tests/*
+    */test_*
+    */conftest.py
+    */old/*
+    */__pycache__/*
+    */venv/*
+    */.venv/*
 
 [report]
 skip_empty = True

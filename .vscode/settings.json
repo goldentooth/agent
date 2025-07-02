@@ -19,7 +19,6 @@
       "depth": 10
     }
   ],
-  "python.analysis.typeCheckingMode": "off",
   "ruff.enable": true,
   "mypy-type-checker.enable": true,
   "[python]": {

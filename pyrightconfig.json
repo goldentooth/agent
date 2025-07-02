@@ -3,6 +3,9 @@
     "src",
     "tests"
   ],
+  "extraPaths": [
+    "."
+  ],
   "exclude": [
     "**/node_modules",
     "**/__pycache__"
