@@ -85,6 +85,19 @@ repos:
         pass_filenames: false
         always_run: true
 
+  # Pyright type checking
+  - repo: local
+    hooks:
+      - id: pyright
+        name: Pyright Type Check
+        entry: poetry run pyright
+        language: system
+        types: [python]
+        args: ['src']
+        description: Run Pyright type checking
+        pass_filenames: false
+        always_run: true
+
   # File length validation (enforce guideline #4)
   - repo: local
     hooks:

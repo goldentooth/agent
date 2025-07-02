@@ -30,6 +30,7 @@ class Validator(ABC):
     """Abstract base class for validators."""
 
     def __init__(self, limit: int, exclude_patterns: Optional[List[str]] = None):
+        super().__init__()
         self.limit = limit
         self.exclude_patterns = exclude_patterns or []
 

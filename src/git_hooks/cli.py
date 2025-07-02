@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from .core import ValidationResult, ValidationSeverity
 from .file_validator import FileLengthValidator
@@ -40,18 +40,22 @@ def get_staged_files() -> List[Path]:
         return []
 
 
-def get_all_files(directory: Path = Path(".")) -> List[Path]:
+def get_all_files(directory: Optional[Path] = None) -> List[Path]:
     """Get all files in directory (non-git context)."""
-    files = []
+    if directory is None:
+        directory = Path(".")
+    files: List[Path] = []
     for path in directory.rglob("*"):
         if path.is_file() and not any(part.startswith(".git") for part in path.parts):
             files.append(path)
     return files
 
 
-def get_modules(directory: Path = Path(".")) -> List[Path]:
+def get_modules(directory: Optional[Path] = None) -> List[Path]:
     """Get all directories containing Python files."""
-    modules = set()
+    if directory is None:
+        directory = Path(".")
+    modules: set[Path] = set()
     for py_file in directory.rglob("*.py"):
         if not any(part.startswith(".git") for part in py_file.parts):
             modules.add(py_file.parent)
@@ -110,7 +114,7 @@ def check_file_length() -> int:
         print("✅ File length check: No files to check")
         return 0
 
-    results = []
+    results: List[ValidationResult] = []
     for file_path in files:
         result = validator.validate(file_path)
         if result and result.severity == ValidationSeverity.ERROR:
@@ -148,7 +152,7 @@ def check_file_length_warnings() -> int:
         print("✅ File length warnings: No files to check")
         return 0
 
-    results = []
+    results: List[ValidationResult] = []
     for file_path in files:
         result = validator.validate(file_path)
         if result:
@@ -171,7 +175,7 @@ def check_module_size() -> int:
         print("✅ Module size check: No modules to check")
         return 0
 
-    results = []
+    results: List[ValidationResult] = []
     for module_path in modules:
         result = validator.validate(module_path)
         if result and result.severity == ValidationSeverity.ERROR:
@@ -199,7 +203,7 @@ def check_module_size_warnings() -> int:
         print("✅ Module size warnings: No modules to check")
         return 0
 
-    results = []
+    results: List[ValidationResult] = []
     for module_path in modules:
         result = validator.validate(module_path)
         if result:

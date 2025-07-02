@@ -416,3 +416,17 @@ class TestCLI:
                 result = cli.check_file_length_warnings()
 
         assert result == 0  # Warnings always succeed
+
+    def test_get_all_files_default_directory(self, tmp_path: Path) -> None:
+        """Test get_all_files with default directory (None)."""
+        with patch("src.git_hooks.cli.Path") as mock_path:
+            mock_path.return_value.rglob.return_value = []
+            cli.get_all_files()
+            mock_path.assert_called_with(".")
+
+    def test_get_modules_default_directory(self, tmp_path: Path) -> None:
+        """Test get_modules with default directory (None)."""
+        with patch("src.git_hooks.cli.Path") as mock_path:
+            mock_path.return_value.rglob.return_value = []
+            cli.get_modules()
+            mock_path.assert_called_with(".")

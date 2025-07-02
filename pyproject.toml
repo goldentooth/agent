@@ -73,6 +73,7 @@ radon = "^6.0.1"
 [tool.poe.tasks]
 pytest = "pytest"
 mypy = "mypy"
+pyright = "pyright"
 vulture = "vulture"
 
 # Pre-commit management tasks
