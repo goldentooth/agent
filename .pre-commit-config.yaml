@@ -189,23 +189,22 @@ repos:
         always_run: false
         stages: [pre-commit]
 
+  # Check if poetry.lock is up-to-date with pyproject.toml
+  - repo: local
+    hooks:
+      - id: poetry-lock-check
+        name: Check Poetry Lock File
+        entry: poetry check --lock
+        language: system
+        description: Ensure poetry.lock is up-to-date with pyproject.toml
+        files: '^(pyproject\.toml|poetry\.lock)$'
+        pass_filenames: false
+        always_run: false
+
   # =============================================================================
   # PHASE 3: EXPENSIVE CHECKS (ONLY RUN IF FORMATTING/LINTING PASSES)
   # =============================================================================
   # These are the slowest checks and only run after all formatting issues are resolved
-
-  # Build Sphinx documentation
-  - repo: local
-    hooks:
-      - id: sphinx-build
-        name: Build Sphinx Documentation
-        entry: poetry run sphinx-build
-        language: system
-        args: ['-b', 'html', '-q', 'docs', 'docs/_build']
-        description: Build Sphinx documentation quietly (expensive - runs last)
-        files: '(\.py|\.rst|\.md)$'
-        pass_filenames: false
-        always_run: false
 
   # Validate test structure alignment
   - repo: local
@@ -219,18 +218,6 @@ repos:
         pass_filenames: false
         always_run: false
         args: ['scripts/test_structure_validator.py', '--strict']
-
-  # Check if poetry.lock is up-to-date with pyproject.toml
-  - repo: local
-    hooks:
-      - id: poetry-lock-check
-        name: Check Poetry Lock File
-        entry: poetry check --lock
-        language: system
-        description: Ensure poetry.lock is up-to-date with pyproject.toml
-        files: '^(pyproject\.toml|poetry\.lock)$'
-        pass_filenames: false
-        always_run: false
 
   # Run pytest tests with coverage checking (most expensive)
   - repo: local
@@ -255,7 +242,20 @@ repos:
           - '-W'
           - 'error::DeprecationWarning'
 
-  # Security checks (final check)
+  # Check coverage for staged changes (aggressive per-commit requirement)
+  - repo: local
+    hooks:
+      - id: staged-coverage-check
+        name: Staged Files Coverage Check
+        entry: python scripts/check_staged_coverage.py
+        language: system
+        types: [python]
+        description: Ensure staged changes in src/goldentooth_agent/ have ≥95% test coverage
+        pass_filenames: false
+        always_run: false
+        args: ['--threshold', '95.0']
+
+  # Security checks
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.10
     hooks:
@@ -264,6 +264,19 @@ repos:
         args: ['-r', 'src/', '-ll']
         exclude: (tests/|old/)
         pass_filenames: false
+
+  # Build Sphinx documentation
+  - repo: local
+    hooks:
+      - id: sphinx-build
+        name: Build Sphinx Documentation
+        entry: poetry run sphinx-build
+        language: system
+        args: ['-b', 'html', '-q', 'docs', 'docs/_build']
+        description: Build Sphinx documentation quietly (expensive - runs last)
+        files: '(\.py|\.rst|\.md)$'
+        pass_filenames: false
+        always_run: false
 
 # Configuration for individual hooks
 default_language_version:

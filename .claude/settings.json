@@ -1,22 +1,4 @@
 {
   "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "git add . && { poetry run pre-commit || (echo 'Please fix the aforementioned issues and then perform a summary git commit.'; exit 2) } > /dev/stderr"
-          }
-        ]
-      }
-    ]
   }
 }

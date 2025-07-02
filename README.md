@@ -6,7 +6,6 @@ An intelligent agent built for my [Pi Bramble](https://github.com/goldentooth/).
 [![Type Checked](https://img.shields.io/badge/type--checked-mypy-blue)](http://mypy-lang.org/)
 [![Code Style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Tests](https://img.shields.io/badge/tests-834%20passing-green)](tests/)
-[![Security](https://img.shields.io/badge/security-enterprise--grade-green)](src/goldentooth_agent/core/security/)
 [![Documentation](https://img.shields.io/badge/docs-sphinx-blue)](https://[your-username].github.io/goldentooth-agent/)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 
