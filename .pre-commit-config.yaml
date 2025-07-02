@@ -80,7 +80,7 @@ repos:
         entry: poetry run mypy
         language: system
         types: [python]
-        args: ['src/goldentooth_agent', '--strict', '--show-error-codes', '--pretty']
+        args: ['src', '--strict', '--show-error-codes', '--pretty']
         description: Run MyPy type checking (critical - fail fast)
         pass_filenames: false
         always_run: true
@@ -90,15 +90,15 @@ repos:
     hooks:
       - id: file-length-hook-test
         name: File Length Hook Tests
-        entry: poetry run pytest tests/git/hooks/test_check_file_length.py -v
+        entry: poetry run pytest tests/git_hooks/ -v
         language: system
-        description: Test the file length hook before using it
-        files: '^(git/hooks/check_file_length.*\.sh|tests/git/hooks/test_check_file_length.*\.py)$'
+        description: Test the file length validation framework
+        files: '^(git/hooks/check_.*\.py|tests/git_hooks/.*\.py|src/git_hooks/.*\.py)$'
         pass_filenames: false
 
       - id: file-length-warnings
         name: File Length Warning Check
-        entry: git/hooks/check_file_length_warnings.sh
+        entry: git/hooks/check_file_length_warnings.py
         language: script
         description: Show proactive warnings for files approaching size limits
         pass_filenames: false
@@ -107,9 +107,26 @@ repos:
 
       - id: file-length-check
         name: File Length Validation
-        entry: git/hooks/check_file_length.sh
+        entry: git/hooks/check_file_length.py
         language: script
         description: Ensure files don't exceed 1000 lines (guideline #4)
+        pass_filenames: false
+        always_run: true
+
+      - id: module-size-warnings
+        name: Module Size Warning Check
+        entry: git/hooks/check_module_size_warnings.py
+        language: script
+        description: Show proactive warnings for modules approaching size limits
+        pass_filenames: false
+        always_run: true
+        verbose: true
+
+      - id: module-size-check
+        name: Module Size Validation
+        entry: git/hooks/check_module_size.py
+        language: script
+        description: Ensure modules don't exceed 5000 lines (guideline #5)
         pass_filenames: false
         always_run: true
 
