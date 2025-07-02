@@ -1,6 +1,12 @@
 {
   "python.defaultInterpreterPath": "./venv/bin/python",
   "python.terminal.activateEnvironment": true,
+  "terminal.integrated.env.linux": {
+    "PROJECT_ROOT": "${workspaceFolder}"
+  },
+  "terminal.integrated.env.osx": {
+    "PROJECT_ROOT": "${workspaceFolder}"
+  },
   "python.analysis.autoImportCompletions": true,
   "python.analysis.autoFormatStrings": true,
   "python.analysis.completeFunctionParens": true,

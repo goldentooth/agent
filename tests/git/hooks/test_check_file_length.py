@@ -16,7 +16,7 @@ class TestFileLengthHook:
     def hook_script(self) -> Path:
         """Path to the file length hook script."""
         # Get absolute path to hook script from project root
-        project_root = Path(__file__).parent.parent.parent.parent
+        project_root = Path(os.environ.get("PROJECT_ROOT", "."))
         return project_root / "git/hooks/check_file_length.sh"
 
     @pytest.fixture
