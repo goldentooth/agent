@@ -4,7 +4,7 @@
     "tests"
   ],
   "extraPaths": [
-    "."
+    "src"
   ],
   "exclude": [
     "**/node_modules",
@@ -14,29 +14,6 @@
   "reportMissingTypeStubs": false,
   "pythonVersion": "3.13",
   "pythonPlatform": "All",
-  "executionEnvironments": [
-    {
-      "root": "src"
-    },
-    {
-      "root": "tests",
-      "reportPrivateUsage": "none",
-      "reportUnknownArgumentType": "none",
-      "reportUnknownVariableType": "none",
-      "reportUnknownMemberType": "none",
-      "reportUnknownParameterType": "none",
-      "reportUnknownLambdaType": "none",
-      "reportMissingParameterType": "none",
-      "reportMissingTypeArgument": "none",
-      "reportUnnecessaryIsInstance": "none",
-      "reportUnnecessaryCast": "none",
-      "reportUnnecessaryComparison": "none",
-      "reportAssertAlwaysTrue": "none",
-      "reportConstantRedefinition": "none",
-      "reportFunctionMemberAccess": "none",
-      "reportUninitializedInstanceVariable": "none"
-    }
-  ],
   "typeCheckingMode": "strict",
   "reportUnknownParameterType": "error",
   "reportUnknownArgumentType": "error",

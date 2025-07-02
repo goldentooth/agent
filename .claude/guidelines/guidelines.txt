@@ -29,9 +29,9 @@ These are the fundamental principles that govern all development work on this pr
    - Large modules indicate architectural issues
    - Always consult before adding to oversized modules
 
-6. **Tests must always match the structure of the codebase, i.e. code in src/goldentooth_agent/core/widget/ should be covered by tests in tests/unit/core/widget and, if appropriate, in tests/integration/core/widget.**
+6. **Tests must always match the structure of the codebase, i.e. code in src/goldentooth_agent/core/widget/ should be covered by tests in tests/goldentooth_agent/core/widget and integration/global tests in tests/integration.**
    - Test structure mirrors source structure exactly
-   - Unit tests go in tests/unit/ with matching directory structure
+   - Unit tests go in tests/<package_name> with matching directory structure
    - Integration tests go in tests/integration/ with matching directory structure
    - This ensures tests are discoverable and maintainable
 
