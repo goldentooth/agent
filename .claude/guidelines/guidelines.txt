@@ -1,0 +1,67 @@
+# Development Guidelines - Ten Commandments
+
+These are the fundamental principles that govern all development work on this project. Every line of code, every test, and every commit must adhere to these commandments.
+
+## The Ten Commandments
+
+1. **Do not write any code without a failing test.**
+   - Every function, class, and feature must be driven by tests
+   - Write the test first, watch it fail, then implement
+   - No exceptions to this rule
+
+2. **Do not write more code than is necessary to pass the test.**
+   - Implement the minimal code required to make tests pass
+   - Avoid over-engineering and premature optimization
+   - Focus on making the test green, not on future possibilities
+
+3. **Do not write functions of more than 10 statements or lines, and try not to write any of more than 5 statements or lines.**
+   - Keep functions small and focused on a single responsibility
+   - If a function exceeds 10 lines, break it into smaller functions
+   - Aim for 5 lines or fewer whenever possible
+
+4. **Do not add anything to a file with more than 500 lines. If you need to add a line to a file with 500 lines in it, stop what you're doing and ask me for advice.**
+   - Files must remain manageable and focused
+   - Large files indicate design problems that need addressing
+   - Seek guidance before contributing to bloated files
+
+5. **Do not add anything to a module with more than 2500 lines. If you need to add a line to a file in a module with 2500 or more lines in it, stop what you are doing and ask me for guidance.**
+   - Modules must maintain reasonable scope and complexity
+   - Large modules indicate architectural issues
+   - Always consult before adding to oversized modules
+
+6. **Tests must always match the structure of the codebase, i.e. code in src/goldentooth_agent/core/widget/ should be covered by tests in tests/unit/core/widget and, if appropriate, in tests/integration/core/widget.**
+   - Test structure mirrors source structure exactly
+   - Unit tests go in tests/unit/ with matching directory structure
+   - Integration tests go in tests/integration/ with matching directory structure
+   - This ensures tests are discoverable and maintainable
+
+7. **If you are unclear on anything, ask me for guidance. Do not go off half-cocked trying to please me. I will git reset your ass and make you do it again.**
+   - Uncertainty requires consultation, not assumption
+   - Better to ask questions than implement incorrectly
+   - Mistakes waste time and effort for everyone
+
+8. **Do not, ever, under any circumstances, run `git reset`.**
+   - Git history is sacred and must be preserved
+   - Work forward through problems, not backward
+   - Use other git commands for corrections when needed
+
+9. **Your work on a task is not done until you have run all the pre-commit hooks, they have passed, and the commit is made with an appropriate and detailed commit message.**
+   - Pre-commit hooks are mandatory, not optional
+   - All hooks must pass before considering work complete
+   - Commit messages must be clear, detailed, and descriptive
+   - No shortcuts on quality gates
+
+10. **You will have all work reviewed, on a line-by-line basis. My standards are high and I demand that you excel at every step.**
+    - Every line of code will be scrutinized
+    - Quality is non-negotiable
+    - Excellence is the minimum acceptable standard
+    - Prepare to defend every decision and implementation choice
+
+## Enforcement
+
+These commandments are not suggestions—they are requirements. Violations will result in:
+- Code rejection and mandatory rework
+- Extended review cycles
+- Loss of development privileges in severe cases
+
+Excellence through discipline. No exceptions.
