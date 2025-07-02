@@ -168,8 +168,7 @@ def test_method_signatures_compatible(self, method_name: str):
 
 ### Before Committing
 ```bash
-# Run full quality checks (includes mock compliance)
-poetry run poe qa
+poetry run poe qa  # See command-reference.md for all QA commands
 ```
 
 ### When Interface Changes
@@ -208,18 +207,11 @@ poetry run poe qa
 
 ## Commands Reference
 
+See **[Command Reference](command-reference.md)** for all development commands. Key commands for mock compliance:
+
 ```bash
-# Install dependencies
-poetry add --group dev pytest-mock
-
-# Test mock compliance
-poetry run poe test-mocks
-
-# Run all quality checks
-poetry run poe qa
-
-# Check specific mock
-pytest tests/test_mock_compliance.py::TestMockCompliance::test_vector_store_mock_implements_protocol -v
+poetry run poe test-mocks  # Test mock compliance
+poetry run poe qa          # All quality checks
 ```
 
 ## Migration Strategy

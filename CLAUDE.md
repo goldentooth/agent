@@ -18,8 +18,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   @guidelines/testing-standards.md
 - **[Type Safety](guidelines/type-safety.md)**: Type annotation requirements, mypy configuration
   @guidelines/type-safety.md
-- **[Type Safety Development](guidelines/type-safety-development.md)**: Practical guidelines to prevent common type errors
-  @guidelines/type-safety-development.md
 - **[Architecture](guidelines/architecture.md)**: System design patterns, dependency injection, module organization
   @guidelines/architecture.md
 - **[Performance](guidelines/performance.md)**: Performance standards, optimization strategies, benchmarking
@@ -44,5 +42,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 These guidelines are enforced through pre-commit hooks, CI/CD pipelines, and code review processes.
 
 ## Quick Reference
+
+- **[Command Reference](guidelines/command-reference.md)**: All development commands (poetry run poe, pytest, etc.)
 
 For detailed guidance on any aspect of development, refer to the comprehensive guidelines above. All development practices, coding standards, testing requirements, and architectural patterns are documented in the guidelines directory.

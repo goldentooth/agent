@@ -19,36 +19,15 @@ This document defines error handling patterns, exception strategies, and async e
 All custom exceptions **MUST** include comprehensive debugging context:
 
 ```python
-# ✅ Required: Rich error context for debugging
+# ✅ Required: Rich error context
 raise ProcessingError(
     f"Failed to process document {doc.id}",
     context={
-        # Object identification
-        "document_id": doc.id,
-        "document_type": doc.type,
-        "file_path": doc.source_path,
-
-        # Object state information
+        "document_id": doc.id, "document_type": doc.type, "file_path": doc.source_path,
         "document_size": len(doc.content) if doc.content else 0,
-        "has_metadata": bool(doc.metadata),
-        "available_attributes": sorted(vars(doc).keys()),
-
-        # Processing context
-        "processing_stage": "validation",
-        "processor_type": self.__class__.__name__,
-        "config_used": self.config.model_dump() if hasattr(self.config, 'model_dump') else str(self.config),
-
-        # Environment context
+        "processing_stage": "validation", "processor_type": self.__class__.__name__,
         "timestamp": datetime.now().isoformat(),
-        "function_name": inspect.currentframe().f_code.co_name,
-        "module_name": __name__,
-
-        # Debug aids
-        "suggested_fixes": [
-            "Check document.content is not None",
-            "Verify document.metadata structure",
-            "Ensure processor config is valid"
-        ],
+        "suggested_fixes": ["Check document.content", "Verify metadata structure"],
         "related_documentation": "guidelines/error-handling.md#document-processing"
     }
 ) from original_error
@@ -61,22 +40,17 @@ raise ProcessingError("Processing failed")  # No debugging information
 
 **Type/Attribute Errors:**
 ```python
-# Enhanced AttributeError replacement
 from goldentooth_agent.core.util.error_reporting import DetailedAttributeError
 
 try:
     value = response.attribute
 except AttributeError as e:
     raise DetailedAttributeError(
-        response,
-        "attribute",
+        response, "attribute",
         context={
-            "expected_type": "object with .attribute",
-            "actual_type": type(response).__name__,
+            "expected_type": "object with .attribute", "actual_type": type(response).__name__,
             "available_attributes": sorted(dir(response)),
-            "available_keys": sorted(response.keys()) if hasattr(response, 'keys') else None,
-            "access_pattern": "response.attribute",
-            "suggested_fix": f"Use response['attribute'] if response is a dict, or ensure response is an object with .attribute",
+            "suggested_fix": "Use response['attribute'] if dict, or ensure object has .attribute",
             "troubleshooting_url": "docs/debugging-improvements.md#dict-vs-object-access"
         }
     ) from e
@@ -84,35 +58,16 @@ except AttributeError as e:
 
 **Service/API Errors:**
 ```python
-# Enhanced service error context
 raise ServiceError(
     f"External API call failed: {endpoint}",
     context={
-        # Request details
-        "endpoint": endpoint,
-        "method": request_method,
-        "headers": sanitized_headers,  # Remove sensitive data
-        "payload_size": len(payload) if payload else 0,
-
-        # Response details
+        "endpoint": endpoint, "method": request_method, "payload_size": len(payload) if payload else 0,
         "status_code": response.status_code if response else None,
-        "response_headers": dict(response.headers) if response else None,
         "response_size": len(response.content) if response else 0,
 
-        # Retry context
-        "attempt_number": retry_attempt,
-        "max_retries": max_retries,
-        "backoff_delay": current_delay,
-
-        # Recovery suggestions
-        "retry_recommended": status_code >= 500,
-        "check_api_key": status_code == 401,
-        "check_rate_limits": status_code == 429,
-        "suggested_actions": [
-            "Verify API endpoint is correct",
-            "Check network connectivity",
-            "Validate API credentials"
-        ]
+        "attempt_number": retry_attempt, "max_retries": max_retries,
+        "retry_recommended": status_code >= 500, "check_api_key": status_code == 401,
+        "suggested_actions": ["Verify endpoint", "Check connectivity", "Validate credentials"]
     }
 ) from original_error
 ```
@@ -537,22 +492,8 @@ async def process_document(document: Document) -> ProcessedDocument:
 
 ### Async Operation Patterns
 ```python
-import asyncio
-from typing import AsyncIterator
-
-async def safe_async_iterator(
-    source: AsyncIterator[T],
-    error_handler: Callable[[Exception, T | None], None] | None = None
-) -> AsyncIterator[T]:
-    """Safely iterate over async iterator with error handling.
-
-    Args:
-        source: Source async iterator
-        error_handler: Optional error handler for individual items
-
-    Yields:
-        Items from source iterator, skipping failed items
-    """
+async def safe_async_iterator(source: AsyncIterator[T], error_handler: Callable[[Exception, T | None], None] | None = None) -> AsyncIterator[T]:
+    """Safely iterate over async iterator with error handling."""
     try:
         async for item in source:
             try:
@@ -561,74 +502,35 @@ async def safe_async_iterator(
                 if error_handler:
                     error_handler(e, item)
                 else:
-                    logger.error(f"Error processing item {item}: {e}", exc_info=True)
-                # Continue with next item
+                    logger.error(f"Error processing item {item}: {e}")
                 continue
     except Exception as e:
-        # Iterator itself failed
         if error_handler:
             error_handler(e, None)
         else:
-            logger.error(f"Async iterator failed: {e}", exc_info=True)
+            logger.error(f"Async iterator failed: {e}")
         raise
 
-async def gather_with_error_handling(
-    *aws: Awaitable[T],
-    return_exceptions: bool = True,
-    error_handler: Callable[[Exception], None] | None = None
-) -> list[T | Exception]:
-    """Gather async operations with error handling.
-
-    Args:
-        *aws: Awaitable objects to gather
-        return_exceptions: Whether to return exceptions instead of raising
-        error_handler: Optional error handler for exceptions
-
-    Returns:
-        List of results or exceptions
-    """
+async def gather_with_error_handling(*aws: Awaitable[T], return_exceptions: bool = True, error_handler: Callable[[Exception], None] | None = None) -> list[T | Exception]:
+    """Gather async operations with error handling."""
     results = await asyncio.gather(*aws, return_exceptions=return_exceptions)
-
     if error_handler:
         for result in results:
             if isinstance(result, Exception):
                 error_handler(result)
-
     return results
 
-# Usage example
-async def process_documents_safely(
-    documents: list[Document]
-) -> list[ProcessedDocument]:
+async def process_documents_safely(documents: list[Document]) -> list[ProcessedDocument]:
     """Process documents with comprehensive error handling."""
-
     def handle_processing_error(error: Exception, document: Document | None = None):
-        """Handle individual document processing errors."""
         if document:
-            logger.error(
-                f"Failed to process document {document.id}: {error}",
-                extra={"document_id": document.id, "error_type": type(error).__name__}
-            )
+            logger.error(f"Failed to process document {document.id}: {error}")
         else:
             logger.error(f"Document processing error: {error}")
-
-    # Process documents concurrently with error handling
-    processing_tasks = [
-        process_single_document(doc) for doc in documents
-    ]
-
-    results = await gather_with_error_handling(
-        *processing_tasks,
-        error_handler=handle_processing_error
-    )
-
-    # Filter out exceptions and return successful results
-    successful_results = [
-        result for result in results
-        if not isinstance(result, Exception)
-    ]
-
-    return successful_results
+    
+    processing_tasks = [process_single_document(doc) for doc in documents]
+    results = await gather_with_error_handling(*processing_tasks, error_handler=handle_processing_error)
+    return [result for result in results if not isinstance(result, Exception)]
 ```
 
 ### Timeout Handling
@@ -844,50 +746,30 @@ class ErrorReporter:
     def __init__(self) -> None:
         self.error_counts: dict[str, int] = {}
 
-    def report_error(
-        self,
-        error: Exception,
-        context: dict[str, Any] | None = None,
-        severity: str = "error"
-    ) -> None:
+    def report_error(self, error: Exception, context: dict[str, Any] | None = None, severity: str = "error") -> None:
         """Report error with structured logging."""
         error_type = type(error).__name__
         self.error_counts[error_type] = self.error_counts.get(error_type, 0) + 1
-
-        error_data = {
-            "error_type": error_type,
-            "error_message": str(error),
-            "error_count": self.error_counts[error_type],
-            "severity": severity
-        }
-
+        
+        error_data = {"error_type": error_type, "error_message": str(error), "error_count": self.error_counts[error_type], "severity": severity}
         if context:
             error_data.update(context)
-
         if isinstance(error, GoldentoothError):
-            error_data.update({
-                "error_code": error.error_code,
-                "error_context": error.context,
-                "timestamp": error.timestamp.isoformat()
-            })
-
-        # Log with appropriate level
+            error_data.update({"error_code": error.error_code, "error_context": error.context, "timestamp": error.timestamp.isoformat()})
+        
         if severity == "critical":
             logger.critical("Critical error occurred", **error_data)
         elif severity == "error":
             logger.error("Error occurred", **error_data, exc_info=error)
         elif severity == "warning":
             logger.warning("Warning condition", **error_data)
-
-        # Send to monitoring system if configured
+        
         self._send_to_monitoring(error_data)
-
+    
     def _send_to_monitoring(self, error_data: dict[str, Any]) -> None:
         """Send error data to monitoring system."""
-        # Implementation would send to metrics/monitoring system
-        # e.g., Prometheus, DataDog, etc.
-        pass
-
+        pass  # Implementation would send to metrics/monitoring system
+    
     def get_error_summary(self) -> dict[str, int]:
         """Get summary of error counts."""
         return self.error_counts.copy()
@@ -902,22 +784,13 @@ def report_error(error: Exception, **context):
 
 ### Health Check Integration
 ```python
-from goldentooth_agent.core.observability.health import HealthCheck
-
 async def error_rate_health_check() -> bool:
     """Health check based on error rates."""
     total_errors = sum(error_reporter.get_error_summary().values())
-
-    # Consider system healthy if fewer than 10 errors in recent window
-    return total_errors < 10
+    return total_errors < 10  # Consider system healthy if fewer than 10 errors
 
 # Register health check
-health_monitor.register_check(
-    "error_rate",
-    "Monitor system error rates",
-    error_rate_health_check,
-    critical=True
-)
+health_monitor.register_check("error_rate", "Monitor system error rates", error_rate_health_check, critical=True)
 ```
 
 This comprehensive error handling framework ensures robust, debuggable, and maintainable error management throughout the system.

@@ -160,61 +160,39 @@ class CachedVectorStore:
 
 #### Concurrent Processing
 ```python
-import asyncio
-from typing import AsyncIterator, TypeVar
-
 T = TypeVar("T")
 R = TypeVar("R")
 
-async def process_concurrently(
-    items: list[T],
-    processor: Callable[[T], Awaitable[R]],
-    max_concurrency: int = 10
-) -> list[R]:
-    """Process items concurrently with controlled concurrency."""
+async def process_concurrently(items: list[T], processor: Callable[[T], Awaitable[R]], max_concurrency: int = 10) -> list[R]:
     semaphore = asyncio.Semaphore(max_concurrency)
-
     async def process_with_semaphore(item: T) -> R:
         async with semaphore:
             return await processor(item)
+    return await asyncio.gather(*[process_with_semaphore(item) for item in items])
 
-    tasks = [process_with_semaphore(item) for item in items]
-    return await asyncio.gather(*tasks)
-
-async def stream_process_concurrently(
-    stream: AsyncIterator[T],
-    processor: Callable[[T], Awaitable[R]],
-    max_concurrency: int = 10,
-    buffer_size: int = 100
-) -> AsyncIterator[R]:
-    """Process stream concurrently with backpressure control."""
+async def stream_process_concurrently(stream: AsyncIterator[T], processor: Callable[[T], Awaitable[R]], max_concurrency: int = 10, buffer_size: int = 100) -> AsyncIterator[R]:
     semaphore = asyncio.Semaphore(max_concurrency)
     result_queue: asyncio.Queue[R] = asyncio.Queue(buffer_size)
-
+    
     async def process_item(item: T) -> None:
         async with semaphore:
-            result = await processor(item)
-            await result_queue.put(result)
-
+            await result_queue.put(await processor(item))
+    
     async def producer():
         async for item in stream:
             asyncio.create_task(process_item(item))
-        await result_queue.put(None)  # Sentinel
-
+        await result_queue.put(None)
+    
     producer_task = asyncio.create_task(producer())
-
     try:
         while True:
             result = await result_queue.get()
-            if result is None:  # Sentinel received
-                break
+            if result is None: break
             yield result
     finally:
         producer_task.cancel()
-        try:
-            await producer_task
-        except asyncio.CancelledError:
-            pass
+        try: await producer_task
+        except asyncio.CancelledError: pass
 ```
 
 #### Resource Pool Management
@@ -222,33 +200,20 @@ async def stream_process_concurrently(
 @injectable
 class ResourcePool:
     """Generic resource pool for expensive objects."""
-
-    def __init__(
-        self,
-        factory: Callable[[], Awaitable[T]],
-        max_size: int = 10,
-        min_size: int = 2
-    ) -> None:
-        self.factory = factory
-        self.max_size = max_size
-        self.min_size = min_size
+    def __init__(self, factory: Callable[[], Awaitable[T]], max_size: int = 10, min_size: int = 2) -> None:
+        self.factory, self.max_size = factory, max_size
         self._pool: asyncio.Queue[T] = asyncio.Queue(max_size)
-        self._current_size = 0
-        self._lock = asyncio.Lock()
+        self._current_size, self._lock = 0, asyncio.Lock()
 
     async def acquire(self) -> T:
         """Acquire resource from pool."""
         try:
-            # Try to get from pool without waiting
             return self._pool.get_nowait()
         except asyncio.QueueEmpty:
-            # Create new resource if under max size
             async with self._lock:
                 if self._current_size < self.max_size:
                     self._current_size += 1
                     return await self.factory()
-
-            # Wait for resource to become available
             return await self._pool.get()
 
     async def release(self, resource: T) -> None:
@@ -256,7 +221,6 @@ class ResourcePool:
         try:
             self._pool.put_nowait(resource)
         except asyncio.QueueFull:
-            # Pool is full, clean up resource
             if hasattr(resource, 'cleanup'):
                 await resource.cleanup()
             async with self._lock:
@@ -292,83 +256,50 @@ async def process_large_dataset_streaming(
         for result in processed_batch:
             yield result
 
-async def memory_efficient_vector_search(
-    query: str,
-    document_store: DocumentStore,
-    vector_store: VectorStore,
-    chunk_size: int = 1000
-) -> AsyncIterator[SearchResult]:
+async def memory_efficient_vector_search(query: str, document_store: DocumentStore, vector_store: VectorStore, chunk_size: int = 1000) -> AsyncIterator[SearchResult]:
     """Memory-efficient vector search over large corpora."""
-    # Get query embedding
     query_embedding = await get_embedding(query)
-
-    # Search in chunks to limit memory usage
+    
     offset = 0
     while True:
-        # Get chunk of document IDs
-        doc_ids = await document_store.get_document_ids(
-            offset=offset,
-            limit=chunk_size
-        )
-
+        doc_ids = await document_store.get_document_ids(offset=offset, limit=chunk_size)
         if not doc_ids:
             break
-
-        # Search within this chunk
-        chunk_results = await vector_store.search_similar_in_subset(
-            query_embedding,
-            document_subset=doc_ids,
-            limit=10
-        )
-
+        
+        chunk_results = await vector_store.search_similar_in_subset(query_embedding, document_subset=doc_ids, limit=10)
         for result in chunk_results:
             yield result
-
+        
         offset += chunk_size
 ```
 
 #### Memory Monitoring
 ```python
-import tracemalloc
-import psutil
-from contextlib import asynccontextmanager
-
 class MemoryTracker:
     """Track memory usage for performance optimization."""
-
     @asynccontextmanager
     async def track_memory(self, operation_name: str):
         """Track memory usage during operation."""
-        # Start tracing
         tracemalloc.start()
         process = psutil.Process()
         start_memory = process.memory_info().rss
-
+        
         try:
             yield
         finally:
-            # Get final memory usage
             end_memory = process.memory_info().rss
             current, peak = tracemalloc.get_traced_memory()
             tracemalloc.stop()
-
-            # Log memory usage
+            
             memory_delta = (end_memory - start_memory) / 1024 / 1024  # MB
             peak_memory = peak / 1024 / 1024  # MB
-
-            logger.info(
-                "Memory usage",
-                operation=operation_name,
-                memory_delta_mb=memory_delta,
-                peak_memory_mb=peak_memory
-            )
+            logger.info("Memory usage", operation=operation_name, memory_delta_mb=memory_delta, peak_memory_mb=peak_memory)
 
 # Usage
 memory_tracker = MemoryTracker()
 
 async def expensive_operation():
     async with memory_tracker.track_memory("document_processing"):
-        # Memory-intensive operation
         results = await process_large_document_set()
         return results
 ```
@@ -723,14 +654,14 @@ def memory_efficient_processing(large_dataset: list[Data]) -> Iterator[Result]:
 ```
 
 ### Common Performance Issues
-1. **Synchronous operations in async code**
-2. **Missing connection pooling**
-3. **Inefficient database queries**
-4. **Memory leaks from circular references**
-5. **Blocking I/O operations**
-6. **Excessive object creation**
-7. **Missing caching for expensive operations**
-8. **Poor error handling causing retries**
+1. Synchronous operations in async code
+2. Missing connection pooling  
+3. Inefficient database queries
+4. Memory leaks from circular references
+5. Blocking I/O operations
+6. Excessive object creation
+7. Missing caching for expensive operations
+8. Poor error handling causing retries
 
 ### Performance Debugging Checklist
 - [ ] Profile slow operations with cProfile

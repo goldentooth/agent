@@ -14,26 +14,37 @@ This is a private project with a single user. Key implications:
 - **Rapid iteration**: Our only responsibility is to ensure that the code always works on deployment
 - **Version-controlled resources**: Any resources (e.g. RAG source documents) must be maintained within a version-controlled repository
 
+## CRITICAL GIT SAFETY RULES
+
+### NEVER USE DESTRUCTIVE GIT COMMANDS
+
+**ABSOLUTE PROHIBITION**: The following git commands are NEVER allowed and will destroy work:
+
+❌ **FORBIDDEN COMMANDS:**
+- `git reset` (any form - soft, mixed, hard)
+- `git reset --hard`
+- `git reset HEAD`
+- `git checkout .` (discards changes)
+- `git clean -f` (removes untracked files)
+- `git rebase` without explicit user permission
+- `git push --force` or `git push -f`
+
+**SAFE ALTERNATIVES:**
+✅ Use `git stash` to temporarily save changes
+✅ Use `git add` and `git commit` to save progress
+✅ Use `git checkout filename` only for single files with explicit intent
+✅ Use `git status` to check what changes exist
+✅ Use `git diff` to see what changes would be lost
+
+**RATIONALE**: These commands can destroy hours of work instantly. In a single-user private project, there is NEVER a valid reason to use destructive reset commands when helping with development tasks.
+
 ## Pre-Commit Quality Policy
 
 **MANDATORY**: All development tasks must complete with a successful run of quality checks to ensure code quality and prevent regressions.
 
 ### Automated Quality Check Script
 
-We provide a dedicated QA script that overlaps with pre-commit hooks and provides enhanced feedback:
-
-```bash
-# Comprehensive quality check (recommended)
-poetry run poe qa-check
-
-# Alternative: Original poe task collection
-poetry run poe qa
-
-# Development variations:
-poetry run poe qa-fast      # Skip slow tests for quick feedback
-poetry run poe qa-verbose   # Detailed output for debugging
-poetry run poe qa-fix       # Auto-fix formatting issues
-```
+We provide a dedicated QA script that overlaps with pre-commit hooks and provides enhanced feedback. See **[Command Reference](command-reference.md)** for full details on all available commands.
 
 ### Required Quality Checks
 
@@ -55,13 +66,11 @@ The QA script validates:
 ```bash
 # Dictionary access pattern detection (prevents dict.attr errors)
 scripts/check_dict_access.py --staged
-# Outcome: Catches potential 'dict' object has no attribute errors
 
 # Type annotation completeness audit
 scripts/audit_type_annotations.py
-# Outcome: Ensures all functions have return type annotations
 
-# Standard quality tools
+# Standard quality tools - see command-reference.md for details
 poetry run poe typecheck    # mypy strict type checking
 poetry run poe format       # black, isort, ruff auto-fixes
 poetry run poe test-cov     # pytest with coverage validation
@@ -71,19 +80,13 @@ poetry run poe test-cov     # pytest with coverage validation
 ```bash
 # Response handling consistency check
 scripts/analyze_response_patterns.py
-# Outcome: Identifies mixed dict/object access patterns across codebase
 
-# Dead code detection (incremental)
-poetry run poe deadcode-diff
-# Outcome: Finds newly introduced unused code
-
-# Mock compliance validation
-poetry run poe test-mocks
-# Outcome: Ensures mocks stay synchronized with real implementations
+# Quality checks - see command-reference.md for all options
+poetry run poe deadcode-diff  # Find newly introduced unused code
+poetry run poe test-mocks     # Ensure mocks stay synchronized
 
 # Dependency analysis
 poetry run rg "from goldentooth_agent" src/ | cut -d: -f2 | sort | uniq -c
-# Outcome: Identifies circular imports and heavy coupling
 ```
 
 #### Integration Analysis (Before Major Changes)
@@ -118,47 +121,23 @@ find src/ -name "*.py" -exec wc -l {} \; | sort -nr | head -20
 
 ### Code Formatting Commands
 
-Apply all formatting transformations (requires `git add` afterwards):
+Apply all formatting transformations (requires `git add` afterwards). See **[Command Reference](command-reference.md)** for complete formatting commands.
 
 ```bash
-# Auto-format all files (comprehensive)
-poetry run poe format
-
-# Individual formatting tools:
-poetry run poe format-black        # Apply Black formatting
-poetry run poe format-isort        # Sort imports with isort
-poetry run poe format-ruff         # Apply Ruff auto-fixes
-poetry run poe format-files        # Fix whitespace, line endings, etc.
-
-# Check formatting without changes:
-poetry run poe format-check        # Check all formatting
-poetry run poe format-black-check  # Check Black formatting only
-poetry run poe format-isort-check  # Check import sorting only
-poetry run poe format-ruff-check   # Check Ruff issues only
+# Most common formatting commands:
+poetry run poe format        # Auto-format all files (comprehensive)
+poetry run poe format-check  # Check all formatting without changes
 ```
 
 ### Individual Check Commands
 
-For development and debugging, you can run individual checks:
+For development and debugging, run individual checks. See **[Command Reference](command-reference.md)** for the complete list of available commands.
 
 ```bash
-# Type checking
-poetry run poe typecheck              # Source code only
-poetry run poe typecheck-all          # Include tests
-
-# Testing with coverage
-poetry run poe test-cov-check         # Enforce 85% minimum coverage
-poetry run poe test-cov-report        # Generate HTML + terminal reports
-
-# Mock compliance
-poetry run poe test-mocks             # Verify mock-to-real synchronization
-
-# Dead code detection
-poetry run poe deadcode-diff          # Check for new dead code only
-
-# Pre-commit hooks
-poetry run poe precommit-run          # All hooks on all files
-poetry run poe precommit-run-hook     # Staged files only
+# Most common individual checks:
+poetry run poe typecheck      # Type checking
+poetry run poe test-cov-check # Coverage validation
+poetry run poe test-mocks     # Mock compliance
 ```
 
 ## Pre-Development Investigation Protocol
@@ -429,24 +408,12 @@ open htmlcov/index.html
 
 #### Mock Compliance Failures
 ```bash
-# Run mock compliance tests
-poetry run poe test-mocks
-
-# Common fixes:
-# - Update mock method signatures to match real implementations
-# - Add missing methods to mock classes
-# - Update protocol definitions when interfaces change
+poetry run poe test-mocks  # See command-reference.md for details
 ```
 
 #### Dead Code Detection
 ```bash
-# Check for new dead code
-poetry run poe deadcode-diff
-
-# Common fixes:
-# - Remove unused functions/variables
-# - Mark intentional dead code with comments
-# - Update vulture baseline if needed
+poetry run poe deadcode-diff  # See command-reference.md for details
 ```
 
 ## Development Environment Setup
@@ -454,14 +421,9 @@ poetry run poe deadcode-diff
 ### Initial Setup
 
 ```bash
-# Install dependencies
 poetry install
-
-# Install pre-commit hooks
 poetry run poe precommit-install
-
-# Verify setup
-poetry run poe qa
+poetry run poe qa  # See command-reference.md for all QA commands
 ```
 
 ### IDE Configuration
@@ -482,7 +444,7 @@ The same quality checks run in CI/CD:
 ```yaml
 # .github/workflows/test.yml
 - name: Run quality checks
-  run: poetry run poe qa
+  run: poetry run poe qa  # See command-reference.md
 ```
 
 ### Branch Protection
@@ -548,17 +510,13 @@ This workflow prevents regressions, improves code quality, and maintains the hea
 
 ### Comprehensive Formatting Command
 
-The `poetry run poe format` command applies all formatting transformations that pre-commit hooks would apply:
+The `poetry run poe format` command applies all formatting transformations. See **[Command Reference](command-reference.md)** for detailed formatting options.
 
-#### Formatting Operations Applied:
+#### Formatting Operations:
 1. **Black**: Python code formatting with 88-character line length
-2. **isort**: Import sorting with Black-compatible configuration
-3. **Ruff**: Auto-fixable linting issues (unused imports, syntax improvements)
+2. **isort**: Import sorting with Black-compatible configuration  
+3. **Ruff**: Auto-fixable linting issues
 4. **File Formatting**: Whitespace and line ending normalization
-   - Remove trailing whitespace from all lines
-   - Ensure files end with exactly one newline
-   - Normalize line endings to Unix style (`\n`)
-   - Process text files: `.py`, `.md`, `.yaml`, `.json`, `.toml`, etc.
 
 #### Usage Workflow:
 ```bash
@@ -580,33 +538,11 @@ git commit -m "Apply code formatting and implement feature"
 
 ### Selective Formatting
 
-For granular control, individual formatting tools can be run separately:
-
-```bash
-# Python code formatting only
-poetry run poe format-black
-
-# Import sorting only
-poetry run poe format-isort
-
-# Linting auto-fixes only
-poetry run poe format-ruff
-
-# Whitespace and line endings only
-poetry run poe format-files
-```
+See **[Command Reference](command-reference.md)** for individual formatting commands.
 
 ### Format Checking
 
-Check formatting compliance without making changes:
-
-```bash
-# Check all formatting standards
-poetry run poe format-check
-
-# Returns exit code 0 if compliant, 1 if changes needed
-# Useful for CI/CD and automated workflows
-```
+Check formatting compliance: `poetry run poe format-check`
 
 ### Integration with Quality Assurance
 

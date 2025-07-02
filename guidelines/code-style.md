@@ -259,12 +259,9 @@ def complex_operation(input_data: InputType, config: ConfigType) -> OutputType:
 class DocumentProcessor:
     """Processes documents using configurable strategies.
 
-    This class provides a high-level interface for document processing
-    with support for multiple processing strategies and error recovery.
-
     Attributes:
-        strategy: The current processing strategy
-        config: Configuration controlling processor behavior
+        strategy: Current processing strategy
+        config: Configuration controlling behavior
 
     Example:
         >>> processor = DocumentProcessor(strategy="fast")
@@ -272,7 +269,7 @@ class DocumentProcessor:
     """
 
     def __init__(self, strategy: str = "default") -> None:
-        """Initialize the processor with the specified strategy.
+        """Initialize processor with strategy.
 
         Args:
             strategy: Processing strategy ("fast", "accurate", "default")
@@ -420,36 +417,10 @@ def initialize_module() -> None:
 - **ruff**: Linting (`ruff check .`)
 
 ### Pre-commit Checks
-```bash
-# Format code
-black .
-isort .
-
-# Check types
-poetry run poe typecheck
-
-# Run linter
-ruff check .
-
-# Run tests
-poetry run poe test
-```
+See [command-reference.md](command-reference.md) for all formatting and quality check commands.
 
 ### Editor Configuration
-```toml
-# pyproject.toml
-[tool.black]
-line-length = 88
-target-version = ['py311']
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-
-[tool.ruff]
-line-length = 88
-target-version = "py311"
-```
+Tool configurations are defined in `pyproject.toml` with Black (88-char), isort (Black profile), and Ruff settings.
 
 ## Development Practices
 
@@ -462,21 +433,15 @@ target-version = "py311"
 ```python
 # ✅ Good - Fix specific issue while preserving existing logic
 def process_document(doc: Document) -> ProcessedDocument:
-    # Existing validation logic (preserved)
     if not doc.content:
         raise ValueError("Document content cannot be empty")
-
-    # Fix: Add missing null check for metadata
     metadata = doc.metadata or {}  # Fixed the bug here
-
-    # Existing processing logic (preserved)
     processed_content = transform_content(doc.content)
     return ProcessedDocument(content=processed_content, metadata=metadata)
 
 # ❌ Avoid - Complete rewrite without permission
 def process_document(doc: Document) -> ProcessedDocument:
-    # Completely new implementation that throws away existing logic
-    return new_processing_approach(doc)
+    return new_processing_approach(doc)  # Throws away existing logic
 ```
 
 ## Response Handling Standards
@@ -583,74 +548,51 @@ def legacy_function() -> dict[str, Any]:
 #### Error Prevention Strategies
 ```python
 # ✅ Use type guards for external data
-from typing import TypeGuard
-
 def is_valid_response(data: Any) -> TypeGuard[dict[str, Any]]:
-    """Check if data has expected response structure."""
-    return (
-        isinstance(data, dict) and
-        "response" in data and
-        isinstance(data["response"], str)
-    )
+    return isinstance(data, dict) and "response" in data
 
 # Usage
 external_data = await external_call()
 if is_valid_response(external_data):
-    text = external_data["response"]  # Type-safe access
+    text = external_data["response"]
 else:
     raise ValueError("Invalid response structure")
 
 # ✅ Use runtime validation for critical paths
-from goldentooth_agent.core.validation import validate_dict_response
-
 result = await risky_operation()
-validated = validate_dict_response(
-    result,
-    required_keys=["response", "status"],
-    optional_keys=["metadata", "sources"]
-)
-response_text = validated["response"]  # Guaranteed to exist
+validated = validate_dict_response(result, required_keys=["response", "status"])
+response_text = validated["response"]
 ```
 
 ### Interface Consistency Requirements
 
 #### Agent Response Standards
-All agents must implement consistent response interfaces using the standardized `AgentResponse` schema:
+All agents must implement consistent response interfaces using `AgentResponse`:
 
 ```python
-# ✅ Required: Standard agent interface
 from goldentooth_agent.core.schema import AgentResponse
 
 class MyAgent:
     async def process_request(self, request: str) -> AgentResponse:
-        """All agents must return AgentResponse."""
-        # Processing logic
         return AgentResponse(
             response="Generated response text",
             sources=[{"title": "Source 1", "url": "..."}],
             confidence=0.85,
-            suggestions=["Try asking about X", "Consider Y"],
             metadata={"processing_time": 0.5, "model": "claude-3"}
         )
 
-# ✅ Required: Type annotations for external interfaces
 async def chat_with_agent(agent_type: str, message: str) -> AgentResponse:
-    """Chat interface must return structured response."""
     agent = get_agent(agent_type)
     return await agent.process_request(message)
 ```
 
 #### Legacy Compatibility
 ```python
-# ✅ Acceptable: Gradual migration with compatibility layer
 class LegacyAgent:
     def process(self, query: str) -> dict[str, Any]:
-        """Legacy method returning dict."""
-        # Keep existing dict-based implementation
         return {"response": "text", "confidence": 0.8}
 
     async def process_request(self, query: str) -> AgentResponse:
-        """New structured interface."""
         legacy_result = self.process(query)
         return AgentResponse.from_dict(legacy_result)
 ```
@@ -659,58 +601,31 @@ class LegacyAgent:
 
 ### Code Smells
 ```python
-# ❌ Avoid: God classes (too many responsibilities)
+# ❌ Avoid: God classes, magic numbers, deep nesting
 class EverythingProcessor:
     def process_documents(self): ...
-    def send_emails(self): ...
-    def backup_database(self): ...
-    def generate_reports(self): ...
+    def send_emails(self): ...  # Too many responsibilities
 
-# ❌ Avoid: Magic numbers
-timeout = 86400  # What is this number?
+timeout = 86400  # What is this?
+SECONDS_PER_DAY = 86400; timeout = SECONDS_PER_DAY  # ✅ Named constants
 
-# ✅ Use named constants
-SECONDS_PER_DAY = 86400
-timeout = SECONDS_PER_DAY
-
-# ❌ Avoid: Deeply nested conditions
-if condition1:
-    if condition2:
-        if condition3:
-            if condition4:
-                # Too deep!
-
-# ✅ Use early returns
-if not condition1:
-    return early_result
-if not condition2:
-    return other_result
-# Main logic here
+# ❌ Deep nesting vs ✅ Early returns
+if condition1: if condition2: if condition3: ...  # Too deep
+if not condition1: return early_result  # ✅ Early returns
+if not condition2: return other_result
 ```
 
 ### Common Mistakes
 ```python
-# ❌ Avoid: Mutable default arguments
+# ❌ Mutable defaults, bare except
 def process_items(items: list[str] = []):  # Bug!
-    ...
+def process_items(items: list[str] | None = None):  # ✅ Use None
+    if items is None: items = []
 
-# ✅ Use None and create new instances
-def process_items(items: list[str] | None = None):
-    if items is None:
-        items = []
+try: risky_operation()
+except: pass  # ❌ Too broad
 
-# ❌ Avoid: Bare except clauses
-try:
-    risky_operation()
-except:  # Too broad!
-    pass
-
-# ✅ Catch specific exceptions
-try:
-    risky_operation()
-except SpecificError as e:
-    logger.error(f"Expected error: {e}")
-except Exception as e:
-    logger.error(f"Unexpected error: {e}")
-    raise
+try: risky_operation()  # ✅ Specific exceptions
+except SpecificError as e: logger.error(f"Expected: {e}")
+except Exception as e: logger.error(f"Unexpected: {e}"); raise
 ```
