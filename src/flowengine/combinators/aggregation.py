@@ -40,3 +40,33 @@ def batch_stream(size: int) -> Flow[Input, list[Input]]:
             yield batch
 
     return Flow(_flow, name=f"batch({size})")
+
+
+def chunk_stream(size: int) -> Flow[Input, list[Input]]:
+    """Create a flow that groups items into fixed-size chunks.
+
+    Similar to batch_stream but emphasizes the chunking concept.
+
+    Args:
+        size: Number of items per chunk
+
+    Returns:
+        A flow that yields lists of items
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[list[Input], None]:
+        """Group items into fixed-size chunks."""
+        chunk: list[Input] = []
+        async for item in stream:
+            chunk.append(item)
+            if len(chunk) >= size:
+                yield chunk
+                chunk = []
+
+        # Yield remaining items if any
+        if chunk:
+            yield chunk
+
+    return Flow(_flow, name=f"chunk({size})")
