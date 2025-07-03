@@ -1,5 +1,7 @@
 """Tests for source flow combinators."""
 
+from typing import AsyncGenerator
+
 import pytest
 
 from flowengine.combinators.sources import (
@@ -10,6 +12,13 @@ from flowengine.combinators.sources import (
 )
 
 
+# Helper function to create proper empty None stream
+async def empty_none_stream() -> AsyncGenerator[None, None]:
+    """Create an empty stream of None values."""
+    return
+    yield  # pragma: no cover
+
+
 @pytest.mark.asyncio
 async def test_range_flow_basic():
     """Test basic range generation."""
@@ -17,7 +26,7 @@ async def test_range_flow_basic():
     assert "range(0, 5, 1)" in flow.name
 
     # Range flows don't need input
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
     values = [item async for item in result_stream]
     assert values == [0, 1, 2, 3, 4]
 
@@ -28,7 +37,7 @@ async def test_range_flow_with_step():
     flow = range_flow(0, 10, 2)
     assert "range(0, 10, 2)" in flow.name
 
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
     values = [item async for item in result_stream]
     assert values == [0, 2, 4, 6, 8]
 
@@ -37,7 +46,7 @@ async def test_range_flow_with_step():
 async def test_range_flow_negative_step():
     """Test range with negative step."""
     flow = range_flow(5, 0, -1)
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
     values = [item async for item in result_stream]
     assert values == [5, 4, 3, 2, 1]
 
@@ -46,7 +55,7 @@ async def test_range_flow_negative_step():
 async def test_range_flow_empty():
     """Test range that produces no values."""
     flow = range_flow(5, 5)
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
     values = [item async for item in result_stream]
     assert values == []
 
@@ -57,7 +66,7 @@ async def test_repeat_flow_finite():
     flow = repeat_flow("hello", 3)
     assert "repeat(hello, 3)" in flow.name
 
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
     values = [item async for item in result_stream]
     assert values == ["hello", "hello", "hello"]
 
@@ -66,7 +75,7 @@ async def test_repeat_flow_finite():
 async def test_repeat_flow_zero_times():
     """Test repeating zero times."""
     flow = repeat_flow("test", 0)
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
     values = [item async for item in result_stream]
     assert values == []
 
@@ -77,7 +86,7 @@ async def test_repeat_flow_infinite():
     flow = repeat_flow(42, None)
     assert "repeat(42, ∞)" in flow.name
 
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
 
     # Take only first 5 items to avoid infinite loop
     values: list[int] = []
@@ -97,7 +106,7 @@ async def test_repeat_flow_complex_object():
     obj = {"key": "value", "number": 123}
     flow = repeat_flow(obj, 2)
 
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
     values = [item async for item in result_stream]
     assert values == [obj, obj]
     # Verify they're the same object
@@ -110,7 +119,7 @@ async def test_empty_flow_basic():
     flow = empty_flow()
     assert flow.name == "empty"
 
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
     values = [item async for item in result_stream]
     assert values == []
 
@@ -119,7 +128,7 @@ async def test_empty_flow_basic():
 async def test_empty_flow_is_valid_generator():
     """Test empty flow is a valid async generator."""
     flow = empty_flow()
-    result_stream = flow(None)  # type: ignore
+    result_stream = flow(empty_none_stream())
 
     # Should be able to iterate without errors
     count = 0
@@ -162,20 +171,20 @@ async def test_start_with_stream_multiple_items():
 @pytest.mark.asyncio
 async def test_start_with_stream_no_items():
     """Test start_with with no items (identity)."""
-    # When called with no args, we need to provide type context somehow
-    # Since we can't use generics syntax on function calls in Python,
-    # we'll just accept the type checker warning here
-    flow = start_with_stream()  # type: ignore[var-annotated]
+    # Create a properly typed flow by providing an explicit empty tuple with type annotation
+    from typing import cast
+
+    flow = start_with_stream(*cast(tuple[str, ...], ()))
     assert "start_with(0 items)" in flow.name
 
     async def input_stream():
         yield "A"
         yield "B"
 
-    result_stream = flow(input_stream())  # type: ignore[arg-type]
+    result_stream = flow(input_stream())
     values: list[str] = []
-    async for item in result_stream:  # type: ignore[misc]
-        values.append(item)  # type: ignore[arg-type]
+    async for item in result_stream:
+        values.append(item)
     assert values == ["A", "B"]
 
 

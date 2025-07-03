@@ -8,6 +8,32 @@ from flowengine.combinators.basic import compose, run_fold
 from flowengine.flow import Flow
 
 
+# Helper functions to replace lambdas and eliminate type: ignore comments
+def increment(x: int) -> int:
+    """Add 1 to the input."""
+    return x + 1
+
+
+def double(x: int) -> int:
+    """Multiply input by 2."""
+    return x * 2
+
+
+def identity(x: int) -> int:
+    """Return input unchanged."""
+    return x
+
+
+def int_to_str(x: int) -> str:
+    """Convert integer to string."""
+    return str(x)
+
+
+def str_length(s: str) -> int:
+    """Get length of string."""
+    return len(s)
+
+
 class TestRunFold:
     """Test the run_fold function."""
 
@@ -23,7 +49,7 @@ class TestRunFold:
         result_stream = await run_fold(source(), [])
         results: list[int] = []
         async for item in result_stream:
-            results.append(item)  # type: ignore[misc]
+            results.append(item)
 
         assert results == [1, 2, 3]
 
@@ -36,11 +62,11 @@ class TestRunFold:
             yield 2
             yield 3
 
-        increment_flow = Flow.from_sync_fn(lambda x: x + 1)  # type: ignore[misc]
+        increment_flow = Flow.from_sync_fn(increment)
         result_stream = await run_fold(source(), [increment_flow])
         results: list[int] = []
         async for item in result_stream:
-            results.append(item)  # type: ignore[misc]
+            results.append(item)
 
         assert results == [2, 3, 4]
 
@@ -53,12 +79,12 @@ class TestRunFold:
             yield 2
             yield 3
 
-        increment_flow = Flow.from_sync_fn(lambda x: x + 1)  # type: ignore[misc]
-        double_flow = Flow.from_sync_fn(lambda x: x * 2)  # type: ignore[misc]
+        increment_flow = Flow.from_sync_fn(increment)
+        double_flow = Flow.from_sync_fn(double)
         result_stream = await run_fold(source(), [increment_flow, double_flow])
         results: list[int] = []
         async for item in result_stream:
-            results.append(item)  # type: ignore[misc]
+            results.append(item)
 
         assert results == [4, 6, 8]  # (1+1)*2, (2+1)*2, (3+1)*2
 
@@ -70,11 +96,11 @@ class TestRunFold:
             return
             yield  # pragma: no cover
 
-        increment_flow = Flow.from_sync_fn(lambda x: x + 1)  # type: ignore[misc]
+        increment_flow = Flow.from_sync_fn(increment)
         result_stream = await run_fold(empty_source(), [increment_flow])
         results: list[int] = []
         async for item in result_stream:
-            results.append(item)  # type: ignore[misc]
+            results.append(item)
 
         assert results == []
 
@@ -87,11 +113,11 @@ class TestRunFold:
             yield 2
             yield 3
 
-        identity_flow = Flow.from_sync_fn(lambda x: x)  # type: ignore[misc]
+        identity_flow = Flow.from_sync_fn(identity)
         result_stream = await run_fold(source(), [identity_flow, identity_flow])
         results: list[int] = []
         async for item in result_stream:
-            results.append(item)  # type: ignore[misc]
+            results.append(item)
 
         assert results == [1, 2, 3]
 
@@ -109,29 +135,29 @@ class TestCompose:
             yield 3
 
         # First flow: add 1
-        first_flow = Flow.from_sync_fn(lambda x: x + 1)  # type: ignore[misc]
+        first_flow = Flow.from_sync_fn(increment)
         # Second flow: multiply by 2
-        second_flow = Flow.from_sync_fn(lambda x: x * 2)  # type: ignore[misc]
+        second_flow = Flow.from_sync_fn(double)
 
         # Compose: (x + 1) * 2
-        composed_flow = compose(first_flow, second_flow)  # type: ignore[misc]
+        composed_flow = compose(first_flow, second_flow)
         results: list[int] = []
-        async for item in composed_flow(source()):  # type: ignore[misc]
-            results.append(item)  # type: ignore[misc]
+        async for item in composed_flow(source()):
+            results.append(item)
 
         assert results == [4, 6, 8]  # (1+1)*2, (2+1)*2, (3+1)*2
 
     @pytest.mark.asyncio
     async def test_compose_name_generation(self) -> None:
         """Test that compose generates appropriate names."""
-        first_flow = Flow.from_sync_fn(lambda x: x + 1)  # type: ignore[misc]
-        second_flow = Flow.from_sync_fn(lambda x: x * 2)  # type: ignore[misc]
+        first_flow = Flow.from_sync_fn(increment)
+        second_flow = Flow.from_sync_fn(double)
 
         # Set custom names
         first_flow.name = "add_one"
         second_flow.name = "double"
 
-        composed_flow = compose(first_flow, second_flow)  # type: ignore[misc]
+        composed_flow = compose(first_flow, second_flow)
         assert composed_flow.name == "add_one ∘ double"
 
     @pytest.mark.asyncio
@@ -142,13 +168,13 @@ class TestCompose:
             return
             yield  # pragma: no cover
 
-        first_flow = Flow.from_sync_fn(lambda x: x + 1)  # type: ignore[misc]
-        second_flow = Flow.from_sync_fn(lambda x: x * 2)  # type: ignore[misc]
+        first_flow = Flow.from_sync_fn(increment)
+        second_flow = Flow.from_sync_fn(double)
 
-        composed_flow = compose(first_flow, second_flow)  # type: ignore[misc]
+        composed_flow = compose(first_flow, second_flow)
         results: list[int] = []
-        async for item in composed_flow(empty_source()):  # type: ignore[misc]
-            results.append(item)  # type: ignore[misc]
+        async for item in composed_flow(empty_source()):
+            results.append(item)
 
         assert results == []
 
@@ -161,12 +187,12 @@ class TestCompose:
             yield 2
             yield 3
 
-        identity_flow = Flow.from_sync_fn(lambda x: x)  # type: ignore[misc]
+        identity_flow = Flow.from_sync_fn(identity)
 
-        composed_flow = compose(identity_flow, identity_flow)  # type: ignore[misc]
+        composed_flow = compose(identity_flow, identity_flow)
         results: list[int] = []
-        async for item in composed_flow(source()):  # type: ignore[misc]
-            results.append(item)  # type: ignore[misc]
+        async for item in composed_flow(source()):
+            results.append(item)
 
         assert results == [1, 2, 3]
 
@@ -180,13 +206,13 @@ class TestCompose:
             yield 3
 
         # First flow: int to string
-        int_to_str = Flow.from_sync_fn(str)  # type: ignore[misc]
+        int_to_str_flow = Flow.from_sync_fn(int_to_str)
         # Second flow: string to length
-        str_to_len = Flow.from_sync_fn(lambda s: len(s))  # type: ignore[misc]
+        str_to_len_flow = Flow.from_sync_fn(str_length)
 
-        composed_flow = compose(int_to_str, str_to_len)  # type: ignore[misc]
+        composed_flow = compose(int_to_str_flow, str_to_len_flow)
         results: list[int] = []
-        async for item in composed_flow(source()):  # type: ignore[misc]
-            results.append(item)  # type: ignore[misc]
+        async for item in composed_flow(source()):
+            results.append(item)
 
         assert results == [1, 1, 1]  # len("1"), len("2"), len("3")
