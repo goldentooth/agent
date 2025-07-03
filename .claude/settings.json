@@ -43,7 +43,8 @@
     "defaultMode": "acceptEdits",
     "deny": [
       "Bash(git reset:*)",
-      "Bash(git commit --no-verify:*)"
+      "Bash(git commit --no-verify:*)",
+      "Bash(SKIP:*)"
     ]
   }
 }
