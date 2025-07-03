@@ -10,6 +10,7 @@ from collections.abc import Callable
 from typing import AsyncGenerator, TypeVar
 
 from flowengine.combinators.utils import get_function_name
+from flowengine.exceptions import FlowValidationError
 from flowengine.flow import Flow
 
 Input = TypeVar("Input")
@@ -207,3 +208,34 @@ def skip_stream(n: int) -> Flow[Input, Input]:
             yield item
 
     return Flow(_flow, name=f"skip({n})")
+
+
+def guard_stream(
+    predicate: Callable[[Input], bool], message: str = "Guard condition failed"
+) -> Flow[Input, Input]:
+    """Create a flow that validates items or raises an exception.
+
+    Args:
+        predicate: Function that returns True for valid items
+        message: Error message if validation fails
+
+    Returns:
+        A flow that yields items if they pass validation
+
+    Raises:
+        FlowValidationError: If any item fails the guard condition
+
+    Example:
+        is_positive = lambda x: x > 0
+        positive_guard = guard_stream(is_positive, "Must be positive")
+        # Use: validated_stream = positive_guard(number_stream)
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Validate each item or raise an exception."""
+        async for item in stream:
+            if not predicate(item):
+                raise FlowValidationError(f"{message}: {item}")
+            yield item
+
+    return Flow(_flow, name=f"guard({get_function_name(predicate)})")

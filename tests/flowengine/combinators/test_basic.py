@@ -8,12 +8,14 @@ from flowengine.combinators.basic import (
     compose,
     filter_stream,
     flat_map_stream,
+    guard_stream,
     identity_stream,
     map_stream,
     run_fold,
     skip_stream,
     take_stream,
 )
+from flowengine.exceptions import FlowValidationError
 from flowengine.flow import Flow
 
 
@@ -56,6 +58,16 @@ def always_true(x: int) -> bool:
 def length_and_upper(s: str) -> str:
     """Transform string to UPPER:length format."""
     return f"{s.upper()}:{len(s)}"
+
+
+def is_positive(x: int) -> bool:
+    """Check if number is positive."""
+    return x > 0
+
+
+def is_non_zero(x: int) -> bool:
+    """Check if number is non-zero."""
+    return x != 0
 
 
 class TestRunFold:
@@ -723,3 +735,86 @@ class TestSkipStream:
 
         skip_zero: Flow[int, int] = skip_stream(0)
         assert skip_zero.name == "skip(0)"
+
+
+class TestGuardStream:
+    """Test the guard_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_guard_stream_all_pass(self) -> None:
+        """Test guard_stream when all items pass validation."""
+
+        async def source():
+            for i in [1, 2, 3, 4, 5]:
+                yield i
+
+        positive_guard: Flow[int, int] = guard_stream(is_positive, "Must be positive")
+        result_stream = positive_guard(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [1, 2, 3, 4, 5]
+
+    @pytest.mark.asyncio
+    async def test_guard_stream_validation_failure(self) -> None:
+        """Test guard_stream when validation fails."""
+
+        async def source():
+            for i in [1, 2, -1, 4]:
+                yield i
+
+        positive_guard: Flow[int, int] = guard_stream(is_positive, "Must be positive")
+        result_stream = positive_guard(source())
+        results: list[int] = []
+
+        with pytest.raises(FlowValidationError, match="Must be positive: -1"):
+            async for item in result_stream:
+                results.append(item)
+
+        # Should have processed items before failure
+        assert results == [1, 2]
+
+    @pytest.mark.asyncio
+    async def test_guard_stream_first_item_fails(self) -> None:
+        """Test guard_stream when first item fails validation."""
+
+        async def source():
+            for i in [-5, 1, 2, 3]:
+                yield i
+
+        positive_guard: Flow[int, int] = guard_stream(is_positive, "Must be positive")
+        result_stream = positive_guard(source())
+        results: list[int] = []
+
+        with pytest.raises(FlowValidationError, match="Must be positive: -5"):
+            async for item in result_stream:
+                results.append(item)
+
+        # Should have processed no items
+        assert results == []
+
+    @pytest.mark.asyncio
+    async def test_guard_stream_empty_input(self) -> None:
+        """Test guard_stream with empty input stream."""
+
+        async def empty_source():
+            return
+            yield  # pragma: no cover
+
+        positive_guard: Flow[int, int] = guard_stream(is_positive, "Must be positive")
+        result_stream = positive_guard(empty_source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    def test_guard_stream_name_generation(self) -> None:
+        """Test that guard_stream generates appropriate names."""
+
+        positive_guard: Flow[int, int] = guard_stream(is_positive, "Must be positive")
+        assert "guard(is_positive)" in positive_guard.name
+
+        non_zero_guard: Flow[int, int] = guard_stream(is_non_zero, "Must be non-zero")
+        assert "guard(is_non_zero)" in non_zero_guard.name
