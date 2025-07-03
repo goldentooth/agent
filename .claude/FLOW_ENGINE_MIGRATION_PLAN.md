@@ -48,7 +48,7 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Tests: `tests/flowengine/test_protocols.py`
 - Dependencies: None
 
-**Epic 4: Migrate core Flow class**
+**~Epic 4: Migrate core Flow class~ ✅ DONE!**
 - File: `src/flowengine/flow.py`
 - Source: `old/goldentooth_agent/flow_engine/core/flow.py` (342 lines)
 - Tests: `tests/flowengine/test_flow.py`
