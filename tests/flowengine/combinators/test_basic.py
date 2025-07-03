@@ -11,6 +11,7 @@ from flowengine.combinators.basic import (
     identity_stream,
     map_stream,
     run_fold,
+    skip_stream,
     take_stream,
 )
 from flowengine.flow import Flow
@@ -645,3 +646,80 @@ class TestTakeStream:
 
         take_zero: Flow[int, int] = take_stream(0)
         assert take_zero.name == "take(0)"
+
+
+class TestSkipStream:
+    """Test the skip_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_skip_stream_basic(self) -> None:
+        """Test skip_stream with basic functionality."""
+
+        async def source():
+            for i in range(10):
+                yield i
+
+        skip_three: Flow[int, int] = skip_stream(3)
+        result_stream = skip_three(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [3, 4, 5, 6, 7, 8, 9]
+
+    @pytest.mark.asyncio
+    async def test_skip_stream_more_than_available(self) -> None:
+        """Test skip_stream when n is greater than available items."""
+
+        async def source():
+            for i in [1, 2, 3]:
+                yield i
+
+        skip_ten: Flow[int, int] = skip_stream(10)
+        result_stream = skip_ten(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    @pytest.mark.asyncio
+    async def test_skip_stream_zero_items(self) -> None:
+        """Test skip_stream with n=0 (skip nothing)."""
+
+        async def source():
+            for i in [1, 2, 3]:
+                yield i
+
+        skip_zero: Flow[int, int] = skip_stream(0)
+        result_stream = skip_zero(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [1, 2, 3]
+
+    @pytest.mark.asyncio
+    async def test_skip_stream_empty_input(self) -> None:
+        """Test skip_stream with empty input stream."""
+
+        async def empty_source():
+            return
+            yield  # pragma: no cover
+
+        skip_five: Flow[int, int] = skip_stream(5)
+        result_stream = skip_five(empty_source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    def test_skip_stream_name_generation(self) -> None:
+        """Test that skip_stream generates appropriate names."""
+
+        skip_five: Flow[int, int] = skip_stream(5)
+        assert skip_five.name == "skip(5)"
+
+        skip_zero: Flow[int, int] = skip_stream(0)
+        assert skip_zero.name == "skip(0)"

@@ -181,3 +181,29 @@ def take_stream(n: int) -> Flow[Input, Input]:
             count += 1
 
     return Flow(_flow, name=f"take({n})")
+
+
+def skip_stream(n: int) -> Flow[Input, Input]:
+    """Create a flow that skips the first n items from the stream.
+
+    Args:
+        n: Number of items to skip from the stream
+
+    Returns:
+        A flow that yields items after skipping the first n items
+
+    Example:
+        skip_first_two = skip_stream(2)
+        # Use: remaining_stream = skip_first_two(number_stream)
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Skip the first n items from the stream."""
+        count = 0
+        async for item in stream:
+            if count < n:
+                count += 1
+                continue
+            yield item
+
+    return Flow(_flow, name=f"skip({n})")
