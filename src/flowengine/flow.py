@@ -26,3 +26,9 @@ class Flow(Generic[Input, Output]):
     def __call__(self, stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
         """Call the flow with the given stream and return an async iterator."""
         return self.fn(stream)
+
+    def __repr__(self) -> str:
+        """Rich representation for debugging and development."""
+        return (
+            f"<Flow name='{self.name}' fn={self.fn.__name__} metadata={self.metadata}>"
+        )

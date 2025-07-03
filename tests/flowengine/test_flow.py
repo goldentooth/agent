@@ -183,3 +183,72 @@ class TestFlowCall:
         items = [item async for item in result]
 
         assert items == ["item_10", "item_20"]
+
+
+class TestFlowRepr:
+    """Tests for Flow.__repr__ method."""
+
+    def test_repr_with_anonymous_flow(self) -> None:
+        """Test __repr__ with default anonymous flow name."""
+
+        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield str(item)
+
+        flow = Flow(test_fn)
+        repr_str = repr(flow)
+
+        assert "Flow" in repr_str
+        assert "name='<anonymous>'" in repr_str
+        assert "fn=test_fn" in repr_str
+        assert "metadata={}" in repr_str
+
+    def test_repr_with_named_flow(self) -> None:
+        """Test __repr__ with custom flow name."""
+
+        async def transform_data(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield f"data_{item}"
+
+        flow = Flow(transform_data, name="my_transformer")
+        repr_str = repr(flow)
+
+        assert "Flow" in repr_str
+        assert "name='my_transformer'" in repr_str
+        assert "fn=transform_data" in repr_str
+        assert "metadata={}" in repr_str
+
+    def test_repr_with_metadata(self) -> None:
+        """Test __repr__ with metadata included."""
+
+        async def process_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield str(item * 2)
+
+        metadata = {"version": 1, "type": "processor"}
+        flow = Flow(process_fn, name="processor", metadata=metadata)
+        repr_str = repr(flow)
+
+        assert "Flow" in repr_str
+        assert "name='processor'" in repr_str
+        assert "fn=process_fn" in repr_str
+        assert "metadata={'version': 1, 'type': 'processor'}" in repr_str
+
+    def test_repr_format_structure(self) -> None:
+        """Test that __repr__ follows the expected format structure."""
+
+        async def example_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield str(item)
+
+        flow = Flow(example_fn, name="test", metadata={"key": "value"})
+        repr_str = repr(flow)
+
+        # Should start with <Flow and end with >
+        assert repr_str.startswith("<Flow")
+        assert repr_str.endswith(">")
+
+        # Should contain all required components
+        assert "name=" in repr_str
+        assert "fn=" in repr_str
+        assert "metadata=" in repr_str
