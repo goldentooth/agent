@@ -2,7 +2,12 @@
 
 import pytest
 
-from flowengine.combinators.sources import range_flow, repeat_flow
+from flowengine.combinators.sources import (
+    empty_flow,
+    range_flow,
+    repeat_flow,
+    start_with_stream,
+)
 
 
 @pytest.mark.asyncio
@@ -97,3 +102,100 @@ async def test_repeat_flow_complex_object():
     assert values == [obj, obj]
     # Verify they're the same object
     assert values[0] is values[1]
+
+
+@pytest.mark.asyncio
+async def test_empty_flow_basic():
+    """Test empty flow produces no items."""
+    flow = empty_flow()
+    assert flow.name == "empty"
+
+    result_stream = flow(None)  # type: ignore
+    values = [item async for item in result_stream]
+    assert values == []
+
+
+@pytest.mark.asyncio
+async def test_empty_flow_is_valid_generator():
+    """Test empty flow is a valid async generator."""
+    flow = empty_flow()
+    result_stream = flow(None)  # type: ignore
+
+    # Should be able to iterate without errors
+    count = 0
+    async for _ in result_stream:
+        count += 1
+    assert count == 0
+
+
+@pytest.mark.asyncio
+async def test_start_with_stream_single_item():
+    """Test prepending a single item."""
+    flow = start_with_stream("START")
+    assert "start_with(1 items)" in flow.name
+
+    async def input_stream():
+        yield "A"
+        yield "B"
+        yield "C"
+
+    result_stream = flow(input_stream())
+    values = [item async for item in result_stream]
+    assert values == ["START", "A", "B", "C"]
+
+
+@pytest.mark.asyncio
+async def test_start_with_stream_multiple_items():
+    """Test prepending multiple items."""
+    flow = start_with_stream(1, 2, 3)
+    assert "start_with(3 items)" in flow.name
+
+    async def input_stream():
+        yield 4
+        yield 5
+
+    result_stream = flow(input_stream())
+    values = [item async for item in result_stream]
+    assert values == [1, 2, 3, 4, 5]
+
+
+@pytest.mark.asyncio
+async def test_start_with_stream_no_items():
+    """Test start_with with no items (identity)."""
+    flow = start_with_stream()
+    assert "start_with(0 items)" in flow.name
+
+    async def input_stream():
+        yield "A"
+        yield "B"
+
+    result_stream = flow(input_stream())
+    values = [item async for item in result_stream]
+    assert values == ["A", "B"]
+
+
+@pytest.mark.asyncio
+async def test_start_with_stream_empty_stream():
+    """Test start_with on empty input stream."""
+    flow = start_with_stream("ONLY")
+
+    async def empty_stream():
+        if False:
+            yield "never"
+
+    result_stream = flow(empty_stream())
+    values = [item async for item in result_stream]
+    assert values == ["ONLY"]
+
+
+@pytest.mark.asyncio
+async def test_start_with_stream_mixed_types():
+    """Test start_with with mixed types."""
+    flow = start_with_stream("header", 0, None, {"meta": "data"})
+
+    async def input_stream():
+        yield "body"
+
+    result_stream = flow(input_stream())
+    values = [item async for item in result_stream]
+    assert values == ["header", 0, None, {"meta": "data"}, "body"]
