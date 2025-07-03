@@ -2,7 +2,7 @@
 
 import pytest
 
-from flowengine.combinators.sources import range_flow
+from flowengine.combinators.sources import range_flow, repeat_flow
 
 
 @pytest.mark.asyncio
@@ -44,3 +44,56 @@ async def test_range_flow_empty():
     result_stream = flow(None)  # type: ignore
     values = [item async for item in result_stream]
     assert values == []
+
+
+@pytest.mark.asyncio
+async def test_repeat_flow_finite():
+    """Test repeating a value finite times."""
+    flow = repeat_flow("hello", 3)
+    assert "repeat(hello, 3)" in flow.name
+
+    result_stream = flow(None)  # type: ignore
+    values = [item async for item in result_stream]
+    assert values == ["hello", "hello", "hello"]
+
+
+@pytest.mark.asyncio
+async def test_repeat_flow_zero_times():
+    """Test repeating zero times."""
+    flow = repeat_flow("test", 0)
+    result_stream = flow(None)  # type: ignore
+    values = [item async for item in result_stream]
+    assert values == []
+
+
+@pytest.mark.asyncio
+async def test_repeat_flow_infinite():
+    """Test infinite repeat (limited by take)."""
+    flow = repeat_flow(42, None)
+    assert "repeat(42, ∞)" in flow.name
+
+    result_stream = flow(None)  # type: ignore
+
+    # Take only first 5 items to avoid infinite loop
+    values = []
+    count = 0
+    async for item in result_stream:
+        values.append(item)
+        count += 1
+        if count >= 5:
+            break
+
+    assert values == [42, 42, 42, 42, 42]
+
+
+@pytest.mark.asyncio
+async def test_repeat_flow_complex_object():
+    """Test repeating complex objects."""
+    obj = {"key": "value", "number": 123}
+    flow = repeat_flow(obj, 2)
+
+    result_stream = flow(None)  # type: ignore
+    values = [item async for item in result_stream]
+    assert values == [obj, obj]
+    # Verify they're the same object
+    assert values[0] is values[1]
