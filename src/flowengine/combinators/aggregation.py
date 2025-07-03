@@ -7,7 +7,7 @@ and other aggregation patterns for stream processing.
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable, Hashable
 from typing import TypeVar
 
 from flowengine.combinators.utils import get_function_name
@@ -15,6 +15,7 @@ from flowengine.flow import Flow
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
+K = TypeVar("K", bound=Hashable)
 
 
 def batch_stream(size: int) -> Flow[Input, list[Input]]:
@@ -133,3 +134,34 @@ def scan_stream(
             yield accumulator
 
     return Flow(_flow, name=f"scan({get_function_name(fn)}, {initial})")
+
+
+def group_by_stream(key_fn: Callable[[Input], K]) -> Flow[Input, tuple[K, list[Input]]]:
+    """Create a flow that groups items by a key function.
+
+    Collects all items with the same key and emits them as groups.
+
+    Args:
+        key_fn: Function that extracts grouping key from each item
+
+    Returns:
+        A flow that yields (key, items) tuples
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[tuple[K, list[Input]], None]:
+        """Group items by key function."""
+        groups: dict[K, list[Input]] = {}
+
+        async for item in stream:
+            key = key_fn(item)
+            if key not in groups:
+                groups[key] = []
+            groups[key].append(item)
+
+        # Emit all groups
+        for key, items in groups.items():
+            yield (key, items)
+
+    return Flow(_flow, name=f"group_by({get_function_name(key_fn)})")

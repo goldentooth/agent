@@ -7,6 +7,7 @@ import pytest
 from flowengine.combinators.aggregation import (
     batch_stream,
     chunk_stream,
+    group_by_stream,
     scan_stream,
     window_stream,
 )
@@ -268,3 +269,67 @@ async def test_scan_stream_empty():
     result: list[int] = await flow.to_list()(empty_stream())
     # Should only contain initial value
     assert result == [42]
+
+
+@pytest.mark.asyncio
+async def test_group_by_stream():
+    """Test group_by_stream function with modulo grouping."""
+    # Create a flow that groups numbers by their remainder when divided by 3
+    flow: Flow[int, tuple[int, list[int]]] = group_by_stream(lambda x: x % 3)
+
+    # Create test input stream
+    async def test_stream():
+        for i in range(9):  # 0, 1, 2, 3, 4, 5, 6, 7, 8
+            yield i
+
+    # Execute the flow
+    result: list[tuple[int, list[int]]] = await flow.to_list()(test_stream())
+
+    # Convert to dict for easier testing (order may vary)
+    result_dict = dict(result)
+    assert result_dict == {0: [0, 3, 6], 1: [1, 4, 7], 2: [2, 5, 8]}
+
+
+@pytest.mark.asyncio
+async def test_group_by_stream_strings():
+    """Test group_by_stream function with string length grouping."""
+    # Create a flow that groups strings by their length
+    flow: Flow[str, tuple[int, list[str]]] = group_by_stream(len)
+
+    # Create test input stream
+    async def test_stream():
+        for word in ["a", "bb", "ccc", "dd", "e", "fff"]:
+            yield word
+
+    # Execute the flow
+    result: list[tuple[int, list[str]]] = await flow.to_list()(test_stream())
+
+    # Convert to dict for easier testing
+    result_dict = dict(result)
+    assert result_dict == {1: ["a", "e"], 2: ["bb", "dd"], 3: ["ccc", "fff"]}
+
+
+@pytest.mark.asyncio
+async def test_group_by_stream_empty():
+    """Test group_by_stream with empty stream."""
+    flow: Flow[int, tuple[int, list[int]]] = group_by_stream(lambda x: x % 2)
+
+    async def empty_stream():
+        return
+        yield  # pragma: no cover
+
+    result: list[tuple[int, list[int]]] = await flow.to_list()(empty_stream())
+    assert result == []
+
+
+@pytest.mark.asyncio
+async def test_group_by_stream_single_group():
+    """Test group_by_stream where all items belong to same group."""
+    flow: Flow[int, tuple[str, list[int]]] = group_by_stream(lambda x: "same")
+
+    async def test_stream():
+        for i in range(3):
+            yield i
+
+    result: list[tuple[str, list[int]]] = await flow.to_list()(test_stream())
+    assert result == [("same", [0, 1, 2])]
