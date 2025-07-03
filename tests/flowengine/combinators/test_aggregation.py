@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from flowengine.combinators.aggregation import batch_stream, chunk_stream, window_stream
+from flowengine.combinators.aggregation import (
+    batch_stream,
+    chunk_stream,
+    scan_stream,
+    window_stream,
+)
 from flowengine.flow import Flow
 
 
@@ -195,3 +200,71 @@ async def test_window_stream_exact_size():
     result: list[list[int]] = await flow.to_list()(test_stream())
     # Should produce one window
     assert result == [[0, 1, 2]]
+
+
+@pytest.mark.asyncio
+async def test_scan_stream():
+    """Test scan_stream function with sum accumulation."""
+    # Create a flow that performs running sum
+    flow: Flow[int, int] = scan_stream(lambda acc, x: acc + x, 0)
+
+    # Create test input stream
+    async def test_stream():
+        for i in range(1, 5):  # 1, 2, 3, 4
+            yield i
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should produce running sums: [0, 1, 3, 6, 10]
+    assert result == [0, 1, 3, 6, 10]
+
+
+@pytest.mark.asyncio
+async def test_scan_stream_product():
+    """Test scan_stream function with product accumulation."""
+    # Create a flow that performs running product
+    flow: Flow[int, int] = scan_stream(lambda acc, x: acc * x, 1)
+
+    # Create test input stream
+    async def test_stream():
+        for i in range(1, 5):  # 1, 2, 3, 4
+            yield i
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should produce running products: [1, 1, 2, 6, 24]
+    assert result == [1, 1, 2, 6, 24]
+
+
+@pytest.mark.asyncio
+async def test_scan_stream_string_concat():
+    """Test scan_stream function with string concatenation."""
+    # Create a flow that performs running string concatenation
+    flow: Flow[str, str] = scan_stream(lambda acc, x: acc + x, "")
+
+    # Create test input stream
+    async def test_stream():
+        for letter in ["a", "b", "c"]:
+            yield letter
+
+    # Execute the flow
+    result: list[str] = await flow.to_list()(test_stream())
+
+    # Should produce running concatenations: ["", "a", "ab", "abc"]
+    assert result == ["", "a", "ab", "abc"]
+
+
+@pytest.mark.asyncio
+async def test_scan_stream_empty():
+    """Test scan_stream with empty stream."""
+    flow: Flow[int, int] = scan_stream(lambda acc, x: acc + x, 42)
+
+    async def empty_stream():
+        return
+        yield  # pragma: no cover
+
+    result: list[int] = await flow.to_list()(empty_stream())
+    # Should only contain initial value
+    assert result == [42]

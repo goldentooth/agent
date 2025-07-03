@@ -7,12 +7,14 @@ and other aggregation patterns for stream processing.
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from typing import TypeVar
 
+from flowengine.combinators.utils import get_function_name
 from flowengine.flow import Flow
 
 Input = TypeVar("Input")
+Output = TypeVar("Output")
 
 
 def batch_stream(size: int) -> Flow[Input, list[Input]]:
@@ -102,3 +104,32 @@ def window_stream(size: int, step: int = 1) -> Flow[Input, list[Input]]:
                 yield list(window)
 
     return Flow(_flow, name=f"window({size}, step={step})")
+
+
+def scan_stream(
+    fn: Callable[[Output, Input], Output], initial: Output
+) -> Flow[Input, Output]:
+    """Create a flow that performs a running accumulation with intermediate results.
+
+    Like a fold/reduce but emits all intermediate accumulator values.
+
+    Args:
+        fn: Accumulator function
+        initial: Initial accumulator value
+
+    Returns:
+        A flow that yields intermediate accumulation results
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[Output, None]:
+        """Perform running accumulation with intermediate results."""
+        accumulator = initial
+        yield accumulator  # Emit initial value
+
+        async for item in stream:
+            accumulator = fn(accumulator, item)
+            yield accumulator
+
+    return Flow(_flow, name=f"scan({get_function_name(fn)}, {initial})")
