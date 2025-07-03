@@ -4,9 +4,10 @@
 
 This document outlines the detailed migration plan for extracting the Flow Engine from `old/goldentooth_agent/flow_engine` into the new codebase structure. The Flow Engine consists of **5,954 lines of source code** across **26 files** with **9,010 lines of comprehensive tests** across **18 test files**.
 
-**The migration of any single unit (a SINGLE function, SINGLE class method, SINGLE protocol, etc) and its accompanying tests MUST be in its own, discrete commit!**
-
-Please mark each epic ✅ DONE! as you complete it.
+## General Notes
+- **The migration of any single unit (a SINGLE function, SINGLE class method, SINGLE protocol, etc) and its accompanying tests MUST be in its own, discrete commit!**
+- Please mark each epic ✅ DONE! as you complete it.
+- If you encounter a reference to AsyncIterator, change it to AsyncGenerator.
 
 ## Key Statistics
 
