@@ -78,3 +78,14 @@ class Flow(Generic[Input, Output]):
             return [item async for item in self(stream)]
 
         return _collect
+
+    def for_each(
+        self, fn: Callable[[Output], Awaitable[None]]
+    ) -> Callable[[AsyncIterator[Input]], Awaitable[None]]:
+        """Consume the flow and apply a function to each item."""
+
+        async def _consume(stream: AsyncIterator[Input]) -> None:
+            async for item in self(stream):
+                await fn(item)
+
+        return _consume

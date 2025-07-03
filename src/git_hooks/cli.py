@@ -21,7 +21,6 @@ DEFAULT_EXCLUDE_PATTERNS = [
     "build/",
     "dist/",
     ".pytest_cache/",
-    "tests/",
     "docs/",
 ]
 

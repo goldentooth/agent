@@ -84,16 +84,16 @@ def test_flowengine_package_imports():
 **Target**: `src/flowengine/flow.py`
 
 **Flow class methods to migrate**:
-1. `__init__(fn, name, metadata)` - Flow constructor
-2. `__call__(stream)` - Flow execution
-3. `__repr__()` - Debug representation
-4. `__aiter__()` - Prevent direct iteration
+1. `__init__(fn, name, metadata)` - Flow constructor ✅ DONE
+2. `__call__(stream)` - Flow execution ✅ DONE
+3. `__repr__()` - Debug representation ✅ DONE
+4. `__aiter__()` - Prevent direct iteration ✅ DONE
 5. `__rshift__(other)` - Flow composition operator
-6. `map(fn)` - Transform output values
-7. `filter(predicate)` - Filter output values
-8. `flat_map(fn)` - Flatten mapped results
+6. `map(fn)` - Transform output values ✅ DONE
+7. `filter(predicate)` - Filter output values ✅ DONE
+8. `flat_map(fn)` - Flatten mapped results ✅ DONE
 9. `for_each(fn)` - Consume flow with side effects
-10. `to_list()` - Collect to list
+10. `to_list()` - Collect to list ✅ DONE
 11. `collect()` - Alias for to_list
 12. `label(label)` - Add debug labels
 13. `preview(stream, limit)` - REPL-friendly preview
