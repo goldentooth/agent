@@ -48,8 +48,13 @@ class Flow(Generic[Input, Output]):
         """Map a function over the output of the flow."""
 
         async def _mapped(stream: AsyncIterator[Input]) -> AsyncIterator[Newput]:
-            async for item in self(stream):
-                yield fn(item)
+            inner_iter = self(stream).__aiter__()
+            try:
+                async for item in inner_iter:
+                    yield fn(item)
+            finally:
+                if hasattr(inner_iter, "aclose"):
+                    await inner_iter.aclose()  # type: ignore[attr-defined]
 
         return Flow(_mapped, name=f"{self.name}.map({fn.__name__})")
 
@@ -57,9 +62,14 @@ class Flow(Generic[Input, Output]):
         """Filter the output of the flow based on a predicate."""
 
         async def _filtered(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
-            async for item in self(stream):
-                if predicate(item):
-                    yield item
+            inner_iter = self(stream).__aiter__()
+            try:
+                async for item in inner_iter:
+                    if predicate(item):
+                        yield item
+            finally:
+                if hasattr(inner_iter, "aclose"):
+                    await inner_iter.aclose()  # type: ignore[attr-defined]
 
         return Flow(_filtered, name=f"{self.name}.filter({predicate.__name__})")
 
@@ -69,9 +79,14 @@ class Flow(Generic[Input, Output]):
         """Flat map a function over the output of the flow."""
 
         async def _flatmapped(stream: AsyncIterator[Input]) -> AsyncIterator[Newput]:
-            async for item in self(stream):
-                async for sub in fn(item):
-                    yield sub
+            inner_iter = self(stream).__aiter__()
+            try:
+                async for item in inner_iter:
+                    async for sub in fn(item):
+                        yield sub
+            finally:
+                if hasattr(inner_iter, "aclose"):
+                    await inner_iter.aclose()  # type: ignore[attr-defined]
 
         return Flow(_flatmapped, name=f"{self.name}.flat_map({fn.__name__})")
 

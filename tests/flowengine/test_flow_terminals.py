@@ -534,8 +534,12 @@ class TestFlowPreview:
         """Test that preview works with transformed flows."""
 
         async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
-            for i in range(20):
-                yield i
+            try:
+                for i in range(20):
+                    yield i
+            except GeneratorExit:
+                # Properly handle cleanup when generator is closed early
+                pass
 
         def is_even(x: int) -> bool:
             return x % 2 == 0
