@@ -89,3 +89,7 @@ class Flow(Generic[Input, Output]):
                 await fn(item)
 
         return _consume
+
+    def __rshift__(self, other: "Flow[Output, Newput]") -> "Flow[Input, Newput]":
+        """Pipe the output of this flow to another flow."""
+        return Flow(lambda s: other(self(s)), name=f"{self.name} >> {other.name}")

@@ -307,3 +307,148 @@ class TestFlowAiter:
             # syntax checking happens at compile time
             async for item in flow:  # type: ignore[attr-defined]
                 pass
+
+
+class TestFlowRshift:
+    """Tests for Flow.__rshift__ method (pipe operator)."""
+
+    @pytest.mark.asyncio
+    async def test_rshift_pipes_flow_output_to_another_flow(self) -> None:
+        """Test that >> operator pipes output from one flow to another."""
+
+        async def double_fn(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item * 2
+
+        async def add_ten_fn(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item + 10
+
+        flow1 = Flow(double_fn, name="double")
+        flow2 = Flow(add_ten_fn, name="add_ten")
+        piped_flow = flow1 >> flow2
+
+        async def int_stream() -> AsyncIterator[int]:
+            for i in [1, 2, 3]:
+                yield i
+
+        result = piped_flow(int_stream())
+        items = [item async for item in result]
+
+        assert items == [12, 14, 16]  # (1*2)+10, (2*2)+10, (3*2)+10
+
+    @pytest.mark.asyncio
+    async def test_rshift_preserves_original_flows(self) -> None:
+        """Test that >> operator doesn't modify original flows."""
+
+        async def identity_fn(stream: AsyncIterator[str]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield item
+
+        async def upper_fn(stream: AsyncIterator[str]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield item.upper()
+
+        flow1 = Flow(identity_fn, name="identity")
+        flow2 = Flow(upper_fn, name="upper")
+        piped_flow = flow1 >> flow2
+
+        # Original flows should be unmodified
+        assert flow1.name == "identity"
+        assert flow2.name == "upper"
+        assert flow1 is not piped_flow
+        assert flow2 is not piped_flow
+
+    def test_rshift_creates_descriptive_name(self) -> None:
+        """Test that >> operator creates flow with descriptive name."""
+
+        async def fn1(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield str(item)
+
+        async def fn2(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield len(item)
+
+        flow1 = Flow(fn1, name="stringify")
+        flow2 = Flow(fn2, name="length")
+        piped_flow = flow1 >> flow2
+
+        assert piped_flow.name == "stringify >> length"
+
+    @pytest.mark.asyncio
+    async def test_rshift_with_type_transformation(self) -> None:
+        """Test that >> operator works with flows that transform types."""
+
+        async def int_to_str(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield f"num_{item}"
+
+        async def str_to_len(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield len(item)
+
+        flow1 = Flow(int_to_str, name="to_string")
+        flow2 = Flow(str_to_len, name="to_length")
+        piped_flow = flow1 >> flow2
+
+        async def int_stream() -> AsyncIterator[int]:
+            for i in [1, 10, 100]:
+                yield i
+
+        result = piped_flow(int_stream())
+        items = [item async for item in result]
+
+        assert items == [5, 6, 7]  # len("num_1"), len("num_10"), len("num_100")
+
+    @pytest.mark.asyncio
+    async def test_rshift_chaining_multiple_flows(self) -> None:
+        """Test chaining multiple flows with >> operator."""
+
+        async def add_one(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item + 1
+
+        async def double(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item * 2
+
+        async def subtract_five(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item - 5
+
+        flow1 = Flow(add_one, name="add_one")
+        flow2 = Flow(double, name="double")
+        flow3 = Flow(subtract_five, name="subtract_five")
+
+        chained = flow1 >> flow2 >> flow3
+
+        async def int_stream() -> AsyncIterator[int]:
+            for i in [5, 10]:
+                yield i
+
+        result = chained(int_stream())
+        items = [item async for item in result]
+
+        assert items == [7, 17]  # ((5+1)*2)-5, ((10+1)*2)-5
+
+    @pytest.mark.asyncio
+    async def test_rshift_with_empty_stream(self) -> None:
+        """Test that >> operator works correctly with empty streams."""
+
+        async def passthrough(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item
+
+        flow1 = Flow(passthrough, name="pass1")
+        flow2 = Flow(passthrough, name="pass2")
+        piped = flow1 >> flow2
+
+        async def empty_stream() -> AsyncIterator[int]:
+            return
+            yield  # pragma: no cover
+
+        result = piped(empty_stream())
+        items = [item async for item in result]
+
+        assert items == []
