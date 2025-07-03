@@ -261,3 +261,26 @@ def flatten_stream() -> Flow[AsyncGenerator[Input, None], Input]:
                 yield item
 
     return Flow(_flow, name="flatten")
+
+
+def collect_stream() -> Flow[Input, list[Input]]:
+    """Create a flow that collects all items into a single list.
+
+    Returns:
+        A flow that yields a single list containing all input items
+
+    Example:
+        collector = collect_stream()
+        # Use: list_stream = collector(item_stream)
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[list[Input], None]:
+        """Collect all items into a single list."""
+        items = []
+        async for item in stream:
+            items.append(item)
+        yield items
+
+    return Flow(_flow, name="collect")

@@ -7,6 +7,7 @@ from typing import AsyncGenerator
 import pytest
 
 from flowengine.combinators.basic import (
+    collect_stream,
     compose,
     filter_stream,
     flat_map_stream,
@@ -915,3 +916,80 @@ class TestFlattenStream:
 
         flattener: Flow[AsyncGenerator[int, None], int] = flatten_stream()
         assert flattener.name == "flatten"
+
+
+class TestCollectStream:
+    """Test the collect_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_collect_stream_basic(self) -> None:
+        """Test collect_stream with basic functionality."""
+
+        async def source():
+            for i in [1, 2, 3, 4, 5]:
+                yield i
+
+        collector: Flow[int, list[int]] = collect_stream()
+        result_stream = collector(source())
+        results: list[list[int]] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert len(results) == 1
+        assert results[0] == [1, 2, 3, 4, 5]
+
+    @pytest.mark.asyncio
+    async def test_collect_stream_empty_input(self) -> None:
+        """Test collect_stream with empty input stream."""
+
+        async def empty_source():
+            return
+            yield  # pragma: no cover
+
+        collector: Flow[int, list[int]] = collect_stream()
+        result_stream = collector(empty_source())
+        results: list[list[int]] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert len(results) == 1
+        assert results[0] == []
+
+    @pytest.mark.asyncio
+    async def test_collect_stream_single_item(self) -> None:
+        """Test collect_stream with single item."""
+
+        async def source():
+            yield 42
+
+        collector: Flow[int, list[int]] = collect_stream()
+        result_stream = collector(source())
+        results: list[list[int]] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert len(results) == 1
+        assert results[0] == [42]
+
+    @pytest.mark.asyncio
+    async def test_collect_stream_different_types(self) -> None:
+        """Test collect_stream with different data types."""
+
+        async def source():
+            for item in ["hello", "world", "test"]:
+                yield item
+
+        collector: Flow[str, list[str]] = collect_stream()
+        result_stream = collector(source())
+        results: list[list[str]] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert len(results) == 1
+        assert results[0] == ["hello", "world", "test"]
+
+    def test_collect_stream_name(self) -> None:
+        """Test that collect_stream has correct name."""
+
+        collector: Flow[int, list[int]] = collect_stream()
+        assert collector.name == "collect"
