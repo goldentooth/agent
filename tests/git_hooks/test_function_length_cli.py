@@ -12,8 +12,8 @@ class TestFunctionLengthCLI:
 
     def test_check_function_length_no_files(self) -> None:
         """Should return 0 when no files to check."""
-        with patch("src.git_hooks.cli.get_staged_files", return_value=[]):
-            with patch("src.git_hooks.cli.get_all_files", return_value=[]):
+        with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
+            with patch("src.git_hooks.hook_runner.get_staged_files", return_value=[]):
                 result = check_function_length()
                 assert result == 0
 
@@ -28,9 +28,11 @@ class TestFunctionLengthCLI:
 '''
             )
 
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[test_file]):
-                with patch("src.git_hooks.cli.subprocess.run") as mock_run:
-                    mock_run.return_value.returncode = 0
+            with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
+                with patch(
+                    "src.git_hooks.hook_runner.get_staged_files",
+                    return_value=[test_file],
+                ):
                     result = check_function_length()
                     assert result == 0
 
@@ -48,16 +50,18 @@ class TestFunctionLengthCLI:
 '''
             )
 
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[test_file]):
-                with patch("src.git_hooks.cli.subprocess.run") as mock_run:
-                    mock_run.return_value.returncode = 0
+            with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
+                with patch(
+                    "src.git_hooks.hook_runner.get_staged_files",
+                    return_value=[test_file],
+                ):
                     result = check_function_length()
                     assert result == 1
 
     def test_check_function_length_warnings_no_files(self) -> None:
         """Should return 0 when no files to check."""
-        with patch("src.git_hooks.cli.get_staged_files", return_value=[]):
-            with patch("src.git_hooks.cli.get_all_files", return_value=[]):
+        with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
+            with patch("src.git_hooks.hook_runner.get_staged_files", return_value=[]):
                 result = check_function_length_warnings()
                 assert result == 0
 
@@ -75,9 +79,11 @@ class TestFunctionLengthCLI:
 '''
             )
 
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[test_file]):
-                with patch("src.git_hooks.cli.subprocess.run") as mock_run:
-                    mock_run.return_value.returncode = 0
+            with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
+                with patch(
+                    "src.git_hooks.hook_runner.get_staged_files",
+                    return_value=[test_file],
+                ):
                     result = check_function_length_warnings()
                     assert result == 0  # Always succeeds
 
@@ -95,11 +101,13 @@ class TestFunctionLengthCLI:
 '''
             )
 
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[test_file]):
-                with patch("src.git_hooks.cli.subprocess.run") as mock_run:
-                    mock_run.return_value.returncode = 0
+            with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
+                with patch(
+                    "src.git_hooks.hook_runner.get_staged_files",
+                    return_value=[test_file],
+                ):
                     # Set limit to 5 lines via environment variable
-                    with patch("src.git_hooks.cli.os.environ.get") as mock_env:
+                    with patch("os.environ.get") as mock_env:
                         mock_env.return_value = "5"
                         result = check_function_length()
                         assert result == 1  # Should fail with 5 line limit
@@ -115,8 +123,9 @@ class TestFunctionLengthCLI:
 '''
             )
 
-            with patch("src.git_hooks.cli.get_all_files", return_value=[test_file]):
-                with patch("src.git_hooks.cli.subprocess.run") as mock_run:
-                    mock_run.return_value.returncode = 1  # Not a git repo
+            with patch("src.git_hooks.hook_runner.is_git_repo", return_value=False):
+                with patch(
+                    "src.git_hooks.hook_runner.get_all_files", return_value=[test_file]
+                ):
                     result = check_function_length()
                     assert result == 0

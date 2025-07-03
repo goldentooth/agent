@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.git_hooks import cli
+from src.git_hooks import cli, utils
 from src.git_hooks.core import ValidationResult, ValidationSeverity
 
 from .conftest import create_file_with_lines, create_module_with_total_lines
@@ -24,7 +24,9 @@ class TestCLI:
             mock_run.return_value = MagicMock(
                 returncode=0, stdout="small.py\n", stderr=""
             )
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[small_file]):
+            with patch(
+                "src.git_hooks.utils.get_staged_files", return_value=[small_file]
+            ):
                 result = cli.check_file_length()
 
         assert result == 0
@@ -34,11 +36,10 @@ class TestCLI:
         large_file = temp_git_repo / "large.py"
         create_file_with_lines(large_file, 1500)
 
-        with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout="large.py\n", stderr=""
-            )
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[large_file]):
+        with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
+            with patch(
+                "src.git_hooks.hook_runner.get_staged_files", return_value=[large_file]
+            ):
                 result = cli.check_file_length()
 
         assert result == 1
@@ -48,11 +49,10 @@ class TestCLI:
         large_file = temp_git_repo / "large.py"
         create_file_with_lines(large_file, 950)
 
-        with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout="large.py\n", stderr=""
-            )
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[large_file]):
+        with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
+            with patch(
+                "src.git_hooks.hook_runner.get_staged_files", return_value=[large_file]
+            ):
                 result = cli.check_file_length_warnings()
 
         assert result == 0
@@ -62,7 +62,7 @@ class TestCLI:
         create_module_with_total_lines(temp_git_repo, "small_module", 3000)
 
         with patch(
-            "src.git_hooks.cli.get_modules",
+            "src.git_hooks.hook_runner.get_modules",
             return_value=[temp_git_repo / "small_module"],
         ):
             result = cli.check_module_size()
@@ -74,7 +74,7 @@ class TestCLI:
         create_module_with_total_lines(temp_git_repo, "large_module", 6000)
 
         with patch(
-            "src.git_hooks.cli.get_modules",
+            "src.git_hooks.hook_runner.get_modules",
             return_value=[temp_git_repo / "large_module"],
         ):
             result = cli.check_module_size()
@@ -86,33 +86,33 @@ class TestCLI:
         test_file = temp_git_repo / "test.py"
         create_file_with_lines(test_file, 800)
 
-        with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout="test.py\n", stderr=""
-            )
-
-            # Should pass with default limit (1000)
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[test_file]):
+        # Should pass with default limit (1000)
+        with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
+            with patch(
+                "src.git_hooks.hook_runner.get_staged_files", return_value=[test_file]
+            ):
                 result = cli.check_file_length()
-            assert result == 0
+        assert result == 0
 
-            # Should fail with custom limit (500)
-            with patch.dict(os.environ, {"FILE_LENGTH_LIMIT": "500"}):
+        # Should fail with custom limit (500)
+        with patch.dict(os.environ, {"FILE_LENGTH_LIMIT": "500"}):
+            with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
                 with patch(
-                    "src.git_hooks.cli.get_staged_files", return_value=[test_file]
+                    "src.git_hooks.hook_runner.get_staged_files",
+                    return_value=[test_file],
                 ):
                     result = cli.check_file_length()
-            assert result == 1
+        assert result == 1
 
     def test_hooks_work_outside_git_repo(self, tmp_path: Path) -> None:
         """Hooks work in non-git directories."""
         large_file = tmp_path / "large.py"
         create_file_with_lines(large_file, 1500)
 
-        with patch("subprocess.run") as mock_run:
-            # First call for git check fails (not a git repo)
-            mock_run.return_value = MagicMock(returncode=1)
-            with patch("src.git_hooks.cli.get_all_files", return_value=[large_file]):
+        with patch("src.git_hooks.hook_runner.is_git_repo", return_value=False):
+            with patch(
+                "src.git_hooks.hook_runner.get_all_files", return_value=[large_file]
+            ):
                 result = cli.check_file_length()
 
         assert result == 1
@@ -124,12 +124,10 @@ class TestCLI:
         warning_file = temp_git_repo / "warning.py"
         create_file_with_lines(warning_file, 850)
 
-        with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout="warning.py\n", stderr=""
-            )
+        with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
             with patch(
-                "src.git_hooks.cli.get_staged_files", return_value=[warning_file]
+                "src.git_hooks.hook_runner.get_staged_files",
+                return_value=[warning_file],
             ):
                 cli.check_file_length_warnings()
 
@@ -143,7 +141,7 @@ class TestCLI:
             from subprocess import CalledProcessError
 
             mock_run.side_effect = CalledProcessError(1, "git")
-            result = cli.get_staged_files()
+            result = utils.get_staged_files()
             assert result == []
 
     def test_get_all_files_excludes_git(self, tmp_path: Path) -> None:
@@ -158,7 +156,7 @@ class TestCLI:
                 tmp_path / "file1.py",
                 tmp_path / ".git" / "config",
             ]
-            files = cli.get_all_files(tmp_path)
+            files = utils.get_all_files(tmp_path)
 
         assert len(files) == 1
         assert files[0] == tmp_path / "file1.py"
@@ -180,7 +178,7 @@ class TestCLI:
         other.mkdir()
         (other / "data.txt").touch()
 
-        modules = cli.get_modules(tmp_path)
+        modules = utils.get_modules(tmp_path)
         module_names = {m.name for m in modules}
 
         assert "module1" in module_names
@@ -189,7 +187,7 @@ class TestCLI:
 
     def test_print_results_empty(self, capsys: pytest.CaptureFixture[str]) -> None:
         """Test print_results with no results."""
-        cli.print_results([], "Test hook")
+        utils.print_results([], "Test hook")
         captured = capsys.readouterr()
         assert "✅ Test hook: All files within healthy limits" in captured.out
 
@@ -207,7 +205,7 @@ class TestCLI:
                 guidance="",
             )
         ]
-        cli.print_results(results, "Test hook")
+        utils.print_results(results, "Test hook")
         captured = capsys.readouterr()
         assert "❌ Test hook violations found:" in captured.out
         assert "big_file.py: 1500 lines" in captured.out
@@ -226,7 +224,7 @@ class TestCLI:
                 guidance="Consider refactoring",
             )
         ]
-        cli.print_results(results, "Test hook")
+        utils.print_results(results, "Test hook")
         captured = capsys.readouterr()
         assert "🔶 URGENT:" in captured.out  # 950 is >= 90% of 1000
         assert "Consider refactoring" in captured.out
@@ -236,7 +234,7 @@ class TestCLI:
         large_module = temp_git_repo / "large_module"
         create_module_with_total_lines(temp_git_repo, "large_module", 4500)
 
-        with patch("src.git_hooks.cli.get_modules", return_value=[large_module]):
+        with patch("src.git_hooks.utils.get_modules", return_value=[large_module]):
             result = cli.check_module_size_warnings()
 
         assert result == 0  # Warnings always succeed
@@ -245,7 +243,7 @@ class TestCLI:
         """Test get_staged_files with empty git output."""
         with patch("subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-            result = cli.get_staged_files()
+            result = utils.get_staged_files()
             assert result == []
 
     def test_file_length_no_files_to_check(
@@ -254,7 +252,7 @@ class TestCLI:
         """Test file length check with no files."""
         with patch("subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[]):
+            with patch("src.git_hooks.utils.get_staged_files", return_value=[]):
                 result = cli.check_file_length()
 
         assert result == 0
@@ -267,7 +265,7 @@ class TestCLI:
         """Test file length warnings with no files."""
         with patch("subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
-            with patch("src.git_hooks.cli.get_staged_files", return_value=[]):
+            with patch("src.git_hooks.utils.get_staged_files", return_value=[]):
                 result = cli.check_file_length_warnings()
 
         assert result == 0
@@ -276,23 +274,23 @@ class TestCLI:
 
     def test_module_size_no_modules(self, capsys: pytest.CaptureFixture[str]) -> None:
         """Test module size check with no modules."""
-        with patch("src.git_hooks.cli.get_modules", return_value=[]):
+        with patch("src.git_hooks.hook_runner.get_modules", return_value=[]):
             result = cli.check_module_size()
 
         assert result == 0
         captured = capsys.readouterr()
-        assert "✅ Module size check: No modules to check" in captured.out
+        assert "✅ Module size check: No files to check" in captured.out
 
     def test_module_size_warnings_no_modules(
         self, capsys: pytest.CaptureFixture[str]
     ) -> None:
         """Test module size warnings with no modules."""
-        with patch("src.git_hooks.cli.get_modules", return_value=[]):
+        with patch("src.git_hooks.hook_runner.get_modules", return_value=[]):
             result = cli.check_module_size_warnings()
 
         assert result == 0
         captured = capsys.readouterr()
-        assert "✅ Module size warnings: No modules to check" in captured.out
+        assert "✅ Module size warnings: No files to check" in captured.out
 
     def test_cli_main_invalid_args(self, capsys: pytest.CaptureFixture[str]) -> None:
         """Test CLI main with invalid arguments."""
@@ -364,7 +362,7 @@ class TestCLI:
                 guidance="Consider refactoring",
             )
         ]
-        cli.print_results(results, "Test hook")
+        utils.print_results(results, "Test hook")
         captured = capsys.readouterr()
         assert "⚠️  WARNING:" in captured.out  # 850 is < 90% of 1000
         assert "Consider refactoring" in captured.out
@@ -376,7 +374,7 @@ class TestCLI:
         (tmp_path / "subdir").mkdir()
         (tmp_path / "subdir" / "file2.py").touch()
 
-        files = cli.get_all_files(tmp_path)
+        files = utils.get_all_files(tmp_path)
         file_names = {f.name for f in files}
 
         assert "file1.py" in file_names
@@ -389,12 +387,10 @@ class TestCLI:
         warning_file = temp_git_repo / "warning.py"
         create_file_with_lines(warning_file, 820)  # Below 90% threshold
 
-        with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0, stdout="warning.py\n", stderr=""
-            )
+        with patch("src.git_hooks.hook_runner.is_git_repo", return_value=True):
             with patch(
-                "src.git_hooks.cli.get_staged_files", return_value=[warning_file]
+                "src.git_hooks.hook_runner.get_staged_files",
+                return_value=[warning_file],
             ):
                 result = cli.check_file_length_warnings()
 
@@ -412,21 +408,23 @@ class TestCLI:
         with patch("subprocess.run") as mock_run:
             # Git check fails (not a git repo)
             mock_run.return_value = MagicMock(returncode=1)
-            with patch("src.git_hooks.cli.get_all_files", return_value=[warning_file]):
+            with patch(
+                "src.git_hooks.utils.get_all_files", return_value=[warning_file]
+            ):
                 result = cli.check_file_length_warnings()
 
         assert result == 0  # Warnings always succeed
 
     def test_get_all_files_default_directory(self, tmp_path: Path) -> None:
         """Test get_all_files with default directory (None)."""
-        with patch("src.git_hooks.cli.Path") as mock_path:
+        with patch("src.git_hooks.utils.Path") as mock_path:
             mock_path.return_value.rglob.return_value = []
-            cli.get_all_files()
+            utils.get_all_files()
             mock_path.assert_called_with(".")
 
     def test_get_modules_default_directory(self, tmp_path: Path) -> None:
         """Test get_modules with default directory (None)."""
-        with patch("src.git_hooks.cli.Path") as mock_path:
+        with patch("src.git_hooks.utils.Path") as mock_path:
             mock_path.return_value.rglob.return_value = []
-            cli.get_modules()
+            utils.get_modules()
             mock_path.assert_called_with(".")
