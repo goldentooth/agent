@@ -34,7 +34,8 @@ scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 [tool.poetry]
 packages = [
     { include = "goldentooth_agent", from = "src" },
-    { include = "git_hooks", from = "src" }
+    { include = "git_hooks", from = "src" },
+    { include = "flowengine", from = "src" }
 ]
 include = [
     { path = "src/goldentooth_agent/data/system_prompts/*.yaml", format = [
@@ -224,7 +225,7 @@ extend-exclude = '''
 profile = "black"
 multi_line_output = 3
 line_length = 88
-known_first_party = ["goldentooth_agent"]
+known_first_party = ["goldentooth_agent", "flowengine"]
 known_third_party = ["pytest", "typer", "antidote", "atomic_agents"]
 
 # Ruff linting configuration
