@@ -232,3 +232,38 @@ class Flow(Generic[Input, Output]):
             return decorator
         else:
             return decorator(fn)
+
+    @staticmethod
+    @overload
+    def from_sync_fn(fn: Callable[[T], U]) -> Flow[T, U]: ...
+
+    @staticmethod
+    @overload
+    def from_sync_fn(
+        fn: None = None,
+    ) -> Callable[[Callable[[T], U]], Flow[T, U]]: ...
+
+    @staticmethod
+    def from_sync_fn(
+        fn: Callable[[T], U] | None = None,
+    ) -> Flow[T, U] | Callable[[Callable[[T], U]], Flow[T, U]]:
+        """Create a flow from a synchronous function that takes an input and returns an output.
+
+        Can be used as a decorator::
+
+            @Flow.from_sync_fn
+            def double(x):
+                return x * 2
+        """
+
+        def decorator(f: Callable[[T], U]) -> Flow[T, U]:
+            async def _wrapper(stream: AsyncIterator[T]) -> AsyncIterator[U]:
+                async for item in stream:
+                    yield f(item)
+
+            return Flow(_wrapper, name=f.__name__)
+
+        if fn is None:
+            return decorator
+        else:
+            return decorator(fn)
