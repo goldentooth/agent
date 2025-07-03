@@ -338,6 +338,7 @@ class TestFlowAiter:
             # This would attempt to call __aiter__(flow) internally
             # We have to trigger it with aiter() since async comprehension
             # syntax checking happens at compile time
+            # The following is an acceptable use of an ignore comment - Nate
             async for item in flow:  # type: ignore[attr-defined]
                 pass
 
