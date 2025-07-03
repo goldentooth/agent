@@ -4,6 +4,7 @@ import pytest
 
 from flowengine.combinators.utils import (
     STREAM_END,
+    Input,
     create_single_item_stream,
     get_function_name,
 )
@@ -72,3 +73,10 @@ async def test_create_single_item_stream_works_with_different_types():
     obj_items = [item async for item in obj_stream]
     assert obj_items == [{"key": "value"}]
     assert obj_items[0] is obj  # Same object reference
+
+
+def test_input_typevar_is_available():
+    # Input TypeVar should be available for type annotations
+    assert Input is not None
+    assert hasattr(Input, "__name__")
+    assert Input.__name__ == "Input"
