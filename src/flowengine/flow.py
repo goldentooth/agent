@@ -93,3 +93,10 @@ class Flow(Generic[Input, Output]):
     def __rshift__(self, other: "Flow[Output, Newput]") -> "Flow[Input, Newput]":
         """Pipe the output of this flow to another flow."""
         return Flow(lambda s: other(self(s)), name=f"{self.name} >> {other.name}")
+
+    def collect(self) -> Callable[[AsyncIterator[Input]], Awaitable[list[Output]]]:
+        """Ergonomic method to collect all items into a list.
+
+        This is equivalent to to_list() but more discoverable in fluent APIs.
+        """
+        return self.to_list()

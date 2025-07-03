@@ -371,3 +371,100 @@ class TestFlowForEach:
 
         await consumer(stream2())
         assert processed_items == ["length:1", "length:4"]
+
+
+class TestFlowCollect:
+    """Tests for Flow.collect method."""
+
+    @pytest.mark.asyncio
+    async def test_collect_is_alias_for_to_list(self) -> None:
+        """Test that collect is an alias for to_list."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [1, 2, 3]:
+                yield i
+
+        flow = Flow(source_fn, name="source")
+
+        # Both should return the same function
+        collector1 = flow.collect()
+        collector2 = flow.to_list()
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result1 = await collector1(empty_stream())
+        result2 = await collector2(empty_stream())
+
+        assert result1 == result2 == [1, 2, 3]
+
+    @pytest.mark.asyncio
+    async def test_collect_delegates_to_to_list(self) -> None:
+        """Test that collect delegates to to_list and produces same results."""
+
+        async def test_fn(stream: AsyncIterator[str]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield item.upper()
+
+        flow = Flow(test_fn, name="upper")
+
+        async def string_stream() -> AsyncIterator[str]:
+            for s in ["hello", "world"]:
+                yield s
+
+        # Both methods should produce identical results
+        result1 = await flow.collect()(string_stream())
+
+        async def string_stream2() -> AsyncIterator[str]:
+            for s in ["hello", "world"]:
+                yield s
+
+        result2 = await flow.to_list()(string_stream2())
+
+        assert result1 == result2 == ["HELLO", "WORLD"]
+
+    @pytest.mark.asyncio
+    async def test_collect_works_with_all_flow_types(self) -> None:
+        """Test that collect works with various flow transformations."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in range(1, 6):
+                yield i
+
+        def is_even(x: int) -> bool:
+            return x % 2 == 0
+
+        def square(x: int) -> int:
+            return x * x
+
+        flow = Flow(source_fn, name="source")
+        transformed = flow.filter(is_even).map(square)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        # Using collect
+        result = await transformed.collect()(empty_stream())
+        assert result == [4, 16]  # 2^2, 4^2
+
+    @pytest.mark.asyncio
+    async def test_collect_preserves_type_signature(self) -> None:
+        """Test that collect preserves the same type signature as to_list."""
+
+        async def typed_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield f"item_{item}"
+
+        flow = Flow(typed_fn, name="typed")
+        collector = flow.collect()
+
+        async def int_stream() -> AsyncIterator[int]:
+            for i in [10, 20]:
+                yield i
+
+        result = await collector(int_stream())
+        assert result == ["item_10", "item_20"]
+        assert isinstance(result, list)
+        assert all(isinstance(item, str) for item in result)

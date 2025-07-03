@@ -88,7 +88,7 @@ def test_flowengine_package_imports():
 2. `__call__(stream)` - Flow execution ✅ DONE
 3. `__repr__()` - Debug representation ✅ DONE
 4. `__aiter__()` - Prevent direct iteration ✅ DONE
-5. `__rshift__(other)` - Flow composition operator
+5. `__rshift__(other)` - Flow composition operator ✅ DONE
 6. `map(fn)` - Transform output values ✅ DONE
 7. `filter(predicate)` - Filter output values ✅ DONE
 8. `flat_map(fn)` - Flatten mapped results ✅ DONE
