@@ -92,7 +92,7 @@ def test_flowengine_package_imports():
 6. `map(fn)` - Transform output values ✅ DONE
 7. `filter(predicate)` - Filter output values ✅ DONE
 8. `flat_map(fn)` - Flatten mapped results ✅ DONE
-9. `for_each(fn)` - Consume flow with side effects
+9. `for_each(fn)` - Consume flow with side effects ✅ DONE
 10. `to_list()` - Collect to list ✅ DONE
 11. `collect()` - Alias for to_list
 12. `label(label)` - Add debug labels
