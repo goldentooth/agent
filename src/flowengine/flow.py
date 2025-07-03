@@ -48,3 +48,13 @@ class Flow(Generic[Input, Output]):
                 yield fn(item)
 
         return Flow(_mapped, name=f"{self.name}.map({fn.__name__})")
+
+    def filter(self, predicate: Callable[[Output], bool]) -> "Flow[Input, Output]":
+        """Filter the output of the flow based on a predicate."""
+
+        async def _filtered(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+            async for item in self(stream):
+                if predicate(item):
+                    yield item
+
+        return Flow(_filtered, name=f"{self.name}.filter({predicate.__name__})")
