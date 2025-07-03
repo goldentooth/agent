@@ -108,3 +108,31 @@ def map_stream(fn: Callable[[Input], Output]) -> Flow[Input, Output]:
             yield fn(item)
 
     return Flow(_flow, name=f"map({get_function_name(fn)})")
+
+
+def flat_map_stream(
+    fn: Callable[[Input], AsyncGenerator[Output, None]],
+) -> Flow[Input, Output]:
+    """Create a flow that flat-maps a function over each item in the stream.
+
+    Args:
+        fn: Function that takes an item and returns an AsyncGenerator of outputs
+
+    Returns:
+        A flow that yields all items from all the AsyncGenerators returned by fn
+
+    Example:
+        split_chars = lambda s: (c for c in s)
+        char_splitter = flat_map_stream(split_chars)
+        # Use: all_chars = char_splitter(word_stream)
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[Output, None]:
+        """Flat-map function over each item in the stream."""
+        async for item in stream:
+            async for sub_item in fn(item):
+                yield sub_item
+
+    return Flow(_flow, name=f"flat_map({get_function_name(fn)})")
