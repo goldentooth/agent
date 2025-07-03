@@ -99,7 +99,7 @@ def test_flowengine_package_imports():
 13. `preview(stream, limit)` - REPL-friendly preview ✅ DONE
 14. `print()` - Chainable debug printing ✅ DONE
 15. `with_fallback(default)` - Default value handling ✅ DONE
-16. `batch(size)` - Batch output into groups
+16. `batch(size)` - Batch output into groups ✅ DONE
 
 **Static factory methods**:
 17. `from_value_fn(fn)` - Create from async value function
