@@ -100,3 +100,14 @@ class Flow(Generic[Input, Output]):
         This is equivalent to to_list() but more discoverable in fluent APIs.
         """
         return self.to_list()
+
+    def label(self, label: str) -> "Flow[Input, Output]":
+        """Label the flow for debugging purposes."""
+
+        async def _labeled(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+            print(f"[Flow:{label}] starting")
+            async for item in self(stream):
+                print(f"[Flow:{label}] yield: {item}")
+                yield item
+
+        return Flow(_labeled, name=f"{self.name}.label({label})")

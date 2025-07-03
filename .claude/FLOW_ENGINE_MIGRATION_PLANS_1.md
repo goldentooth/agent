@@ -94,7 +94,7 @@ def test_flowengine_package_imports():
 8. `flat_map(fn)` - Flatten mapped results ✅ DONE
 9. `for_each(fn)` - Consume flow with side effects ✅ DONE
 10. `to_list()` - Collect to list ✅ DONE
-11. `collect()` - Alias for to_list
+11. `collect()` - Alias for to_list ✅ DONE
 12. `label(label)` - Add debug labels
 13. `preview(stream, limit)` - REPL-friendly preview
 14. `print()` - Chainable debug printing

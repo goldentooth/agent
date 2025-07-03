@@ -452,3 +452,166 @@ class TestFlowRshift:
         items = [item async for item in result]
 
         assert items == []
+
+
+class TestFlowLabel:
+    """Tests for Flow.label method."""
+
+    @pytest.mark.asyncio
+    async def test_label_prints_debug_info(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test that label prints debug information."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+            for s in ["hello", "world"]:
+                yield s
+
+        flow = Flow(source_fn, name="source")
+        labeled_flow = flow.label("debug")
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = labeled_flow(empty_stream())
+        items = [item async for item in result]
+
+        # Check output
+        captured = capsys.readouterr()
+        assert "[Flow:debug] starting" in captured.out
+        assert "[Flow:debug] yield: hello" in captured.out
+        assert "[Flow:debug] yield: world" in captured.out
+
+        # Check items are unchanged
+        assert items == ["hello", "world"]
+
+    def test_label_creates_new_flow_with_descriptive_name(self) -> None:
+        """Test that label creates a new flow with descriptive name."""
+
+        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item * 2
+
+        flow = Flow(test_fn, name="double")
+        labeled_flow = flow.label("my_label")
+
+        assert labeled_flow.name == "double.label(my_label)"
+        assert labeled_flow is not flow
+
+    @pytest.mark.asyncio
+    async def test_label_with_empty_stream(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test that label works correctly with empty streams."""
+
+        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            return
+            yield  # pragma: no cover
+
+        flow = Flow(empty_source, name="empty")
+        labeled_flow = flow.label("empty_test")
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = labeled_flow(empty_stream())
+        items = [item async for item in result]
+
+        # Check output
+        captured = capsys.readouterr()
+        assert "[Flow:empty_test] starting" in captured.out
+        # Should not have any yield messages
+        assert "[Flow:empty_test] yield:" not in captured.out
+
+        assert items == []
+
+    @pytest.mark.asyncio
+    async def test_label_preserves_type_signature(self) -> None:
+        """Test that label preserves the flow's type signature."""
+
+        async def typed_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield len(item)
+
+        flow = Flow(typed_fn, name="length")
+        labeled_flow = flow.label("type_test")
+
+        async def string_stream() -> AsyncIterator[str]:
+            for s in ["a", "bb", "ccc"]:
+                yield s
+
+        result = labeled_flow(string_stream())
+        items = [item async for item in result]
+
+        assert items == [1, 2, 3]
+
+    @pytest.mark.asyncio
+    async def test_label_chaining_with_other_operations(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test that label can be chained with other flow operations."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [1, 2, 3, 4, 5]:
+                yield i
+
+        def is_even(x: int) -> bool:
+            return x % 2 == 0
+
+        def square(x: int) -> int:
+            return x * x
+
+        flow = Flow(source_fn, name="source")
+        processed_flow = flow.filter(is_even).label("even_numbers").map(square)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = processed_flow(empty_stream())
+        items = [item async for item in result]
+
+        # Check output
+        captured = capsys.readouterr()
+        assert "[Flow:even_numbers] starting" in captured.out
+        assert "[Flow:even_numbers] yield: 2" in captured.out
+        assert "[Flow:even_numbers] yield: 4" in captured.out
+
+        # Check final result
+        assert items == [4, 16]  # 2^2, 4^2
+
+    @pytest.mark.asyncio
+    async def test_multiple_labels_in_chain(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test multiple labels in a flow chain."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [1, 2]:
+                yield i
+
+        def double(x: int) -> int:
+            return x * 2
+
+        flow = Flow(source_fn, name="source")
+        labeled_flow = flow.label("input").map(double).label("output")
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = labeled_flow(empty_stream())
+        items = [item async for item in result]
+
+        # Check output
+        captured = capsys.readouterr()
+        assert "[Flow:input] starting" in captured.out
+        assert "[Flow:input] yield: 1" in captured.out
+        assert "[Flow:input] yield: 2" in captured.out
+        assert "[Flow:output] starting" in captured.out
+        assert "[Flow:output] yield: 2" in captured.out
+        assert "[Flow:output] yield: 4" in captured.out
+
+        assert items == [2, 4]
