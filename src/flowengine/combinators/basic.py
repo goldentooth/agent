@@ -239,3 +239,25 @@ def guard_stream(
             yield item
 
     return Flow(_flow, name=f"guard({get_function_name(predicate)})")
+
+
+def flatten_stream() -> Flow[AsyncGenerator[Input, None], Input]:
+    """Create a flow that flattens nested async generators.
+
+    Returns:
+        A flow that takes a stream of AsyncGenerators and yields all their items
+
+    Example:
+        flattener = flatten_stream()
+        # Use: flat_stream = flattener(nested_stream)
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[AsyncGenerator[Input, None], None],
+    ) -> AsyncGenerator[Input, None]:
+        """Flatten nested async generators."""
+        async for sub_stream in stream:
+            async for item in sub_stream:
+                yield item
+
+    return Flow(_flow, name="flatten")

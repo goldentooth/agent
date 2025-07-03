@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from typing import AsyncGenerator
+
 import pytest
 
 from flowengine.combinators.basic import (
     compose,
     filter_stream,
     flat_map_stream,
+    flatten_stream,
     guard_stream,
     identity_stream,
     map_stream,
@@ -818,3 +821,97 @@ class TestGuardStream:
 
         non_zero_guard: Flow[int, int] = guard_stream(is_non_zero, "Must be non-zero")
         assert "guard(is_non_zero)" in non_zero_guard.name
+
+
+class TestFlattenStream:
+    """Test the flatten_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_flatten_stream_basic(self) -> None:
+        """Test flatten_stream with basic nested generators."""
+
+        async def sub_stream_1():
+            for i in [1, 2]:
+                yield i
+
+        async def sub_stream_2():
+            for i in [3, 4]:
+                yield i
+
+        async def source():
+            yield sub_stream_1()
+            yield sub_stream_2()
+
+        flattener: Flow[AsyncGenerator[int, None], int] = flatten_stream()
+        result_stream = flattener(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [1, 2, 3, 4]
+
+    @pytest.mark.asyncio
+    async def test_flatten_stream_empty_sub_streams(self) -> None:
+        """Test flatten_stream with some empty sub-streams."""
+
+        async def empty_stream():
+            return
+            yield  # pragma: no cover
+
+        async def non_empty_stream():
+            for i in [1, 2]:
+                yield i
+
+        async def source():
+            yield empty_stream()
+            yield non_empty_stream()
+            yield empty_stream()
+
+        flattener: Flow[AsyncGenerator[int, None], int] = flatten_stream()
+        result_stream = flattener(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [1, 2]
+
+    @pytest.mark.asyncio
+    async def test_flatten_stream_single_sub_stream(self) -> None:
+        """Test flatten_stream with single sub-stream."""
+
+        async def sub_stream():
+            for i in [10, 20, 30]:
+                yield i
+
+        async def source():
+            yield sub_stream()
+
+        flattener: Flow[AsyncGenerator[int, None], int] = flatten_stream()
+        result_stream = flattener(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [10, 20, 30]
+
+    @pytest.mark.asyncio
+    async def test_flatten_stream_empty_input(self) -> None:
+        """Test flatten_stream with empty input stream."""
+
+        async def empty_source():
+            return
+            yield  # pragma: no cover
+
+        flattener: Flow[AsyncGenerator[int, None], int] = flatten_stream()
+        result_stream = flattener(empty_source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    def test_flatten_stream_name(self) -> None:
+        """Test that flatten_stream has correct name."""
+
+        flattener: Flow[AsyncGenerator[int, None], int] = flatten_stream()
+        assert flattener.name == "flatten"
