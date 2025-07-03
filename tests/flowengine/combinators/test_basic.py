@@ -8,6 +8,7 @@ from flowengine.combinators.basic import (
     compose,
     filter_stream,
     flat_map_stream,
+    identity_stream,
     map_stream,
     run_fold,
 )
@@ -491,3 +492,78 @@ class TestFlatMapStream:
 
         exploder = flat_map_stream(explode_string)
         assert "flat_map(explode_string)" in exploder.name
+
+
+class TestIdentityStream:
+    """Test the identity_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_identity_stream_basic(self) -> None:
+        """Test identity_stream passes through all items unchanged."""
+
+        async def source():
+            for i in [1, 2, 3, 4, 5]:
+                yield i
+
+        passthrough: Flow[int, int] = identity_stream()
+        result_stream = passthrough(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [1, 2, 3, 4, 5]
+
+    @pytest.mark.asyncio
+    async def test_identity_stream_preserves_types(self) -> None:
+        """Test identity_stream preserves different types."""
+
+        async def source():
+            for item in ["hello", "world", "test"]:
+                yield item
+
+        passthrough: Flow[str, str] = identity_stream()
+        result_stream = passthrough(source())
+        results: list[str] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == ["hello", "world", "test"]
+
+    @pytest.mark.asyncio
+    async def test_identity_stream_empty_input(self) -> None:
+        """Test identity_stream with empty input stream."""
+
+        async def empty_source():
+            return
+            yield  # pragma: no cover
+
+        passthrough: Flow[int, int] = identity_stream()
+        result_stream = passthrough(empty_source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    @pytest.mark.asyncio
+    async def test_identity_stream_complex_objects(self) -> None:
+        """Test identity_stream with complex objects."""
+        from typing import Any
+
+        async def source():
+            for item in [{"key": "value"}, [1, 2, 3], ("a", "b")]:
+                yield item
+
+        passthrough: Flow[Any, Any] = identity_stream()
+        result_stream = passthrough(source())
+        results: list[Any] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [{"key": "value"}, [1, 2, 3], ("a", "b")]
+
+    def test_identity_stream_name(self) -> None:
+        """Test that identity_stream has correct name."""
+
+        passthrough: Flow[int, int] = identity_stream()
+        assert passthrough.name == "identity"

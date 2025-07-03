@@ -136,3 +136,22 @@ def flat_map_stream(
                 yield sub_item
 
     return Flow(_flow, name=f"flat_map({get_function_name(fn)})")
+
+
+def identity_stream() -> Flow[Input, Input]:
+    """Create a flow that passes the stream through unchanged.
+
+    Returns:
+        A flow that yields each input item unchanged
+
+    Example:
+        passthrough = identity_stream()
+        # Use: same_values = passthrough(any_stream)
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Pass stream through unchanged."""
+        async for item in stream:
+            yield item
+
+    return Flow(_flow, name="identity")
