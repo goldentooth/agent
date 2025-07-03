@@ -383,3 +383,30 @@ class Flow(Generic[Input, Output]):
                 yield value
 
         return Flow(_wrapper, name="from_emitter")
+
+    @staticmethod
+    def identity() -> Flow[T, T]:
+        """Create an identity flow that passes items through unchanged.
+
+        Returns:
+            Flow that yields each input item unchanged
+
+        Example::
+
+            # Create identity flow
+            flow = Flow.identity()
+
+            # Use with any stream type
+            async def string_stream():
+                yield "hello"
+                yield "world"
+
+            result = flow(string_stream())
+            items = [item async for item in result]  # ["hello", "world"]
+        """
+
+        async def _identity(stream: AsyncIterator[T]) -> AsyncIterator[T]:
+            async for item in stream:
+                yield item
+
+        return Flow(_identity, name="identity")
