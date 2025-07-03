@@ -40,7 +40,8 @@ class TestHookRunnerWithRegistry:
 
     def teardown_method(self):
         """Cleanup after each test."""
-        ValidatorRegistry.clear()
+        # Only remove the mock validator, keep the real validators
+        ValidatorRegistry.unregister("mock_validator")
 
     def test_creates_validator_from_registry(self):
         """Should create validator using registry instead of factory function."""

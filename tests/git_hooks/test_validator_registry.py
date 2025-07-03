@@ -1,7 +1,7 @@
 """Tests for validator registry pattern."""
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 import pytest
 
@@ -23,9 +23,18 @@ class MockValidator(Validator):
 class TestValidatorRegistry:
     """Test validator registry functionality."""
 
+    _saved_validators: Dict[str, Type[Validator]] = {}
+
     def setup_method(self):
         """Reset registry before each test."""
+        # Save existing validators to restore later
+        self._saved_validators = ValidatorRegistry.get_validators_dict()
         ValidatorRegistry.clear()
+
+    def teardown_method(self):
+        """Restore registry after each test."""
+        # Clear test validators and restore original state
+        ValidatorRegistry.restore_validators(self._saved_validators)
 
     def test_register_validator(self):
         """Should register validator successfully."""
@@ -116,3 +125,17 @@ class TestValidatorRegistry:
 
         validator = ValidatorRegistry.create("duplicate", {"limit": 100})
         assert isinstance(validator, SecondValidator)
+
+    def test_unregister_validator(self):
+        """Should remove validator from registry."""
+        ValidatorRegistry.register("temp", MockValidator)
+        assert ValidatorRegistry.is_registered("temp")
+
+        result = ValidatorRegistry.unregister("temp")
+        assert result is True
+        assert not ValidatorRegistry.is_registered("temp")
+
+    def test_unregister_nonexistent_validator(self):
+        """Should return False when trying to unregister nonexistent validator."""
+        result = ValidatorRegistry.unregister("nonexistent")
+        assert result is False

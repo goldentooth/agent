@@ -105,3 +105,41 @@ class ValidatorRegistry:
         Mainly used for testing purposes.
         """
         cls._validators.clear()
+
+    @classmethod
+    def unregister(cls, name: str) -> bool:
+        """Remove a specific validator from the registry.
+
+        Args:
+            name: Name of the validator to remove
+
+        Returns:
+            True if validator was removed, False if it wasn't registered
+        """
+        if name in cls._validators:
+            del cls._validators[name]
+            return True
+        return False
+
+    @classmethod
+    def get_validators_dict(cls) -> Dict[str, Type[Validator]]:
+        """Get a copy of the validators dictionary.
+
+        Used for test isolation and state management.
+
+        Returns:
+            Copy of the internal validators dictionary
+        """
+        return cls._validators.copy()
+
+    @classmethod
+    def restore_validators(cls, validators_dict: Dict[str, Type[Validator]]) -> None:
+        """Restore the validators dictionary from a saved state.
+
+        Used for test isolation and state management.
+
+        Args:
+            validators_dict: Dictionary of validators to restore
+        """
+        cls._validators.clear()
+        cls._validators.update(validators_dict)
