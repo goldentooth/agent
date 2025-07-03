@@ -35,9 +35,28 @@ repos:
       - id: check-merge-conflict
         description: Check for merge conflict markers
         exclude: ^old/
+      - id: check-case-conflict
+        description: Check for case conflicts in filenames
+        exclude: ^old/
+      - id: check-executables-have-shebangs
+        description: Ensure executable files have shebangs
+        exclude: ^old/
+      - id: check-json
+        description: Validate JSON files
+        exclude: ^old/
       - id: check-added-large-files
         description: Prevent large files from being committed
         args: ['--maxkb=1000']
+        exclude: ^old/
+      - id: forbid-submodules
+        description: Prevent adding git submodules
+        exclude: ^old/
+      - id: name-tests-test
+        description: Ensure test files are named correctly
+        args: ['--pytest-test-first']
+        exclude: ^old/
+      - id: pretty-format-json
+        description: Pretty-format JSON files
         exclude: ^old/
       - id: debug-statements
         description: Check for debugger statements
