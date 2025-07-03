@@ -284,3 +284,61 @@ def collect_stream() -> Flow[Input, list[Input]]:
         yield items
 
     return Flow(_flow, name="collect")
+
+
+def until_stream(predicate: Callable[[Input], bool]) -> Flow[Input, Input]:
+    """Create a flow that processes items until a predicate becomes true.
+
+    Once the predicate returns True for an item, that item is yielded
+    and processing stops (the predicate item is included in output).
+
+    Args:
+        predicate: Function that determines when to stop processing
+
+    Returns:
+        A flow that processes until predicate is satisfied
+
+    Example:
+        is_zero = lambda x: x == 0
+        until_zero = until_stream(is_zero)
+        # Use: limited_stream = until_zero(number_stream)
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Process items until predicate becomes true."""
+        try:
+            async for item in stream:
+                yield item
+                if predicate(item):
+                    break  # Stop processing after yielding the matching item
+        finally:
+            # Ensure the stream is properly closed when we break early
+            if hasattr(stream, "aclose"):
+                await stream.aclose()
+
+    return Flow(_flow, name=f"until({get_function_name(predicate)})")
+
+
+def share_stream() -> Flow[Input, Input]:
+    """Create a flow that shares a single stream subscription among multiple subscribers.
+
+    Returns:
+        A flow that allows sharing of stream subscription
+
+    Example:
+        shared = share_stream()
+        # Use: shared_stream = shared(input_stream)
+
+    Note:
+        This is a simplified implementation. A full implementation would need
+        proper subscription management for multiple concurrent subscribers.
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Share single stream subscription."""
+        # Note: This is a simplified implementation
+        # A full implementation would need proper subscription management
+        async for item in stream:
+            yield item
+
+    return Flow(_flow, name="share")
