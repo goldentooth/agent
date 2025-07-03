@@ -9,6 +9,7 @@ from flowengine.combinators.aggregation import (
     chunk_stream,
     distinct_stream,
     group_by_stream,
+    memoize_stream,
     pairwise_stream,
     scan_stream,
     window_stream,
@@ -491,3 +492,81 @@ async def test_pairwise_stream_empty():
 
     result: list[tuple[int, int]] = await flow.to_list()(empty_stream())
     assert result == []
+
+
+@pytest.mark.asyncio
+async def test_memoize_stream():
+    """Test memoize_stream function with repeated keys."""
+    # Create a flow that caches items by their modulo 3 value
+    flow: Flow[int, int] = memoize_stream(lambda x: x % 3)
+
+    # Create test input stream
+    async def test_stream():
+        for i in [1, 4, 7, 2, 5, 8]:  # 1%3=1, 4%3=1, 7%3=1, 2%3=2, 5%3=2, 8%3=2
+            yield i
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should cache: 1 (key 1), 4 (key 1 cached -> yield 1), 7 (key 1 cached -> yield 1),
+    #               2 (key 2), 5 (key 2 cached -> yield 2), 8 (key 2 cached -> yield 2)
+    assert result == [1, 1, 1, 2, 2, 2]
+
+
+@pytest.mark.asyncio
+async def test_memoize_stream_string_keys():
+    """Test memoize_stream function with string key extraction."""
+    # Create a flow that caches items by their first letter
+    flow: Flow[str, str] = memoize_stream(lambda x: x[0])
+
+    # Create test input stream
+    async def test_stream():
+        for word in ["apple", "apricot", "banana", "berry", "avocado"]:
+            yield word
+
+    # Execute the flow
+    result: list[str] = await flow.to_list()(test_stream())
+
+    # Should cache: apple (key 'a'), apricot (key 'a' cached -> yield apple),
+    #               banana (key 'b'), berry (key 'b' cached -> yield banana),
+    #               avocado (key 'a' cached -> yield apple)
+    assert result == ["apple", "apple", "banana", "banana", "apple"]
+
+
+@pytest.mark.asyncio
+async def test_memoize_stream_no_duplicates():
+    """Test memoize_stream with all unique keys."""
+    flow: Flow[int, int] = memoize_stream(lambda x: x)
+
+    async def test_stream():
+        for i in range(5):
+            yield i
+
+    result: list[int] = await flow.to_list()(test_stream())
+    # All unique keys, so all items pass through unchanged
+    assert result == [0, 1, 2, 3, 4]
+
+
+@pytest.mark.asyncio
+async def test_memoize_stream_empty():
+    """Test memoize_stream with empty stream."""
+    flow: Flow[int, int] = memoize_stream(lambda x: x)
+
+    async def empty_stream():
+        return
+        yield  # pragma: no cover
+
+    result: list[int] = await flow.to_list()(empty_stream())
+    assert result == []
+
+
+@pytest.mark.asyncio
+async def test_memoize_stream_single_item():
+    """Test memoize_stream with single item."""
+    flow: Flow[str, str] = memoize_stream(lambda x: len(x))
+
+    async def test_stream():
+        yield "hello"
+
+    result: list[str] = await flow.to_list()(test_stream())
+    assert result == ["hello"]

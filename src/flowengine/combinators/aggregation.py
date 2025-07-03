@@ -216,3 +216,31 @@ def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
             first = False
 
     return Flow(_flow, name="pairwise")
+
+
+def memoize_stream(key_fn: Callable[[Input], K]) -> Flow[Input, Input]:
+    """Create a flow that caches items based on a key function.
+
+    Items with the same key are only processed once; subsequent items
+    with the same key yield the cached result.
+
+    Args:
+        key_fn: Function that extracts caching key from each item
+
+    Returns:
+        A flow that caches items by key
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Cache items based on key function."""
+        cache: dict[K, Input] = {}
+
+        async for item in stream:
+            key = key_fn(item)
+            if key in cache:
+                yield cache[key]
+            else:
+                cache[key] = item
+                yield item
+
+    return Flow(_flow, name=f"memoize({get_function_name(key_fn)})")
