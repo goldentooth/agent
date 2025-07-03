@@ -13,6 +13,14 @@ repos:
   # These run first and will abort early if basic formatting/style issues exist
   # Avoids running expensive Sphinx/pytest when there are simple formatting problems
 
+  # Ensure SKIP environment variable is not set!
+  - repo: local
+    hooks:
+      - id: check-skip-env
+        name: Check SKIP Environment Variable
+        language: system
+        entry: bash -c 'if [ -n "$SKIP" ]; then echo "SKIP environment variable is set. Please unset it before committing." >&2; exit 1; fi'
+
   # Basic file formatting
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -63,6 +71,10 @@ repos:
         exclude: ^old/
       - id: check-case-conflict
         description: Check for case conflicts in filenames
+        exclude: ^old/
+      - id: no-commit-to-branch
+        description: Prevent committing directly to main branches
+        args: ['--branch', 'main']
         exclude: ^old/
 
   # Python code formatting (complementary to Claude Code hooks)
@@ -247,5 +259,5 @@ default_language_version:
   python: python3.13
 
 # Global settings
-fail_fast: false
+fail_fast: true
 default_stages: [pre-commit]
