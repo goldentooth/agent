@@ -83,3 +83,28 @@ def filter_stream(predicate: Callable[[Input], bool]) -> Flow[Input, Input]:
                 yield item
 
     return Flow(_flow, name=f"filter({get_function_name(predicate)})")
+
+
+def map_stream(fn: Callable[[Input], Output]) -> Flow[Input, Output]:
+    """Create a flow that maps a function over each item in the stream.
+
+    Args:
+        fn: Function to apply to each item in the stream
+
+    Returns:
+        A flow that yields the result of applying fn to each stream item
+
+    Example:
+        double = lambda x: x * 2
+        doubler = map_stream(double)
+        # Use: doubled_numbers = doubler(number_stream)
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[Output, None]:
+        """Map function over each item in the stream."""
+        async for item in stream:
+            yield fn(item)
+
+    return Flow(_flow, name=f"map({get_function_name(fn)})")

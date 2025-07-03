@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from flowengine.combinators.basic import compose, filter_stream, run_fold
+from flowengine.combinators.basic import compose, filter_stream, map_stream, run_fold
 from flowengine.flow import Flow
 
 
@@ -42,6 +42,11 @@ def is_even(x: int) -> bool:
 def always_true(x: int) -> bool:
     """Always return True."""
     return True
+
+
+def length_and_upper(s: str) -> str:
+    """Transform string to UPPER:length format."""
+    return f"{s.upper()}:{len(s)}"
 
 
 class TestRunFold:
@@ -303,3 +308,80 @@ class TestFilterStream:
 
         positive_filter = filter_stream(is_positive)
         assert "filter(is_positive)" in positive_filter.name
+
+
+class TestMapStream:
+    """Test the map_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_map_stream_basic(self) -> None:
+        """Test map_stream with basic transformation."""
+
+        async def source():
+            for i in [1, 2, 3]:
+                yield i
+
+        doubler = map_stream(double)
+        result_stream = doubler(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [2, 4, 6]
+
+    @pytest.mark.asyncio
+    async def test_map_stream_type_transformation(self) -> None:
+        """Test map_stream with type transformation."""
+
+        async def source():
+            for i in [1, 2, 3]:
+                yield i
+
+        int_to_str_flow = map_stream(int_to_str)
+        result_stream = int_to_str_flow(source())
+        results: list[str] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == ["1", "2", "3"]
+
+    @pytest.mark.asyncio
+    async def test_map_stream_empty_input(self) -> None:
+        """Test map_stream with empty input stream."""
+
+        async def empty_source():
+            return
+            yield  # pragma: no cover
+
+        doubler = map_stream(double)
+        result_stream = doubler(empty_source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    @pytest.mark.asyncio
+    async def test_map_stream_complex_transformation(self) -> None:
+        """Test map_stream with complex transformation."""
+
+        async def source():
+            for word in ["hello", "world", "test"]:
+                yield word
+
+        transformer = map_stream(length_and_upper)
+        result_stream = transformer(source())
+        results: list[str] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == ["HELLO:5", "WORLD:5", "TEST:4"]
+
+    def test_map_stream_name_generation(self) -> None:
+        """Test that map_stream generates appropriate names."""
+
+        def square(x: int) -> int:
+            return x * x
+
+        square_mapper = map_stream(square)
+        assert "map(square)" in square_mapper.name
