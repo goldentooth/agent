@@ -252,3 +252,58 @@ class TestFlowRepr:
         assert "name=" in repr_str
         assert "fn=" in repr_str
         assert "metadata=" in repr_str
+
+
+class TestFlowAiter:
+    """Tests for Flow.__aiter__ method."""
+
+    def test_aiter_raises_type_error(self) -> None:
+        """Test that __aiter__ raises TypeError to prevent direct iteration."""
+
+        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield str(item)
+
+        flow = Flow(test_fn)
+
+        with pytest.raises(TypeError) as exc_info:
+            aiter(flow)
+
+        error_message = str(exc_info.value)
+        assert "Flows must be called with a stream" in error_message
+        assert "flow(stream)" in error_message
+
+    def test_aiter_error_message_content(self) -> None:
+        """Test that __aiter__ provides helpful error message."""
+
+        async def transform_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield f"transformed_{item}"
+
+        flow = Flow(transform_fn, name="transformer")
+
+        with pytest.raises(TypeError) as exc_info:
+            aiter(flow)
+
+        error_message = str(exc_info.value)
+        # Check that error message explains the correct usage
+        assert "Flows must be called with a stream to get an iterator" in error_message
+        assert "e.g., flow(stream)" in error_message
+
+    @pytest.mark.asyncio
+    async def test_aiter_prevents_async_for_direct_usage(self) -> None:
+        """Test that flows cannot be used directly in async for loops."""
+
+        async def simple_fn(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item * 2
+
+        flow = Flow(simple_fn)
+
+        # This should raise TypeError when trying to use flow directly
+        with pytest.raises(TypeError):
+            # This would attempt to call __aiter__(flow) internally
+            # We have to trigger it with aiter() since async comprehension
+            # syntax checking happens at compile time
+            async for item in flow:  # type: ignore[attr-defined]
+                pass

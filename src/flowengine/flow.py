@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Callable
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, NoReturn, TypeVar
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
@@ -31,4 +31,10 @@ class Flow(Generic[Input, Output]):
         """Rich representation for debugging and development."""
         return (
             f"<Flow name='{self.name}' fn={self.fn.__name__} metadata={self.metadata}>"
+        )
+
+    def __aiter__(self) -> NoReturn:
+        """Prevent direct iteration - flows must be called with a stream."""
+        raise TypeError(
+            "Flows must be called with a stream to get an iterator (e.g., flow(stream))"
         )
