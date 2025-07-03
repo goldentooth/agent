@@ -410,3 +410,33 @@ class Flow(Generic[Input, Output]):
                 yield item
 
         return Flow(_identity, name="identity")
+
+    @staticmethod
+    def pure(value: T) -> Flow[Any, T]:
+        """Create a flow that yields a single pure value.
+
+        Args:
+            value: The value to yield
+
+        Returns:
+            Flow that yields the given value once, ignoring input stream
+
+        Example::
+
+            # Create pure value flow
+            flow = Flow.pure("hello")
+
+            # Yields "hello" regardless of input
+            async def any_stream():
+                yield 1
+                yield 2
+
+            result = flow(any_stream())
+            items = [item async for item in result]  # ["hello"]
+        """
+
+        async def _pure(stream: AsyncIterator[Any]) -> AsyncIterator[T]:
+            # Ignore the input stream and yield the pure value once
+            yield value
+
+        return Flow(_pure, name=f"pure({value})")
