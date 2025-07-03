@@ -4,13 +4,15 @@
 
 This document outlines the detailed migration plan for extracting the Flow Engine from `old/goldentooth_agent/flow_engine` into the new codebase structure. The Flow Engine consists of **5,954 lines of source code** across **26 files** with **9,010 lines of comprehensive tests** across **18 test files**.
 
+**The migration of any single unit (a SINGLE function, SINGLE class method, SINGLE protocol, etc) and its accompanying tests MUST be in its own, discrete commit!**
+
 ## Key Statistics
 
 - **Source Files**: 26 Python files (5,954 total lines)
 - **Test Files**: 18 Python files (9,010 total lines)
 - **Dependencies**: Standard library only (no third-party)
 - **Context Integration**: Optional, with lazy loading architecture
-- **Estimated Commits**: ~1800 individual commits (one per unit, where a unit is a SINGLE function, class method, etc, and its accompanying tests)
+- **Estimated Commits**: ~1800 individual commits (one per unit, where a unit is a SINGLE function, class method, protocol, etc, and its accompanying tests)
 
 ## Migration Strategy
 

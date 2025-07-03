@@ -289,6 +289,10 @@ ignore_names = [
     "describe_*",
     "exec_*",
     "query_*",
+    # Protocol method parameters (interface definitions)
+    "key",
+    "value",
+    "stream",
 ]
 exclude = ["tests/", "examples/", "build/", "dist/", "__pycache__/"]
 
