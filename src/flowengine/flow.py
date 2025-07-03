@@ -149,3 +149,47 @@ class Flow(Generic[Input, Output]):
         if self.metadata:
             print("  metadata:", self.metadata)
         return self
+
+    def with_fallback(self, default: Output) -> "Flow[Input, Output]":
+        """Add a fallback value that's yielded if the flow produces no items.
+
+        Args:
+            default: Value to yield if the flow is empty
+
+        Returns:
+            New flow that yields the default value if original flow is empty
+        """
+
+        async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+            yielded_any = False
+            async for item in self(stream):
+                yielded_any = True
+                yield item
+            if not yielded_any:
+                yield default
+
+        return Flow(_flow, name=f"{self.name}.with_fallback({default})")
+
+    def batch(self, size: int) -> "Flow[Input, list[Output]]":
+        """Batch the output into groups of the specified size.
+
+        Args:
+            size: Number of items per batch
+
+        Returns:
+            Flow that yields lists of items
+        """
+
+        async def _batched(stream: AsyncIterator[Input]) -> AsyncIterator[list[Output]]:
+            output_stream = self(stream)
+            batch: list[Output] = []
+            async for item in output_stream:
+                batch.append(item)
+                if len(batch) >= size:
+                    yield batch
+                    batch = []
+            # Yield remaining items if any
+            if batch:
+                yield batch
+
+        return Flow(_batched, name=f"{self.name}.batch({size})")

@@ -95,10 +95,10 @@ def test_flowengine_package_imports():
 9. `for_each(fn)` - Consume flow with side effects ✅ DONE
 10. `to_list()` - Collect to list ✅ DONE
 11. `collect()` - Alias for to_list ✅ DONE
-12. `label(label)` - Add debug labels
-13. `preview(stream, limit)` - REPL-friendly preview
-14. `print()` - Chainable debug printing
-15. `with_fallback(default)` - Default value handling
+12. `label(label)` - Add debug labels ✅ DONE
+13. `preview(stream, limit)` - REPL-friendly preview ✅ DONE
+14. `print()` - Chainable debug printing ✅ DONE
+15. `with_fallback(default)` - Default value handling ✅ DONE
 16. `batch(size)` - Batch output into groups
 
 **Static factory methods**:
