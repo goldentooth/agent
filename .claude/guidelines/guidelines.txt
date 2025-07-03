@@ -1,8 +1,16 @@
-# Development Guidelines - Ten Commandments
+# Development Guidelines - Commandments
 
 These are the fundamental principles that govern all development work on this project. Every line of code, every test, and every commit must adhere to these commandments.
 
-## The Ten Commandments
+## The Commandments
+
+0. **Do not ever, ever, under any circumstances, bypass pre-commit checks.**
+   - Never use `git commit --no-verify`
+   - Never create temporary "override" configurations
+   - Never alter configurations to bypass checks
+   - Never use the SKIP environment variable
+   - If you believe a pre-commit hook is causing unnecessary hardship, ask me
+   - Pre-commit hooks ensure code quality and must always be respected
 
 1. **Do not write any code without a failing test.**
    - Every function, class, and feature must be driven by tests
