@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
-from typing import Any, Generic, NoReturn, TypeVar, overload
+from typing import Any, Generic, NoReturn, TypeVar, Union, overload
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
@@ -330,3 +330,56 @@ class Flow(Generic[Input, Output]):
                 yield item
 
         return Flow(_wrapper, name="from_iterable")
+
+    @staticmethod
+    def from_emitter(
+        register: Union[
+            Callable[[Callable[[T], None]], None],
+            Callable[[Callable[[T], None]], Awaitable[None]],
+        ]
+    ) -> Flow[Any, T]:
+        """Create a flow from an emitter system that registers callbacks.
+
+        Args:
+            register: Function that registers a callback. Can be sync or async.
+                      The callback will be called with emitted values.
+
+        Returns:
+            Flow that yields all values emitted through the callback system
+
+        Example::
+
+            # Sync emitter
+            def setup_callbacks(callback):
+                callback("event1")
+                callback("event2")
+
+            flow = Flow.from_emitter(setup_callbacks)
+
+            # Async emitter
+            async def setup_async_callbacks(callback):
+                await some_async_setup()
+                callback("async_event")
+
+            flow = Flow.from_emitter(setup_async_callbacks)
+        """
+
+        async def _wrapper(stream: AsyncIterator[Any]) -> AsyncIterator[T]:
+            # Ignore the input stream and collect emitted values
+            emitted_values: list[T] = []
+
+            def callback(value: T) -> None:
+                emitted_values.append(value)
+
+            # Call the register function with our callback
+            result = register(callback)
+
+            # If register function is async, await it
+            if result is not None and hasattr(result, "__await__"):
+                await result
+
+            # Yield all collected values
+            for value in emitted_values:
+                yield value
+
+        return Flow(_wrapper, name="from_emitter")
