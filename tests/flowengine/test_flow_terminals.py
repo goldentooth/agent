@@ -618,3 +618,170 @@ class TestFlowPreview:
 
         result = await flow.preview(empty_stream(), limit=0)
         assert result == []
+
+
+class TestFlowPrint:
+    """Tests for Flow.print method."""
+
+    def test_print_returns_self(self, capsys: pytest.CaptureFixture[str]) -> None:
+        """Test that print returns the same flow instance for chaining."""
+
+        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield str(item)
+
+        flow = Flow(test_fn, name="test_flow")
+        result = flow.print()
+
+        assert result is flow
+
+    def test_print_outputs_flow_information(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test that print outputs flow name and function information."""
+
+        async def transform_data(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield f"data_{item}"
+
+        flow = Flow(transform_data, name="transformer")
+        flow.print()
+
+        captured = capsys.readouterr()
+        assert "📦 Flow<transformer> :: transform_data" in captured.out
+
+    def test_print_outputs_metadata_when_present(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test that print outputs metadata when flow has metadata."""
+
+        async def process_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield str(item * 2)
+
+        metadata = {"version": 1, "type": "processor", "description": "doubles numbers"}
+        flow = Flow(process_fn, name="doubler", metadata=metadata)
+        flow.print()
+
+        captured = capsys.readouterr()
+        assert "📦 Flow<doubler> :: process_fn" in captured.out
+        assert "metadata:" in captured.out
+        assert "version" in captured.out
+        assert "processor" in captured.out
+
+    def test_print_no_metadata_output_when_empty(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test that print doesn't output metadata section when empty."""
+
+        async def simple_fn(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item
+
+        flow = Flow(simple_fn, name="simple")
+        flow.print()
+
+        captured = capsys.readouterr()
+        assert "📦 Flow<simple> :: simple_fn" in captured.out
+        assert "metadata:" not in captured.out
+
+    def test_print_with_anonymous_flow(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test that print works with anonymous flows."""
+
+        async def anonymous_fn(stream: AsyncIterator[str]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield item.upper()
+
+        flow = Flow(anonymous_fn)  # No name provided
+        flow.print()
+
+        captured = capsys.readouterr()
+        assert "📦 Flow<<anonymous>> :: anonymous_fn" in captured.out
+
+    def test_print_preserves_type_signature(self) -> None:
+        """Test that print preserves the flow's type signature."""
+
+        async def typed_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield len(item)
+
+        flow = Flow(typed_fn, name="length_calculator")
+        printed_flow = flow.print()
+
+        # Should be the same instance with same type signature
+        assert printed_flow is flow
+        assert printed_flow.name == "length_calculator"
+
+    def test_print_chainable_with_other_methods(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test that print can be chained with other flow operations."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [1, 2, 3]:
+                yield i
+
+        def double(x: int) -> int:
+            return x * 2
+
+        flow = Flow(source_fn, name="source")
+        chained_flow = flow.print().map(double)
+
+        # Check that print was called
+        captured = capsys.readouterr()
+        assert "📦 Flow<source> :: source_fn" in captured.out
+
+        # Check that chaining worked
+        assert chained_flow.name == "source.map(double)"
+        assert chained_flow is not flow
+
+    @pytest.mark.asyncio
+    async def test_print_works_with_execution(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Test that print doesn't interfere with flow execution."""
+
+        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield f"item_{item}"
+
+        flow = Flow(test_fn, name="formatter")
+        printed_flow = flow.print()
+
+        async def int_stream() -> AsyncIterator[int]:
+            for i in [10, 20]:
+                yield i
+
+        result = printed_flow(int_stream())
+        items = [item async for item in result]
+
+        # Check print output
+        captured = capsys.readouterr()
+        assert "📦 Flow<formatter> :: test_fn" in captured.out
+
+        # Check execution worked correctly
+        assert items == ["item_10", "item_20"]
+
+    def test_print_multiple_times(self, capsys: pytest.CaptureFixture[str]) -> None:
+        """Test that print can be called multiple times."""
+
+        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield item
+
+        flow = Flow(test_fn, name="test", metadata={"debug": True})
+
+        flow.print()
+        flow.print()
+
+        captured = capsys.readouterr()
+        output_lines = captured.out.strip().split("\n")
+
+        # Should have printed twice
+        flow_lines = [line for line in output_lines if "📦 Flow<test>" in line]
+        assert len(flow_lines) == 2
+
+        metadata_lines = [line for line in output_lines if "metadata:" in line]
+        assert len(metadata_lines) == 2

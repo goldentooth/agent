@@ -138,3 +138,14 @@ class Flow(Generic[Input, Output]):
             if hasattr(async_iter, "aclose"):
                 await async_iter.aclose()  # type: ignore[attr-defined]
         return results
+
+    def print(self) -> "Flow[Input, Output]":
+        """Print flow information for debugging (chainable).
+
+        Returns:
+            Self for method chaining
+        """
+        print(f"📦 Flow<{self.name}> :: {self.fn.__name__}")
+        if self.metadata:
+            print("  metadata:", self.metadata)
+        return self
