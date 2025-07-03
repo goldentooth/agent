@@ -6,6 +6,8 @@ This document outlines the detailed migration plan for extracting the Flow Engin
 
 **The migration of any single unit (a SINGLE function, SINGLE class method, SINGLE protocol, etc) and its accompanying tests MUST be in its own, discrete commit!**
 
+Please mark each epic ✅ DONE! as you complete it.
+
 ## Key Statistics
 
 - **Source Files**: 26 Python files (5,954 total lines)
@@ -56,7 +58,7 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 ### Phase 1B: Combinator Utilities (Epics 5-8)
 
-**Epic 5: Migrate combinator utilities**
+**Epic 5: Migrate combinator utilities ✅ DONE!**
 - File: `src/flowengine/combinators/utils.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/utils.py` (28 lines)
 - Tests: `tests/flowengine/combinators/test_utils.py`
