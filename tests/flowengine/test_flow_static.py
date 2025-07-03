@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator
 
 import pytest
@@ -421,3 +422,238 @@ class TestFlowFromSyncFn:
 
         assert items == ["A", "B"]
         assert processed_items == ["processed_a", "processed_b"]
+
+
+class TestFlowFromEventFn:
+    """Tests for Flow.from_event_fn static method."""
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_creates_flow_from_async_iterator_function(
+        self,
+    ) -> None:
+        """Test that from_event_fn creates a flow from an async iterator function."""
+
+        async def split_lines(text: str) -> AsyncIterator[str]:
+            for line in text.split("\n"):
+                yield line
+
+        flow = Flow.from_event_fn(split_lines)
+
+        async def text_stream() -> AsyncIterator[str]:
+            yield "hello\nworld"
+            yield "foo\nbar\nbaz"
+
+        result = flow(text_stream())
+        items = [item async for item in result]
+
+        assert items == ["hello", "world", "foo", "bar", "baz"]
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_as_decorator(self) -> None:
+        """Test that from_event_fn can be used as a decorator."""
+
+        @Flow.from_event_fn
+        async def split_words(text: str) -> AsyncIterator[str]:
+            for word in text.split():
+                yield word.upper()
+
+        async def text_stream() -> AsyncIterator[str]:
+            yield "hello world"
+            yield "foo bar"
+
+        result = split_words(text_stream())
+        items = [item async for item in result]
+
+        assert items == ["HELLO", "WORLD", "FOO", "BAR"]
+
+    def test_from_event_fn_sets_function_name(self) -> None:
+        """Test that from_event_fn uses the function name for the flow."""
+
+        async def process_data(x: int) -> AsyncIterator[str]:
+            for i in range(x):
+                yield f"item_{i}"
+
+        flow = Flow.from_event_fn(process_data)
+
+        assert flow.name == "process_data"
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_with_empty_stream(self) -> None:
+        """Test that from_event_fn works with empty streams."""
+
+        async def generate_range(n: int) -> AsyncIterator[int]:
+            for i in range(n):
+                yield i
+
+        flow = Flow.from_event_fn(generate_range)
+
+        async def empty_stream() -> AsyncIterator[int]:
+            return
+            yield  # pragma: no cover
+
+        result = flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == []
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_preserves_types(self) -> None:
+        """Test that from_event_fn preserves input/output types."""
+
+        async def duplicate_items(s: str) -> AsyncIterator[int]:
+            for _ in range(2):
+                yield len(s)
+
+        flow = Flow.from_event_fn(duplicate_items)
+
+        async def string_stream() -> AsyncIterator[str]:
+            yield "ab"
+            yield "cde"
+
+        result = flow(string_stream())
+        items = [item async for item in result]
+
+        assert items == [2, 2, 3, 3]
+        assert all(isinstance(item, int) for item in items)
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_with_single_item(self) -> None:
+        """Test that from_event_fn works with single item streams."""
+
+        async def explode_number(n: int) -> AsyncIterator[int]:
+            for i in range(1, n + 1):
+                yield i * i
+
+        flow = Flow.from_event_fn(explode_number)
+
+        async def single_stream() -> AsyncIterator[int]:
+            yield 3
+
+        result = flow(single_stream())
+        items = [item async for item in result]
+
+        assert items == [1, 4, 9]  # 1^2, 2^2, 3^2
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_chaining(self) -> None:
+        """Test that flows from from_event_fn can be chained."""
+
+        async def duplicate(x: int) -> AsyncIterator[int]:
+            yield x
+            yield x
+
+        def add_ten(x: int) -> int:
+            return x + 10
+
+        event_flow = Flow.from_event_fn(duplicate)
+        sync_flow = Flow.from_sync_fn(add_ten)
+        chained = event_flow >> sync_flow
+
+        async def int_stream() -> AsyncIterator[int]:
+            for i in [1, 2]:
+                yield i
+
+        result = chained(int_stream())
+        items = [item async for item in result]
+
+        assert items == [11, 11, 12, 12]  # (1+10, 1+10, 2+10, 2+10)
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_error_handling(self) -> None:
+        """Test that from_event_fn properly propagates exceptions."""
+
+        async def failing_generator(x: int) -> AsyncIterator[int]:
+            yield x
+            if x == 2:
+                raise ValueError("Test error")
+            yield x * 2
+
+        flow = Flow.from_event_fn(failing_generator)
+
+        async def int_stream() -> AsyncIterator[int]:
+            for i in [1, 2, 3]:
+                yield i
+
+        result = flow(int_stream())
+
+        # Should get some items, then error
+        items = []
+        with pytest.raises(ValueError, match="Test error"):
+            async for item in result:
+                items.append(item)
+
+        assert items == [1, 2, 2]  # 1, 1*2, 2 (then error before 2*2)
+
+    def test_from_event_fn_without_argument_returns_decorator(self) -> None:
+        """Test that from_event_fn() without argument returns a decorator."""
+
+        decorator = Flow.from_event_fn()
+        assert callable(decorator)
+
+        async def test_func(x: str) -> AsyncIterator[str]:
+            for char in x:
+                yield char
+
+        flow = decorator(test_func)
+        assert isinstance(flow, Flow)
+        assert flow.name == "test_func"
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_with_empty_generators(self) -> None:
+        """Test from_event_fn with functions that can return empty generators."""
+
+        async def conditional_generate(x: int) -> AsyncIterator[str]:
+            if x > 0:
+                for i in range(x):
+                    yield f"item_{i}"
+
+        flow = Flow.from_event_fn(conditional_generate)
+
+        async def mixed_stream() -> AsyncIterator[int]:
+            yield 0  # Should produce no items
+            yield 2  # Should produce 2 items
+            yield -1  # Should produce no items
+
+        result = flow(mixed_stream())
+        items = [item async for item in result]
+
+        assert items == ["item_0", "item_1"]
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_flattening_behavior(self) -> None:
+        """Test that from_event_fn properly flattens nested async iterators."""
+
+        async def create_pairs(n: int) -> AsyncIterator[tuple[int, int]]:
+            for i in range(n):
+                yield (i, i * 2)
+
+        flow = Flow.from_event_fn(create_pairs)
+
+        async def int_stream() -> AsyncIterator[int]:
+            yield 2
+            yield 1
+
+        result = flow(int_stream())
+        items = [item async for item in result]
+
+        assert items == [(0, 0), (1, 2), (0, 0)]
+
+    @pytest.mark.asyncio
+    async def test_from_event_fn_with_async_operations(self) -> None:
+        """Test from_event_fn with functions containing async operations."""
+
+        async def async_expand(text: str) -> AsyncIterator[str]:
+            for char in text:
+                # Simulate async operation
+                await asyncio.sleep(0.001)
+                yield char.upper()
+
+        flow = Flow.from_event_fn(async_expand)
+
+        async def text_stream() -> AsyncIterator[str]:
+            yield "ab"
+
+        result = flow(text_stream())
+        items = [item async for item in result]
+
+        assert items == ["A", "B"]

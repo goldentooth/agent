@@ -235,6 +235,43 @@ class Flow(Generic[Input, Output]):
 
     @staticmethod
     @overload
+    def from_event_fn(fn: Callable[[T], AsyncIterator[U]]) -> Flow[T, U]: ...
+
+    @staticmethod
+    @overload
+    def from_event_fn(
+        fn: None = None,
+    ) -> Callable[[Callable[[T], AsyncIterator[U]]], Flow[T, U]]: ...
+
+    @staticmethod
+    def from_event_fn(
+        fn: Callable[[T], AsyncIterator[U]] | None = None,
+    ) -> Flow[T, U] | Callable[[Callable[[T], AsyncIterator[U]]], Flow[T, U]]:
+        """Create a flow from an async function that returns an async iterator.
+
+        Can be used as a decorator::
+
+            @Flow.from_event_fn
+            async def split_lines(text):
+                for line in text.split('\\n'):
+                    yield line
+        """
+
+        def decorator(f: Callable[[T], AsyncIterator[U]]) -> Flow[T, U]:
+            async def _wrapper(stream: AsyncIterator[T]) -> AsyncIterator[U]:
+                async for item in stream:
+                    async for sub in f(item):
+                        yield sub
+
+            return Flow(_wrapper, name=f.__name__)
+
+        if fn is None:
+            return decorator
+        else:
+            return decorator(fn)
+
+    @staticmethod
+    @overload
     def from_sync_fn(fn: Callable[[T], U]) -> Flow[T, U]: ...
 
     @staticmethod
