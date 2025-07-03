@@ -7,6 +7,7 @@ import pytest
 from flowengine.combinators.aggregation import (
     batch_stream,
     chunk_stream,
+    distinct_stream,
     group_by_stream,
     scan_stream,
     window_stream,
@@ -333,3 +334,84 @@ async def test_group_by_stream_single_group():
 
     result: list[tuple[str, list[int]]] = await flow.to_list()(test_stream())
     assert result == [("same", [0, 1, 2])]
+
+
+@pytest.mark.asyncio
+async def test_distinct_stream():
+    """Test distinct_stream function without key function."""
+    # Create a flow that filters out duplicate items
+    flow: Flow[int, int] = distinct_stream()
+
+    # Create test input stream with duplicates
+    async def test_stream():
+        for i in [1, 2, 3, 2, 4, 1, 5, 3]:
+            yield i
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should produce only distinct items in order of first appearance
+    assert result == [1, 2, 3, 4, 5]
+
+
+@pytest.mark.asyncio
+async def test_distinct_stream_with_key():
+    """Test distinct_stream function with key function."""
+    # Create a flow that filters duplicates by absolute value
+    flow: Flow[int, int] = distinct_stream(key_fn=abs)
+
+    # Create test input stream
+    async def test_stream():
+        for i in [1, -1, 2, -2, 3, 1, -3]:
+            yield i
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should keep first occurrence by absolute value
+    assert result == [1, 2, 3]
+
+
+@pytest.mark.asyncio
+async def test_distinct_stream_strings():
+    """Test distinct_stream function with strings by length."""
+    # Create a flow that filters duplicates by string length
+    flow: Flow[str, str] = distinct_stream(key_fn=len)
+
+    # Create test input stream
+    async def test_stream():
+        for word in ["a", "bb", "c", "dd", "eee", "f"]:
+            yield word
+
+    # Execute the flow
+    result: list[str] = await flow.to_list()(test_stream())
+
+    # Should keep first occurrence of each length
+    assert result == ["a", "bb", "eee"]
+
+
+@pytest.mark.asyncio
+async def test_distinct_stream_empty():
+    """Test distinct_stream with empty stream."""
+    flow: Flow[int, int] = distinct_stream()
+
+    async def empty_stream():
+        return
+        yield  # pragma: no cover
+
+    result: list[int] = await flow.to_list()(empty_stream())
+    assert result == []
+
+
+@pytest.mark.asyncio
+async def test_distinct_stream_no_duplicates():
+    """Test distinct_stream with no duplicates."""
+    flow: Flow[int, int] = distinct_stream()
+
+    async def test_stream():
+        for i in range(5):
+            yield i
+
+    result: list[int] = await flow.to_list()(test_stream())
+    # Should return all items since no duplicates
+    assert result == [0, 1, 2, 3, 4]

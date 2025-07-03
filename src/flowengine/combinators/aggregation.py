@@ -165,3 +165,29 @@ def group_by_stream(key_fn: Callable[[Input], K]) -> Flow[Input, tuple[K, list[I
             yield (key, items)
 
     return Flow(_flow, name=f"group_by({get_function_name(key_fn)})")
+
+
+def distinct_stream(key_fn: Callable[[Input], K] | None = None) -> Flow[Input, Input]:
+    """Create a flow that filters out duplicate items.
+
+    Uses a key function to determine uniqueness, or the items themselves if no key function.
+
+    Args:
+        key_fn: Optional function to extract comparison key (defaults to item itself)
+
+    Returns:
+        A flow that yields only distinct items
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Filter out duplicate items."""
+        seen: set[K | Input] = set()
+
+        async for item in stream:
+            key = key_fn(item) if key_fn else item
+            if key not in seen:
+                seen.add(key)
+                yield item
+
+    key_name = f"({get_function_name(key_fn)})" if key_fn else ""
+    return Flow(_flow, name=f"distinct{key_name}")
