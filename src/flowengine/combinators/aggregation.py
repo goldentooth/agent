@@ -191,3 +191,28 @@ def distinct_stream(key_fn: Callable[[Input], K] | None = None) -> Flow[Input, I
 
     key_name = f"({get_function_name(key_fn)})" if key_fn else ""
     return Flow(_flow, name=f"distinct{key_name}")
+
+
+def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
+    """Create a flow that emits consecutive pairs of items.
+
+    Emits tuples of (previous_item, current_item) for each item after the first.
+
+    Returns:
+        A flow that yields consecutive pairs
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[tuple[Input, Input], None]:
+        """Emit consecutive pairs of items."""
+        previous: Input | None = None
+        first = True
+
+        async for item in stream:
+            if not first:
+                yield (previous, item)  # type: ignore[arg-type]
+            previous = item
+            first = False
+
+    return Flow(_flow, name="pairwise")

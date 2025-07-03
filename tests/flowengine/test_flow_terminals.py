@@ -196,7 +196,7 @@ class TestFlowForEach:
                 yield s
 
         # Track what items were processed
-        processed_items = []
+        processed_items: list[str] = []
 
         async def process_item(item: str) -> None:
             processed_items.append(item.upper())
@@ -223,7 +223,7 @@ class TestFlowForEach:
             yield  # pragma: no cover
 
         # Track what items were processed
-        processed_items = []
+        processed_items: list[int] = []
 
         async def process_item(item: int) -> None:
             processed_items.append(item * 2)
@@ -250,7 +250,7 @@ class TestFlowForEach:
                 yield i
 
         # Track processing order
-        processed_order = []
+        processed_order: list[int] = []
 
         async def process_item(item: int) -> None:
             processed_order.append(item)
@@ -283,7 +283,7 @@ class TestFlowForEach:
             return x * x
 
         # Track processed results
-        processed_items = []
+        processed_items: list[int] = []
 
         async def collect_item(item: int) -> None:
             processed_items.append(item)
@@ -310,7 +310,7 @@ class TestFlowForEach:
             async for item in stream:
                 yield str(item)
 
-        processed_items = []
+        processed_items: list[str] = []
 
         async def process_item(item: str) -> None:
             processed_items.append(f"processed_{item}")
@@ -340,7 +340,7 @@ class TestFlowForEach:
                 yield s
 
         # Simulate logging side effect
-        log_messages = []
+        log_messages: list[str] = []
 
         async def log_message(level: str) -> None:
             log_messages.append(f"LOG[{level.upper()}]: Message received")
@@ -374,7 +374,7 @@ class TestFlowForEach:
             async for item in stream:
                 yield len(item)
 
-        processed_items = []
+        processed_items: list[str] = []
 
         async def process_item(length: int) -> None:
             processed_items.append(f"length:{length}")

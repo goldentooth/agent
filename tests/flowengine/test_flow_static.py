@@ -151,7 +151,7 @@ class TestFlowFromValueFn:
         result = flow(int_stream())
 
         # Should get first item, then error on second
-        items = []
+        items: list[int] = []
         with pytest.raises(ValueError, match="Test error"):
             async for item in result:
                 items.append(item)
@@ -333,7 +333,7 @@ class TestFlowFromSyncFn:
         result = flow(int_stream())
 
         # Should get first item, then error on second
-        items = []
+        items: list[int] = []
         with pytest.raises(ValueError, match="Test error"):
             async for item in result:
                 items.append(item)
@@ -405,7 +405,7 @@ class TestFlowFromSyncFn:
     async def test_from_sync_fn_with_side_effects(self) -> None:
         """Test that from_sync_fn works with functions that have side effects."""
 
-        processed_items = []
+        processed_items: list[str] = []
 
         def process_with_side_effect(x: str) -> str:
             processed_items.append(f"processed_{x}")
@@ -577,7 +577,7 @@ class TestFlowFromEventFn:
         result = flow(int_stream())
 
         # Should get some items, then error
-        items = []
+        items: list[int] = []
         with pytest.raises(ValueError, match="Test error"):
             async for item in result:
                 items.append(item)

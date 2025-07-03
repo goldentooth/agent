@@ -278,7 +278,7 @@ def collect_stream() -> Flow[Input, list[Input]]:
         stream: AsyncGenerator[Input, None]
     ) -> AsyncGenerator[list[Input], None]:
         """Collect all items into a single list."""
-        items = []
+        items: list[Input] = []
         async for item in stream:
             items.append(item)
         yield items

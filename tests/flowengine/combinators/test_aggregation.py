@@ -9,6 +9,7 @@ from flowengine.combinators.aggregation import (
     chunk_stream,
     distinct_stream,
     group_by_stream,
+    pairwise_stream,
     scan_stream,
     window_stream,
 )
@@ -415,3 +416,78 @@ async def test_distinct_stream_no_duplicates():
     result: list[int] = await flow.to_list()(test_stream())
     # Should return all items since no duplicates
     assert result == [0, 1, 2, 3, 4]
+
+
+@pytest.mark.asyncio
+async def test_pairwise_stream():
+    """Test pairwise_stream function."""
+    # Create a flow that emits consecutive pairs
+    flow: Flow[int, tuple[int, int]] = pairwise_stream()
+
+    # Create test input stream
+    async def test_stream():
+        for i in range(5):  # 0, 1, 2, 3, 4
+            yield i
+
+    # Execute the flow
+    result: list[tuple[int, int]] = await flow.to_list()(test_stream())
+
+    # Should produce consecutive pairs
+    assert result == [(0, 1), (1, 2), (2, 3), (3, 4)]
+
+
+@pytest.mark.asyncio
+async def test_pairwise_stream_strings():
+    """Test pairwise_stream function with strings."""
+    flow: Flow[str, tuple[str, str]] = pairwise_stream()
+
+    # Create test input stream
+    async def test_stream():
+        for letter in ["a", "b", "c", "d"]:
+            yield letter
+
+    # Execute the flow
+    result: list[tuple[str, str]] = await flow.to_list()(test_stream())
+
+    # Should produce consecutive string pairs
+    assert result == [("a", "b"), ("b", "c"), ("c", "d")]
+
+
+@pytest.mark.asyncio
+async def test_pairwise_stream_single_item():
+    """Test pairwise_stream with single item."""
+    flow: Flow[int, tuple[int, int]] = pairwise_stream()
+
+    async def test_stream():
+        yield 42
+
+    result: list[tuple[int, int]] = await flow.to_list()(test_stream())
+    # Should produce no pairs since only one item
+    assert result == []
+
+
+@pytest.mark.asyncio
+async def test_pairwise_stream_two_items():
+    """Test pairwise_stream with exactly two items."""
+    flow: Flow[int, tuple[int, int]] = pairwise_stream()
+
+    async def test_stream():
+        yield 1
+        yield 2
+
+    result: list[tuple[int, int]] = await flow.to_list()(test_stream())
+    # Should produce one pair
+    assert result == [(1, 2)]
+
+
+@pytest.mark.asyncio
+async def test_pairwise_stream_empty():
+    """Test pairwise_stream with empty stream."""
+    flow: Flow[int, tuple[int, int]] = pairwise_stream()
+
+    async def empty_stream():
+        return
+        yield  # pragma: no cover
+
+    result: list[tuple[int, int]] = await flow.to_list()(empty_stream())
+    assert result == []

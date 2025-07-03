@@ -41,3 +41,6 @@
 39. Let's remove that code that checks if the embedding length is equal to 0 in 'src/goldentooth_agent/core/embeddings/vector_store.py'. Instead, while we're in "development mode", let's just nuke the DB semi-regularly and rebuild it.
 40. Why are RAG imports timing out after two minutes? What can we do to address this?
 41. Add a `docs types` command to list the types of documents supported in our RAG implementation.
+42. What can we do to interestingly and effectively integrate the flow system with Jupyter, etc?
+43. We can add a semi-persistent database with SQLite; this can host local RAG, perhaps some other local stuff that's not critical for long-term preservation. How can we make this absolutely bulletproof, highly observable, and maintainable?
+44. Revisit `agent-knowledge-base`. Is this still valuable? What if we get into 100,000-1,000,000 files? Does this just become absurd, and should we abandon it now?
