@@ -8,6 +8,7 @@ from typing import List, Optional
 
 from .core import ValidationResult, ValidationSeverity
 from .file_validator import FileLengthValidator
+from .function_validator import FunctionLengthValidator
 from .module_validator import ModuleSizeValidator
 
 DEFAULT_EXCLUDE_PATTERNS = [
@@ -212,11 +213,82 @@ def check_module_size_warnings() -> int:
     return 0  # Always succeed for warnings
 
 
+def check_function_length() -> int:
+    """Check function lengths (blocking hook)."""
+    limit = int(os.environ.get("FUNCTION_LENGTH_LIMIT", "15"))
+    validator = FunctionLengthValidator(
+        limit=limit,
+        exclude_patterns=DEFAULT_EXCLUDE_PATTERNS,
+    )
+
+    # Get files to check
+    if (
+        subprocess.run(
+            ["git", "rev-parse", "--git-dir"], capture_output=True
+        ).returncode
+        == 0
+    ):
+        files = get_staged_files()
+    else:
+        files = get_all_files()
+
+    if not files:
+        print("✅ Function length check: No files to check")
+        return 0
+
+    results: List[ValidationResult] = []
+    for file_path in files:
+        result = validator.validate(file_path)
+        if result and result.severity == ValidationSeverity.ERROR:
+            results.append(result)
+
+    print_results(results, "Function length check")
+    return 1 if results else 0
+
+
+def check_function_length_warnings() -> int:
+    """Check function lengths (warning hook)."""
+    limit = int(os.environ.get("FUNCTION_LENGTH_LIMIT", "15"))
+    warn_threshold = int(os.environ.get("FUNCTION_LENGTH_WARN_THRESHOLD", "10"))
+    urgent_threshold = int(os.environ.get("FUNCTION_LENGTH_URGENT_THRESHOLD", "13"))
+
+    validator = FunctionLengthValidator(
+        limit=limit,
+        warn_threshold=warn_threshold,
+        urgent_threshold=urgent_threshold,
+        exclude_patterns=DEFAULT_EXCLUDE_PATTERNS,
+    )
+
+    # Get files to check
+    if (
+        subprocess.run(
+            ["git", "rev-parse", "--git-dir"], capture_output=True
+        ).returncode
+        == 0
+    ):
+        files = get_staged_files()
+    else:
+        files = get_all_files()
+
+    if not files:
+        print("✅ Function length warnings: No files to check")
+        return 0
+
+    results: List[ValidationResult] = []
+    for file_path in files:
+        result = validator.validate(file_path)
+        if result:
+            results.append(result)
+
+    print_results(results, "Function length warnings")
+    return 0  # Always succeed for warnings
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python -m src.git_hooks.cli <hook_type>")
         print(
-            "Hook types: file_length, file_length_warnings, module_size, module_size_warnings"
+            "Hook types: file_length, file_length_warnings, module_size, module_size_warnings, function_length, function_length_warnings"
         )
         sys.exit(1)
 
@@ -230,6 +302,10 @@ if __name__ == "__main__":
         sys.exit(check_module_size())
     elif hook_type == "module_size_warnings":
         sys.exit(check_module_size_warnings())
+    elif hook_type == "function_length":
+        sys.exit(check_function_length())
+    elif hook_type == "function_length_warnings":
+        sys.exit(check_function_length_warnings())
     else:
         print(f"Unknown hook type: {hook_type}")
         sys.exit(1)

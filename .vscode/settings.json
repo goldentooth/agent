@@ -21,6 +21,10 @@
   ],
   "ruff.enable": true,
   "mypy-type-checker.enable": true,
+  "terminal.integrated.enableVisualBell": true,
+  "accessibility.signals.terminalBell": {
+    "sound": "on"
+  },
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true

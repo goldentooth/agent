@@ -109,6 +109,8 @@ file-length = "python -m src.git_hooks.cli file_length"
 file-length-warnings = "python -m src.git_hooks.cli file_length_warnings"
 module-size = "python -m src.git_hooks.cli module_size"
 module-size-warnings = "python -m src.git_hooks.cli module_size_warnings"
+function-length = "python -m src.git_hooks.cli function_length"
+function-length-warnings = "python -m src.git_hooks.cli function_length_warnings"
 
 [tool.mypy]
 # Strict type checking configuration aligned with Pylance standards

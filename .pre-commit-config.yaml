@@ -135,6 +135,25 @@ repos:
         pass_filenames: false
         always_run: true
 
+      # Function length validation (enforce guideline #3)
+      # COMMENTED OUT - Enable when ready to enforce function length limits
+      # - id: function-length-warnings
+      #   name: Function Length Warning Check
+      #   entry: poetry run poe function-length-warnings
+      #   language: system
+      #   description: Show proactive warnings for functions approaching size limits
+      #   pass_filenames: false
+      #   always_run: true
+      #   verbose: true
+
+      # - id: function-length-check
+      #   name: Function Length Validation
+      #   entry: poetry run poe function-length
+      #   language: system
+      #   description: Ensure functions don't exceed 15 lines (guideline #3)
+      #   pass_filenames: false
+      #   always_run: true
+
   # =============================================================================
   # PHASE 2: METADATA & DOCUMENTATION UPDATES
   # =============================================================================
