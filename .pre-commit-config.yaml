@@ -77,10 +77,10 @@ repos:
     hooks:
       - id: mypy
         name: MyPy Type Check
-        entry: poetry run mypy
+        entry: poetry run poe mypy
         language: system
         types: [python]
-        args: ['src', '--strict', '--show-error-codes', '--pretty']
+        args: ['--strict', '--show-error-codes', '--pretty']
         description: Run MyPy type checking (critical - fail fast)
         pass_filenames: false
         always_run: true

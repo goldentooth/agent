@@ -32,7 +32,10 @@ dependencies = [
 scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 
 [tool.poetry]
-packages = [{ include = "goldentooth_agent", from = "src" }]
+packages = [
+    { include = "goldentooth_agent", from = "src" },
+    { include = "git_hooks", from = "src" }
+]
 include = [
     { path = "src/goldentooth_agent/data/system_prompts/*.yaml", format = [
         "sdist",
