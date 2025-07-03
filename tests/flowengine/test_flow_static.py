@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator
+from typing import AsyncGenerator
 
 import pytest
 
@@ -20,7 +20,7 @@ class TestFlowFromValueFn:
 
         flow = Flow.from_value_fn(double_async)
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -37,7 +37,7 @@ class TestFlowFromValueFn:
         async def process_item(x: str) -> str:
             return x.upper()
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             for s in ["hello", "world"]:
                 yield s
 
@@ -65,7 +65,7 @@ class TestFlowFromValueFn:
 
         flow = Flow.from_value_fn(add_ten)
 
-        async def empty_stream() -> AsyncIterator[int]:
+        async def empty_stream() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -83,7 +83,7 @@ class TestFlowFromValueFn:
 
         flow = Flow.from_value_fn(length_func)
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             for s in ["a", "bb", "ccc"]:
                 yield s
 
@@ -102,7 +102,7 @@ class TestFlowFromValueFn:
 
         flow = Flow.from_value_fn(square)
 
-        async def single_stream() -> AsyncIterator[int]:
+        async def single_stream() -> AsyncGenerator[int, None]:
             yield 5
 
         result = flow(single_stream())
@@ -124,7 +124,7 @@ class TestFlowFromValueFn:
         flow2 = Flow.from_value_fn(multiply_two)
         chained = flow1 >> flow2
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -144,7 +144,7 @@ class TestFlowFromValueFn:
 
         flow = Flow.from_value_fn(failing_func)
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -180,7 +180,7 @@ class TestFlowFromValueFn:
 
         flow = Flow.from_value_fn(process_dict)
 
-        async def dict_stream() -> AsyncIterator[dict[str, int]]:
+        async def dict_stream() -> AsyncGenerator[dict[str, int], None]:
             yield {"a": 1, "b": 2}
             yield {"x": 10}
 
@@ -202,7 +202,7 @@ class TestFlowFromSyncFn:
 
         flow = Flow.from_sync_fn(double_sync)
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -219,7 +219,7 @@ class TestFlowFromSyncFn:
         def process_item(x: str) -> str:
             return x.upper()
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             for s in ["hello", "world"]:
                 yield s
 
@@ -247,7 +247,7 @@ class TestFlowFromSyncFn:
 
         flow = Flow.from_sync_fn(add_ten)
 
-        async def empty_stream() -> AsyncIterator[int]:
+        async def empty_stream() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -265,7 +265,7 @@ class TestFlowFromSyncFn:
 
         flow = Flow.from_sync_fn(length_func)
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             for s in ["a", "bb", "ccc"]:
                 yield s
 
@@ -284,7 +284,7 @@ class TestFlowFromSyncFn:
 
         flow = Flow.from_sync_fn(square)
 
-        async def single_stream() -> AsyncIterator[int]:
+        async def single_stream() -> AsyncGenerator[int, None]:
             yield 5
 
         result = flow(single_stream())
@@ -306,7 +306,7 @@ class TestFlowFromSyncFn:
         flow2 = Flow.from_sync_fn(multiply_two)
         chained = flow1 >> flow2
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -326,7 +326,7 @@ class TestFlowFromSyncFn:
 
         flow = Flow.from_sync_fn(failing_func)
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -362,7 +362,7 @@ class TestFlowFromSyncFn:
 
         flow = Flow.from_sync_fn(process_dict)
 
-        async def dict_stream() -> AsyncIterator[dict[str, int]]:
+        async def dict_stream() -> AsyncGenerator[dict[str, int], None]:
             yield {"a": 1, "b": 2}
             yield {"x": 10}
 
@@ -384,7 +384,7 @@ class TestFlowFromSyncFn:
         sync_flow = Flow.from_sync_fn(sync_double)
         async_flow = Flow.from_value_fn(async_double)
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -392,7 +392,7 @@ class TestFlowFromSyncFn:
         sync_result = sync_flow(int_stream())
         sync_items = [item async for item in sync_result]
 
-        async def int_stream2() -> AsyncIterator[int]:
+        async def int_stream2() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -413,7 +413,7 @@ class TestFlowFromSyncFn:
 
         flow = Flow.from_sync_fn(process_with_side_effect)
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             for s in ["a", "b"]:
                 yield s
 
@@ -433,13 +433,13 @@ class TestFlowFromEventFn:
     ) -> None:
         """Test that from_event_fn creates a flow from an async iterator function."""
 
-        async def split_lines(text: str) -> AsyncIterator[str]:
+        async def split_lines(text: str) -> AsyncGenerator[str, None]:
             for line in text.split("\n"):
                 yield line
 
         flow = Flow.from_event_fn(split_lines)
 
-        async def text_stream() -> AsyncIterator[str]:
+        async def text_stream() -> AsyncGenerator[str, None]:
             yield "hello\nworld"
             yield "foo\nbar\nbaz"
 
@@ -453,11 +453,11 @@ class TestFlowFromEventFn:
         """Test that from_event_fn can be used as a decorator."""
 
         @Flow.from_event_fn
-        async def split_words(text: str) -> AsyncIterator[str]:
+        async def split_words(text: str) -> AsyncGenerator[str, None]:
             for word in text.split():
                 yield word.upper()
 
-        async def text_stream() -> AsyncIterator[str]:
+        async def text_stream() -> AsyncGenerator[str, None]:
             yield "hello world"
             yield "foo bar"
 
@@ -469,7 +469,7 @@ class TestFlowFromEventFn:
     def test_from_event_fn_sets_function_name(self) -> None:
         """Test that from_event_fn uses the function name for the flow."""
 
-        async def process_data(x: int) -> AsyncIterator[str]:
+        async def process_data(x: int) -> AsyncGenerator[str, None]:
             for i in range(x):
                 yield f"item_{i}"
 
@@ -481,13 +481,13 @@ class TestFlowFromEventFn:
     async def test_from_event_fn_with_empty_stream(self) -> None:
         """Test that from_event_fn works with empty streams."""
 
-        async def generate_range(n: int) -> AsyncIterator[int]:
+        async def generate_range(n: int) -> AsyncGenerator[int, None]:
             for i in range(n):
                 yield i
 
         flow = Flow.from_event_fn(generate_range)
 
-        async def empty_stream() -> AsyncIterator[int]:
+        async def empty_stream() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -500,13 +500,13 @@ class TestFlowFromEventFn:
     async def test_from_event_fn_preserves_types(self) -> None:
         """Test that from_event_fn preserves input/output types."""
 
-        async def duplicate_items(s: str) -> AsyncIterator[int]:
+        async def duplicate_items(s: str) -> AsyncGenerator[int, None]:
             for _ in range(2):
                 yield len(s)
 
         flow = Flow.from_event_fn(duplicate_items)
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             yield "ab"
             yield "cde"
 
@@ -520,13 +520,13 @@ class TestFlowFromEventFn:
     async def test_from_event_fn_with_single_item(self) -> None:
         """Test that from_event_fn works with single item streams."""
 
-        async def explode_number(n: int) -> AsyncIterator[int]:
+        async def explode_number(n: int) -> AsyncGenerator[int, None]:
             for i in range(1, n + 1):
                 yield i * i
 
         flow = Flow.from_event_fn(explode_number)
 
-        async def single_stream() -> AsyncIterator[int]:
+        async def single_stream() -> AsyncGenerator[int, None]:
             yield 3
 
         result = flow(single_stream())
@@ -538,7 +538,7 @@ class TestFlowFromEventFn:
     async def test_from_event_fn_chaining(self) -> None:
         """Test that flows from from_event_fn can be chained."""
 
-        async def duplicate(x: int) -> AsyncIterator[int]:
+        async def duplicate(x: int) -> AsyncGenerator[int, None]:
             yield x
             yield x
 
@@ -549,7 +549,7 @@ class TestFlowFromEventFn:
         sync_flow = Flow.from_sync_fn(add_ten)
         chained = event_flow >> sync_flow
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2]:
                 yield i
 
@@ -562,7 +562,7 @@ class TestFlowFromEventFn:
     async def test_from_event_fn_error_handling(self) -> None:
         """Test that from_event_fn properly propagates exceptions."""
 
-        async def failing_generator(x: int) -> AsyncIterator[int]:
+        async def failing_generator(x: int) -> AsyncGenerator[int, None]:
             yield x
             if x == 2:
                 raise ValueError("Test error")
@@ -570,7 +570,7 @@ class TestFlowFromEventFn:
 
         flow = Flow.from_event_fn(failing_generator)
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -590,7 +590,7 @@ class TestFlowFromEventFn:
         decorator = Flow.from_event_fn()
         assert callable(decorator)
 
-        async def test_func(x: str) -> AsyncIterator[str]:
+        async def test_func(x: str) -> AsyncGenerator[str, None]:
             for char in x:
                 yield char
 
@@ -602,14 +602,14 @@ class TestFlowFromEventFn:
     async def test_from_event_fn_with_empty_generators(self) -> None:
         """Test from_event_fn with functions that can return empty generators."""
 
-        async def conditional_generate(x: int) -> AsyncIterator[str]:
+        async def conditional_generate(x: int) -> AsyncGenerator[str, None]:
             if x > 0:
                 for i in range(x):
                     yield f"item_{i}"
 
         flow = Flow.from_event_fn(conditional_generate)
 
-        async def mixed_stream() -> AsyncIterator[int]:
+        async def mixed_stream() -> AsyncGenerator[int, None]:
             yield 0  # Should produce no items
             yield 2  # Should produce 2 items
             yield -1  # Should produce no items
@@ -623,13 +623,13 @@ class TestFlowFromEventFn:
     async def test_from_event_fn_flattening_behavior(self) -> None:
         """Test that from_event_fn properly flattens nested async iterators."""
 
-        async def create_pairs(n: int) -> AsyncIterator[tuple[int, int]]:
+        async def create_pairs(n: int) -> AsyncGenerator[tuple[int, int], None]:
             for i in range(n):
                 yield (i, i * 2)
 
         flow = Flow.from_event_fn(create_pairs)
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             yield 2
             yield 1
 
@@ -642,7 +642,7 @@ class TestFlowFromEventFn:
     async def test_from_event_fn_with_async_operations(self) -> None:
         """Test from_event_fn with functions containing async operations."""
 
-        async def async_expand(text: str) -> AsyncIterator[str]:
+        async def async_expand(text: str) -> AsyncGenerator[str, None]:
             for char in text:
                 # Simulate async operation
                 await asyncio.sleep(0.001)
@@ -650,7 +650,7 @@ class TestFlowFromEventFn:
 
         flow = Flow.from_event_fn(async_expand)
 
-        async def text_stream() -> AsyncIterator[str]:
+        async def text_stream() -> AsyncGenerator[str, None]:
             yield "ab"
 
         result = flow(text_stream())
@@ -669,7 +669,7 @@ class TestFlowFromIterable:
         data = [1, 2, 3, 4, 5]
         flow = Flow.from_iterable(data)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -684,7 +684,7 @@ class TestFlowFromIterable:
         data = ("a", "b", "c")
         flow = Flow.from_iterable(data)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -699,7 +699,7 @@ class TestFlowFromIterable:
         data = range(3, 7)
         flow = Flow.from_iterable(data)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -714,7 +714,7 @@ class TestFlowFromIterable:
         data: list[int] = []
         flow = Flow.from_iterable(data)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -729,7 +729,7 @@ class TestFlowFromIterable:
         data = (x * 2 for x in range(4))
         flow = Flow.from_iterable(data)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -752,7 +752,7 @@ class TestFlowFromIterable:
         string_data = ["hello", "world"]
         string_flow = Flow.from_iterable(string_data)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = string_flow(empty_stream())
@@ -768,7 +768,7 @@ class TestFlowFromIterable:
         data = {"a": 1, "b": 2, "c": 3}
         flow = Flow.from_iterable(data.items())
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -790,7 +790,7 @@ class TestFlowFromIterable:
 
         flow = Flow.from_iterable(data).filter(is_even).map(square)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -806,7 +806,7 @@ class TestFlowFromIterable:
         flow = Flow.from_iterable(data)
 
         # Input stream with different data
-        async def input_stream() -> AsyncIterator[int]:
+        async def input_stream() -> AsyncGenerator[int, None]:
             for i in [100, 200, 300]:
                 yield i
 
@@ -823,7 +823,7 @@ class TestFlowFromIterable:
         data = [42]
         flow = Flow.from_iterable(data)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -838,10 +838,10 @@ class TestFlowFromIterable:
         data = [10, 20, 30]
         flow = Flow.from_iterable(data)
 
-        async def stream1() -> AsyncIterator[None]:
+        async def stream1() -> AsyncGenerator[None, None]:
             yield None
 
-        async def stream2() -> AsyncIterator[str]:
+        async def stream2() -> AsyncGenerator[str, None]:
             yield "ignored"
 
         result1 = flow(stream1())

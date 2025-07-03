@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
-from typing import Any
+from typing import Any, AsyncGenerator
 
 import pytest
 
@@ -17,7 +16,7 @@ class TestFlowPure:
 
         flow: Flow[Any, str] = Flow.pure("hello")
 
-        async def any_stream() -> AsyncIterator[int]:
+        async def any_stream() -> AsyncGenerator[int, None]:
             yield 1
             yield 2
             yield 3
@@ -34,15 +33,15 @@ class TestFlowPure:
         flow: Flow[Any, int] = Flow.pure(42)
 
         # Test with different input streams
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             yield "ignored"
             yield "completely"
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
-        async def large_stream() -> AsyncIterator[int]:
+        async def large_stream() -> AsyncGenerator[int, None]:
             for i in range(1000):
                 yield i
 
@@ -65,7 +64,7 @@ class TestFlowPure:
         # String value
         string_flow: Flow[Any, str] = Flow.pure("test")
 
-        async def dummy_stream1() -> AsyncIterator[None]:
+        async def dummy_stream1() -> AsyncGenerator[None, None]:
             yield None
 
         result1 = string_flow(dummy_stream1())
@@ -75,7 +74,7 @@ class TestFlowPure:
         # Integer value
         int_flow: Flow[Any, int] = Flow.pure(123)
 
-        async def dummy_stream2() -> AsyncIterator[None]:
+        async def dummy_stream2() -> AsyncGenerator[None, None]:
             yield None
 
         result2 = int_flow(dummy_stream2())
@@ -85,7 +84,7 @@ class TestFlowPure:
         # List value
         list_flow: Flow[Any, list[str]] = Flow.pure(["a", "b", "c"])
 
-        async def dummy_stream3() -> AsyncIterator[None]:
+        async def dummy_stream3() -> AsyncGenerator[None, None]:
             yield None
 
         result3 = list_flow(dummy_stream3())
@@ -98,7 +97,7 @@ class TestFlowPure:
 
         flow: Flow[Any, None] = Flow.pure(None)
 
-        async def any_stream() -> AsyncIterator[str]:
+        async def any_stream() -> AsyncGenerator[str, None]:
             yield "anything"
 
         result = flow(any_stream())
@@ -113,7 +112,7 @@ class TestFlowPure:
         complex_obj = {"name": "test", "values": [1, 2, 3], "nested": {"key": "value"}}
         flow: Flow[Any, dict[str, Any]] = Flow.pure(complex_obj)
 
-        async def any_stream() -> AsyncIterator[int]:
+        async def any_stream() -> AsyncGenerator[int, None]:
             yield 999
 
         result = flow(any_stream())
@@ -148,7 +147,7 @@ class TestFlowPure:
         # Chain pure with transformations
         flow = Flow.pure("base").map(add_suffix).map(repeat_twice)
 
-        async def any_stream() -> AsyncIterator[int]:
+        async def any_stream() -> AsyncGenerator[int, None]:
             yield 123
 
         result = flow(any_stream())
@@ -169,7 +168,7 @@ class TestFlowPure:
         # Compose pure with function flow
         composed = pure_flow >> double_flow
 
-        async def any_stream() -> AsyncIterator[str]:
+        async def any_stream() -> AsyncGenerator[str, None]:
             yield "ignored"
 
         result = composed(any_stream())
@@ -188,7 +187,7 @@ class TestFlowPure:
 
         filtered_flow = flow.filter(is_even)
 
-        async def any_stream() -> AsyncIterator[str]:
+        async def any_stream() -> AsyncGenerator[str, None]:
             yield "test"
 
         result = filtered_flow(any_stream())
@@ -213,7 +212,7 @@ class TestFlowPure:
         original_list = [1, 2, 3]
         flow: Flow[Any, list[int]] = Flow.pure(original_list)
 
-        async def any_stream() -> AsyncIterator[None]:
+        async def any_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(any_stream())
@@ -236,13 +235,13 @@ class TestFlowPure:
 
         flow: Flow[Any, str] = Flow.pure("constant")
 
-        async def stream1() -> AsyncIterator[int]:
+        async def stream1() -> AsyncGenerator[int, None]:
             yield 1
 
-        async def stream2() -> AsyncIterator[str]:
+        async def stream2() -> AsyncGenerator[str, None]:
             yield "different"
 
-        async def stream3() -> AsyncIterator[None]:
+        async def stream3() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -264,7 +263,7 @@ class TestFlowPure:
         true_flow: Flow[Any, bool] = Flow.pure(True)
         false_flow: Flow[Any, bool] = Flow.pure(False)
 
-        async def any_stream() -> AsyncIterator[int]:
+        async def any_stream() -> AsyncGenerator[int, None]:
             yield 42
 
         result1 = true_flow(any_stream())
@@ -289,7 +288,7 @@ class TestFlowPure:
         # Create a pipeline that starts with a constant and transforms it
         pipeline = Flow.pure(42).map(format_number).map(add_prefix)
 
-        async def any_stream() -> AsyncIterator[None]:
+        async def any_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = pipeline(any_stream())

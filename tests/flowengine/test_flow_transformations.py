@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from typing import AsyncGenerator
 
 import pytest
 
@@ -14,7 +14,9 @@ class TestFlowMap:
     async def test_map_transforms_values(self) -> None:
         """Test that map applies function to each item in the stream."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -24,7 +26,7 @@ class TestFlowMap:
         flow = Flow(source_fn, name="source")
         mapped_flow = flow.map(double)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -37,7 +39,9 @@ class TestFlowMap:
     async def test_map_changes_output_type(self) -> None:
         """Test that map can change the output type of the flow."""
 
-        async def int_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def int_source(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [10, 20, 30]:
                 yield i
 
@@ -47,7 +51,7 @@ class TestFlowMap:
         flow = Flow(int_source, name="int_source")
         string_flow = flow.map(int_to_string)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -60,7 +64,9 @@ class TestFlowMap:
     async def test_map_preserves_input_type(self) -> None:
         """Test that map preserves the input type of the original flow."""
 
-        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+        async def transform_fn(
+            stream: AsyncGenerator[str, None]
+        ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
 
@@ -70,7 +76,7 @@ class TestFlowMap:
         flow = Flow(transform_fn, name="transform")
         mapped_flow = flow.map(square)
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             for s in ["hi", "test", "hello"]:
                 yield s
 
@@ -82,7 +88,9 @@ class TestFlowMap:
     def test_map_creates_new_flow_with_descriptive_name(self) -> None:
         """Test that map creates a new flow with a descriptive name."""
 
-        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+        async def test_fn(
+            stream: AsyncGenerator[int, None]
+        ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
 
@@ -99,7 +107,9 @@ class TestFlowMap:
     async def test_map_with_empty_stream(self) -> None:
         """Test that map works correctly with empty streams."""
 
-        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def empty_source(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -109,7 +119,7 @@ class TestFlowMap:
         flow = Flow(empty_source, name="empty")
         mapped_flow = flow.map(multiply_by_ten)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -122,7 +132,9 @@ class TestFlowMap:
     async def test_map_chaining(self) -> None:
         """Test that multiple maps can be chained together."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -135,7 +147,7 @@ class TestFlowMap:
         flow = Flow(source_fn, name="source")
         chained_flow = flow.map(add_one).map(multiply_by_three)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -152,7 +164,9 @@ class TestFlowFilter:
     async def test_filter_removes_items_not_matching_predicate(self) -> None:
         """Test that filter removes items that don't match the predicate."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5, 6]:
                 yield i
 
@@ -162,7 +176,7 @@ class TestFlowFilter:
         flow = Flow(source_fn, name="source")
         filtered_flow = flow.filter(is_even)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -175,7 +189,9 @@ class TestFlowFilter:
     async def test_filter_preserves_output_type(self) -> None:
         """Test that filter preserves the output type of the flow."""
 
-        async def string_source(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+        async def string_source(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[str, None]:
             for s in ["apple", "banana", "cherry", "date"]:
                 yield s
 
@@ -185,7 +201,7 @@ class TestFlowFilter:
         flow = Flow(string_source, name="strings")
         filtered_flow = flow.filter(starts_with_a_or_c)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -198,7 +214,9 @@ class TestFlowFilter:
     async def test_filter_preserves_input_type(self) -> None:
         """Test that filter preserves the input type of the original flow."""
 
-        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+        async def transform_fn(
+            stream: AsyncGenerator[str, None]
+        ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
 
@@ -208,7 +226,7 @@ class TestFlowFilter:
         flow = Flow(transform_fn, name="length_transform")
         filtered_flow = flow.filter(is_short)
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             for s in ["hi", "test", "a", "hello", "ok"]:
                 yield s
 
@@ -220,7 +238,9 @@ class TestFlowFilter:
     def test_filter_creates_new_flow_with_descriptive_name(self) -> None:
         """Test that filter creates a new flow with a descriptive name."""
 
-        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[int]:
+        async def test_fn(
+            stream: AsyncGenerator[int, None]
+        ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item * 2
 
@@ -237,7 +257,9 @@ class TestFlowFilter:
     async def test_filter_with_empty_stream(self) -> None:
         """Test that filter works correctly with empty streams."""
 
-        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def empty_source(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -247,7 +269,7 @@ class TestFlowFilter:
         flow = Flow(empty_source, name="empty")
         filtered_flow = flow.filter(always_true)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -260,7 +282,9 @@ class TestFlowFilter:
     async def test_filter_with_no_matches(self) -> None:
         """Test that filter returns empty stream when no items match."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [1, 3, 5, 7, 9]:
                 yield i
 
@@ -270,7 +294,7 @@ class TestFlowFilter:
         flow = Flow(source_fn, name="odds")
         filtered_flow = flow.filter(is_even)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -283,7 +307,9 @@ class TestFlowFilter:
     async def test_filter_chaining_with_map(self) -> None:
         """Test that filter can be chained with map operations."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
 
@@ -296,7 +322,7 @@ class TestFlowFilter:
         flow = Flow(source_fn, name="source")
         chained_flow = flow.filter(is_odd).map(square)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -313,18 +339,20 @@ class TestFlowFlatMap:
     async def test_flat_map_flattens_async_iterators(self) -> None:
         """Test that flat_map flattens nested async iterators into a single stream."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[str, None]:
             for s in ["hello", "world"]:
                 yield s
 
-        async def split_chars(text: str) -> AsyncIterator[str]:
+        async def split_chars(text: str) -> AsyncGenerator[str, None]:
             for char in text:
                 yield char
 
         flow = Flow(source_fn, name="source")
         flat_mapped_flow = flow.flat_map(split_chars)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -337,18 +365,20 @@ class TestFlowFlatMap:
     async def test_flat_map_changes_output_type(self) -> None:
         """Test that flat_map can change the output type of the flow."""
 
-        async def int_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def int_source(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [3, 2]:
                 yield i
 
-        async def repeat_number(n: int) -> AsyncIterator[str]:
+        async def repeat_number(n: int) -> AsyncGenerator[str, None]:
             for _ in range(n):
                 yield str(n)
 
         flow = Flow(int_source, name="int_source")
         string_flow = flow.flat_map(repeat_number)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -361,18 +391,20 @@ class TestFlowFlatMap:
     async def test_flat_map_preserves_input_type(self) -> None:
         """Test that flat_map preserves the input type of the original flow."""
 
-        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+        async def transform_fn(
+            stream: AsyncGenerator[str, None]
+        ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
 
-        async def expand_to_range(n: int) -> AsyncIterator[int]:
+        async def expand_to_range(n: int) -> AsyncGenerator[int, None]:
             for i in range(n):
                 yield i
 
         flow = Flow(transform_fn, name="length_transform")
         flat_mapped_flow = flow.flat_map(expand_to_range)
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             for s in ["hi", "a", "test"]:
                 yield s
 
@@ -384,11 +416,13 @@ class TestFlowFlatMap:
     def test_flat_map_creates_new_flow_with_descriptive_name(self) -> None:
         """Test that flat_map creates a new flow with a descriptive name."""
 
-        async def test_fn(stream: AsyncIterator[str]) -> AsyncIterator[str]:
+        async def test_fn(
+            stream: AsyncGenerator[str, None]
+        ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield item.upper()
 
-        async def split_words(text: str) -> AsyncIterator[str]:
+        async def split_words(text: str) -> AsyncGenerator[str, None]:
             for word in text.split():
                 yield word
 
@@ -402,18 +436,20 @@ class TestFlowFlatMap:
     async def test_flat_map_with_empty_stream(self) -> None:
         """Test that flat_map works correctly with empty streams."""
 
-        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def empty_source(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
-        async def create_range(n: int) -> AsyncIterator[int]:
+        async def create_range(n: int) -> AsyncGenerator[int, None]:
             for i in range(n):
                 yield i
 
         flow = Flow(empty_source, name="empty")
         flat_mapped_flow = flow.flat_map(create_range)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -426,18 +462,20 @@ class TestFlowFlatMap:
     async def test_flat_map_with_empty_inner_iterators(self) -> None:
         """Test that flat_map works when inner iterators are empty."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [0, 1, 0, 2]:
                 yield i
 
-        async def create_range(n: int) -> AsyncIterator[str]:
+        async def create_range(n: int) -> AsyncGenerator[str, None]:
             for i in range(n):
                 yield f"item_{i}"
 
         flow = Flow(source_fn, name="source")
         flat_mapped_flow = flow.flat_map(create_range)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -450,11 +488,13 @@ class TestFlowFlatMap:
     async def test_flat_map_chaining_with_map_and_filter(self) -> None:
         """Test that flat_map can be chained with other operations."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[str, None]:
             for s in ["ab", "cd"]:
                 yield s
 
-        async def duplicate_chars(text: str) -> AsyncIterator[str]:
+        async def duplicate_chars(text: str) -> AsyncGenerator[str, None]:
             for char in text:
                 yield char
                 yield char
@@ -468,7 +508,7 @@ class TestFlowFlatMap:
         flow = Flow(source_fn, name="source")
         chained_flow = flow.flat_map(duplicate_chars).filter(is_vowel).map(to_upper)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 

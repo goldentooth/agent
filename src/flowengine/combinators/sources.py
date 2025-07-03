@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
-from typing import Any, TypeVar
+from typing import Any, AsyncGenerator, TypeVar
 
 from flowengine.flow import Flow
 
@@ -17,7 +16,7 @@ AnyValue = Any
 def range_flow(start: int, stop: int, step: int = 1) -> Flow[None, int]:
     """Create a flow that generates a range of integers."""
 
-    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[int]:
+    async def _flow(_: AsyncGenerator[None, None]) -> AsyncGenerator[int, None]:
         """Generate range of integers."""
         for i in range(start, stop, step):
             yield i
@@ -28,7 +27,7 @@ def range_flow(start: int, stop: int, step: int = 1) -> Flow[None, int]:
 def repeat_flow(value: A, times: int | None = None) -> Flow[None, A]:
     """Create a flow that repeats a value a specified number of times (or infinitely)."""
 
-    async def _flow(stream: AsyncIterator[None]) -> AsyncIterator[A]:
+    async def _flow(stream: AsyncGenerator[None, None]) -> AsyncGenerator[A, None]:
         """Repeat value specified number of times."""
         if times is None:
             while True:
@@ -45,7 +44,7 @@ def repeat_flow(value: A, times: int | None = None) -> Flow[None, A]:
 def empty_flow() -> Flow[None, AnyValue]:
     """Create a flow that produces no items."""
 
-    async def _flow(_: AsyncIterator[None]) -> AsyncIterator[AnyValue]:
+    async def _flow(_: AsyncGenerator[None, None]) -> AsyncGenerator[AnyValue, None]:
         """Produce no items."""
         # Create an empty async generator by yielding from an empty list
         empty_list: list[AnyValue] = []
@@ -68,7 +67,7 @@ def start_with_stream(*items: Input) -> Flow[Input, Input]:
         A flow that starts with the specified items, then continues with stream items
     """
 
-    async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Input]:
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
         """Prepend items to the stream."""
         # First emit the start items
         for item in items:

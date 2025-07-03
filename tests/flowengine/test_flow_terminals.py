@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from typing import AsyncGenerator
 
 import pytest
 
@@ -14,14 +14,16 @@ class TestFlowToList:
     async def test_to_list_collects_all_items(self) -> None:
         """Test that to_list collects all items from the flow into a list."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[str, None]:
             for s in ["hello", "world", "test"]:
                 yield s
 
         flow = Flow(source_fn, name="source")
         collector = flow.to_list()
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -34,14 +36,16 @@ class TestFlowToList:
     async def test_to_list_with_empty_stream(self) -> None:
         """Test that to_list returns empty list for empty streams."""
 
-        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def empty_source(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
         flow = Flow(empty_source, name="empty")
         collector = flow.to_list()
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -54,14 +58,16 @@ class TestFlowToList:
     async def test_to_list_preserves_order(self) -> None:
         """Test that to_list preserves the order of items."""
 
-        async def sequence_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def sequence_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [3, 1, 4, 1, 5, 9, 2, 6]:
                 yield i
 
         flow = Flow(sequence_fn, name="sequence")
         collector = flow.to_list()
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -73,7 +79,9 @@ class TestFlowToList:
     async def test_to_list_with_transformed_flow(self) -> None:
         """Test that to_list works with transformed flows."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
 
@@ -87,7 +95,7 @@ class TestFlowToList:
         transformed_flow = flow.filter(is_even).map(square)
         collector = transformed_flow.to_list()
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -99,7 +107,9 @@ class TestFlowToList:
     async def test_to_list_returns_callable(self) -> None:
         """Test that to_list returns a callable function."""
 
-        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+        async def test_fn(
+            stream: AsyncGenerator[int, None]
+        ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
 
@@ -110,7 +120,7 @@ class TestFlowToList:
         assert callable(collector)
 
         # Should be able to call it with a stream
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -121,7 +131,9 @@ class TestFlowToList:
     async def test_to_list_with_different_input_streams(self) -> None:
         """Test that to_list works with different input streams."""
 
-        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+        async def transform_fn(
+            stream: AsyncGenerator[str, None]
+        ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
 
@@ -129,7 +141,7 @@ class TestFlowToList:
         collector = flow.to_list()
 
         # Test with first stream
-        async def stream1() -> AsyncIterator[str]:
+        async def stream1() -> AsyncGenerator[str, None]:
             for s in ["hi", "hello"]:
                 yield s
 
@@ -137,7 +149,7 @@ class TestFlowToList:
         assert result1 == [2, 5]
 
         # Test with different stream
-        async def stream2() -> AsyncIterator[str]:
+        async def stream2() -> AsyncGenerator[str, None]:
             for s in ["a", "test", "python"]:
                 yield s
 
@@ -148,7 +160,9 @@ class TestFlowToList:
     async def test_to_list_type_annotations(self) -> None:
         """Test that to_list maintains proper type annotations."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[str, None]:
             for s in ["a", "b", "c"]:
                 yield s
 
@@ -156,7 +170,7 @@ class TestFlowToList:
         collector = flow.to_list()
 
         # The collector should have the right signature
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -175,7 +189,9 @@ class TestFlowForEach:
     async def test_for_each_applies_function_to_all_items(self) -> None:
         """Test that for_each applies function to all items in the stream."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[str, None]:
             for s in ["hello", "world", "test"]:
                 yield s
 
@@ -188,7 +204,7 @@ class TestFlowForEach:
         flow = Flow(source_fn, name="source")
         consumer = flow.for_each(process_item)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -200,7 +216,9 @@ class TestFlowForEach:
     async def test_for_each_with_empty_stream(self) -> None:
         """Test that for_each handles empty streams correctly."""
 
-        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def empty_source(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -213,7 +231,7 @@ class TestFlowForEach:
         flow = Flow(empty_source, name="empty")
         consumer = flow.for_each(process_item)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -225,7 +243,9 @@ class TestFlowForEach:
     async def test_for_each_preserves_order(self) -> None:
         """Test that for_each processes items in order."""
 
-        async def sequence_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def sequence_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [3, 1, 4, 1, 5]:
                 yield i
 
@@ -238,7 +258,7 @@ class TestFlowForEach:
         flow = Flow(sequence_fn, name="sequence")
         consumer = flow.for_each(process_item)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -250,7 +270,9 @@ class TestFlowForEach:
     async def test_for_each_with_transformed_flow(self) -> None:
         """Test that for_each works with transformed flows."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
 
@@ -270,7 +292,7 @@ class TestFlowForEach:
         transformed_flow = flow.filter(is_even).map(square)
         consumer = transformed_flow.for_each(collect_item)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -282,7 +304,9 @@ class TestFlowForEach:
     async def test_for_each_returns_callable(self) -> None:
         """Test that for_each returns a callable function."""
 
-        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+        async def test_fn(
+            stream: AsyncGenerator[int, None]
+        ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
 
@@ -298,7 +322,7 @@ class TestFlowForEach:
         assert callable(consumer)
 
         # Should be able to call it with a stream
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -309,7 +333,9 @@ class TestFlowForEach:
     async def test_for_each_with_side_effects(self) -> None:
         """Test that for_each properly handles side effects."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[str, None]:
             for s in ["debug", "info", "error"]:
                 yield s
 
@@ -322,7 +348,7 @@ class TestFlowForEach:
         flow = Flow(source_fn, name="logger")
         consumer = flow.for_each(log_message)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -342,7 +368,9 @@ class TestFlowForEach:
     async def test_for_each_with_different_input_streams(self) -> None:
         """Test that for_each works with different input streams."""
 
-        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+        async def transform_fn(
+            stream: AsyncGenerator[str, None]
+        ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
 
@@ -355,7 +383,7 @@ class TestFlowForEach:
         consumer = flow.for_each(process_item)
 
         # Test with first stream
-        async def stream1() -> AsyncIterator[str]:
+        async def stream1() -> AsyncGenerator[str, None]:
             for s in ["hi", "hello"]:
                 yield s
 
@@ -365,7 +393,7 @@ class TestFlowForEach:
         # Reset and test with different stream
         processed_items.clear()
 
-        async def stream2() -> AsyncIterator[str]:
+        async def stream2() -> AsyncGenerator[str, None]:
             for s in ["a", "test"]:
                 yield s
 
@@ -380,7 +408,9 @@ class TestFlowCollect:
     async def test_collect_is_alias_for_to_list(self) -> None:
         """Test that collect is an alias for to_list."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -390,7 +420,7 @@ class TestFlowCollect:
         collector1 = flow.collect()
         collector2 = flow.to_list()
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -403,20 +433,22 @@ class TestFlowCollect:
     async def test_collect_delegates_to_to_list(self) -> None:
         """Test that collect delegates to to_list and produces same results."""
 
-        async def test_fn(stream: AsyncIterator[str]) -> AsyncIterator[str]:
+        async def test_fn(
+            stream: AsyncGenerator[str, None]
+        ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield item.upper()
 
         flow = Flow(test_fn, name="upper")
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             for s in ["hello", "world"]:
                 yield s
 
         # Both methods should produce identical results
         result1 = await flow.collect()(string_stream())
 
-        async def string_stream2() -> AsyncIterator[str]:
+        async def string_stream2() -> AsyncGenerator[str, None]:
             for s in ["hello", "world"]:
                 yield s
 
@@ -428,7 +460,9 @@ class TestFlowCollect:
     async def test_collect_works_with_all_flow_types(self) -> None:
         """Test that collect works with various flow transformations."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in range(1, 6):
                 yield i
 
@@ -441,7 +475,7 @@ class TestFlowCollect:
         flow = Flow(source_fn, name="source")
         transformed = flow.filter(is_even).map(square)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -453,14 +487,16 @@ class TestFlowCollect:
     async def test_collect_preserves_type_signature(self) -> None:
         """Test that collect preserves the same type signature as to_list."""
 
-        async def typed_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+        async def typed_fn(
+            stream: AsyncGenerator[int, None]
+        ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield f"item_{item}"
 
         flow = Flow(typed_fn, name="typed")
         collector = flow.collect()
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [10, 20]:
                 yield i
 
@@ -477,13 +513,15 @@ class TestFlowPreview:
     async def test_preview_returns_limited_items(self) -> None:
         """Test that preview returns only the specified number of items."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in range(100):  # Large stream
                 yield i
 
         flow = Flow(source_fn, name="source")
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -499,13 +537,15 @@ class TestFlowPreview:
     async def test_preview_with_fewer_items_than_limit(self) -> None:
         """Test that preview returns all items when stream has fewer than limit."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
         flow = Flow(source_fn, name="small")
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -516,13 +556,15 @@ class TestFlowPreview:
     async def test_preview_with_empty_stream(self) -> None:
         """Test that preview returns empty list for empty streams."""
 
-        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def empty_source(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
         flow = Flow(empty_source, name="empty")
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -533,7 +575,9 @@ class TestFlowPreview:
     async def test_preview_with_transformed_flow(self) -> None:
         """Test that preview works with transformed flows."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             try:
                 for i in range(20):
                     yield i
@@ -550,7 +594,7 @@ class TestFlowPreview:
         flow = Flow(source_fn, name="source")
         transformed = flow.filter(is_even).map(square)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -566,21 +610,23 @@ class TestFlowPreview:
                 super().__init__()
                 self.closed = False
 
-            async def __aiter__(self) -> AsyncIterator[int]:
+            async def __aiter__(self) -> AsyncGenerator[int, None]:
                 for i in range(100):
                     yield i
 
             async def aclose(self) -> None:
                 self.closed = True
 
-        async def trackable_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def trackable_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             iterator = TrackableIterator()
             async for item in iterator:
                 yield item
 
         flow = Flow(trackable_fn, name="trackable")
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
@@ -592,13 +638,15 @@ class TestFlowPreview:
     async def test_preview_with_different_input_streams(self) -> None:
         """Test that preview works with different input stream types."""
 
-        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+        async def transform_fn(
+            stream: AsyncGenerator[str, None]
+        ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item) * 10
 
         flow = Flow(transform_fn, name="length_transform")
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             words = ["a", "bb", "ccc", "dddd", "eeeee", "ffffff"]
             for word in words:
                 yield word
@@ -610,13 +658,15 @@ class TestFlowPreview:
     async def test_preview_with_limit_zero(self) -> None:
         """Test that preview with limit=0 returns empty list."""
 
-        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+        async def source_fn(
+            stream: AsyncGenerator[None, None]
+        ) -> AsyncGenerator[int, None]:
             for i in range(10):
                 yield i
 
         flow = Flow(source_fn, name="source")
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 

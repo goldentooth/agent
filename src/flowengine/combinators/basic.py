@@ -6,8 +6,7 @@ essential stream processing combinators.
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
-from typing import TypeVar
+from typing import AsyncGenerator, TypeVar
 
 from flowengine.flow import Flow
 
@@ -21,8 +20,8 @@ C = TypeVar("C")
 
 
 async def run_fold(
-    initial_stream: AsyncIterator[Input], steps: list[Flow[Input, Input]]
-) -> AsyncIterator[Input]:
+    initial_stream: AsyncGenerator[Input, None], steps: list[Flow[Input, Input]]
+) -> AsyncGenerator[Input, None]:
     """Execute a list of flows sequentially, piping the stream through each step.
 
     This is a fold/reduce operation where each flow receives the output stream of the
@@ -51,7 +50,7 @@ async def run_fold(
 def compose(first: Flow[A, B], second: Flow[B, C]) -> Flow[A, C]:
     """Compose two flows, where the output of the first is the input to the second."""
 
-    async def _flow(stream: AsyncIterator[A]) -> AsyncIterator[C]:
+    async def _flow(stream: AsyncGenerator[A, None]) -> AsyncGenerator[C, None]:
         """Pipe the stream through first flow, then through second flow."""
         intermediate_stream = first(stream)
         async for item in second(intermediate_stream):

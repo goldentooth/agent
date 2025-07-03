@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Callable
-from typing import Any, TypeVar
+from collections.abc import Callable
+from typing import Any, AsyncGenerator, TypeVar
 
 Input = TypeVar("Input")
 
@@ -19,10 +19,10 @@ def get_function_name(fn: AnyCallable) -> str:
     return getattr(fn, "__name__", "function")
 
 
-def create_single_item_stream(item: Input) -> AsyncIterator[Input]:
+def create_single_item_stream(item: Input) -> AsyncGenerator[Input, None]:
     """Create an async iterator that yields a single item."""
 
-    async def _stream() -> AsyncIterator[Input]:
+    async def _stream() -> AsyncGenerator[Input, None]:
         yield item
 
     return _stream()

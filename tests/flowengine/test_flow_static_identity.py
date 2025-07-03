@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from typing import AsyncGenerator
 
 import pytest
 
@@ -16,7 +16,7 @@ class TestFlowIdentity:
 
         flow: Flow[str, str] = Flow.identity()
 
-        async def string_stream() -> AsyncIterator[str]:
+        async def string_stream() -> AsyncGenerator[str, None]:
             yield "hello"
             yield "world"
             yield "test"
@@ -32,7 +32,7 @@ class TestFlowIdentity:
 
         int_flow: Flow[int, int] = Flow.identity()
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             yield 42
             yield 99
             yield 123
@@ -49,7 +49,7 @@ class TestFlowIdentity:
 
         flow: Flow[str, str] = Flow.identity()
 
-        async def empty_stream() -> AsyncIterator[str]:
+        async def empty_stream() -> AsyncGenerator[str, None]:
             return
             yield  # pragma: no cover
 
@@ -64,7 +64,7 @@ class TestFlowIdentity:
 
         flow: Flow[int, int] = Flow.identity()
 
-        async def single_stream() -> AsyncIterator[int]:
+        async def single_stream() -> AsyncGenerator[int, None]:
             yield 42
 
         result = flow(single_stream())
@@ -85,7 +85,7 @@ class TestFlowIdentity:
 
         flow: Flow[dict[str, int], dict[str, int]] = Flow.identity()
 
-        async def dict_stream() -> AsyncIterator[dict[str, int]]:
+        async def dict_stream() -> AsyncGenerator[dict[str, int], None]:
             yield {"a": 1, "b": 2}
             yield {"x": 10, "y": 20}
 
@@ -108,7 +108,7 @@ class TestFlowIdentity:
         identity_flow: Flow[int, int] = Flow.identity()
         flow = identity_flow.filter(is_even).map(square)
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
 
@@ -123,7 +123,7 @@ class TestFlowIdentity:
 
         flow: Flow[int, int] = Flow.identity()
 
-        async def sequence_stream() -> AsyncIterator[int]:
+        async def sequence_stream() -> AsyncGenerator[int, None]:
             for i in [3, 1, 4, 1, 5, 9, 2, 6]:
                 yield i
 
@@ -138,7 +138,7 @@ class TestFlowIdentity:
 
         flow: Flow[str | None, str | None] = Flow.identity()
 
-        async def mixed_stream() -> AsyncIterator[str | None]:
+        async def mixed_stream() -> AsyncGenerator[str | None, None]:
             yield "hello"
             yield None
             yield "world"
@@ -157,7 +157,7 @@ class TestFlowIdentity:
         flow2: Flow[int, int] = Flow.identity()
         composed = flow1 >> flow2
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [10, 20, 30]:
                 yield i
 
@@ -179,14 +179,14 @@ class TestFlowIdentity:
         # identity >> f should be equivalent to f
         composed = identity_flow >> double_flow
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
         result1 = composed(int_stream())
         items1: list[int] = [item async for item in result1]
 
-        async def int_stream2() -> AsyncIterator[int]:
+        async def int_stream2() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -208,14 +208,14 @@ class TestFlowIdentity:
         # f >> identity should be equivalent to f
         composed = triple_flow >> identity_flow
 
-        async def int_stream() -> AsyncIterator[int]:
+        async def int_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
         result1 = composed(int_stream())
         items1: list[int] = [item async for item in result1]
 
-        async def int_stream2() -> AsyncIterator[int]:
+        async def int_stream2() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 

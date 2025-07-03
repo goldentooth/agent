@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator
-from typing import Any, Callable
+from typing import Any, AsyncGenerator, Callable
 
 import pytest
 
@@ -24,7 +23,7 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -45,7 +44,7 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, int] = Flow.from_emitter(register_callback)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -63,7 +62,7 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -80,7 +79,7 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -109,7 +108,7 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, int] = Flow.from_emitter(register_callback)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -134,7 +133,7 @@ class TestFlowFromEmitter:
 
         flow = Flow.from_emitter(register_callback).filter(is_even).map(square)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -152,7 +151,7 @@ class TestFlowFromEmitter:
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
 
         # Input stream with different data
-        async def input_stream() -> AsyncIterator[str]:
+        async def input_stream() -> AsyncGenerator[str, None]:
             yield "input_value"
 
         result = flow(input_stream())
@@ -173,7 +172,7 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())
@@ -191,10 +190,10 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
 
-        async def stream1() -> AsyncIterator[None]:
+        async def stream1() -> AsyncGenerator[None, None]:
             yield None
 
-        async def stream2() -> AsyncIterator[str]:
+        async def stream2() -> AsyncGenerator[str, None]:
             yield "ignored"
 
         result1 = flow(stream1())
@@ -225,7 +224,7 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, dict[str, Any]] = Flow.from_emitter(emitter.register)
 
-        async def empty_stream() -> AsyncIterator[None]:
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = flow(empty_stream())

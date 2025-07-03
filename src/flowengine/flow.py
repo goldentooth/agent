@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
-from typing import Any, Generic, NoReturn, TypeVar, Union, overload
+from collections.abc import Awaitable, Callable, Iterable
+from typing import Any, AsyncGenerator, Generic, NoReturn, TypeVar, Union, overload
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
@@ -18,7 +18,7 @@ FlowMetadata = dict[str, Any]
 class Flow(Generic[Input, Output]):
     def __init__(
         self,
-        fn: Callable[[AsyncIterator[Input]], AsyncIterator[Output]],
+        fn: Callable[[AsyncGenerator[Input, None]], AsyncGenerator[Output, None]],
         name: str = "<anonymous>",
         metadata: FlowMetadata | None = None,
     ) -> None:
@@ -28,7 +28,9 @@ class Flow(Generic[Input, Output]):
         self.metadata = metadata if metadata is not None else {}
         self.__name__ = name
 
-    def __call__(self, stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+    def __call__(
+        self, stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[Output, None]:
         """Call the flow with the given stream and return an async iterator."""
         return self.fn(stream)
 
@@ -47,63 +49,68 @@ class Flow(Generic[Input, Output]):
     def map(self, fn: Callable[[Output], Newput]) -> "Flow[Input, Newput]":
         """Map a function over the output of the flow."""
 
-        async def _mapped(stream: AsyncIterator[Input]) -> AsyncIterator[Newput]:
-            inner_iter = self(stream).__aiter__()
+        async def _mapped(
+            stream: AsyncGenerator[Input, None]
+        ) -> AsyncGenerator[Newput, None]:
+            inner_iter = self(stream)
             try:
                 async for item in inner_iter:
                     yield fn(item)
             finally:
-                if hasattr(inner_iter, "aclose"):
-                    await inner_iter.aclose()  # type: ignore[attr-defined]
+                await inner_iter.aclose()
 
         return Flow(_mapped, name=f"{self.name}.map({fn.__name__})")
 
     def filter(self, predicate: Callable[[Output], bool]) -> "Flow[Input, Output]":
         """Filter the output of the flow based on a predicate."""
 
-        async def _filtered(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
-            inner_iter = self(stream).__aiter__()
+        async def _filtered(
+            stream: AsyncGenerator[Input, None]
+        ) -> AsyncGenerator[Output, None]:
+            inner_iter = self(stream)
             try:
                 async for item in inner_iter:
                     if predicate(item):
                         yield item
             finally:
-                if hasattr(inner_iter, "aclose"):
-                    await inner_iter.aclose()  # type: ignore[attr-defined]
+                await inner_iter.aclose()
 
         return Flow(_filtered, name=f"{self.name}.filter({predicate.__name__})")
 
     def flat_map(
-        self, fn: Callable[[Output], AsyncIterator[Newput]]
+        self, fn: Callable[[Output], AsyncGenerator[Newput, None]]
     ) -> "Flow[Input, Newput]":
         """Flat map a function over the output of the flow."""
 
-        async def _flatmapped(stream: AsyncIterator[Input]) -> AsyncIterator[Newput]:
-            inner_iter = self(stream).__aiter__()
+        async def _flatmapped(
+            stream: AsyncGenerator[Input, None]
+        ) -> AsyncGenerator[Newput, None]:
+            inner_iter = self(stream)
             try:
                 async for item in inner_iter:
                     async for sub in fn(item):
                         yield sub
             finally:
-                if hasattr(inner_iter, "aclose"):
-                    await inner_iter.aclose()  # type: ignore[attr-defined]
+                await inner_iter.aclose()
 
         return Flow(_flatmapped, name=f"{self.name}.flat_map({fn.__name__})")
 
-    def to_list(self) -> Callable[[AsyncIterator[Input]], Awaitable[list[Output]]]:
+    def to_list(
+        self,
+    ) -> Callable[[AsyncGenerator[Input, None]], Awaitable[list[Output]]]:
         """Collect the output of the flow into a list."""
 
-        async def _collect(stream: AsyncIterator[Input]) -> list[Output]:
+        async def _collect(stream: AsyncGenerator[Input, None]) -> list[Output]:
             return [item async for item in self(stream)]
 
         return _collect
 
     def for_each(
         self, fn: Callable[[Output], Awaitable[None]]
-    ) -> Callable[[AsyncIterator[Input]], Awaitable[None]]:
+    ) -> Callable[[AsyncGenerator[Input, None]], Awaitable[None]]:
         """Consume the flow and apply a function to each item."""
 
-        async def _consume(stream: AsyncIterator[Input]) -> None:
+        async def _consume(stream: AsyncGenerator[Input, None]) -> None:
             async for item in self(stream):
                 await fn(item)
 
@@ -113,7 +120,9 @@ class Flow(Generic[Input, Output]):
         """Pipe the output of this flow to another flow."""
         return Flow(lambda s: other(self(s)), name=f"{self.name} >> {other.name}")
 
-    def collect(self) -> Callable[[AsyncIterator[Input]], Awaitable[list[Output]]]:
+    def collect(
+        self,
+    ) -> Callable[[AsyncGenerator[Input, None]], Awaitable[list[Output]]]:
         """Ergonomic method to collect all items into a list.
 
         This is equivalent to to_list() but more discoverable in fluent APIs.
@@ -123,7 +132,9 @@ class Flow(Generic[Input, Output]):
     def label(self, label: str) -> "Flow[Input, Output]":
         """Label the flow for debugging purposes."""
 
-        async def _labeled(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+        async def _labeled(
+            stream: AsyncGenerator[Input, None]
+        ) -> AsyncGenerator[Output, None]:
             print(f"[Flow:{label}] starting")
             async for item in self(stream):
                 print(f"[Flow:{label}] yield: {item}")
@@ -132,7 +143,7 @@ class Flow(Generic[Input, Output]):
         return Flow(_labeled, name=f"{self.name}.label({label})")
 
     async def preview(
-        self, stream: AsyncIterator[Input], limit: int = 10
+        self, stream: AsyncGenerator[Input, None], limit: int = 10
     ) -> list[Output]:
         """Preview the first few items from a flow for REPL/Jupyter development.
 
@@ -145,7 +156,7 @@ class Flow(Generic[Input, Output]):
         """
         results: list[Output] = []
         count = 0
-        async_iter = self(stream).__aiter__()
+        async_iter = self(stream)
         try:
             async for item in async_iter:
                 if count >= limit:
@@ -154,8 +165,7 @@ class Flow(Generic[Input, Output]):
                 count += 1
         finally:
             # Ensure async iterator is properly closed
-            if hasattr(async_iter, "aclose"):
-                await async_iter.aclose()  # type: ignore[attr-defined]
+            await async_iter.aclose()
         return results
 
     def print(self) -> "Flow[Input, Output]":
@@ -179,7 +189,9 @@ class Flow(Generic[Input, Output]):
             New flow that yields the default value if original flow is empty
         """
 
-        async def _flow(stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+        async def _flow(
+            stream: AsyncGenerator[Input, None]
+        ) -> AsyncGenerator[Output, None]:
             yielded_any = False
             async for item in self(stream):
                 yielded_any = True
@@ -199,7 +211,9 @@ class Flow(Generic[Input, Output]):
             Flow that yields lists of items
         """
 
-        async def _batched(stream: AsyncIterator[Input]) -> AsyncIterator[list[Output]]:
+        async def _batched(
+            stream: AsyncGenerator[Input, None]
+        ) -> AsyncGenerator[list[Output], None]:
             output_stream = self(stream)
             batch: list[Output] = []
             async for item in output_stream:
@@ -237,7 +251,9 @@ class Flow(Generic[Input, Output]):
         """
 
         def decorator(f: Callable[[T], Awaitable[U]]) -> Flow[T, U]:
-            async def _wrapper(stream: AsyncIterator[T]) -> AsyncIterator[U]:
+            async def _wrapper(
+                stream: AsyncGenerator[T, None]
+            ) -> AsyncGenerator[U, None]:
                 async for item in stream:
                     yield await f(item)
 
@@ -250,18 +266,18 @@ class Flow(Generic[Input, Output]):
 
     @staticmethod
     @overload
-    def from_event_fn(fn: Callable[[T], AsyncIterator[U]]) -> Flow[T, U]: ...
+    def from_event_fn(fn: Callable[[T], AsyncGenerator[U, None]]) -> Flow[T, U]: ...
 
     @staticmethod
     @overload
     def from_event_fn(
         fn: None = None,
-    ) -> Callable[[Callable[[T], AsyncIterator[U]]], Flow[T, U]]: ...
+    ) -> Callable[[Callable[[T], AsyncGenerator[U, None]]], Flow[T, U]]: ...
 
     @staticmethod
     def from_event_fn(
-        fn: Callable[[T], AsyncIterator[U]] | None = None,
-    ) -> Flow[T, U] | Callable[[Callable[[T], AsyncIterator[U]]], Flow[T, U]]:
+        fn: Callable[[T], AsyncGenerator[U, None]] | None = None,
+    ) -> Flow[T, U] | Callable[[Callable[[T], AsyncGenerator[U, None]]], Flow[T, U]]:
         """Create a flow from an async function that returns an async iterator.
 
         Can be used as a decorator::
@@ -272,8 +288,10 @@ class Flow(Generic[Input, Output]):
                     yield line
         """
 
-        def decorator(f: Callable[[T], AsyncIterator[U]]) -> Flow[T, U]:
-            async def _wrapper(stream: AsyncIterator[T]) -> AsyncIterator[U]:
+        def decorator(f: Callable[[T], AsyncGenerator[U, None]]) -> Flow[T, U]:
+            async def _wrapper(
+                stream: AsyncGenerator[T, None]
+            ) -> AsyncGenerator[U, None]:
                 async for item in stream:
                     async for sub in f(item):
                         yield sub
@@ -309,7 +327,9 @@ class Flow(Generic[Input, Output]):
         """
 
         def decorator(f: Callable[[T], U]) -> Flow[T, U]:
-            async def _wrapper(stream: AsyncIterator[T]) -> AsyncIterator[U]:
+            async def _wrapper(
+                stream: AsyncGenerator[T, None]
+            ) -> AsyncGenerator[U, None]:
                 async for item in stream:
                     yield f(item)
 
@@ -339,7 +359,9 @@ class Flow(Generic[Input, Output]):
             flow = Flow.from_iterable(range(10))
         """
 
-        async def _wrapper(stream: AsyncIterator[Any]) -> AsyncIterator[T]:
+        async def _wrapper(
+            stream: AsyncGenerator[Any, None]
+        ) -> AsyncGenerator[T, None]:
             # Ignore the input stream and yield from the iterable
             for item in iterable:
                 yield item
@@ -379,7 +401,9 @@ class Flow(Generic[Input, Output]):
             flow = Flow.from_emitter(setup_async_callbacks)
         """
 
-        async def _wrapper(stream: AsyncIterator[Any]) -> AsyncIterator[T]:
+        async def _wrapper(
+            stream: AsyncGenerator[Any, None]
+        ) -> AsyncGenerator[T, None]:
             # Ignore the input stream and collect emitted values
             emitted_values: list[T] = []
 
@@ -420,7 +444,7 @@ class Flow(Generic[Input, Output]):
             items = [item async for item in result]  # ["hello", "world"]
         """
 
-        async def _identity(stream: AsyncIterator[T]) -> AsyncIterator[T]:
+        async def _identity(stream: AsyncGenerator[T, None]) -> AsyncGenerator[T, None]:
             async for item in stream:
                 yield item
 
@@ -450,7 +474,7 @@ class Flow(Generic[Input, Output]):
             items = [item async for item in result]  # ["hello"]
         """
 
-        async def _pure(stream: AsyncIterator[Any]) -> AsyncIterator[T]:
+        async def _pure(stream: AsyncGenerator[Any, None]) -> AsyncGenerator[T, None]:
             # Ignore the input stream and yield the pure value once
             yield value
 
