@@ -28,13 +28,13 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 ### Phase 1A: Core Infrastructure (Epics 1-4)
 
-**Epic 1: Create flowengine package structure**
+**~Epic 1: Create flowengine package structure~ ✅ DONE!**
 - Create `src/flowengine/__init__.py`
 - Create `src/flowengine/py.typed`
 - Update `pyproject.toml` dependencies
 - Create basic package structure
 
-**Epic 2: Migrate core exceptions**
+**~Epic 2: Migrate core exceptions~ ✅ DONE!**
 - File: `src/flowengine/exceptions.py`
 - Source: `old/goldentooth_agent/flow_engine/core/exceptions.py` (31 lines)
 - Tests: `tests/flowengine/test_exceptions.py`
