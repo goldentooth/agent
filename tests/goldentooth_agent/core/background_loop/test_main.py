@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import threading
+from concurrent.futures import Future
 
 import pytest
 
@@ -77,13 +78,13 @@ class TestBackgroundEventLoop:
     def test_submit_preserves_execution_order(self):
         """Submit should preserve relative execution order of coroutines."""
         loop = BackgroundEventLoop()
-        execution_order = []
+        execution_order: list[int] = []
 
-        async def ordered_coroutine(index: int):
+        async def ordered_coroutine(index: int) -> int:
             execution_order.append(index)
             return index
 
-        futures = []
+        futures: list[Future[int]] = []
         for i in range(10):
             futures.append(loop.submit(ordered_coroutine(i)))
 
@@ -107,17 +108,17 @@ class TestBackgroundEventLoop:
     def test_thread_safety(self):
         """Submit should be thread-safe for concurrent calls."""
         loop = BackgroundEventLoop()
-        results = []
+        results: list[int] = []
 
-        async def test_coroutine(thread_id: int):
+        async def test_coroutine(thread_id: int) -> int:
             await asyncio.sleep(0.01)
             return thread_id
 
-        def submit_from_thread(thread_id: int):
+        def submit_from_thread(thread_id: int) -> None:
             future = loop.submit(test_coroutine(thread_id))
             results.append(future.result(timeout=2.0))
 
-        threads = []
+        threads: list[threading.Thread] = []
         for i in range(10):
             thread = threading.Thread(target=submit_from_thread, args=(i,))
             threads.append(thread)
@@ -174,11 +175,11 @@ class TestRunInBackground:
         """run_in_background should handle multiple concurrent calls."""
 
         # Test sequential calls instead of threads to avoid antidote context issues
-        async def coroutine_with_value(value: int):
+        async def coroutine_with_value(value: int) -> int:
             await asyncio.sleep(0.01)
             return value * 2
 
-        results = []
+        results: list[int] = []
         for i in range(5):
             result = run_in_background(coroutine_with_value(i))
             results.append(result)
@@ -195,13 +196,13 @@ class TestIntegration:
         loop = BackgroundEventLoop()
 
         # Define some async operations
-        async def fetch_data(item_id: int):
+        async def fetch_data(item_id: int) -> dict[str, str | int]:
             await asyncio.sleep(0.1)
             return {"id": item_id, "data": f"item_{item_id}"}
 
-        async def process_data(data: dict):
+        async def process_data(data: dict[str, str | int]) -> str:
             await asyncio.sleep(0.05)
-            return data["data"].upper()
+            return str(data["data"]).upper()
 
         # Submit and chain operations
         fetch_future = loop.submit(fetch_data(42))

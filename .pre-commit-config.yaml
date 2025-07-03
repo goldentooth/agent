@@ -93,7 +93,7 @@ repos:
         entry: poetry run pyright
         language: system
         types: [python]
-        args: ['src']
+        args: ['src', 'tests']
         description: Run Pyright type checking
         pass_filenames: false
         always_run: true

@@ -308,10 +308,17 @@ class TestValidationFramework:
         # Mock only the problematic file to raise PermissionError
         original_read_text = Path.read_text
 
-        def mock_read_text(self, *args, **kwargs):
+        def mock_read_text(
+            self: Path,
+            encoding: str | None = None,
+            errors: str | None = None,
+            newline: str | None = None,
+        ) -> str:
             if self.name == "bad.py":
                 raise PermissionError("No read access")
-            return original_read_text(self, *args, **kwargs)
+            return original_read_text(
+                self, encoding=encoding, errors=errors, newline=newline
+            )
 
         with patch.object(Path, "read_text", mock_read_text):
             result = validator.validate(module)
