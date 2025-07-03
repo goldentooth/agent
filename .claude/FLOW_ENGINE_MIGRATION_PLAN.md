@@ -70,16 +70,18 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Tests: `tests/flowengine/combinators/test_sources.py`
 - Dependencies: `flowengine.flow`, `flowengine.combinators.utils`
 
-**Epic 7: Migrate basic combinators**
+**~Epic 7: Migrate basic combinators~ ✅ DONE!**
 - File: `src/flowengine/combinators/basic.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/basic.py` (231 lines)
-- Tests: `tests/flowengine/combinators/test_basic.py`
+- Tests: `tests/flowengine/combinators/test_basic_*.py` (split into 4 files)
 - Dependencies: `flowengine.flow`, `flowengine.exceptions`, `flowengine.combinators.utils`
+- **Result**: All 13 functions migrated with 99% coverage, tests split to respect 1000-line limit
 
-**Epic 8: Create basic combinators __init__.py**
+**~Epic 8: Create basic combinators __init__.py~ ✅ DONE!**
 - File: `src/flowengine/combinators/__init__.py` (partial)
 - Export basic combinators
 - Tests: Update existing tests
+- **Result**: Clean public API with 19 exported functions (utils, sources, basic combinators)
 
 ## Phase 2: Core Combinators (Epics 9-14)
 
