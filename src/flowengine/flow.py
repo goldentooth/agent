@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Awaitable, Callable
-from typing import Any, Generic, NoReturn, TypeVar
+from typing import Any, Generic, NoReturn, TypeVar, overload
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
 Newput = TypeVar("Newput")
+
+# TypeVars for static methods
+T = TypeVar("T")
+U = TypeVar("U")
 
 # Type alias for flow metadata
 FlowMetadata = dict[str, Any]
@@ -193,3 +197,38 @@ class Flow(Generic[Input, Output]):
                 yield batch
 
         return Flow(_batched, name=f"{self.name}.batch({size})")
+
+    @staticmethod
+    @overload
+    def from_value_fn(fn: Callable[[T], Awaitable[U]]) -> Flow[T, U]: ...
+
+    @staticmethod
+    @overload
+    def from_value_fn(
+        fn: None = None,
+    ) -> Callable[[Callable[[T], Awaitable[U]]], Flow[T, U]]: ...
+
+    @staticmethod
+    def from_value_fn(
+        fn: Callable[[T], Awaitable[U]] | None = None,
+    ) -> Flow[T, U] | Callable[[Callable[[T], Awaitable[U]]], Flow[T, U]]:
+        """Create a flow from an async function that takes an input and returns an output.
+
+        Can be used as a decorator::
+
+            @Flow.from_value_fn
+            async def process(item):
+                return await some_async_operation(item)
+        """
+
+        def decorator(f: Callable[[T], Awaitable[U]]) -> Flow[T, U]:
+            async def _wrapper(stream: AsyncIterator[T]) -> AsyncIterator[U]:
+                async for item in stream:
+                    yield await f(item)
+
+            return Flow(_wrapper, name=f.__name__)
+
+        if fn is None:
+            return decorator
+        else:
+            return decorator(fn)
