@@ -22,3 +22,7 @@ class Flow(Generic[Input, Output]):
         self.name = name
         self.metadata = metadata if metadata is not None else {}
         self.__name__ = name
+
+    def __call__(self, stream: AsyncIterator[Input]) -> AsyncIterator[Output]:
+        """Call the flow with the given stream and return an async iterator."""
+        return self.fn(stream)
