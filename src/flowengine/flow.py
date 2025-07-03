@@ -111,3 +111,30 @@ class Flow(Generic[Input, Output]):
                 yield item
 
         return Flow(_labeled, name=f"{self.name}.label({label})")
+
+    async def preview(
+        self, stream: AsyncIterator[Input], limit: int = 10
+    ) -> list[Output]:
+        """Preview the first few items from a flow for REPL/Jupyter development.
+
+        Args:
+            stream: Input stream to process
+            limit: Maximum number of items to collect
+
+        Returns:
+            List of up to `limit` items from the flow
+        """
+        results: list[Output] = []
+        count = 0
+        async_iter = self(stream).__aiter__()
+        try:
+            async for item in async_iter:
+                if count >= limit:
+                    break
+                results.append(item)
+                count += 1
+        finally:
+            # Ensure async iterator is properly closed
+            if hasattr(async_iter, "aclose"):
+                await async_iter.aclose()  # type: ignore[attr-defined]
+        return results

@@ -468,3 +468,153 @@ class TestFlowCollect:
         assert result == ["item_10", "item_20"]
         assert isinstance(result, list)
         assert all(isinstance(item, str) for item in result)
+
+
+class TestFlowPreview:
+    """Tests for Flow.preview method."""
+
+    @pytest.mark.asyncio
+    async def test_preview_returns_limited_items(self) -> None:
+        """Test that preview returns only the specified number of items."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in range(100):  # Large stream
+                yield i
+
+        flow = Flow(source_fn, name="source")
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        # Default limit is 10
+        result = await flow.preview(empty_stream())
+        assert result == list(range(10))
+
+        # Custom limit
+        result_5 = await flow.preview(empty_stream(), limit=5)
+        assert result_5 == list(range(5))
+
+    @pytest.mark.asyncio
+    async def test_preview_with_fewer_items_than_limit(self) -> None:
+        """Test that preview returns all items when stream has fewer than limit."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [1, 2, 3]:
+                yield i
+
+        flow = Flow(source_fn, name="small")
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = await flow.preview(empty_stream(), limit=10)
+        assert result == [1, 2, 3]
+
+    @pytest.mark.asyncio
+    async def test_preview_with_empty_stream(self) -> None:
+        """Test that preview returns empty list for empty streams."""
+
+        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            return
+            yield  # pragma: no cover
+
+        flow = Flow(empty_source, name="empty")
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = await flow.preview(empty_stream(), limit=10)
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_preview_with_transformed_flow(self) -> None:
+        """Test that preview works with transformed flows."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in range(20):
+                yield i
+
+        def is_even(x: int) -> bool:
+            return x % 2 == 0
+
+        def square(x: int) -> int:
+            return x * x
+
+        flow = Flow(source_fn, name="source")
+        transformed = flow.filter(is_even).map(square)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = await transformed.preview(empty_stream(), limit=5)
+        assert result == [0, 4, 16, 36, 64]  # 0^2, 2^2, 4^2, 6^2, 8^2
+
+    @pytest.mark.asyncio
+    async def test_preview_closes_iterator_properly(self) -> None:
+        """Test that preview properly closes the async iterator."""
+
+        class TrackableIterator:
+            def __init__(self) -> None:
+                super().__init__()
+                self.closed = False
+
+            async def __aiter__(self) -> AsyncIterator[int]:
+                for i in range(100):
+                    yield i
+
+            async def aclose(self) -> None:
+                self.closed = True
+
+        async def trackable_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            iterator = TrackableIterator()
+            async for item in iterator:
+                yield item
+
+        flow = Flow(trackable_fn, name="trackable")
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        # This should close the iterator after getting 5 items
+        result = await flow.preview(empty_stream(), limit=5)
+        assert result == list(range(5))
+
+    @pytest.mark.asyncio
+    async def test_preview_with_different_input_streams(self) -> None:
+        """Test that preview works with different input stream types."""
+
+        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield len(item) * 10
+
+        flow = Flow(transform_fn, name="length_transform")
+
+        async def string_stream() -> AsyncIterator[str]:
+            words = ["a", "bb", "ccc", "dddd", "eeeee", "ffffff"]
+            for word in words:
+                yield word
+
+        result = await flow.preview(string_stream(), limit=3)
+        assert result == [10, 20, 30]
+
+    @pytest.mark.asyncio
+    async def test_preview_with_limit_zero(self) -> None:
+        """Test that preview with limit=0 returns empty list."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in range(10):
+                yield i
+
+        flow = Flow(source_fn, name="source")
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = await flow.preview(empty_stream(), limit=0)
+        assert result == []
