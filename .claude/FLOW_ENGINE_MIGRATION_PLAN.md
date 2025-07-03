@@ -42,7 +42,7 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Tests: `tests/flowengine/test_exceptions.py`
 - Dependencies: None
 
-**Epic 3: Migrate protocols**
+**~Epic 3: Migrate protocols~  ✅ DONE!**
 - File: `src/flowengine/protocols.py`
 - Source: `old/goldentooth_agent/flow_engine/protocols.py` (56 lines)
 - Tests: `tests/flowengine/test_protocols.py`
