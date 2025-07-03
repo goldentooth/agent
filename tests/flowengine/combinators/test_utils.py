@@ -1,6 +1,6 @@
 """Tests for flowengine.combinators.utils module."""
 
-from flowengine.combinators.utils import get_function_name
+from flowengine.combinators.utils import STREAM_END, get_function_name
 
 
 def test_get_function_name_returns_function_name():
@@ -23,3 +23,11 @@ def test_get_function_name_returns_default_for_no_name():
     result = get_function_name(obj)
 
     assert result == "function"
+
+
+def test_stream_end_is_singleton():
+    # STREAM_END should be a unique sentinel object
+    assert STREAM_END is STREAM_END
+    assert STREAM_END == STREAM_END
+    assert STREAM_END != object()
+    assert STREAM_END is not None

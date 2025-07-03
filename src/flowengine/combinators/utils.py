@@ -8,6 +8,9 @@ from typing import Any
 # Type aliases for common patterns
 AnyCallable = Callable[..., Any]
 
+# Sentinel object for stream termination
+STREAM_END = object()
+
 
 def get_function_name(fn: AnyCallable) -> str:
     """Extract function name for flow naming."""
