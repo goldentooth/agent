@@ -43,5 +43,7 @@
   "reportOverlappingOverload": "error",
   "reportMissingSuperCall": "error",
   "reportUninitializedInstanceVariable": "error",
-  "reportInvalidStringEscapeSequence": "error"
+  "reportInvalidStringEscapeSequence": "error",
+  "reportUnusedImport": "none",
+  "reportUnusedVariable": "none"
 }

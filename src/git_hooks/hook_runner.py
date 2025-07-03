@@ -4,11 +4,14 @@ import subprocess
 from dataclasses import dataclass
 from typing import List
 
+# Import validators to trigger registration
+from . import (  # noqa: F401  # type: ignore[reportUnusedImport]
+    file_validator,
+    function_validator,
+    module_validator,
+)
 from .config import ValidationConfig
 from .core import ValidationResult, ValidationSeverity, Validator
-from .file_validator import FileLengthValidator
-from .function_validator import FunctionLengthValidator
-from .module_validator import ModuleSizeValidator
 from .utils import (
     DEFAULT_EXCLUDE_PATTERNS,
     get_all_files,
@@ -16,6 +19,7 @@ from .utils import (
     get_staged_files,
     print_results,
 )
+from .validator_registry import ValidatorRegistry
 
 
 @dataclass
@@ -38,32 +42,16 @@ def is_git_repo() -> bool:
 
 
 def create_validator(validator_type: str, config: ValidationConfig) -> Validator:
-    """Create a validator instance from configuration."""
+    """Create a validator instance from configuration using registry."""
     validator_config = config.get_validator_config(validator_type)
 
-    if validator_type == "file_length":
-        return FileLengthValidator(
-            limit=validator_config["limit"],
-            warn_threshold=validator_config["warn_threshold"],
-            urgent_threshold=validator_config["urgent_threshold"],
-            exclude_patterns=DEFAULT_EXCLUDE_PATTERNS,
-        )
-    elif validator_type == "module_size":
-        return ModuleSizeValidator(
-            limit=validator_config["limit"],
-            warn_threshold=validator_config["warn_threshold"],
-            urgent_threshold=validator_config["urgent_threshold"],
-            exclude_patterns=DEFAULT_EXCLUDE_PATTERNS,
-        )
-    elif validator_type == "function_length":
-        return FunctionLengthValidator(
-            limit=validator_config["limit"],
-            warn_threshold=validator_config["warn_threshold"],
-            urgent_threshold=validator_config["urgent_threshold"],
-            exclude_patterns=DEFAULT_EXCLUDE_PATTERNS,
-        )
-    else:
-        raise ValueError(f"Unknown validator type: {validator_type}")
+    # Add default exclude patterns to config
+    validator_config = {
+        **validator_config,
+        "exclude_patterns": DEFAULT_EXCLUDE_PATTERNS,
+    }
+
+    return ValidatorRegistry.create(validator_type, validator_config)
 
 
 class HookRunner:

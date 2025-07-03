@@ -5,8 +5,10 @@ from typing import Optional
 
 from .core import ValidationResult, ValidationSeverity, Validator
 from .guidance import get_refactoring_guidance
+from .validator_registry import ValidatorRegistry
 
 
+@ValidatorRegistry.register("file_length")
 class FileLengthValidator(Validator):
     """Validates individual file line counts."""
 

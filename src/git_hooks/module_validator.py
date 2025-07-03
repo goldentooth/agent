@@ -5,8 +5,10 @@ from typing import Optional
 
 from .core import ValidationResult, ValidationSeverity, Validator
 from .guidance import get_module_refactoring_guidance
+from .validator_registry import ValidatorRegistry
 
 
+@ValidatorRegistry.register("module_size")
 class ModuleSizeValidator(Validator):
     """Validates module total line counts."""
 

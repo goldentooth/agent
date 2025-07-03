@@ -6,8 +6,10 @@ from typing import Optional
 
 from .core import ValidationResult, ValidationSeverity, Validator
 from .guidance import get_refactoring_guidance
+from .validator_registry import ValidatorRegistry
 
 
+@ValidatorRegistry.register("function_length")
 class FunctionLengthValidator(Validator):
     """Validates function line counts within Python files."""
 
