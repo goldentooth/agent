@@ -272,7 +272,12 @@ class TestBackgroundEventLoopShutdown:
 
         # Should raise RuntimeError since loop is not running
         with pytest.raises(RuntimeError, match="Background event loop is not running"):
-            loop.submit(test_coroutine())
+            # Need to create and immediately close the coroutine to avoid warning
+            coro = test_coroutine()
+            try:
+                loop.submit(coro)
+            finally:
+                coro.close()
 
     def test_shutdown_graceful(self):
         """Test graceful shutdown of background event loop."""
