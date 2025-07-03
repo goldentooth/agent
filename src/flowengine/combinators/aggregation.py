@@ -6,6 +6,7 @@ and other aggregation patterns for stream processing.
 
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import AsyncGenerator
 from typing import TypeVar
 
@@ -70,3 +71,34 @@ def chunk_stream(size: int) -> Flow[Input, list[Input]]:
             yield chunk
 
     return Flow(_flow, name=f"chunk({size})")
+
+
+def window_stream(size: int, step: int = 1) -> Flow[Input, list[Input]]:
+    """Create a flow that generates sliding windows over the stream.
+
+    Creates overlapping windows of items with specified size and step.
+
+    Args:
+        size: Window size
+        step: Step size between windows (default 1)
+
+    Returns:
+        A flow that yields sliding windows
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[list[Input], None]:
+        """Generate sliding windows over the stream."""
+        window: deque[Input] = deque(maxlen=size)
+        items_seen = 0
+
+        async for item in stream:
+            window.append(item)
+            items_seen += 1
+
+            # Emit window when we have enough items and at correct intervals
+            if len(window) == size and (items_seen - size) % step == 0:
+                yield list(window)
+
+    return Flow(_flow, name=f"window({size}, step={step})")
