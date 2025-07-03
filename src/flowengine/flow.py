@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
 from typing import Any, Generic, NoReturn, TypeVar, overload
 
 Input = TypeVar("Input")
@@ -304,3 +304,29 @@ class Flow(Generic[Input, Output]):
             return decorator
         else:
             return decorator(fn)
+
+    @staticmethod
+    def from_iterable(iterable: Iterable[T]) -> Flow[Any, T]:
+        """Create a flow from an iterable that ignores input stream.
+
+        Args:
+            iterable: Any iterable (list, tuple, range, etc.) to convert to flow
+
+        Returns:
+            Flow that yields all items from the iterable, ignoring input stream
+
+        Example::
+
+            # Create flow from list
+            flow = Flow.from_iterable([1, 2, 3])
+
+            # Create flow from range
+            flow = Flow.from_iterable(range(10))
+        """
+
+        async def _wrapper(stream: AsyncIterator[Any]) -> AsyncIterator[T]:
+            # Ignore the input stream and yield from the iterable
+            for item in iterable:
+                yield item
+
+        return Flow(_wrapper, name="from_iterable")

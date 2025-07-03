@@ -657,3 +657,197 @@ class TestFlowFromEventFn:
         items = [item async for item in result]
 
         assert items == ["A", "B"]
+
+
+class TestFlowFromIterable:
+    """Tests for Flow.from_iterable static method."""
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_creates_flow_from_list(self) -> None:
+        """Test that from_iterable creates a flow from a list."""
+
+        data = [1, 2, 3, 4, 5]
+        flow = Flow.from_iterable(data)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            yield None
+
+        result = flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == [1, 2, 3, 4, 5]
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_creates_flow_from_tuple(self) -> None:
+        """Test that from_iterable creates a flow from a tuple."""
+
+        data = ("a", "b", "c")
+        flow = Flow.from_iterable(data)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            yield None
+
+        result = flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == ["a", "b", "c"]
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_creates_flow_from_range(self) -> None:
+        """Test that from_iterable creates a flow from a range."""
+
+        data = range(3, 7)
+        flow = Flow.from_iterable(data)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            yield None
+
+        result = flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == [3, 4, 5, 6]
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_with_empty_iterable(self) -> None:
+        """Test that from_iterable works with empty iterables."""
+
+        data: list[int] = []
+        flow = Flow.from_iterable(data)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            yield None
+
+        result = flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == []
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_with_generator(self) -> None:
+        """Test that from_iterable works with generator expressions."""
+
+        data = (x * 2 for x in range(4))
+        flow = Flow.from_iterable(data)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            yield None
+
+        result = flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == [0, 2, 4, 6]
+
+    def test_from_iterable_sets_descriptive_name(self) -> None:
+        """Test that from_iterable sets a descriptive flow name."""
+
+        data = [1, 2, 3]
+        flow = Flow.from_iterable(data)
+
+        assert flow.name == "from_iterable"
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_preserves_types(self) -> None:
+        """Test that from_iterable preserves the type of items."""
+
+        string_data = ["hello", "world"]
+        string_flow = Flow.from_iterable(string_data)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            yield None
+
+        result = string_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == ["hello", "world"]
+        assert all(isinstance(item, str) for item in items)
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_with_dict_items(self) -> None:
+        """Test that from_iterable works with dict items."""
+
+        data = {"a": 1, "b": 2, "c": 3}
+        flow = Flow.from_iterable(data.items())
+
+        async def empty_stream() -> AsyncIterator[None]:
+            yield None
+
+        result = flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == [("a", 1), ("b", 2), ("c", 3)]
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_chaining_with_other_operations(self) -> None:
+        """Test that flows from from_iterable can be chained."""
+
+        data = [1, 2, 3, 4, 5]
+
+        def is_even(x: int) -> bool:
+            return x % 2 == 0
+
+        def square(x: int) -> int:
+            return x * x
+
+        flow = Flow.from_iterable(data).filter(is_even).map(square)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            yield None
+
+        result = flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == [4, 16]  # 2^2, 4^2
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_ignores_input_stream(self) -> None:
+        """Test that from_iterable ignores the input stream completely."""
+
+        data = ["x", "y", "z"]
+        flow = Flow.from_iterable(data)
+
+        # Input stream with different data
+        async def input_stream() -> AsyncIterator[int]:
+            for i in [100, 200, 300]:
+                yield i
+
+        result = flow(input_stream())
+        items = [item async for item in result]
+
+        # Should get the iterable data, not the input stream data
+        assert items == ["x", "y", "z"]
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_with_single_item(self) -> None:
+        """Test that from_iterable works with single item iterables."""
+
+        data = [42]
+        flow = Flow.from_iterable(data)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            yield None
+
+        result = flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == [42]
+
+    @pytest.mark.asyncio
+    async def test_from_iterable_multiple_input_calls(self) -> None:
+        """Test that from_iterable produces the same output for multiple calls."""
+
+        data = [10, 20, 30]
+        flow = Flow.from_iterable(data)
+
+        async def stream1() -> AsyncIterator[None]:
+            yield None
+
+        async def stream2() -> AsyncIterator[str]:
+            yield "ignored"
+
+        result1 = flow(stream1())
+        items1 = [item async for item in result1]
+
+        result2 = flow(stream2())
+        items2 = [item async for item in result2]
+
+        assert items1 == items2 == [10, 20, 30]
