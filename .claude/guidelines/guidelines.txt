@@ -11,6 +11,7 @@ These are the fundamental principles that govern all development work on this pr
    - Never use the SKIP environment variable
    - If you believe a pre-commit hook is causing unnecessary hardship, ask me
    - Pre-commit hooks ensure code quality and must always be respected
+   - This includes type checks and file/module line count complaints!
 
 1. **Do not write any code without a failing test.**
    - Every function, class, and feature must be driven by tests

@@ -46,3 +46,15 @@ async def run_fold(
     for step in steps:
         current_stream = step(current_stream)
     return current_stream
+
+
+def compose(first: Flow[A, B], second: Flow[B, C]) -> Flow[A, C]:
+    """Compose two flows, where the output of the first is the input to the second."""
+
+    async def _flow(stream: AsyncIterator[A]) -> AsyncIterator[C]:
+        """Pipe the stream through first flow, then through second flow."""
+        intermediate_stream = first(stream)
+        async for item in second(intermediate_stream):
+            yield item
+
+    return Flow(_flow, name=f"{first.name} ∘ {second.name}")
