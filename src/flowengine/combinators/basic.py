@@ -155,3 +155,29 @@ def identity_stream() -> Flow[Input, Input]:
             yield item
 
     return Flow(_flow, name="identity")
+
+
+def take_stream(n: int) -> Flow[Input, Input]:
+    """Create a flow that takes the first n items from the stream.
+
+    Args:
+        n: Number of items to take from the stream
+
+    Returns:
+        A flow that yields only the first n items from the input stream
+
+    Example:
+        first_three = take_stream(3)
+        # Use: limited_stream = first_three(number_stream)
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Take the first n items from the stream."""
+        count = 0
+        async for item in stream:
+            if count >= n:
+                break
+            yield item
+            count += 1
+
+    return Flow(_flow, name=f"take({n})")

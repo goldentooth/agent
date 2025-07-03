@@ -11,6 +11,7 @@ from flowengine.combinators.basic import (
     identity_stream,
     map_stream,
     run_fold,
+    take_stream,
 )
 from flowengine.flow import Flow
 
@@ -567,3 +568,80 @@ class TestIdentityStream:
 
         passthrough: Flow[int, int] = identity_stream()
         assert passthrough.name == "identity"
+
+
+class TestTakeStream:
+    """Test the take_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_take_stream_basic(self) -> None:
+        """Test take_stream with basic functionality."""
+
+        async def source():
+            for i in range(10):
+                yield i
+
+        take_three: Flow[int, int] = take_stream(3)
+        result_stream = take_three(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [0, 1, 2]
+
+    @pytest.mark.asyncio
+    async def test_take_stream_more_than_available(self) -> None:
+        """Test take_stream when n is greater than available items."""
+
+        async def source():
+            for i in [1, 2, 3]:
+                yield i
+
+        take_ten: Flow[int, int] = take_stream(10)
+        result_stream = take_ten(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [1, 2, 3]
+
+    @pytest.mark.asyncio
+    async def test_take_stream_zero_items(self) -> None:
+        """Test take_stream with n=0."""
+
+        async def source():
+            for i in [1, 2, 3]:
+                yield i
+
+        take_zero: Flow[int, int] = take_stream(0)
+        result_stream = take_zero(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    @pytest.mark.asyncio
+    async def test_take_stream_empty_input(self) -> None:
+        """Test take_stream with empty input stream."""
+
+        async def empty_source():
+            return
+            yield  # pragma: no cover
+
+        take_five: Flow[int, int] = take_stream(5)
+        result_stream = take_five(empty_source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    def test_take_stream_name_generation(self) -> None:
+        """Test that take_stream generates appropriate names."""
+
+        take_five: Flow[int, int] = take_stream(5)
+        assert take_five.name == "take(5)"
+
+        take_zero: Flow[int, int] = take_stream(0)
+        assert take_zero.name == "take(0)"
