@@ -59,13 +59,13 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 ### Phase 1B: Combinator Utilities (Epics 5-8)
 
-**Epic 5: Migrate combinator utilities ✅ DONE!**
+**~Epic 5: Migrate combinator utilities~ ✅ DONE!**
 - File: `src/flowengine/combinators/utils.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/utils.py` (28 lines)
 - Tests: `tests/flowengine/combinators/test_utils.py`
 - Dependencies: None
 
-**Epic 6: Migrate sources combinators ✅ DONE!**
+**~Epic 6: Migrate sources combinators~ ✅ DONE!**
 - File: `src/flowengine/combinators/sources.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/sources.py` (85 lines)
 - Tests: `tests/flowengine/combinators/test_sources.py`
