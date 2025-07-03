@@ -1,5 +1,5 @@
 Development Guide
-================
+=================
 
 This guide covers development practices, testing strategies, and contribution guidelines for the Goldentooth Agent project.
 

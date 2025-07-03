@@ -1,7 +1,7 @@
 Goldentooth Agent Documentation
-==============================
+===============================
 
-Welcome to the Goldentooth Agent documentation. This is a sophisticated AI agent system with RAG capabilities, flow-based architecture, and comprehensive tooling.
+Welcome to the Goldentooth Agent documentation. This is a sophisticated AI agent system currently undergoing migration to a new functional reactive architecture built on the Flow Engine.
 
 .. toctree::
    :maxdepth: 2
@@ -12,19 +12,38 @@ Welcome to the Goldentooth Agent documentation. This is a sophisticated AI agent
    background/index
    development
 
-Overview
---------
+Current Status
+--------------
 
-Goldentooth Agent is a mature, production-ready codebase with 25K+ lines of code implementing:
+**Flow Engine Migration: Epic 4 Complete ✅**
 
-* **Flow-based functional architecture** with composition
-* **Context management** with snapshots and history tracking
-* **RAG system** with OpenAI embeddings and hybrid search
-* **Document store** with GitHub, notes, and goldentooth data
-* **CLI** with interactive and single-message modes
-* **Vector store** with sqlite-vec for semantic search
-* **Comprehensive dependency injection** with Antidote
-* **Background processing** and event systems
+The core Flow class has been fully migrated to the new ``flowengine`` package:
+
+* ✅ **Complete Flow class (23/23 methods)** - All instance methods and static factory methods
+* ✅ **100% test coverage** - 150+ test cases covering all functionality  
+* ✅ **Strict type checking** - Full Pyright compliance with generic type preservation
+* ✅ **Functional programming patterns** - Identity, composition, and pure value flows
+
+Architecture Overview
+---------------------
+
+The system is organized into several core modules:
+
+**New Architecture (Current Development)**
+
+* **Flow Engine** (``flowengine``) - Functional reactive stream processing [**MIGRATED ✅**]
+
+  * ``flowengine.flow`` - Core Flow class with 23 methods
+  * ``flowengine.exceptions`` - Flow-specific error types
+  * ``flowengine.protocols`` - Type protocols for the flow system
+
+* **Development Tools** (``git_hooks``) - Quality assurance and validation
+
+**Legacy Architecture (Being Migrated)**
+
+* **CLI Interface** (``goldentooth_agent.cli``) - Typer-based command line interface
+* **Core System** (``old/goldentooth_agent/core``) - 25K+ LOC of original functionality
+* **Legacy Flow Engine** (``old/goldentooth_agent/flow_engine``) - Original implementation
 
 Quick Start
 -----------

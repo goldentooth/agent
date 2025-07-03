@@ -1,49 +1,69 @@
 System Overview
 ===============
 
-Architecture Components
------------------------
+Migration Status
+----------------
 
-Core System Architecture
-~~~~~~~~~~~~~~~~~~~~~~~~~
+**Flow Engine Migration: Epic 4 Complete ✅**
+
+The Goldentooth Agent is undergoing a comprehensive migration from a legacy monolithic architecture to a new functional reactive system built on the Flow Engine.
+
+Current Architecture
+~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: text
 
-   src/goldentooth_agent/
-   ├── cli/                    # CLI interface (Typer-based)
-   │   ├── main.py            # Main CLI app
-   │   └── commands/          # Chat, tools, and other commands
-   ├── core/                  # Core system modules (25K+ LOC)
+   src/
+   ├── flowengine/             # New Flow Engine (MIGRATED ✅)
+   │   ├── __init__.py        # Package exports
+   │   ├── flow.py            # Core Flow class (23 methods)
+   │   ├── exceptions.py      # Flow-specific errors 
+   │   ├── protocols.py       # Type protocols
+   │   └── py.typed           # Type marker
+   ├── git_hooks/             # Development tooling
+   │   ├── cli.py            # Quality assurance CLI
+   │   ├── core.py           # Hook utilities
+   │   ├── file_validator.py # File size validation
+   │   └── module_validator.py # Module size validation
+   └── goldentooth_agent/     # Legacy CLI (minimal)
+       └── cli/              # Basic CLI interface
+
+Legacy Architecture (In old/ directory)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: text
+
+   old/goldentooth_agent/      # Original 25K+ LOC implementation
+   ├── cli/                   # CLI interface (Typer-based)  
+   ├── core/                  # Core system modules
    │   ├── context/           # Context management system
    │   ├── flow_agent/        # Agent framework
    │   ├── embeddings/        # Vector embeddings & search
    │   ├── rag/               # Retrieval-Augmented Generation
    │   ├── llm/               # LLM clients (Claude, etc.)
    │   ├── document_store/    # YAML document management
-   │   ├── paths/             # Cross-platform path handling
-   │   ├── util/              # Shared utilities
    │   └── background_loop/   # Async background processing
-   └── data/                  # Static configuration data
+   └── flow_engine/           # Original Flow implementation
 
-Key Features
-~~~~~~~~~~~~
+Flow Engine Features
+~~~~~~~~~~~~~~~~~~~~
 
-**✅ Fully Implemented:**
+**✅ Migrated and Production Ready:**
 
-* Flow-based functional architecture with composition (via flow_engine)
-* Context management with snapshots and history tracking
-* RAG system with OpenAI embeddings and hybrid search
-* Document store with GitHub, notes, and goldentooth data
-* CLI with interactive and single-message modes
-* Vector store with sqlite-vec for semantic search
-* Comprehensive dependency injection with Antidote
-* Background processing and event systems
+* **Complete Flow class** - All 23 methods with comprehensive test coverage
+* **Type-safe composition** - Full generic type preservation through transformations
+* **Functional patterns** - Identity, pure values, and monadic operations
+* **Static factory methods** - from_value_fn, from_sync_fn, from_event_fn, from_iterable, from_emitter
+* **Stream processing** - Async iterator-based reactive streams
+* **Error handling** - Comprehensive exception propagation and edge case coverage
+* **Development quality** - 150+ test cases, strict type checking, file size validation
 
-**🔄 In Progress:**
+**🔄 Next Steps (Epic 5):**
 
-* Module documentation and API surface documentation
-* Code quality standardization across large modules
-* Performance optimization for complex flow compositions
+* Combinator utilities migration
+* Advanced flow composition patterns
+* Performance optimization helpers
+* Integration with legacy context system
 
 Development Standards
 ---------------------
