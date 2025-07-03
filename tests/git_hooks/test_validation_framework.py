@@ -53,12 +53,13 @@ class TestValidationFramework:
         validator = TestValidator()
         assert validator.validate(Path("test.py")) is None
 
-        # Test the base Validator directly to get coverage of abstract method
+        # Test that we cannot instantiate the abstract base class directly
         try:
-            # This will fail but gives us coverage
-            Validator.validate(validator, Path("test.py"))  # type: ignore
-        except NotImplementedError:
-            pass  # Expected
+            # This should fail because Validator is abstract
+            Validator(limit=100)  # type: ignore[abstract]
+        except TypeError as e:
+            # Expected: "Can't instantiate abstract class Validator with abstract method validate"
+            assert "abstract" in str(e).lower()
 
     def test_file_length_validator_passes_small_files(
         self, temp_git_repo: Path
