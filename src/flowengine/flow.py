@@ -5,6 +5,7 @@ from typing import Any, Generic, NoReturn, TypeVar
 
 Input = TypeVar("Input")
 Output = TypeVar("Output")
+Newput = TypeVar("Newput")
 
 # Type alias for flow metadata
 FlowMetadata = dict[str, Any]
@@ -38,3 +39,12 @@ class Flow(Generic[Input, Output]):
         raise TypeError(
             "Flows must be called with a stream to get an iterator (e.g., flow(stream))"
         )
+
+    def map(self, fn: Callable[[Output], Newput]) -> "Flow[Input, Newput]":
+        """Map a function over the output of the flow."""
+
+        async def _mapped(stream: AsyncIterator[Input]) -> AsyncIterator[Newput]:
+            async for item in self(stream):
+                yield fn(item)
+
+        return Flow(_mapped, name=f"{self.name}.map({fn.__name__})")

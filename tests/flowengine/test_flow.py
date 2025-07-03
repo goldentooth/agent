@@ -307,3 +307,141 @@ class TestFlowAiter:
             # syntax checking happens at compile time
             async for item in flow:  # type: ignore[attr-defined]
                 pass
+
+
+class TestFlowMap:
+    """Tests for Flow.map method."""
+
+    @pytest.mark.asyncio
+    async def test_map_transforms_values(self) -> None:
+        """Test that map applies function to each item in the stream."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [1, 2, 3]:
+                yield i
+
+        def double(x: int) -> int:
+            return x * 2
+
+        flow = Flow(source_fn, name="source")
+        mapped_flow = flow.map(double)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = mapped_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == [2, 4, 6]
+
+    @pytest.mark.asyncio
+    async def test_map_changes_output_type(self) -> None:
+        """Test that map can change the output type of the flow."""
+
+        async def int_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [10, 20, 30]:
+                yield i
+
+        def int_to_string(x: int) -> str:
+            return f"value_{x}"
+
+        flow = Flow(int_source, name="int_source")
+        string_flow = flow.map(int_to_string)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = string_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == ["value_10", "value_20", "value_30"]
+
+    @pytest.mark.asyncio
+    async def test_map_preserves_input_type(self) -> None:
+        """Test that map preserves the input type of the original flow."""
+
+        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield len(item)
+
+        def square(x: int) -> int:
+            return x * x
+
+        flow = Flow(transform_fn, name="transform")
+        mapped_flow = flow.map(square)
+
+        async def string_stream() -> AsyncIterator[str]:
+            for s in ["hi", "test", "hello"]:
+                yield s
+
+        result = mapped_flow(string_stream())
+        items = [item async for item in result]
+
+        assert items == [4, 16, 25]  # len("hi")^2, len("test")^2, len("hello")^2
+
+    def test_map_creates_new_flow_with_descriptive_name(self) -> None:
+        """Test that map creates a new flow with a descriptive name."""
+
+        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield str(item)
+
+        def upper_fn(s: str) -> str:
+            return s.upper()
+
+        flow = Flow(test_fn, name="stringify")
+        mapped_flow = flow.map(upper_fn)
+
+        assert mapped_flow.name == "stringify.map(upper_fn)"
+        assert mapped_flow is not flow  # Should be a new flow instance
+
+    @pytest.mark.asyncio
+    async def test_map_with_empty_stream(self) -> None:
+        """Test that map works correctly with empty streams."""
+
+        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            return
+            yield  # pragma: no cover
+
+        def multiply_by_ten(x: int) -> int:
+            return x * 10
+
+        flow = Flow(empty_source, name="empty")
+        mapped_flow = flow.map(multiply_by_ten)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = mapped_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == []
+
+    @pytest.mark.asyncio
+    async def test_map_chaining(self) -> None:
+        """Test that multiple maps can be chained together."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [1, 2, 3]:
+                yield i
+
+        def add_one(x: int) -> int:
+            return x + 1
+
+        def multiply_by_three(x: int) -> int:
+            return x * 3
+
+        flow = Flow(source_fn, name="source")
+        chained_flow = flow.map(add_one).map(multiply_by_three)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = chained_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == [6, 9, 12]  # (1+1)*3, (2+1)*3, (3+1)*3
