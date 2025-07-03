@@ -781,3 +781,164 @@ class TestFlowFlatMap:
             "A",
             "A",
         ]  # Only 'a' chars from "ab" doubled, filtered, and uppercased
+
+
+class TestFlowToList:
+    """Tests for Flow.to_list method."""
+
+    @pytest.mark.asyncio
+    async def test_to_list_collects_all_items(self) -> None:
+        """Test that to_list collects all items from the flow into a list."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+            for s in ["hello", "world", "test"]:
+                yield s
+
+        flow = Flow(source_fn, name="source")
+        collector = flow.to_list()
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = await collector(empty_stream())
+
+        assert result == ["hello", "world", "test"]
+        assert isinstance(result, list)
+
+    @pytest.mark.asyncio
+    async def test_to_list_with_empty_stream(self) -> None:
+        """Test that to_list returns empty list for empty streams."""
+
+        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            return
+            yield  # pragma: no cover
+
+        flow = Flow(empty_source, name="empty")
+        collector = flow.to_list()
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = await collector(empty_stream())
+
+        assert result == []
+        assert isinstance(result, list)
+
+    @pytest.mark.asyncio
+    async def test_to_list_preserves_order(self) -> None:
+        """Test that to_list preserves the order of items."""
+
+        async def sequence_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [3, 1, 4, 1, 5, 9, 2, 6]:
+                yield i
+
+        flow = Flow(sequence_fn, name="sequence")
+        collector = flow.to_list()
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = await collector(empty_stream())
+
+        assert result == [3, 1, 4, 1, 5, 9, 2, 6]
+
+    @pytest.mark.asyncio
+    async def test_to_list_with_transformed_flow(self) -> None:
+        """Test that to_list works with transformed flows."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [1, 2, 3, 4, 5]:
+                yield i
+
+        def is_even(x: int) -> bool:
+            return x % 2 == 0
+
+        def square(x: int) -> int:
+            return x * x
+
+        flow = Flow(source_fn, name="source")
+        transformed_flow = flow.filter(is_even).map(square)
+        collector = transformed_flow.to_list()
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = await collector(empty_stream())
+
+        assert result == [4, 16]  # 2^2, 4^2
+
+    @pytest.mark.asyncio
+    async def test_to_list_returns_callable(self) -> None:
+        """Test that to_list returns a callable function."""
+
+        async def test_fn(stream: AsyncIterator[int]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield str(item)
+
+        flow = Flow(test_fn, name="stringify")
+        collector = flow.to_list()
+
+        # Should return a callable
+        assert callable(collector)
+
+        # Should be able to call it with a stream
+        async def int_stream() -> AsyncIterator[int]:
+            for i in [1, 2, 3]:
+                yield i
+
+        result = await collector(int_stream())
+        assert result == ["1", "2", "3"]
+
+    @pytest.mark.asyncio
+    async def test_to_list_with_different_input_streams(self) -> None:
+        """Test that to_list works with different input streams."""
+
+        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield len(item)
+
+        flow = Flow(transform_fn, name="length_transform")
+        collector = flow.to_list()
+
+        # Test with first stream
+        async def stream1() -> AsyncIterator[str]:
+            for s in ["hi", "hello"]:
+                yield s
+
+        result1 = await collector(stream1())
+        assert result1 == [2, 5]
+
+        # Test with different stream
+        async def stream2() -> AsyncIterator[str]:
+            for s in ["a", "test", "python"]:
+                yield s
+
+        result2 = await collector(stream2())
+        assert result2 == [1, 4, 6]
+
+    @pytest.mark.asyncio
+    async def test_to_list_type_annotations(self) -> None:
+        """Test that to_list maintains proper type annotations."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+            for s in ["a", "b", "c"]:
+                yield s
+
+        flow = Flow(source_fn, name="source")
+        collector = flow.to_list()
+
+        # The collector should have the right signature
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = await collector(empty_stream())
+
+        # Result should be a list of strings
+        assert isinstance(result, list)
+        assert all(isinstance(item, str) for item in result)
+        assert result == ["a", "b", "c"]

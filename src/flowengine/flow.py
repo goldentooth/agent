@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
 from typing import Any, Generic, NoReturn, TypeVar
 
 Input = TypeVar("Input")
@@ -70,3 +70,11 @@ class Flow(Generic[Input, Output]):
                     yield sub
 
         return Flow(_flatmapped, name=f"{self.name}.flat_map({fn.__name__})")
+
+    def to_list(self) -> Callable[[AsyncIterator[Input]], Awaitable[list[Output]]]:
+        """Collect the output of the flow into a list."""
+
+        async def _collect(stream: AsyncIterator[Input]) -> list[Output]:
+            return [item async for item in self(stream)]
+
+        return _collect
