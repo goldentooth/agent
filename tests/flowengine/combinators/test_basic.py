@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from flowengine.combinators.basic import compose, run_fold
+from flowengine.combinators.basic import compose, filter_stream, run_fold
 from flowengine.flow import Flow
 
 
@@ -32,6 +32,16 @@ def int_to_str(x: int) -> str:
 def str_length(s: str) -> int:
     """Get length of string."""
     return len(s)
+
+
+def is_even(x: int) -> bool:
+    """Check if number is even."""
+    return x % 2 == 0
+
+
+def always_true(x: int) -> bool:
+    """Always return True."""
+    return True
 
 
 class TestRunFold:
@@ -216,3 +226,80 @@ class TestCompose:
             results.append(item)
 
         assert results == [1, 1, 1]  # len("1"), len("2"), len("3")
+
+
+class TestFilterStream:
+    """Test the filter_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_filter_stream_basic(self) -> None:
+        """Test filter_stream with basic predicate."""
+
+        async def source():
+            for i in [1, 2, 3, 4, 5, 6]:
+                yield i
+
+        even_filter = filter_stream(is_even)
+        result_stream = even_filter(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [2, 4, 6]
+
+    @pytest.mark.asyncio
+    async def test_filter_stream_empty_result(self) -> None:
+        """Test filter_stream when no items match predicate."""
+
+        async def source():
+            for i in [1, 3, 5]:
+                yield i
+
+        even_filter = filter_stream(is_even)
+        result_stream = even_filter(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    @pytest.mark.asyncio
+    async def test_filter_stream_all_match(self) -> None:
+        """Test filter_stream when all items match predicate."""
+
+        async def source():
+            for i in [2, 4, 6]:
+                yield i
+
+        even_filter = filter_stream(is_even)
+        result_stream = even_filter(source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == [2, 4, 6]
+
+    @pytest.mark.asyncio
+    async def test_filter_stream_empty_input(self) -> None:
+        """Test filter_stream with empty input stream."""
+
+        async def empty_source():
+            return
+            yield  # pragma: no cover
+
+        filter_flow = filter_stream(always_true)
+        result_stream = filter_flow(empty_source())
+        results: list[int] = []
+        async for item in result_stream:
+            results.append(item)
+
+        assert results == []
+
+    def test_filter_stream_name_generation(self) -> None:
+        """Test that filter_stream generates appropriate names."""
+
+        def is_positive(x: int) -> bool:
+            return x > 0
+
+        positive_filter = filter_stream(is_positive)
+        assert "filter(is_positive)" in positive_filter.name

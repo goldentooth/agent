@@ -6,8 +6,10 @@ essential stream processing combinators.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import AsyncGenerator, TypeVar
 
+from flowengine.combinators.utils import get_function_name
 from flowengine.flow import Flow
 
 Input = TypeVar("Input")
@@ -57,3 +59,27 @@ def compose(first: Flow[A, B], second: Flow[B, C]) -> Flow[A, C]:
             yield item
 
     return Flow(_flow, name=f"{first.name} ∘ {second.name}")
+
+
+def filter_stream(predicate: Callable[[Input], bool]) -> Flow[Input, Input]:
+    """Create a flow that filters stream items based on a predicate.
+
+    Args:
+        predicate: Function that returns True for items to keep
+
+    Returns:
+        A flow that yields only items where predicate returns True
+
+    Example:
+        is_even = lambda x: x % 2 == 0
+        even_filter = filter_stream(is_even)
+        # Use: even_numbers = even_filter(number_stream)
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Filter stream items based on predicate."""
+        async for item in stream:
+            if predicate(item):
+                yield item
+
+    return Flow(_flow, name=f"filter({get_function_name(predicate)})")
