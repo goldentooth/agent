@@ -606,3 +606,178 @@ class TestFlowFilter:
         items = [item async for item in result]
 
         assert items == [1, 9, 25]  # 1^2, 3^2, 5^2
+
+
+class TestFlowFlatMap:
+    """Tests for Flow.flat_map method."""
+
+    @pytest.mark.asyncio
+    async def test_flat_map_flattens_async_iterators(self) -> None:
+        """Test that flat_map flattens nested async iterators into a single stream."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+            for s in ["hello", "world"]:
+                yield s
+
+        async def split_chars(text: str) -> AsyncIterator[str]:
+            for char in text:
+                yield char
+
+        flow = Flow(source_fn, name="source")
+        flat_mapped_flow = flow.flat_map(split_chars)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = flat_mapped_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == ["h", "e", "l", "l", "o", "w", "o", "r", "l", "d"]
+
+    @pytest.mark.asyncio
+    async def test_flat_map_changes_output_type(self) -> None:
+        """Test that flat_map can change the output type of the flow."""
+
+        async def int_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [3, 2]:
+                yield i
+
+        async def repeat_number(n: int) -> AsyncIterator[str]:
+            for _ in range(n):
+                yield str(n)
+
+        flow = Flow(int_source, name="int_source")
+        string_flow = flow.flat_map(repeat_number)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = string_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == ["3", "3", "3", "2", "2"]
+
+    @pytest.mark.asyncio
+    async def test_flat_map_preserves_input_type(self) -> None:
+        """Test that flat_map preserves the input type of the original flow."""
+
+        async def transform_fn(stream: AsyncIterator[str]) -> AsyncIterator[int]:
+            async for item in stream:
+                yield len(item)
+
+        async def expand_to_range(n: int) -> AsyncIterator[int]:
+            for i in range(n):
+                yield i
+
+        flow = Flow(transform_fn, name="length_transform")
+        flat_mapped_flow = flow.flat_map(expand_to_range)
+
+        async def string_stream() -> AsyncIterator[str]:
+            for s in ["hi", "a", "test"]:
+                yield s
+
+        result = flat_mapped_flow(string_stream())
+        items = [item async for item in result]
+
+        assert items == [0, 1, 0, 0, 1, 2, 3]  # range(2), range(1), range(4)
+
+    def test_flat_map_creates_new_flow_with_descriptive_name(self) -> None:
+        """Test that flat_map creates a new flow with a descriptive name."""
+
+        async def test_fn(stream: AsyncIterator[str]) -> AsyncIterator[str]:
+            async for item in stream:
+                yield item.upper()
+
+        async def split_words(text: str) -> AsyncIterator[str]:
+            for word in text.split():
+                yield word
+
+        flow = Flow(test_fn, name="upper_case")
+        flat_mapped_flow = flow.flat_map(split_words)
+
+        assert flat_mapped_flow.name == "upper_case.flat_map(split_words)"
+        assert flat_mapped_flow is not flow  # Should be a new flow instance
+
+    @pytest.mark.asyncio
+    async def test_flat_map_with_empty_stream(self) -> None:
+        """Test that flat_map works correctly with empty streams."""
+
+        async def empty_source(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            return
+            yield  # pragma: no cover
+
+        async def create_range(n: int) -> AsyncIterator[int]:
+            for i in range(n):
+                yield i
+
+        flow = Flow(empty_source, name="empty")
+        flat_mapped_flow = flow.flat_map(create_range)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = flat_mapped_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == []
+
+    @pytest.mark.asyncio
+    async def test_flat_map_with_empty_inner_iterators(self) -> None:
+        """Test that flat_map works when inner iterators are empty."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[int]:
+            for i in [0, 1, 0, 2]:
+                yield i
+
+        async def create_range(n: int) -> AsyncIterator[str]:
+            for i in range(n):
+                yield f"item_{i}"
+
+        flow = Flow(source_fn, name="source")
+        flat_mapped_flow = flow.flat_map(create_range)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = flat_mapped_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == ["item_0", "item_0", "item_1"]  # range(0) is empty
+
+    @pytest.mark.asyncio
+    async def test_flat_map_chaining_with_map_and_filter(self) -> None:
+        """Test that flat_map can be chained with other operations."""
+
+        async def source_fn(stream: AsyncIterator[None]) -> AsyncIterator[str]:
+            for s in ["ab", "cd"]:
+                yield s
+
+        async def duplicate_chars(text: str) -> AsyncIterator[str]:
+            for char in text:
+                yield char
+                yield char
+
+        def is_vowel(char: str) -> bool:
+            return char.lower() in "aeiou"
+
+        def to_upper(char: str) -> str:
+            return char.upper()
+
+        flow = Flow(source_fn, name="source")
+        chained_flow = flow.flat_map(duplicate_chars).filter(is_vowel).map(to_upper)
+
+        async def empty_stream() -> AsyncIterator[None]:
+            return
+            yield  # pragma: no cover
+
+        result = chained_flow(empty_stream())
+        items = [item async for item in result]
+
+        assert items == [
+            "A",
+            "A",
+        ]  # Only 'a' chars from "ab" doubled, filtered, and uppercased

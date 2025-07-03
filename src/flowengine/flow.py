@@ -58,3 +58,15 @@ class Flow(Generic[Input, Output]):
                     yield item
 
         return Flow(_filtered, name=f"{self.name}.filter({predicate.__name__})")
+
+    def flat_map(
+        self, fn: Callable[[Output], AsyncIterator[Newput]]
+    ) -> "Flow[Input, Newput]":
+        """Flat map a function over the output of the flow."""
+
+        async def _flatmapped(stream: AsyncIterator[Input]) -> AsyncIterator[Newput]:
+            async for item in self(stream):
+                async for sub in fn(item):
+                    yield sub
+
+        return Flow(_flatmapped, name=f"{self.name}.flat_map({fn.__name__})")

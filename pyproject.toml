@@ -35,7 +35,7 @@ scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 packages = [
     { include = "goldentooth_agent", from = "src" },
     { include = "git_hooks", from = "src" },
-    { include = "flowengine", from = "src" }
+    { include = "flowengine", from = "src" },
 ]
 include = [
     { path = "src/goldentooth_agent/data/system_prompts/*.yaml", format = [

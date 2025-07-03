@@ -194,9 +194,9 @@ repos:
   # Build Sphinx documentation
   - repo: local
     hooks:
-      - id: sphinx-build
+      - id: sphinx
         name: Build Sphinx Documentation
-        entry: poetry run sphinx-build
+        entry: poetry run poe docs-build
         language: system
         args: ['-b', 'html', '-q', 'docs', 'docs/_build']
         description: Build Sphinx documentation quietly
