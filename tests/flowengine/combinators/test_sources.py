@@ -80,7 +80,7 @@ async def test_repeat_flow_infinite():
     result_stream = flow(None)  # type: ignore
 
     # Take only first 5 items to avoid infinite loop
-    values = []
+    values: list[int] = []
     count = 0
     async for item in result_stream:
         values.append(item)
@@ -162,15 +162,20 @@ async def test_start_with_stream_multiple_items():
 @pytest.mark.asyncio
 async def test_start_with_stream_no_items():
     """Test start_with with no items (identity)."""
-    flow = start_with_stream()
+    # When called with no args, we need to provide type context somehow
+    # Since we can't use generics syntax on function calls in Python,
+    # we'll just accept the type checker warning here
+    flow = start_with_stream()  # type: ignore[var-annotated]
     assert "start_with(0 items)" in flow.name
 
     async def input_stream():
         yield "A"
         yield "B"
 
-    result_stream = flow(input_stream())
-    values = [item async for item in result_stream]
+    result_stream = flow(input_stream())  # type: ignore[arg-type]
+    values: list[str] = []
+    async for item in result_stream:  # type: ignore[misc]
+        values.append(item)  # type: ignore[arg-type]
     assert values == ["A", "B"]
 
 

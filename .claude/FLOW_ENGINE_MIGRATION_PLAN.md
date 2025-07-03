@@ -64,7 +64,7 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Tests: `tests/flowengine/combinators/test_utils.py`
 - Dependencies: None
 
-**Epic 6: Migrate sources combinators**
+**Epic 6: Migrate sources combinators ✅ DONE!**
 - File: `src/flowengine/combinators/sources.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/sources.py` (85 lines)
 - Tests: `tests/flowengine/combinators/test_sources.py`

@@ -47,12 +47,10 @@ def empty_flow() -> Flow[None, AnyValue]:
 
     async def _flow(_: AsyncIterator[None]) -> AsyncIterator[AnyValue]:
         """Produce no items."""
-        # This is a generator that produces no items
-        if (
-            False
-        ):  # noqa: B003  # This ensures it's a generator without unreachable code
-            yield  # type: ignore[unreachable]
-        return
+        # Create an empty async generator by yielding from an empty list
+        empty_list: list[AnyValue] = []
+        for _ in empty_list:
+            yield _  # This will never execute but makes it a valid generator
 
     return Flow(_flow, name="empty")
 
