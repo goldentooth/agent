@@ -226,3 +226,24 @@ def zip_stream(
                 break
 
     return Flow(_flow, name="zip")
+
+
+def chain_stream(*streams: AsyncGenerator[Input, None]) -> Flow[None, Input]:
+    """Create a flow that chains multiple streams sequentially.
+
+    Yields all items from the first stream, then all from the second, etc.
+
+    Args:
+        *streams: Streams to chain together
+
+    Returns:
+        A flow that yields items from all streams in sequence
+    """
+
+    async def _flow(_: AsyncGenerator[None, None]) -> AsyncGenerator[Input, None]:
+        """Chain multiple streams sequentially."""
+        for stream in streams:
+            async for item in stream:
+                yield item
+
+    return Flow(_flow, name=f"chain({len(streams)} streams)")
