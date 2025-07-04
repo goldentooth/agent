@@ -87,17 +87,19 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 ## Phase 2: Core Combinators (Epics 9-14)
 
-**Epic 9: Migrate aggregation combinators**
+**~Epic 9: Migrate aggregation combinators~ ✅ DONE!**
 - File: `src/flowengine/combinators/aggregation.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/aggregation.py` (360 lines)
 - Tests: `tests/flowengine/combinators/test_aggregation.py`
 - Dependencies: `flowengine.flow`, `flowengine.combinators.basic`
+- **Result**: All 11 functions migrated with 97% coverage, including buffer_stream, expand_stream, and finalize_stream
 
-**Epic 10: Migrate temporal combinators**
+**~Epic 10: Migrate temporal combinators~ ✅ DONE!**
 - File: `src/flowengine/combinators/temporal.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/temporal.py` (160 lines)
 - Tests: `tests/flowengine/combinators/test_temporal.py`
 - Dependencies: `flowengine.flow`, `flowengine.combinators.basic`
+- **Result**: All 6 functions migrated with 97% coverage, full type safety compliance
 
 **Epic 11: Migrate observability combinators**
 - File: `src/flowengine/combinators/observability.py`

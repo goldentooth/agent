@@ -35,3 +35,30 @@ flowengine.protocols module
    :members:
    :undoc-members:
    :show-inheritance:
+
+Combinators
+-----------
+
+flowengine.combinators package
+------------------------------
+
+.. automodule:: flowengine.combinators
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+flowengine.combinators.aggregation module
+-----------------------------------------
+
+.. automodule:: flowengine.combinators.aggregation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+flowengine.combinators.temporal module
+--------------------------------------
+
+.. automodule:: flowengine.combinators.temporal
+   :members:
+   :undoc-members:
+   :show-inheritance:
