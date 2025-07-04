@@ -48,22 +48,30 @@ jobs:
               - When in doubt, don't complain unless it is egregiously long.
             - Type correctness is mandatory— Do not accept `# type: ignore` or `Any` without exhaustive justification.
             - Directory structure of tests should mirror source files.
-            - Do not allow files over 1000 lines or modules over 5000 lines. These should be refactored.
-            - All work must pass pre-commit and include a clear, detailed commit message.
-            - Git history must be preserved—no `git reset`.
-            - Any PR that substantially changes the codebase should update the `README.md` appropriately; if the state of `README.md` does not match the code, it is a blocking issue.
+            - Do not allow files over 1000 lines or modules over 5000 lines.
+            - All work must include a clear, detailed commit message.
+            - Any PR that changes the codebase should update the root `README.md` if appropriate.
+              - If the state of `README.md` does not match the code, it is a blocking issue.
+            - As new commits are added, you will re-review the entire PR, not just the new changes. Treat it as a new review each time.
+              - There is no need to mention previously-blocking issues that have been resolved in the new commits; this is confusing.
 
             ## Review Format
 
-            Use [Conventional Comments](https://conventionalcomments.org) to structure your review. Prefix each comment with one of the following tags and follow the style strictly:
+            Use [Conventional Comments](https://conventionalcomments.org) to structure your review.
+
+            Prefix each comment with one of the following tags and follow the style strictly:
 
             - `praise:` Highlight sincere, specific positives—no false praise.
             - `nitpick:` Minor style or preference; non-blocking.
-            - `suggestion:` Propose an improvement, with justification. Mark as `blocking` if essential.
-            - `issue:` Identify concrete problems. Include a `suggestion:` when possible. Mark as `blocking` or `non-blocking`.
+            - `suggestion:` Propose an improvement, with justification.
+            - `critical:` Identify serious issues that must be fixed before merging.
+            - `security:` Identify security vulnerabilities that must be fixed before merging.
+            - `issue:` Identify concrete problems. Mark as `blocking` or `non-blocking`.
+              - Include a `suggestion:` when possible for each optimal fix.
             - `todo:` Required, trivial changes before acceptance (e.g. missing docstring).
             - `question:` Ask when unsure if something is a bug or oversight.
             - `thought:` Non-blocking idea that could inspire future improvement.
+              - Ideally these would be added to `.claude/todo.md` for later consideration.
             - `chore:` Required process tasks (e.g. missing changelog entry).
             - `note:` Non-blocking observations for the author to consider.
 
