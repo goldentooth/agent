@@ -4,6 +4,8 @@ import os
 from dataclasses import dataclass
 from typing import Any, Dict
 
+from .core import ThresholdCalculator
+
 
 @dataclass
 class ValidationConfig:
@@ -40,16 +42,23 @@ class ValidationConfig:
     @classmethod
     def from_environment(cls) -> "ValidationConfig":
         """Load configuration from environment variables with defaults."""
+        # Create calculators for different validator types
+        file_calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9)
+        module_calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9)
+        func_calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.87)
+
         # File length configuration
         file_length_limit = int(os.environ.get(cls.FILE_LENGTH_LIMIT_KEY, "1000"))
         file_length_warn_threshold = int(
             os.environ.get(
-                cls.FILE_LENGTH_WARN_THRESHOLD_KEY, str(int(file_length_limit * 0.8))
+                cls.FILE_LENGTH_WARN_THRESHOLD_KEY,
+                str(file_calc.calculate_warn_threshold(file_length_limit)),
             )
         )
         file_length_urgent_threshold = int(
             os.environ.get(
-                cls.FILE_LENGTH_URGENT_THRESHOLD_KEY, str(int(file_length_limit * 0.9))
+                cls.FILE_LENGTH_URGENT_THRESHOLD_KEY,
+                str(file_calc.calculate_urgent_threshold(file_length_limit)),
             )
         )
 
@@ -57,12 +66,14 @@ class ValidationConfig:
         module_size_limit = int(os.environ.get(cls.MODULE_SIZE_LIMIT_KEY, "5000"))
         module_size_warn_threshold = int(
             os.environ.get(
-                cls.MODULE_SIZE_WARN_THRESHOLD_KEY, str(int(module_size_limit * 0.8))
+                cls.MODULE_SIZE_WARN_THRESHOLD_KEY,
+                str(module_calc.calculate_warn_threshold(module_size_limit)),
             )
         )
         module_size_urgent_threshold = int(
             os.environ.get(
-                cls.MODULE_SIZE_URGENT_THRESHOLD_KEY, str(int(module_size_limit * 0.9))
+                cls.MODULE_SIZE_URGENT_THRESHOLD_KEY,
+                str(module_calc.calculate_urgent_threshold(module_size_limit)),
             )
         )
 
@@ -71,13 +82,13 @@ class ValidationConfig:
         function_length_warn_threshold = int(
             os.environ.get(
                 cls.FUNCTION_LENGTH_WARN_THRESHOLD_KEY,
-                str(int(function_length_limit * 0.8)),
+                str(func_calc.calculate_warn_threshold(function_length_limit)),
             )
         )
         function_length_urgent_threshold = int(
             os.environ.get(
                 cls.FUNCTION_LENGTH_URGENT_THRESHOLD_KEY,
-                str(int(function_length_limit * 0.87)),
+                str(func_calc.calculate_urgent_threshold(function_length_limit)),
             )
         )
 

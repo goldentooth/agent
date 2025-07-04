@@ -4,7 +4,7 @@ import ast
 from pathlib import Path
 from typing import Optional
 
-from .core import ValidationResult, ValidationSeverity, Validator
+from .core import ValidationResult, ValidationSeverity, Validator, ThresholdCalculator
 from .guidance import get_refactoring_guidance
 from .validator_registry import ValidatorRegistry
 
@@ -21,8 +21,11 @@ class FunctionLengthValidator(Validator):
         exclude_patterns: Optional[list[str]] = None,
     ):
         super().__init__(limit, exclude_patterns)
-        self.warn_threshold = warn_threshold or int(limit * 0.8)
-        self.urgent_threshold = urgent_threshold or int(limit * 0.87)
+        calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.87)
+        self.warn_threshold = warn_threshold or calc.calculate_warn_threshold(limit)
+        self.urgent_threshold = urgent_threshold or calc.calculate_urgent_threshold(
+            limit
+        )
 
     def validate(self, path: Path) -> Optional[ValidationResult]:
         """Validate all functions in a Python file."""
