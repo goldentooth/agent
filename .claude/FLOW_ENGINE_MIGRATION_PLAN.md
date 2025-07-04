@@ -103,7 +103,7 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Dependencies: `flowengine.flow`, `flowengine.combinators.basic`
 - **Result**: All 6 functions migrated with 97% coverage, full type safety compliance
 
-**Epic 11: Migrate observability combinators**
+**~Epic 11: Migrate observability combinators~ ✅ DONE!**
 - File: `src/flowengine/combinators/observability.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/observability.py` (197 lines)
 - Tests: `tests/flowengine/combinators/test_observability.py`
