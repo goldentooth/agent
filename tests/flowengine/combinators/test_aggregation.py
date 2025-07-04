@@ -9,6 +9,7 @@ from flowengine.combinators.aggregation import (
     buffer_stream,
     chunk_stream,
     distinct_stream,
+    expand_stream,
     group_by_stream,
     memoize_stream,
     pairwise_stream,
@@ -673,3 +674,170 @@ async def test_buffer_stream_empty_input():
 
     # Should have no buffers for empty input
     assert result == []
+
+
+@pytest.mark.asyncio
+async def test_expand_stream_basic():
+    """Test expand_stream with basic recursive expansion."""
+
+    # Create expander that generates children for each item
+    async def expander(x: int):
+        if x < 10:  # Only expand small numbers
+            yield x * 2
+            yield x * 2 + 1
+
+    flow: Flow[int, int] = expand_stream(expander, max_depth=2)
+
+    # Create test input stream
+    async def test_stream():
+        yield 1
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should expand: 1 -> [2, 3] -> [4, 5, 6, 7]
+    # Total: [1, 2, 3, 4, 5, 6, 7]
+    expected = {1, 2, 3, 4, 5, 6, 7}
+    assert set(result) == expected
+
+
+@pytest.mark.asyncio
+async def test_expand_stream_max_depth():
+    """Test expand_stream respects max_depth limit."""
+
+    # Create expander that always generates two children
+    async def expander(x: str):
+        yield f"{x}a"
+        yield f"{x}b"
+
+    flow: Flow[str, str] = expand_stream(expander, max_depth=1)
+
+    # Create test input stream
+    async def test_stream():
+        yield "x"
+
+    # Execute the flow
+    result: list[str] = await flow.to_list()(test_stream())
+
+    # Should expand only 1 level: "x" -> ["xa", "xb"]
+    # Total: ["x", "xa", "xb"]
+    expected = {"x", "xa", "xb"}
+    assert set(result) == expected
+
+
+@pytest.mark.asyncio
+async def test_expand_stream_no_expansion():
+    """Test expand_stream when expander returns no items."""
+
+    # Create expander that never expands
+    async def expander(x: int):
+        # No yields - empty expansion
+        return
+        yield  # unreachable
+
+    flow: Flow[int, int] = expand_stream(expander)
+
+    # Create test input stream
+    async def test_stream():
+        for i in range(3):
+            yield i
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should just return original items
+    assert result == [0, 1, 2]
+
+
+@pytest.mark.asyncio
+async def test_expand_stream_empty_input():
+    """Test expand_stream with empty input stream."""
+
+    # Create simple expander
+    async def expander(x: int):
+        yield x + 1
+
+    flow: Flow[int, int] = expand_stream(expander)
+
+    # Create empty input stream
+    async def test_stream():
+        return
+        yield  # unreachable
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should return empty result
+    assert result == []
+
+
+@pytest.mark.asyncio
+async def test_expand_stream_zero_depth():
+    """Test expand_stream with max_depth=0."""
+
+    # Create expander that would generate children
+    async def expander(x: int):
+        yield x * 10
+
+    flow: Flow[int, int] = expand_stream(expander, max_depth=0)
+
+    # Create test input stream
+    async def test_stream():
+        yield 1
+        yield 2
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should not expand at all, just return original items
+    assert result == [1, 2]
+
+
+@pytest.mark.asyncio
+async def test_expand_stream_multiple_inputs():
+    """Test expand_stream with multiple input items."""
+
+    # Create expander that generates one child per item
+    async def expander(x: str):
+        yield f"{x}_child"
+
+    flow: Flow[str, str] = expand_stream(expander, max_depth=1)
+
+    # Create test input stream
+    async def test_stream():
+        yield "a"
+        yield "b"
+
+    # Execute the flow
+    result: list[str] = await flow.to_list()(test_stream())
+
+    # Should expand: "a" -> "a_child", "b" -> "b_child"
+    # Total: ["a", "b", "a_child", "b_child"]
+    expected = {"a", "b", "a_child", "b_child"}
+    assert set(result) == expected
+
+
+@pytest.mark.asyncio
+async def test_expand_stream_complex_expansion():
+    """Test expand_stream with complex expansion logic."""
+
+    # Create expander that generates factorial-like expansion
+    async def expander(x: int):
+        if x > 1:
+            for i in range(2, x):
+                yield i
+
+    flow: Flow[int, int] = expand_stream(expander, max_depth=3)
+
+    # Create test input stream
+    async def test_stream():
+        yield 5
+
+    # Execute the flow
+    result: list[int] = await flow.to_list()(test_stream())
+
+    # Should include 5 and all its recursive expansions
+    assert 5 in result
+    assert 2 in result
+    assert 3 in result
+    assert 4 in result

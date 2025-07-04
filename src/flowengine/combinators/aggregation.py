@@ -317,3 +317,41 @@ def buffer_stream(
             raise
 
     return Flow(_flow, name="buffer")
+
+
+def expand_stream(
+    expander: Callable[[Input], AsyncGenerator[Input, None]], max_depth: int = 10
+) -> Flow[Input, Input]:
+    """Create a flow that recursively expands items using an expander function.
+
+    Applies the expander function to each item and recursively processes
+    the results until no more expansions are possible or max depth is reached.
+
+    Args:
+        expander: Function that expands an item into multiple items
+        max_depth: Maximum recursion depth
+
+    Returns:
+        A flow that recursively expands items
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[Input, None]:
+        """Recursively expand items."""
+        queue: list[tuple[Input, int]] = []
+
+        # Initialize queue with stream items
+        async for item in stream:
+            queue.append((item, 0))  # (item, depth)
+
+        while queue:
+            item, depth = queue.pop(0)
+            yield item
+
+            if depth < max_depth:
+                # Expand the item and add results to queue
+                async for expanded in expander(item):
+                    queue.append((expanded, depth + 1))
+
+    return Flow(_flow, name=f"expand({get_function_name(expander)}, depth={max_depth})")
