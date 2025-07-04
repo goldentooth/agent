@@ -5,7 +5,11 @@ import asyncio
 import pytest
 
 from flowengine.combinators.basic import map_stream
-from flowengine.combinators.control_flow import if_then_stream, retry_stream
+from flowengine.combinators.control_flow import (
+    if_then_stream,
+    recover_stream,
+    retry_stream,
+)
 from flowengine.exceptions import FlowExecutionError
 
 
@@ -132,3 +136,27 @@ class TestRetryStream:
 
         assert "Failed after 2 retries" in str(exc_info.value)
         assert "Always fails" in str(exc_info.value)
+
+
+class TestRecoverStream:
+    """Tests for recover_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_recover_basic(self):
+        """Test basic recovery functionality."""
+
+        async def handler(error: Exception, item: int) -> int:
+            return -1  # Return -1 for any error
+
+        recover_flow = recover_stream(handler)
+        assert "recover(handler)" in recover_flow.name
+
+        async def failing_stream():
+            yield 1
+            raise ValueError("Test error")
+
+        result_stream = recover_flow(failing_stream())
+        values = [item async for item in result_stream]
+
+        # First item passes through, second triggers recovery
+        assert values == [1, -1]
