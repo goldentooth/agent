@@ -348,3 +348,57 @@ def merge_flows(*flows: Flow[Input, Input]) -> Flow[Input, Input]:
         A flow that merges all input flows
     """
     return merge_stream(*flows)
+
+
+def combine_latest_stream(
+    other: AsyncGenerator[OtherInput, None],
+) -> Flow[Input, tuple[Input, OtherInput]]:
+    """Create a flow that combines items with the latest value from another stream.
+
+    For each item in the main stream, emits a tuple with that item and
+    the most recent item from the other stream.
+
+    Args:
+        other: The other stream to combine with
+
+    Returns:
+        A flow that yields tuples of (current_item, latest_other_item)
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[tuple[Input, OtherInput], None]:
+        """Combine items with latest value from other stream."""
+        latest_other = None
+        other_iter = aiter(other)
+
+        # Try to get first item from other stream
+        try:
+            latest_other = await anext(other_iter)
+        except StopAsyncIteration:
+            # Other stream is empty
+            return
+
+        # Start background task to update latest_other
+        async def update_latest() -> None:
+            nonlocal latest_other
+            try:
+                async for item in other_iter:
+                    latest_other = item
+            except Exception:
+                pass
+
+        update_task = asyncio.create_task(update_latest())
+
+        try:
+            async for item in stream:
+                if latest_other is not None:
+                    yield (item, latest_other)
+        finally:
+            update_task.cancel()
+            try:
+                await update_task
+            except asyncio.CancelledError:
+                pass
+
+    return Flow(_flow, name="combine_latest")

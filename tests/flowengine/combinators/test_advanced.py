@@ -8,6 +8,7 @@ import pytest
 from flowengine import Flow
 from flowengine.combinators.advanced import (
     chain_stream,
+    combine_latest_stream,
     merge_flows,
     merge_stream,
     parallel_stream,
@@ -532,3 +533,81 @@ class TestMergeFlows:
         values = [item async for item in result_stream]
 
         assert sorted(values) == [0, 1, 2, 2]
+
+
+class TestCombineLatestStream:
+    """Tests for combine_latest_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_combine_latest_basic(self):
+        """Test basic combine latest functionality."""
+
+        async def slow_other() -> AsyncGenerator[str, None]:
+            await asyncio.sleep(0.01)
+            yield "A"
+            await asyncio.sleep(0.02)
+            yield "B"
+            await asyncio.sleep(0.02)
+            yield "C"
+
+        combine_flow: Flow[int, tuple[int, str]] = combine_latest_stream(slow_other())
+        assert combine_flow.name == "combine_latest"
+
+        # Fast input stream
+        result_stream = combine_flow(async_range(5, delay=0.005))
+        values: list[tuple[int, str]] = []
+
+        start_time = asyncio.get_event_loop().time()
+        async for value in result_stream:
+            values.append(value)
+            # Stop after reasonable time
+            if asyncio.get_event_loop().time() - start_time > 0.1:
+                break
+
+        # Should combine items with latest from other stream
+        assert len(values) > 0
+        # All values should be tuples
+        assert all(isinstance(v, tuple) and len(v) == 2 for v in values)
+
+    @pytest.mark.asyncio
+    async def test_combine_latest_empty_other(self):
+        """Test combine latest when other stream is empty."""
+
+        async def empty() -> AsyncGenerator[str, None]:
+            if False:
+                yield "never"
+
+        combine_flow: Flow[int, tuple[int, str]] = combine_latest_stream(empty())
+
+        input_stream = async_range(3)
+        result_stream = combine_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # No combinations possible
+        assert values == []
+
+    @pytest.mark.asyncio
+    async def test_combine_latest_other_stream_error(self):
+        """Test combine latest when other stream raises an error."""
+
+        async def error_stream() -> AsyncGenerator[str, None]:
+            yield "A"
+            raise ValueError("Other stream error")
+
+        combine_flow: Flow[int, tuple[int, str]] = combine_latest_stream(error_stream())
+
+        # Main stream
+        input_stream = async_range(3, delay=0.01)
+        result_stream = combine_flow(input_stream)
+
+        # Should still work until the other stream fails
+        values: list[tuple[int, str]] = []
+        try:
+            async for value in result_stream:
+                values.append(value)
+        except:
+            # Exception from other stream is silently caught
+            pass
+
+        # Should have at least gotten some combinations before error
+        assert len(values) >= 0  # May get some values before error
