@@ -8,12 +8,20 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncGenerator
+from enum import Enum
 from typing import Any, TypeVar
 
 from flowengine.exceptions import FlowTimeoutError
 from flowengine.flow import Flow
 
 Input = TypeVar("Input")
+
+
+class DebounceMode(Enum):
+    """Debounce behavior modes."""
+
+    LEADING_EDGE = "leading_edge"  # Emit first item, suppress until interval expires
+    TRAILING_EDGE = "trailing_edge"  # Emit last item after quiet period
 
 
 def delay_stream(seconds: float) -> Flow[Input, Input]:
@@ -28,15 +36,45 @@ def delay_stream(seconds: float) -> Flow[Input, Input]:
     return Flow(_flow, name=f"delay({seconds})")
 
 
-def debounce_stream(seconds: float) -> Flow[Input, Input]:
-    """Create a flow that debounces stream items by waiting for a quiet period.
+def debounce_stream_leading_edge(seconds: float) -> Flow[Input, Input]:
+    """Create a flow that debounces stream items using leading-edge behavior.
 
-    True debouncing: emits the latest item only after the stream has been quiet
-    for the specified duration. Handles infinite streams correctly.
+    Leading-edge debouncing: emits the first item immediately, then suppresses
+    subsequent items until the debounce interval expires. After the interval,
+    the next item will be emitted and start a new debounce period.
+
+    This is the classic "button click" debouncing behavior.
     """
 
     async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
-        """Debounce stream items by waiting for quiet periods."""
+        """Debounce stream items - emit first, suppress until interval expires."""
+        last_emit_time = 0.0
+
+        async for item in stream:
+            current_time = asyncio.get_event_loop().time()
+            time_since_last = current_time - last_emit_time
+
+            if time_since_last >= seconds:
+                # Enough time has passed - emit this item
+                yield item
+                last_emit_time = current_time
+            # Otherwise suppress the item
+
+    return Flow(_flow, name=f"debounce_leading({seconds})")
+
+
+def debounce_stream_trailing_edge(seconds: float) -> Flow[Input, Input]:
+    """Create a flow that debounces stream items using trailing-edge behavior.
+
+    Trailing-edge debouncing: collects items as they arrive and emits the latest
+    item only after the stream has been quiet for the specified duration.
+    If new items arrive during the quiet period, the timer resets.
+
+    This is useful for search-as-you-type or auto-save scenarios.
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Debounce stream items - emit latest after quiet period."""
         latest_item = None
         last_update_time = 0.0
 
@@ -65,7 +103,32 @@ def debounce_stream(seconds: float) -> Flow[Input, Input]:
             if latest_item is not None:
                 yield latest_item
 
-    return Flow(_flow, name=f"debounce({seconds})")
+    return Flow(_flow, name=f"debounce_trailing({seconds})")
+
+
+def debounce_stream(
+    seconds: float, mode: DebounceMode = DebounceMode.LEADING_EDGE
+) -> Flow[Input, Input]:
+    """Create a flow that debounces stream items with configurable behavior.
+
+    Args:
+        seconds: Debounce interval in seconds
+        mode: Debounce behavior (LEADING_EDGE or TRAILING_EDGE)
+
+    Returns:
+        A flow that debounces items according to the specified mode
+
+    Leading-edge: Emit first item immediately, suppress until interval expires
+    Trailing-edge: Emit latest item after quiet period
+    """
+    if mode == DebounceMode.LEADING_EDGE:
+        return debounce_stream_leading_edge(seconds)
+    else:  # TRAILING_EDGE
+        return debounce_stream_trailing_edge(seconds)
+
+
+# Backward compatibility alias
+debounce_stream_legacy = debounce_stream_leading_edge
 
 
 def throttle_stream(rate_per_second: float) -> Flow[Input, Input]:

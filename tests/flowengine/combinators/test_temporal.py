@@ -9,7 +9,10 @@ from typing import AsyncGenerator
 import pytest
 
 from flowengine.combinators.temporal import (
+    DebounceMode,
     debounce_stream,
+    debounce_stream_leading_edge,
+    debounce_stream_trailing_edge,
     delay_stream,
     sample_stream,
     throttle_stream,
@@ -85,19 +88,21 @@ class TestDebounceStream:
     async def test_debounce_basic(self):
         """Test basic debounce functionality."""
         debounce_flow: Flow[int, int] = debounce_stream(0.05)  # 50ms debounce
-        assert "debounce(0.05)" in debounce_flow.name
+        assert "debounce" in debounce_flow.name and "0.05" in debounce_flow.name
 
-        # Stream items quickly, only last should be emitted
+        # Stream items quickly - first should be emitted, rest suppressed
         async def fast_stream() -> AsyncGenerator[int, None]:
             for i in range(3):
                 yield i
-                await asyncio.sleep(0.01)  # 10ms between items
+                await asyncio.sleep(
+                    0.01
+                )  # 10ms between items (faster than 50ms debounce)
 
         result_stream = debounce_flow(fast_stream())
         values: list[int] = [item async for item in result_stream]
 
-        # Only the last item should be emitted after debounce period
-        assert values == [2]
+        # Only the first item should be emitted, rest suppressed due to debouncing
+        assert values == [0]
 
     @pytest.mark.asyncio
     async def test_debounce_spaced_items(self):
@@ -111,18 +116,11 @@ class TestDebounceStream:
                 await asyncio.sleep(0.05)  # 50ms between items > 20ms debounce
 
         result_stream = debounce_flow(slow_stream())
-        values: list[int] = []
+        values: list[int] = [item async for item in result_stream]
 
-        # Collect with timeout to avoid infinite wait
-        start_time = time.time()
-        async for item in result_stream:
-            values.append(item)
-            if time.time() - start_time > 0.3:  # 300ms timeout
-                break
-
-        # With proper debouncing, each item should be emitted after quiet period
-        # Since items are spaced 50ms apart and debounce is 20ms, should get multiple items
-        assert len(values) >= 2  # Should get multiple items, not just the last one
+        # With proper debouncing, all items should be emitted since they are spaced apart
+        # Each item is 50ms apart which is > 20ms debounce interval
+        assert values == [0, 1, 2]  # All items emitted since properly spaced
 
     @pytest.mark.asyncio
     async def test_debounce_single_item(self):
@@ -138,7 +136,7 @@ class TestDebounceStream:
 
     @pytest.mark.asyncio
     async def test_debounce_true_behavior(self):
-        """Test true debouncing behavior - emits only after quiet periods."""
+        """Test true debouncing behavior - emit first, suppress until interval expires."""
         debounce_flow: Flow[int, int] = debounce_stream(0.03)  # 30ms debounce
 
         # Stream with bursts separated by quiet periods
@@ -146,7 +144,9 @@ class TestDebounceStream:
             # First burst: items arriving quickly
             for i in range(3):
                 yield i
-                await asyncio.sleep(0.005)  # 5ms between items
+                await asyncio.sleep(
+                    0.005
+                )  # 5ms between items (faster than 30ms debounce)
 
             # Quiet period (> 30ms)
             await asyncio.sleep(0.05)
@@ -157,19 +157,66 @@ class TestDebounceStream:
                 await asyncio.sleep(0.005)  # 5ms between items
 
         result_stream = debounce_flow(burst_stream())
-        values: list[int] = []
+        values: list[int] = [item async for item in result_stream]
 
-        start_time = time.time()
-        async for item in result_stream:
-            values.append(item)
-            if time.time() - start_time > 0.2:  # 200ms timeout
-                break
+        # Should emit first item from each burst, suppress others
+        # First burst: emit 0 (first), suppress 1,2
+        # After quiet period: emit 10 (first of second burst), suppress 11
+        assert values == [0, 10]  # First item from each burst
 
-        # Should emit the last item from each burst after quiet periods
-        # First burst: should emit 2 (last of 0,1,2)
-        # Second burst: should emit 11 (last of 10,11)
-        assert len(values) >= 1  # At least one debounced emission
-        assert 2 in values or 11 in values  # Should contain debounced items
+    @pytest.mark.asyncio
+    async def test_debounce_mode_leading_edge(self):
+        """Test debounce_stream with explicit leading edge mode."""
+        debounce_flow: Flow[int, int] = debounce_stream(0.05, DebounceMode.LEADING_EDGE)
+
+        async def fast_stream() -> AsyncGenerator[int, None]:
+            for i in range(3):
+                yield i
+                await asyncio.sleep(0.01)
+
+        values: list[int] = [item async for item in debounce_flow(fast_stream())]
+        assert values == [0]  # Leading edge: emit first, suppress rest
+
+    @pytest.mark.asyncio
+    async def test_debounce_mode_trailing_edge(self):
+        """Test debounce_stream with trailing edge mode."""
+        debounce_flow: Flow[int, int] = debounce_stream(
+            0.05, DebounceMode.TRAILING_EDGE
+        )
+
+        async def fast_stream() -> AsyncGenerator[int, None]:
+            for i in range(3):
+                yield i
+                await asyncio.sleep(0.01)
+
+        values: list[int] = [item async for item in debounce_flow(fast_stream())]
+        assert values == [2]  # Trailing edge: emit last after quiet period
+
+    @pytest.mark.asyncio
+    async def test_debounce_specific_functions(self):
+        """Test specific debounce function variants."""
+        # Leading edge function
+        leading_flow: Flow[int, int] = debounce_stream_leading_edge(0.05)
+
+        async def test_stream() -> AsyncGenerator[int, None]:
+            for i in range(3):
+                yield i
+                await asyncio.sleep(0.01)
+
+        leading_values: list[int] = [item async for item in leading_flow(test_stream())]
+
+        # Trailing edge function
+        trailing_flow: Flow[int, int] = debounce_stream_trailing_edge(0.05)
+        trailing_values: list[int] = [
+            item async for item in trailing_flow(test_stream())
+        ]
+
+        assert leading_values == [0]  # First item
+        assert trailing_values == [2]  # Last item after quiet period
+
+        # Check function names
+        assert "debounce_leading" in leading_flow.name
+        assert "debounce_trailing" in trailing_flow.name
 
 
 class TestThrottleStream:
