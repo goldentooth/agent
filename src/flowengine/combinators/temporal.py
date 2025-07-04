@@ -127,8 +127,6 @@ def debounce_stream(
         return debounce_stream_trailing_edge(seconds)
 
 
-# Backward compatibility alias
-debounce_stream_legacy = debounce_stream_leading_edge
 
 
 def throttle_stream(rate_per_second: float) -> Flow[Input, Input]:
