@@ -1,4 +1,4 @@
-"""Tests for aggregation combinators."""
+"""Tests for basic aggregation combinators."""
 
 from __future__ import annotations
 
@@ -20,7 +20,6 @@ from flowengine.flow import Flow
 @pytest.mark.asyncio
 async def test_batch_stream():
     """Test batch_stream function."""
-    # Create a flow that batches items into groups of 3
     flow: Flow[int, list[int]] = batch_stream(3)
 
     # Create test input stream
@@ -31,18 +30,19 @@ async def test_batch_stream():
     # Execute the flow
     result: list[list[int]] = await flow.to_list()(test_stream())
 
-    # Should produce batches of 3, plus remaining items
-    assert result == [[0, 1, 2], [3, 4, 5], [6]]
+    # Should batch into groups of 3: [0,1,2], [3,4,5], [6]
+    expected = [[0, 1, 2], [3, 4, 5], [6]]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_batch_stream_empty():
-    """Test batch_stream with empty stream."""
+    """Test batch_stream with empty input."""
     flow: Flow[int, list[int]] = batch_stream(3)
 
     async def empty_stream():
         return
-        yield  # pragma: no cover
+        yield  # unreachable
 
     result: list[list[int]] = await flow.to_list()(empty_stream())
     assert result == []
@@ -50,15 +50,18 @@ async def test_batch_stream_empty():
 
 @pytest.mark.asyncio
 async def test_batch_stream_exact_size():
-    """Test batch_stream with exact multiple of batch size."""
-    flow: Flow[int, list[int]] = batch_stream(2)
+    """Test batch_stream with input that exactly fits batch size."""
+    flow: Flow[str, list[str]] = batch_stream(2)
 
     async def test_stream():
-        for i in range(4):
-            yield i
+        yield "a"
+        yield "b"
+        yield "c"
+        yield "d"
 
-    result: list[list[int]] = await flow.to_list()(test_stream())
-    assert result == [[0, 1], [2, 3]]
+    result: list[list[str]] = await flow.to_list()(test_stream())
+    expected = [["a", "b"], ["c", "d"]]
+    assert result == expected
 
 
 @pytest.mark.asyncio
@@ -76,29 +79,25 @@ async def test_batch_stream_single_item():
 @pytest.mark.asyncio
 async def test_chunk_stream():
     """Test chunk_stream function."""
-    # Create a flow that chunks items into groups of 3
-    flow: Flow[int, list[int]] = chunk_stream(3)
+    flow: Flow[str, list[str]] = chunk_stream(2)
 
-    # Create test input stream
     async def test_stream():
-        for i in range(7):
-            yield i
+        for char in "hello":
+            yield char
 
-    # Execute the flow
-    result: list[list[int]] = await flow.to_list()(test_stream())
-
-    # Should produce chunks of 3, plus remaining items
-    assert result == [[0, 1, 2], [3, 4, 5], [6]]
+    result: list[list[str]] = await flow.to_list()(test_stream())
+    expected = [["h", "e"], ["l", "l"], ["o"]]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_chunk_stream_empty():
-    """Test chunk_stream with empty stream."""
+    """Test chunk_stream with empty input."""
     flow: Flow[int, list[int]] = chunk_stream(3)
 
     async def empty_stream():
         return
-        yield  # pragma: no cover
+        yield  # unreachable
 
     result: list[list[int]] = await flow.to_list()(empty_stream())
     assert result == []
@@ -106,87 +105,82 @@ async def test_chunk_stream_empty():
 
 @pytest.mark.asyncio
 async def test_chunk_stream_exact_size():
-    """Test chunk_stream with exact multiple of chunk size."""
-    flow: Flow[int, list[int]] = chunk_stream(2)
+    """Test chunk_stream with input that exactly fits chunk size."""
+    flow: Flow[int, list[int]] = chunk_stream(3)
 
     async def test_stream():
-        for i in range(4):
+        for i in range(6):
             yield i
 
     result: list[list[int]] = await flow.to_list()(test_stream())
-    assert result == [[0, 1], [2, 3]]
+    expected = [[0, 1, 2], [3, 4, 5]]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_chunk_stream_single_item():
     """Test chunk_stream with single item."""
-    flow: Flow[int, list[int]] = chunk_stream(5)
+    flow: Flow[str, list[str]] = chunk_stream(10)
 
     async def test_stream():
-        yield 42
+        yield "test"
 
-    result: list[list[int]] = await flow.to_list()(test_stream())
-    assert result == [[42]]
+    result: list[list[str]] = await flow.to_list()(test_stream())
+    assert result == [["test"]]
 
 
 @pytest.mark.asyncio
 async def test_window_stream():
-    """Test window_stream function with default step."""
-    # Create a flow that creates sliding windows of size 3
+    """Test window_stream function."""
     flow: Flow[int, list[int]] = window_stream(3)
 
-    # Create test input stream
     async def test_stream():
-        for i in range(6):
+        for i in range(5):
             yield i
 
-    # Execute the flow
     result: list[list[int]] = await flow.to_list()(test_stream())
-
-    # Should produce overlapping windows of size 3
-    assert result == [[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]
+    # Sliding window of size 3 with step 1: [0,1,2], [1,2,3], [2,3,4]
+    expected = [[0, 1, 2], [1, 2, 3], [2, 3, 4]]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_window_stream_with_step():
-    """Test window_stream function with custom step."""
-    # Create a flow that creates windows of size 3 with step 2
-    flow: Flow[int, list[int]] = window_stream(3, step=2)
+    """Test window_stream with custom step size."""
+    flow: Flow[int, list[int]] = window_stream(2, step=2)
 
-    # Create test input stream
     async def test_stream():
-        for i in range(8):
+        for i in range(6):
             yield i
 
-    # Execute the flow
     result: list[list[int]] = await flow.to_list()(test_stream())
-
-    # Should produce windows with step 2
-    assert result == [[0, 1, 2], [2, 3, 4], [4, 5, 6]]
+    # Window of size 2 with step 2: [0,1], [2,3], [4,5]
+    expected = [[0, 1], [2, 3], [4, 5]]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_window_stream_insufficient_items():
     """Test window_stream with fewer items than window size."""
-    flow: Flow[int, list[int]] = window_stream(5)
+    flow: Flow[str, list[str]] = window_stream(5)
 
     async def test_stream():
-        for i in range(3):
-            yield i
+        yield "a"
+        yield "b"
 
-    result: list[list[int]] = await flow.to_list()(test_stream())
-    # Should produce no windows since we don't have enough items
+    result: list[list[str]] = await flow.to_list()(test_stream())
+    # Not enough items to fill a window
     assert result == []
 
 
 @pytest.mark.asyncio
 async def test_window_stream_empty():
-    """Test window_stream with empty stream."""
+    """Test window_stream with empty input."""
     flow: Flow[int, list[int]] = window_stream(3)
 
     async def empty_stream():
         return
-        yield  # pragma: no cover
+        yield  # unreachable
 
     result: list[list[int]] = await flow.to_list()(empty_stream())
     assert result == []
@@ -194,7 +188,7 @@ async def test_window_stream_empty():
 
 @pytest.mark.asyncio
 async def test_window_stream_exact_size():
-    """Test window_stream with exactly window size items."""
+    """Test window_stream with input exactly matching window size."""
     flow: Flow[int, list[int]] = window_stream(3)
 
     async def test_stream():
@@ -202,204 +196,183 @@ async def test_window_stream_exact_size():
             yield i
 
     result: list[list[int]] = await flow.to_list()(test_stream())
-    # Should produce one window
-    assert result == [[0, 1, 2]]
+    expected = [[0, 1, 2]]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_scan_stream():
-    """Test scan_stream function with sum accumulation."""
-    # Create a flow that performs running sum
+    """Test scan_stream function."""
     flow: Flow[int, int] = scan_stream(lambda acc, x: acc + x, 0)
 
-    # Create test input stream
     async def test_stream():
-        for i in range(1, 5):  # 1, 2, 3, 4
+        for i in [1, 2, 3, 4]:
             yield i
 
-    # Execute the flow
     result: list[int] = await flow.to_list()(test_stream())
-
-    # Should produce running sums: [0, 1, 3, 6, 10]
-    assert result == [0, 1, 3, 6, 10]
+    # Running sum starting with 0: 0, 1, 3, 6, 10
+    expected = [0, 1, 3, 6, 10]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_scan_stream_product():
-    """Test scan_stream function with product accumulation."""
-    # Create a flow that performs running product
+    """Test scan_stream with multiplication."""
     flow: Flow[int, int] = scan_stream(lambda acc, x: acc * x, 1)
 
-    # Create test input stream
     async def test_stream():
-        for i in range(1, 5):  # 1, 2, 3, 4
+        for i in [2, 3, 4]:
             yield i
 
-    # Execute the flow
     result: list[int] = await flow.to_list()(test_stream())
-
-    # Should produce running products: [1, 1, 2, 6, 24]
-    assert result == [1, 1, 2, 6, 24]
+    # Running product starting with 1: 1, 2, 6, 24
+    expected = [1, 2, 6, 24]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_scan_stream_string_concat():
-    """Test scan_stream function with string concatenation."""
-    # Create a flow that performs running string concatenation
+    """Test scan_stream with string concatenation."""
     flow: Flow[str, str] = scan_stream(lambda acc, x: acc + x, "")
 
-    # Create test input stream
     async def test_stream():
-        for letter in ["a", "b", "c"]:
-            yield letter
+        for char in ["a", "b", "c"]:
+            yield char
 
-    # Execute the flow
     result: list[str] = await flow.to_list()(test_stream())
-
-    # Should produce running concatenations: ["", "a", "ab", "abc"]
-    assert result == ["", "a", "ab", "abc"]
+    # Running concatenation: "", "a", "ab", "abc"
+    expected = ["", "a", "ab", "abc"]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_scan_stream_empty():
-    """Test scan_stream with empty stream."""
+    """Test scan_stream with empty input."""
     flow: Flow[int, int] = scan_stream(lambda acc, x: acc + x, 42)
 
     async def empty_stream():
         return
-        yield  # pragma: no cover
+        yield  # unreachable
 
     result: list[int] = await flow.to_list()(empty_stream())
-    # Should only contain initial value
-    assert result == [42]
+    # Should still emit initial value
+    expected = [42]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_group_by_stream():
-    """Test group_by_stream function with modulo grouping."""
-    # Create a flow that groups numbers by their remainder when divided by 3
-    flow: Flow[int, tuple[int, list[int]]] = group_by_stream(lambda x: x % 3)
+    """Test group_by_stream function."""
+    flow: Flow[int, tuple[int, list[int]]] = group_by_stream(lambda x: x % 2)
 
-    # Create test input stream
     async def test_stream():
-        for i in range(9):  # 0, 1, 2, 3, 4, 5, 6, 7, 8
+        for i in [1, 2, 3, 4, 5, 6]:
             yield i
 
-    # Execute the flow
     result: list[tuple[int, list[int]]] = await flow.to_list()(test_stream())
 
-    # Convert to dict for easier testing (order may vary)
-    result_dict = dict(result)
-    assert result_dict == {0: [0, 3, 6], 1: [1, 4, 7], 2: [2, 5, 8]}
+    # Convert to dict for easier testing
+    groups = dict(result)
+    assert groups[0] == [2, 4, 6]  # Even numbers
+    assert groups[1] == [1, 3, 5]  # Odd numbers
 
 
 @pytest.mark.asyncio
 async def test_group_by_stream_strings():
-    """Test group_by_stream function with string length grouping."""
-    # Create a flow that groups strings by their length
+    """Test group_by_stream with string length grouping."""
     flow: Flow[str, tuple[int, list[str]]] = group_by_stream(len)
 
-    # Create test input stream
     async def test_stream():
-        for word in ["a", "bb", "ccc", "dd", "e", "fff"]:
+        for word in ["a", "bb", "ccc", "dd", "e"]:
             yield word
 
-    # Execute the flow
     result: list[tuple[int, list[str]]] = await flow.to_list()(test_stream())
 
-    # Convert to dict for easier testing
-    result_dict = dict(result)
-    assert result_dict == {1: ["a", "e"], 2: ["bb", "dd"], 3: ["ccc", "fff"]}
+    groups = dict(result)
+    assert groups[1] == ["a", "e"]
+    assert groups[2] == ["bb", "dd"]
+    assert groups[3] == ["ccc"]
 
 
 @pytest.mark.asyncio
 async def test_group_by_stream_empty():
-    """Test group_by_stream with empty stream."""
-    flow: Flow[int, tuple[int, list[int]]] = group_by_stream(lambda x: x % 2)
+    """Test group_by_stream with empty input."""
+    flow: Flow[int, tuple[str, list[int]]] = group_by_stream(str)
 
     async def empty_stream():
         return
-        yield  # pragma: no cover
+        yield  # unreachable
 
-    result: list[tuple[int, list[int]]] = await flow.to_list()(empty_stream())
+    result: list[tuple[str, list[int]]] = await flow.to_list()(empty_stream())
     assert result == []
 
 
 @pytest.mark.asyncio
 async def test_group_by_stream_single_group():
-    """Test group_by_stream where all items belong to same group."""
+    """Test group_by_stream where all items have same key."""
     flow: Flow[int, tuple[str, list[int]]] = group_by_stream(lambda x: "same")
 
     async def test_stream():
-        for i in range(3):
+        for i in [1, 2, 3]:
             yield i
 
     result: list[tuple[str, list[int]]] = await flow.to_list()(test_stream())
-    assert result == [("same", [0, 1, 2])]
+    expected = [("same", [1, 2, 3])]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_distinct_stream():
-    """Test distinct_stream function without key function."""
-    # Create a flow that filters out duplicate items
+    """Test distinct_stream function."""
     flow: Flow[int, int] = distinct_stream()
 
-    # Create test input stream with duplicates
     async def test_stream():
-        for i in [1, 2, 3, 2, 4, 1, 5, 3]:
+        for i in [1, 2, 2, 3, 1, 4, 3]:
             yield i
 
-    # Execute the flow
     result: list[int] = await flow.to_list()(test_stream())
-
-    # Should produce only distinct items in order of first appearance
-    assert result == [1, 2, 3, 4, 5]
+    # Should see each item only once, in order of first appearance
+    expected = [1, 2, 3, 4]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_distinct_stream_with_key():
-    """Test distinct_stream function with key function."""
-    # Create a flow that filters duplicates by absolute value
-    flow: Flow[int, int] = distinct_stream(key_fn=abs)
+    """Test distinct_stream with key function."""
+    flow: Flow[str, str] = distinct_stream(len)
 
-    # Create test input stream
     async def test_stream():
-        for i in [1, -1, 2, -2, 3, 1, -3]:
-            yield i
+        for word in ["a", "bb", "c", "dd", "eee"]:
+            yield word
 
-    # Execute the flow
-    result: list[int] = await flow.to_list()(test_stream())
-
-    # Should keep first occurrence by absolute value
-    assert result == [1, 2, 3]
+    result: list[str] = await flow.to_list()(test_stream())
+    # Should see first occurrence of each length: "a" (len=1), "bb" (len=2), "eee" (len=3)
+    expected = ["a", "bb", "eee"]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_distinct_stream_strings():
-    """Test distinct_stream function with strings by length."""
-    # Create a flow that filters duplicates by string length
-    flow: Flow[str, str] = distinct_stream(key_fn=len)
+    """Test distinct_stream with string values."""
+    flow: Flow[str, str] = distinct_stream()
 
-    # Create test input stream
     async def test_stream():
-        for word in ["a", "bb", "c", "dd", "eee", "f"]:
+        for word in ["hello", "world", "hello", "python", "world"]:
             yield word
 
-    # Execute the flow
     result: list[str] = await flow.to_list()(test_stream())
-
-    # Should keep first occurrence of each length
-    assert result == ["a", "bb", "eee"]
+    expected = ["hello", "world", "python"]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_distinct_stream_empty():
-    """Test distinct_stream with empty stream."""
+    """Test distinct_stream with empty input."""
     flow: Flow[int, int] = distinct_stream()
 
     async def empty_stream():
         return
-        yield  # pragma: no cover
+        yield  # unreachable
 
     result: list[int] = await flow.to_list()(empty_stream())
     assert result == []
@@ -411,47 +384,40 @@ async def test_distinct_stream_no_duplicates():
     flow: Flow[int, int] = distinct_stream()
 
     async def test_stream():
-        for i in range(5):
+        for i in [1, 2, 3, 4]:
             yield i
 
     result: list[int] = await flow.to_list()(test_stream())
-    # Should return all items since no duplicates
-    assert result == [0, 1, 2, 3, 4]
+    expected = [1, 2, 3, 4]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_pairwise_stream():
     """Test pairwise_stream function."""
-    # Create a flow that emits consecutive pairs
     flow: Flow[int, tuple[int, int]] = pairwise_stream()
 
-    # Create test input stream
     async def test_stream():
-        for i in range(5):  # 0, 1, 2, 3, 4
+        for i in [1, 2, 3, 4, 5]:
             yield i
 
-    # Execute the flow
     result: list[tuple[int, int]] = await flow.to_list()(test_stream())
-
-    # Should produce consecutive pairs
-    assert result == [(0, 1), (1, 2), (2, 3), (3, 4)]
+    expected = [(1, 2), (2, 3), (3, 4), (4, 5)]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_pairwise_stream_strings():
-    """Test pairwise_stream function with strings."""
+    """Test pairwise_stream with strings."""
     flow: Flow[str, tuple[str, str]] = pairwise_stream()
 
-    # Create test input stream
     async def test_stream():
-        for letter in ["a", "b", "c", "d"]:
-            yield letter
+        for char in "abc":
+            yield char
 
-    # Execute the flow
     result: list[tuple[str, str]] = await flow.to_list()(test_stream())
-
-    # Should produce consecutive string pairs
-    assert result == [("a", "b"), ("b", "c"), ("c", "d")]
+    expected = [("a", "b"), ("b", "c")]
+    assert result == expected
 
 
 @pytest.mark.asyncio
@@ -463,32 +429,32 @@ async def test_pairwise_stream_single_item():
         yield 42
 
     result: list[tuple[int, int]] = await flow.to_list()(test_stream())
-    # Should produce no pairs since only one item
+    # No pairs can be formed
     assert result == []
 
 
 @pytest.mark.asyncio
 async def test_pairwise_stream_two_items():
     """Test pairwise_stream with exactly two items."""
-    flow: Flow[int, tuple[int, int]] = pairwise_stream()
+    flow: Flow[str, tuple[str, str]] = pairwise_stream()
 
     async def test_stream():
-        yield 1
-        yield 2
+        yield "first"
+        yield "second"
 
-    result: list[tuple[int, int]] = await flow.to_list()(test_stream())
-    # Should produce one pair
-    assert result == [(1, 2)]
+    result: list[tuple[str, str]] = await flow.to_list()(test_stream())
+    expected = [("first", "second")]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_pairwise_stream_empty():
-    """Test pairwise_stream with empty stream."""
+    """Test pairwise_stream with empty input."""
     flow: Flow[int, tuple[int, int]] = pairwise_stream()
 
     async def empty_stream():
         return
-        yield  # pragma: no cover
+        yield  # unreachable
 
     result: list[tuple[int, int]] = await flow.to_list()(empty_stream())
     assert result == []
@@ -496,7 +462,7 @@ async def test_pairwise_stream_empty():
 
 @pytest.mark.asyncio
 async def test_memoize_stream():
-    """Test memoize_stream function with repeated keys."""
+    """Test memoize_stream function."""
     # Create a flow that caches items by their modulo 3 value
     flow: Flow[int, int] = memoize_stream(lambda x: x % 3)
 
@@ -508,53 +474,51 @@ async def test_memoize_stream():
     # Execute the flow
     result: list[int] = await flow.to_list()(test_stream())
 
-    # Should cache: 1 (key 1), 4 (key 1 cached -> yield 1), 7 (key 1 cached -> yield 1),
-    #               2 (key 2), 5 (key 2 cached -> yield 2), 8 (key 2 cached -> yield 2)
-    assert result == [1, 1, 1, 2, 2, 2]
+    # Should cache: 1%3=1 caches 1, 4%3=1 returns 1, 7%3=1 returns 1,
+    #               2%3=2 caches 2, 5%3=2 returns 2, 8%3=2 returns 2
+    expected = [1, 1, 1, 2, 2, 2]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_memoize_stream_string_keys():
-    """Test memoize_stream function with string key extraction."""
-    # Create a flow that caches items by their first letter
-    flow: Flow[str, str] = memoize_stream(lambda x: x[0])
+    """Test memoize_stream with string keys."""
+    flow: Flow[str, str] = memoize_stream(lambda s: s[0])  # Cache by first character
 
-    # Create test input stream
     async def test_stream():
-        for word in ["apple", "apricot", "banana", "berry", "avocado"]:
+        for word in ["apple", "banana", "apricot", "berry"]:
             yield word
 
-    # Execute the flow
     result: list[str] = await flow.to_list()(test_stream())
-
-    # Should cache: apple (key 'a'), apricot (key 'a' cached -> yield apple),
-    #               banana (key 'b'), berry (key 'b' cached -> yield banana),
-    #               avocado (key 'a' cached -> yield apple)
-    assert result == ["apple", "apple", "banana", "banana", "apple"]
+    # "apple" caches with key "a", "banana" caches with key "b",
+    # "apricot" returns "apple" (key "a"), "berry" returns "banana" (key "b")
+    expected = ["apple", "banana", "apple", "banana"]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_memoize_stream_no_duplicates():
-    """Test memoize_stream with all unique keys."""
+    """Test memoize_stream with no duplicate keys."""
     flow: Flow[int, int] = memoize_stream(lambda x: x)
 
     async def test_stream():
-        for i in range(5):
+        for i in [1, 2, 3, 4]:
             yield i
 
     result: list[int] = await flow.to_list()(test_stream())
-    # All unique keys, so all items pass through unchanged
-    assert result == [0, 1, 2, 3, 4]
+    # No caching occurs since all keys are unique
+    expected = [1, 2, 3, 4]
+    assert result == expected
 
 
 @pytest.mark.asyncio
 async def test_memoize_stream_empty():
-    """Test memoize_stream with empty stream."""
-    flow: Flow[int, int] = memoize_stream(lambda x: x)
+    """Test memoize_stream with empty input."""
+    flow: Flow[int, int] = memoize_stream(lambda x: x % 2)
 
     async def empty_stream():
         return
-        yield  # pragma: no cover
+        yield  # unreachable
 
     result: list[int] = await flow.to_list()(empty_stream())
     assert result == []

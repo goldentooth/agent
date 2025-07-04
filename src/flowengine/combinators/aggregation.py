@@ -6,9 +6,10 @@ and other aggregation patterns for stream processing.
 
 from __future__ import annotations
 
+import asyncio
 from collections import deque
 from collections.abc import AsyncGenerator, Callable, Hashable
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from flowengine.combinators.utils import get_function_name
 from flowengine.flow import Flow
@@ -210,8 +211,8 @@ def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
         first = True
 
         async for item in stream:
-            if not first:
-                yield (previous, item)  # type: ignore[arg-type]
+            if not first and previous is not None:
+                yield (previous, item)
             previous = item
             first = False
 
@@ -244,3 +245,138 @@ def memoize_stream(key_fn: Callable[[Input], K]) -> Flow[Input, Input]:
                 yield item
 
     return Flow(_flow, name=f"memoize({get_function_name(key_fn)})")
+
+
+async def _buffer_collect_items(
+    stream: AsyncGenerator[Input, None], buffer: list[Input]
+) -> None:
+    """Collect items from stream into buffer."""
+    async for item in stream:
+        buffer.append(item)
+
+
+async def _buffer_emit_on_trigger(
+    trigger: AsyncGenerator[Any, None], buffer: list[Input]
+) -> AsyncGenerator[list[Input], None]:
+    """Emit buffer contents when trigger fires."""
+    async for _ in trigger:
+        if buffer:
+            yield list(buffer)
+            buffer.clear()
+
+
+async def _buffer_cleanup_collection_task(collect_task: asyncio.Task[None]) -> None:
+    """Cancel and await collection task cleanup."""
+    if not collect_task.done():
+        collect_task.cancel()
+        try:
+            await collect_task
+        except asyncio.CancelledError:
+            pass
+
+
+def buffer_stream(
+    trigger: AsyncGenerator[Any, None],
+) -> Flow[Input, list[Input]]:
+    """Create a flow that buffers items until a trigger emits.
+
+    Collects items in a buffer and emits the buffer contents when
+    the trigger stream produces a value.
+
+    Args:
+        trigger: Stream that triggers buffer emission
+
+    Returns:
+        A flow that buffers items until triggered
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[list[Input], None]:
+        """Buffer items until trigger emits."""
+        buffer: list[Input] = []
+        collect_task = asyncio.create_task(_buffer_collect_items(stream, buffer))
+
+        try:
+            async for buffered_items in _buffer_emit_on_trigger(trigger, buffer):
+                yield buffered_items
+
+            await collect_task
+
+            if buffer:
+                yield buffer
+
+        except Exception:
+            await _buffer_cleanup_collection_task(collect_task)
+            raise
+
+    return Flow(_flow, name="buffer")
+
+
+def expand_stream(
+    expander: Callable[[Input], AsyncGenerator[Input, None]], max_depth: int = 10
+) -> Flow[Input, Input]:
+    """Create a flow that recursively expands items using an expander function.
+
+    Applies the expander function to each item and recursively processes
+    the results until no more expansions are possible or max depth is reached.
+
+    Args:
+        expander: Function that expands an item into multiple items
+        max_depth: Maximum recursion depth
+
+    Returns:
+        A flow that recursively expands items
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[Input, None]:
+        """Recursively expand items."""
+        queue: deque[tuple[Input, int]] = deque()
+
+        # Initialize queue with stream items
+        async for item in stream:
+            queue.append((item, 0))  # (item, depth)
+
+        while queue:
+            item, depth = queue.popleft()
+            yield item
+
+            if depth < max_depth:
+                # Expand the item and add results to queue
+                async for expanded in expander(item):
+                    queue.append((expanded, depth + 1))
+
+    return Flow(_flow, name=f"expand({get_function_name(expander)}, depth={max_depth})")
+
+
+def finalize_stream(
+    finalizer: Callable[[], Any],
+) -> Flow[Input, Input]:
+    """Create a flow that executes a finalizer function when the stream completes.
+
+    The finalizer is called whether the stream completes normally or with an error.
+
+    Args:
+        finalizer: Function to call when stream processing finishes
+
+    Returns:
+        A flow that executes cleanup on completion
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[Input, None]:
+        """Execute finalizer on stream completion."""
+
+        try:
+            async for item in stream:
+                yield item
+        finally:
+            if asyncio.iscoroutinefunction(finalizer):
+                await finalizer()
+            else:
+                finalizer()
+
+    return Flow(_flow, name=f"finalize({get_function_name(finalizer)})")
