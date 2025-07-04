@@ -8,7 +8,7 @@ jobs:
   claude-review:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: read
       issues: read
       id-token: write
