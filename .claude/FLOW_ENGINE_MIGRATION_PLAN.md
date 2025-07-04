@@ -111,7 +111,7 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Tests: `tests/flowengine/combinators/test_observability.py`
 - Dependencies: `flowengine.flow`
 
-**Epic 12: Migrate control flow combinators (without context)**
+**~Epic 12: Migrate control flow combinators (without context)~ ✅ DONE!**
 - File: `src/flowengine/combinators/control_flow.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/control_flow.py` (419 lines)
 - Tests: `tests/flowengine/combinators/test_control_flow.py`
