@@ -9,6 +9,8 @@ from flowengine import Flow
 from flowengine.combinators.advanced import (
     chain_stream,
     combine_latest_stream,
+    flat_map_ctx_stream,
+    merge_async_generators,
     merge_flows,
     merge_stream,
     parallel_stream,
@@ -611,3 +613,141 @@ class TestCombineLatestStream:
 
         # Should have at least gotten some combinations before error
         assert len(values) >= 0  # May get some values before error
+
+
+class TestFlatMapCtxStream:
+    """Tests for flat_map_ctx_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_flat_map_ctx_basic(self):
+        """Test basic context-aware flat mapping."""
+
+        async def expand_with_context(
+            current: int, original: int
+        ) -> AsyncGenerator[str, None]:
+            # In simplified version, both args are the same
+            yield f"{current}_expanded"
+            if current < 2:
+                yield f"{current}_extra"
+
+        flat_map_flow: Flow[int, str] = flat_map_ctx_stream(expand_with_context)
+        assert "flat_map_ctx(expand_with_context)" in flat_map_flow.name
+
+        input_stream = async_range(3)
+        result_stream = flat_map_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        assert values == [
+            "0_expanded",
+            "0_extra",
+            "1_expanded",
+            "1_extra",
+            "2_expanded",
+        ]
+
+
+class TestMergeAsyncGenerators:
+    """Tests for merge_async_generators utility function."""
+
+    @pytest.mark.asyncio
+    async def test_merge_basic(self):
+        """Test basic merging of async generators."""
+
+        async def gen1() -> AsyncGenerator[str, None]:
+            yield "a"
+            await asyncio.sleep(0.01)
+            yield "b"
+
+        async def gen2() -> AsyncGenerator[str, None]:
+            await asyncio.sleep(0.005)
+            yield "1"
+            await asyncio.sleep(0.01)
+            yield "2"
+
+        merged = merge_async_generators(gen1(), gen2())
+        values = [item async for item in merged]
+
+        # All items should be present (order may vary due to concurrency)
+        assert sorted(values) == ["1", "2", "a", "b"]
+
+    @pytest.mark.asyncio
+    async def test_merge_empty_generators(self):
+        """Test merging with empty generators."""
+
+        async def empty1() -> AsyncGenerator[int, None]:
+            if False:
+                yield 1
+
+        async def empty2() -> AsyncGenerator[int, None]:
+            if False:
+                yield 2
+
+        async def normal() -> AsyncGenerator[int, None]:
+            yield 42
+
+        merged = merge_async_generators(empty1(), normal(), empty2())
+        values = [item async for item in merged]
+
+        assert values == [42]
+
+    @pytest.mark.asyncio
+    async def test_merge_no_generators(self):
+        """Test merging with no generators."""
+        merged: AsyncGenerator[int, None] = merge_async_generators()
+        values: list[int] = [item async for item in merged]
+
+        assert values == []
+
+    @pytest.mark.asyncio
+    async def test_merge_single_generator(self):
+        """Test merging with single generator."""
+
+        async def single() -> AsyncGenerator[str, None]:
+            yield "only"
+            yield "item"
+
+        merged = merge_async_generators(single())
+        values = [item async for item in merged]
+
+        assert values == ["only", "item"]
+
+    @pytest.mark.asyncio
+    async def test_merge_with_error(self):
+        """Test merging when one generator raises an error."""
+
+        async def working() -> AsyncGenerator[str, None]:
+            yield "good"
+
+        async def failing() -> AsyncGenerator[str, None]:
+            yield "before_error"
+            raise ValueError("Generator error")
+
+        merged = merge_async_generators(working(), failing())
+
+        with pytest.raises(ValueError) as exc_info:
+            _ = [item async for item in merged]
+
+        assert "Generator error" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_merge_different_speeds(self):
+        """Test merging generators with different speeds."""
+
+        async def fast() -> AsyncGenerator[str, None]:
+            for i in range(3):
+                yield f"fast_{i}"
+                await asyncio.sleep(0.001)
+
+        async def slow() -> AsyncGenerator[str, None]:
+            for i in range(2):
+                await asyncio.sleep(0.01)
+                yield f"slow_{i}"
+
+        merged = merge_async_generators(fast(), slow())
+        values = [item async for item in merged]
+
+        assert len(values) == 5
+        fast_values = [v for v in values if v.startswith("fast_")]
+        slow_values = [v for v in values if v.startswith("slow_")]
+        assert len(fast_values) == 3
+        assert len(slow_values) == 2
