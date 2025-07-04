@@ -8,6 +8,8 @@ This document outlines the detailed migration plan for extracting the Flow Engin
 - **The migration of any single unit (a SINGLE function, SINGLE class method, SINGLE protocol, etc) and its accompanying tests MUST be in its own, discrete commit!**
 - Please mark each epic ✅ DONE! as you complete it.
 - If you encounter a reference to AsyncIterator, change it to AsyncGenerator.
+- Update README.md and relevant files in docs/ as you complete each epic.
+- Create a branch for each epic, add commits to it until you have completed the epic and related work, then create a pull request.
 
 ## Key Statistics
 
@@ -86,17 +88,19 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 ## Phase 2: Core Combinators (Epics 9-14)
 
-**Epic 9: Migrate aggregation combinators**
+**~Epic 9: Migrate aggregation combinators~ ✅ DONE!**
 - File: `src/flowengine/combinators/aggregation.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/aggregation.py` (360 lines)
 - Tests: `tests/flowengine/combinators/test_aggregation.py`
 - Dependencies: `flowengine.flow`, `flowengine.combinators.basic`
+- **Result**: All 11 functions migrated with 97% coverage, including buffer_stream, expand_stream, and finalize_stream
 
-**Epic 10: Migrate temporal combinators**
+**~Epic 10: Migrate temporal combinators~ ✅ DONE!**
 - File: `src/flowengine/combinators/temporal.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/temporal.py` (160 lines)
 - Tests: `tests/flowengine/combinators/test_temporal.py`
 - Dependencies: `flowengine.flow`, `flowengine.combinators.basic`
+- **Result**: All 6 functions migrated with 97% coverage, full type safety compliance
 
 **Epic 11: Migrate observability combinators**
 - File: `src/flowengine/combinators/observability.py`
