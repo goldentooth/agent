@@ -8,6 +8,7 @@ import pytest
 from flowengine import Flow
 from flowengine.combinators.advanced import (
     chain_stream,
+    merge_stream,
     parallel_stream,
     parallel_stream_successful,
     race_stream,
@@ -418,3 +419,96 @@ class TestChainStream:
         values = [item async for item in result_stream]
 
         assert values == []
+
+
+class TestMergeStream:
+    """Tests for merge_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_merge_basic(self):
+        """Test basic stream merging."""
+        increment_flow: Flow[int, int] = map_stream(increment)
+        double_flow: Flow[int, int] = map_stream(double)
+
+        merge_flow = merge_stream(increment_flow, double_flow)
+        assert "merge(map(increment), map(double))" in merge_flow.name
+
+        input_stream = async_range(3)
+        result_stream = merge_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # Both flows process all items
+        assert sorted(values) == [0, 1, 2, 2, 3, 4]
+        # Increment: [1, 2, 3]
+        # Double: [0, 2, 4]
+
+    @pytest.mark.asyncio
+    async def test_merge_with_delays(self):
+        """Test merging with different processing speeds."""
+        fast_flow: Flow[int, str] = map_stream(lambda x: f"fast_{x}")
+        slow_flow: Flow[int, str] = Flow(
+            lambda s: self._delayed_process(s, 0.01, "slow")
+        )
+
+        merge_flow = merge_stream(fast_flow, slow_flow)
+
+        input_stream = async_range(2)
+        result_stream = merge_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # All items should be present
+        assert len(values) == 4
+        fast_values = [v for v in values if v.startswith("fast_")]
+        slow_values = [v for v in values if v.startswith("slow_")]
+        assert fast_values == ["fast_0", "fast_1"]
+        assert slow_values == ["slow_0", "slow_1"]
+
+    @pytest.mark.asyncio
+    async def test_merge_empty_input(self):
+        """Test merging with empty input."""
+        flow1: Flow[int, int] = map_stream(increment)
+        flow2: Flow[int, int] = map_stream(double)
+
+        merge_flow = merge_stream(flow1, flow2)
+
+        async def empty() -> AsyncGenerator[int, None]:
+            if False:
+                yield 0
+
+        result_stream = merge_flow(empty())
+        values = [item async for item in result_stream]
+
+        assert values == []
+
+    @pytest.mark.asyncio
+    async def test_merge_with_flow_error(self):
+        """Test merge stream when one flow raises an error."""
+
+        def working_fn(x: int) -> str:
+            return f"work_{x}"
+
+        def failing_fn(x: int) -> str:
+            if x == 1:
+                raise ValueError("Intentional error")
+            return f"fail_{x}"
+
+        working_flow: Flow[int, str] = map_stream(working_fn)
+        failing_flow: Flow[int, str] = map_stream(failing_fn)
+
+        merge_flow = merge_stream(working_flow, failing_flow)
+
+        input_stream = async_range(2)  # [0, 1] - second item will cause error
+        result_stream = merge_flow(input_stream)
+
+        with pytest.raises(ValueError) as exc_info:
+            _ = [item async for item in result_stream]
+
+        assert "Intentional error" in str(exc_info.value)
+
+    async def _delayed_process(
+        self, stream: AsyncGenerator[int, None], delay: float, prefix: str
+    ) -> AsyncGenerator[str, None]:
+        """Helper for delayed processing."""
+        async for item in stream:
+            await asyncio.sleep(delay)
+            yield f"{prefix}_{item}"

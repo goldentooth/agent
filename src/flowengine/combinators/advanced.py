@@ -247,3 +247,90 @@ def chain_stream(*streams: AsyncGenerator[Input, None]) -> Flow[None, Input]:
                 yield item
 
     return Flow(_flow, name=f"chain({len(streams)} streams)")
+
+
+def merge_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
+    """Create a flow that merges results from multiple flows concurrently.
+
+    Runs all flows on the same input stream and merges their outputs
+    as they become available.
+
+    Args:
+        *flows: Flows to merge
+
+    Returns:
+        A flow that yields merged results from all flows
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[Output, None]:
+        """Merge results from multiple flows."""
+        # Convert stream to list to replay for each flow
+        items = [item async for item in stream]
+
+        if not items:
+            return
+
+        # Create tasks for each flow
+        tasks: list[AnyTask] = []
+
+        for flow in flows:
+
+            async def replay_stream() -> AsyncGenerator[Input, None]:
+                for item in items:
+                    yield item
+
+            async def run_flow(
+                f: Flow[Input, Output],
+            ) -> AsyncGenerator[Output, None]:
+                """Run a flow and return its output iterator."""
+                return f(replay_stream())
+
+            task = asyncio.create_task(run_flow(flow))
+            tasks.append(task)
+
+        # Merge results using a queue
+        result_queue: AnyQueue = asyncio.Queue()
+
+        async def collect_from_flow(task: AnyTask) -> None:
+            """Collect results from a flow task."""
+            try:
+                flow_iter = await task
+                async for result in flow_iter:
+                    await result_queue.put(result)
+            except Exception as e:
+                await result_queue.put(e)
+            finally:
+                await result_queue.put(None)  # Signal completion
+
+        # Start collection tasks
+        collection_tasks: list[asyncio.Task[None]] = [
+            asyncio.create_task(collect_from_flow(task)) for task in tasks
+        ]
+
+        completed_flows = 0
+        total_flows = len(flows)
+
+        try:
+            while completed_flows < total_flows:
+                result = await result_queue.get()
+
+                if result is None:
+                    completed_flows += 1
+                elif isinstance(result, Exception):
+                    raise result
+                else:
+                    yield result
+        finally:
+            # Clean up
+            for task in collection_tasks:  # type: ignore[assignment]
+                if not task.done():
+                    task.cancel()
+                    try:
+                        await task
+                    except asyncio.CancelledError:
+                        pass
+
+    flow_names = ", ".join(flow.name for flow in flows)
+    return Flow(_flow, name=f"merge({flow_names})")
