@@ -84,7 +84,7 @@ repos:
       - id: black
         description: Format Python code with Black
         language_version: python3
-        args: ['--line-length=88']
+        args: []
         exclude: ^old/
 
   - repo: https://github.com/pycqa/isort

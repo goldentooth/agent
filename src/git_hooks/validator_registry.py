@@ -34,48 +34,40 @@ class ValidatorRegistry:
     def register(
         cls, name: str, validator_class: Optional[Type[T]] = None
     ) -> Union[Type[T], Callable[[Type[T]], Type[T]]]:
-        """Register a validator class.
-
-        Can be used as a decorator or called directly.
-
-        Args:
-            name: Unique name for the validator
-            validator_class: Validator class to register
-
-        Returns:
-            The validator class (for decorator usage)
-        """
+        """Register a validator class."""
         if validator_class is None:
-            # Used as decorator
-            def decorator(validator_cls: Type[T]) -> Type[T]:
-                cls._validators[name] = validator_cls
-                return validator_cls
-
-            return decorator
+            return cls._create_decorator(name)
         else:
-            # Used directly
-            cls._validators[name] = validator_class
-            return validator_class
+            return cls._register_directly(name, validator_class)
+
+    @classmethod
+    def _create_decorator(cls, name: str) -> Callable[[Type[T]], Type[T]]:
+        """Create decorator for validator registration."""
+
+        def decorator(validator_cls: Type[T]) -> Type[T]:
+            cls._validators[name] = validator_cls
+            return validator_cls
+
+        return decorator
+
+    @classmethod
+    def _register_directly(cls, name: str, validator_class: Type[T]) -> Type[T]:
+        """Register validator class directly."""
+        cls._validators[name] = validator_class
+        return validator_class
 
     @classmethod
     def create(cls, name: str, config: Dict[str, Any]) -> Validator:
-        """Create a validator instance from configuration.
-
-        Args:
-            name: Name of the validator to create
-            config: Configuration dictionary for the validator
-
-        Returns:
-            Configured validator instance
-
-        Raises:
-            ValidatorNotFoundError: If validator name is not registered
-        """
-        if name not in cls._validators:
-            raise ValidatorNotFoundError(f"Unknown validator type: {name}")
-
+        """Create a validator instance from configuration."""
+        cls._validate_name_exists(name)
         validator_class = cls._validators[name]
         return validator_class(**config)
+
+    @classmethod
+    def _validate_name_exists(cls, name: str) -> None:
+        """Validate that validator name exists."""
+        if name not in cls._validators:
+            raise ValidatorNotFoundError(f"Unknown validator type: {name}")
 
     @classmethod
     def is_registered(cls, name: str) -> bool:

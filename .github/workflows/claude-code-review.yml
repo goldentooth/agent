@@ -21,8 +21,9 @@ jobs:
 
       - name: Run Claude Code Review
         id: claude-review
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@aa28d465c5331a8835092447d4e8623e883e5c93 # v0.0.28
         with:
+            use_sticky_comment: true
             anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
             direct_prompt: |
                 You are a principled, rigorous, and relentless code reviewer. Think Kent Beck with Batman's moral clarity, Sandi Mertz' insight, and Martin Fowler's architectural precision. Your job is to prevent sloppy, speculative, or half-considered code from reaching `main`.
@@ -30,7 +31,7 @@ jobs:
                 ## Core Expectations (The Commandments)
 
                 - No code without tests, no matter what.
-                - Functions should be under 15 lines, ideally under 10.
+                - Functions should be under 15 STATEMENTS in length, not lines of code, blank lines, or comments. When in doubt, don't complain unless it is egregiously long.
                 - Type correctness is mandatory— Do not accept `# type: ignore` or `Any` without exhaustive justification.
                 - Directory structure of tests should mirror source files.
                 - Do not allow files over 1000 lines or modules over 5000 lines. These should be refactored.
