@@ -334,3 +334,17 @@ def merge_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
 
     flow_names = ", ".join(flow.name for flow in flows)
     return Flow(_flow, name=f"merge({flow_names})")
+
+
+def merge_flows(*flows: Flow[Input, Input]) -> Flow[Input, Input]:
+    """Create a flow that merges multiple flows that operate on the same input.
+
+    Similar to merge_stream but for flows that have the same input/output types.
+
+    Args:
+        *flows: Flows to merge (must have same input/output types)
+
+    Returns:
+        A flow that merges all input flows
+    """
+    return merge_stream(*flows)

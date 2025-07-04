@@ -8,6 +8,7 @@ import pytest
 from flowengine import Flow
 from flowengine.combinators.advanced import (
     chain_stream,
+    merge_flows,
     merge_stream,
     parallel_stream,
     parallel_stream_successful,
@@ -512,3 +513,22 @@ class TestMergeStream:
         async for item in stream:
             await asyncio.sleep(delay)
             yield f"{prefix}_{item}"
+
+
+class TestMergeFlows:
+    """Tests for merge_flows function."""
+
+    @pytest.mark.asyncio
+    async def test_merge_flows_basic(self):
+        """Test basic merge_flows functionality."""
+        increment_flow: Flow[int, int] = Flow.from_sync_fn(increment)
+        double_flow: Flow[int, int] = Flow.from_sync_fn(double)
+
+        merge_flow = merge_flows(increment_flow, double_flow)
+        assert "merge(increment, double)" in merge_flow.name
+
+        input_stream = async_range(2)
+        result_stream = merge_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        assert sorted(values) == [0, 1, 2, 2]
