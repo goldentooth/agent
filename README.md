@@ -10,7 +10,7 @@ The system emphasizes **type safety**, **performance**, **security**, and **deve
 
 ## 🚀 Current Status
 
-**Flow Engine Migration: Epic 12 Complete ✅**
+**Flow Engine Migration: Epic 13 Complete ✅**
 
 The Flow Engine migration is progressing steadily with comprehensive type safety and test coverage:
 
@@ -21,16 +21,17 @@ The Flow Engine migration is progressing steadily with comprehensive type safety
 - ✅ **Epic 10**: Temporal combinators (6 functions for time-based operations)
 - ✅ **Epic 11**: Observability combinators (5 functions + 3 notification classes for monitoring and tracing)
 - ✅ **Epic 12**: Control flow combinators (11 functions for conditional processing, error handling, and flow control)
+- ✅ **Epic 13**: Advanced combinators (10 functions including race_stream, parallel_stream, merge_stream, zip_stream)
 
 ### Migration Progress
-- **12/40 Epics Complete** (30% overall progress)
-- **~2,400 lines migrated** with 90%+ test coverage
+- **13/40 Epics Complete** (32.5% overall progress)
+- **~2,650 lines migrated** with 96%+ test coverage
 - **100% type safety** - Full Pyright/MyPy compliance
 - **Zero dependencies** - Standalone package architecture
 
 ### Architecture Status
 
-- 🔄 **Flow Engine** (`flowengine`) - Core + basic + aggregation + temporal + observability + control flow combinators complete
+- 🔄 **Flow Engine** (`flowengine`) - Core + basic + aggregation + temporal + observability + control flow + advanced combinators complete
 - 📋 **Legacy System** (`old/`) - Original 25K+ LOC implementation (reference)
 - 🏗️ **Migration Tools** (`src/git_hooks/`) - File/module validators and development tooling
 - 🧪 **Test Infrastructure** - Comprehensive testing with pytest, coverage, and type checking

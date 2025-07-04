@@ -498,8 +498,9 @@ async def _apply_flat_map_with_context(
     fn: Callable[[Any, Any], AsyncGenerator[Any, None]], item: Any
 ) -> AsyncGenerator[Any, None]:
     """Apply flat map function with context to a single item."""
-    # For this simplified version, we pass the item as both arguments
-    # In a full implementation, this would maintain context properly
+    # LIMITATION: This simplified version passes the item as both arguments.
+    # A full implementation would maintain proper context through the flow chain.
+    # This is a known limitation documented in the function's docstring.
     async for result in fn(item, item):
         yield result
 
@@ -512,11 +513,16 @@ def flat_map_ctx_stream(
     Unlike flat_map_stream which only gets the current item, this passes both
     the current item and the original stream input to the mapping function.
 
+    **LIMITATION**: In this simplified implementation, the same item is passed
+    as both the current item and original context. A full implementation would
+    need to maintain proper context through the flow transformation chain.
+    This is a known limitation that will be addressed in future work.
+
     Args:
         fn: Function that takes (current_item, original_input) and returns async iterator
 
     Returns:
-        A flow that flat-maps with context access
+        A flow that flat-maps with context access (simplified - see limitation above)
     """
 
     async def _flow(
