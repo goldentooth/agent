@@ -243,3 +243,24 @@ def while_condition_stream(
 
     condition_name = get_function_name(condition)
     return Flow(_flow, name=f"while({condition_name}, {transform.name})")
+
+
+def then_stream(side_effect: Callable[[Input], AnyValue]) -> Flow[Input, Input]:
+    """Create a flow that applies a side effect sequentially after each item.
+
+    Similar to tap_stream but emphasizes sequential execution.
+
+    Args:
+        side_effect: Function to call for each item (can be sync or async)
+
+    Returns:
+        A flow that applies side effects sequentially
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Apply side effect sequentially after each item."""
+        async for item in stream:
+            yield item
+            await maybe_await(side_effect, item)
+
+    return Flow(_flow, name=f"then({get_function_name(side_effect)})")

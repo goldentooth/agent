@@ -12,6 +12,7 @@ from flowengine.combinators.control_flow import (
     retry_stream,
     switch_stream,
     tap_stream,
+    then_stream,
     while_condition_stream,
 )
 from flowengine.exceptions import FlowExecutionError
@@ -370,3 +371,54 @@ class TestWhileConditionStream:
         result_stream = while_flow(input_stream)
         values = [item async for item in result_stream]
         assert values == []
+
+
+class TestThenStream:
+    """Tests for then_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_then_basic(self):
+        """Test basic then functionality."""
+        side_effects: list[str] = []
+
+        def record_after(x: int) -> None:
+            side_effects.append(f"after_{x}")
+
+        then_flow = then_stream(record_after)
+        assert "then(record_after)" in then_flow.name
+
+        input_stream = async_range(3)
+        result_stream = then_flow(input_stream)
+        values: list[int] = []
+
+        async for item in result_stream:
+            values.append(item)
+            # Side effects run after the yield, so they won't be visible until the next iteration
+            if item == 1:
+                assert side_effects == ["after_0"]  # after_0 ran after yielding 0
+            elif item == 2:
+                assert side_effects == [
+                    "after_0",
+                    "after_1",
+                ]  # after_1 ran after yielding 1
+
+        assert values == [0, 1, 2]
+        assert side_effects == ["after_0", "after_1", "after_2"]
+
+    @pytest.mark.asyncio
+    async def test_then_with_async_function(self):
+        """Test then with async side effect."""
+        side_effects: list[int] = []
+
+        async def async_record_after(x: int) -> None:
+            await asyncio.sleep(0.001)
+            side_effects.append(x)
+
+        then_flow = then_stream(async_record_after)
+
+        input_stream = async_range(2)
+        result_stream = then_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        assert values == [0, 1]
+        assert side_effects == [0, 1]
