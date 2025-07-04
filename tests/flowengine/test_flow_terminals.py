@@ -15,7 +15,7 @@ class TestFlowToList:
         """Test that to_list collects all items from the flow into a list."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[str, None]:
             for s in ["hello", "world", "test"]:
                 yield s
@@ -37,7 +37,7 @@ class TestFlowToList:
         """Test that to_list returns empty list for empty streams."""
 
         async def empty_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
@@ -59,7 +59,7 @@ class TestFlowToList:
         """Test that to_list preserves the order of items."""
 
         async def sequence_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [3, 1, 4, 1, 5, 9, 2, 6]:
                 yield i
@@ -80,7 +80,7 @@ class TestFlowToList:
         """Test that to_list works with transformed flows."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
@@ -108,7 +108,7 @@ class TestFlowToList:
         """Test that to_list returns a callable function."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -132,7 +132,7 @@ class TestFlowToList:
         """Test that to_list works with different input streams."""
 
         async def transform_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
@@ -161,7 +161,7 @@ class TestFlowToList:
         """Test that to_list maintains proper type annotations."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[str, None]:
             for s in ["a", "b", "c"]:
                 yield s
@@ -190,7 +190,7 @@ class TestFlowForEach:
         """Test that for_each applies function to all items in the stream."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[str, None]:
             for s in ["hello", "world", "test"]:
                 yield s
@@ -217,7 +217,7 @@ class TestFlowForEach:
         """Test that for_each handles empty streams correctly."""
 
         async def empty_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
@@ -244,7 +244,7 @@ class TestFlowForEach:
         """Test that for_each processes items in order."""
 
         async def sequence_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [3, 1, 4, 1, 5]:
                 yield i
@@ -271,7 +271,7 @@ class TestFlowForEach:
         """Test that for_each works with transformed flows."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
@@ -305,7 +305,7 @@ class TestFlowForEach:
         """Test that for_each returns a callable function."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -334,7 +334,7 @@ class TestFlowForEach:
         """Test that for_each properly handles side effects."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[str, None]:
             for s in ["debug", "info", "error"]:
                 yield s
@@ -369,7 +369,7 @@ class TestFlowForEach:
         """Test that for_each works with different input streams."""
 
         async def transform_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
@@ -409,7 +409,7 @@ class TestFlowCollect:
         """Test that collect is an alias for to_list."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
@@ -434,7 +434,7 @@ class TestFlowCollect:
         """Test that collect delegates to to_list and produces same results."""
 
         async def test_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield item.upper()
@@ -461,7 +461,7 @@ class TestFlowCollect:
         """Test that collect works with various flow transformations."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in range(1, 6):
                 yield i
@@ -488,7 +488,7 @@ class TestFlowCollect:
         """Test that collect preserves the same type signature as to_list."""
 
         async def typed_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield f"item_{item}"
@@ -514,7 +514,7 @@ class TestFlowPreview:
         """Test that preview returns only the specified number of items."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in range(100):  # Large stream
                 yield i
@@ -538,7 +538,7 @@ class TestFlowPreview:
         """Test that preview returns all items when stream has fewer than limit."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
@@ -557,7 +557,7 @@ class TestFlowPreview:
         """Test that preview returns empty list for empty streams."""
 
         async def empty_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
@@ -576,7 +576,7 @@ class TestFlowPreview:
         """Test that preview works with transformed flows."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             try:
                 for i in range(20):
@@ -618,7 +618,7 @@ class TestFlowPreview:
                 self.closed = True
 
         async def trackable_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             iterator = TrackableIterator()
             async for item in iterator:
@@ -639,7 +639,7 @@ class TestFlowPreview:
         """Test that preview works with different input stream types."""
 
         async def transform_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item) * 10
@@ -659,7 +659,7 @@ class TestFlowPreview:
         """Test that preview with limit=0 returns empty list."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in range(10):
                 yield i

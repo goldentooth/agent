@@ -12,7 +12,7 @@ def get_mock_flow(overrides: dict[str, Any] | None = None) -> Flow[int, str]:
     base_metadata = {"test": True}
 
     async def default_fn(
-        stream: AsyncGenerator[int, None]
+        stream: AsyncGenerator[int, None],
     ) -> AsyncGenerator[str, None]:
         async for item in stream:
             yield str(item)
@@ -36,7 +36,7 @@ class TestFlowInit:
         """Test Flow initialization with just a function."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -52,7 +52,7 @@ class TestFlowInit:
         """Test Flow initialization with a name."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -68,7 +68,7 @@ class TestFlowInit:
         """Test Flow initialization with metadata."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -85,7 +85,7 @@ class TestFlowInit:
         """Test Flow initialization with explicit None metadata."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -101,7 +101,7 @@ class TestFlowInit:
         """Test Flow initialization with all parameters."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -123,7 +123,7 @@ class TestFlowCall:
         """Test that calling a flow returns an async iterator."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -145,7 +145,7 @@ class TestFlowCall:
         """Test that calling a flow processes the input stream correctly."""
 
         async def double_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item * 2
@@ -166,7 +166,7 @@ class TestFlowCall:
         """Test that calling a flow with empty stream works correctly."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -187,7 +187,7 @@ class TestFlowCall:
         """Test that __call__ properly delegates to the internal function."""
 
         async def transform_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield f"item_{item}"
@@ -211,7 +211,7 @@ class TestFlowRepr:
         """Test __repr__ with default anonymous flow name."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -228,7 +228,7 @@ class TestFlowRepr:
         """Test __repr__ with custom flow name."""
 
         async def transform_data(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield f"data_{item}"
@@ -245,7 +245,7 @@ class TestFlowRepr:
         """Test __repr__ with metadata included."""
 
         async def process_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item * 2)
@@ -263,7 +263,7 @@ class TestFlowRepr:
         """Test that __repr__ follows the expected format structure."""
 
         async def example_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -288,7 +288,7 @@ class TestFlowAiter:
         """Test that __aiter__ raises TypeError to prevent direct iteration."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -306,7 +306,7 @@ class TestFlowAiter:
         """Test that __aiter__ provides helpful error message."""
 
         async def transform_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield f"transformed_{item}"
@@ -326,7 +326,7 @@ class TestFlowAiter:
         """Test that flows cannot be used directly in async for loops."""
 
         async def simple_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item * 2
@@ -351,13 +351,13 @@ class TestFlowRshift:
         """Test that >> operator pipes output from one flow to another."""
 
         async def double_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item * 2
 
         async def add_ten_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item + 10
@@ -380,13 +380,13 @@ class TestFlowRshift:
         """Test that >> operator doesn't modify original flows."""
 
         async def identity_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield item
 
         async def upper_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield item.upper()
@@ -423,13 +423,13 @@ class TestFlowRshift:
         """Test that >> operator works with flows that transform types."""
 
         async def int_to_str(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield f"num_{item}"
 
         async def str_to_len(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
@@ -452,19 +452,19 @@ class TestFlowRshift:
         """Test chaining multiple flows with >> operator."""
 
         async def add_one(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item + 1
 
         async def double(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item * 2
 
         async def subtract_five(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item - 5
@@ -489,7 +489,7 @@ class TestFlowRshift:
         """Test that >> operator works correctly with empty streams."""
 
         async def passthrough(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item
@@ -518,7 +518,7 @@ class TestFlowLabel:
         """Test that label prints debug information."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[str, None]:
             for s in ["hello", "world"]:
                 yield s
@@ -546,7 +546,7 @@ class TestFlowLabel:
         """Test that label creates a new flow with descriptive name."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item * 2
@@ -564,7 +564,7 @@ class TestFlowLabel:
         """Test that label works correctly with empty streams."""
 
         async def empty_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
@@ -592,7 +592,7 @@ class TestFlowLabel:
         """Test that label preserves the flow's type signature."""
 
         async def typed_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
@@ -616,7 +616,7 @@ class TestFlowLabel:
         """Test that label can be chained with other flow operations."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
@@ -653,7 +653,7 @@ class TestFlowLabel:
         """Test multiple labels in a flow chain."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2]:
                 yield i

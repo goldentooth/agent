@@ -29,7 +29,7 @@ def batch_stream(size: int) -> Flow[Input, list[Input]]:
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[list[Input], None]:
         """Batch stream items into lists."""
         batch: list[Input] = []
@@ -59,7 +59,7 @@ def chunk_stream(size: int) -> Flow[Input, list[Input]]:
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[list[Input], None]:
         """Group items into fixed-size chunks."""
         chunk: list[Input] = []
@@ -90,7 +90,7 @@ def window_stream(size: int, step: int = 1) -> Flow[Input, list[Input]]:
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[list[Input], None]:
         """Generate sliding windows over the stream."""
         window: deque[Input] = deque(maxlen=size)
@@ -123,7 +123,7 @@ def scan_stream(
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Output, None]:
         """Perform running accumulation with intermediate results."""
         accumulator = initial
@@ -203,7 +203,7 @@ def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[tuple[Input, Input], None]:
         """Emit consecutive pairs of items."""
         previous: Input | None = None

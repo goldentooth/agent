@@ -15,7 +15,7 @@ class TestFlowMap:
         """Test that map applies function to each item in the stream."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
@@ -40,7 +40,7 @@ class TestFlowMap:
         """Test that map can change the output type of the flow."""
 
         async def int_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [10, 20, 30]:
                 yield i
@@ -65,7 +65,7 @@ class TestFlowMap:
         """Test that map preserves the input type of the original flow."""
 
         async def transform_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
@@ -89,7 +89,7 @@ class TestFlowMap:
         """Test that map creates a new flow with a descriptive name."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield str(item)
@@ -108,7 +108,7 @@ class TestFlowMap:
         """Test that map works correctly with empty streams."""
 
         async def empty_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
@@ -133,7 +133,7 @@ class TestFlowMap:
         """Test that multiple maps can be chained together."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
@@ -165,7 +165,7 @@ class TestFlowFilter:
         """Test that filter removes items that don't match the predicate."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5, 6]:
                 yield i
@@ -190,7 +190,7 @@ class TestFlowFilter:
         """Test that filter preserves the output type of the flow."""
 
         async def string_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[str, None]:
             for s in ["apple", "banana", "cherry", "date"]:
                 yield s
@@ -215,7 +215,7 @@ class TestFlowFilter:
         """Test that filter preserves the input type of the original flow."""
 
         async def transform_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
@@ -239,7 +239,7 @@ class TestFlowFilter:
         """Test that filter creates a new flow with a descriptive name."""
 
         async def test_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield item * 2
@@ -258,7 +258,7 @@ class TestFlowFilter:
         """Test that filter works correctly with empty streams."""
 
         async def empty_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
@@ -283,7 +283,7 @@ class TestFlowFilter:
         """Test that filter returns empty stream when no items match."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 3, 5, 7, 9]:
                 yield i
@@ -308,7 +308,7 @@ class TestFlowFilter:
         """Test that filter can be chained with map operations."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
@@ -340,7 +340,7 @@ class TestFlowFlatMap:
         """Test that flat_map flattens nested async iterators into a single stream."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[str, None]:
             for s in ["hello", "world"]:
                 yield s
@@ -366,7 +366,7 @@ class TestFlowFlatMap:
         """Test that flat_map can change the output type of the flow."""
 
         async def int_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [3, 2]:
                 yield i
@@ -392,7 +392,7 @@ class TestFlowFlatMap:
         """Test that flat_map preserves the input type of the original flow."""
 
         async def transform_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 yield len(item)
@@ -417,7 +417,7 @@ class TestFlowFlatMap:
         """Test that flat_map creates a new flow with a descriptive name."""
 
         async def test_fn(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield item.upper()
@@ -437,7 +437,7 @@ class TestFlowFlatMap:
         """Test that flat_map works correctly with empty streams."""
 
         async def empty_source(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
@@ -463,7 +463,7 @@ class TestFlowFlatMap:
         """Test that flat_map works when inner iterators are empty."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[int, None]:
             for i in [0, 1, 0, 2]:
                 yield i
@@ -489,7 +489,7 @@ class TestFlowFlatMap:
         """Test that flat_map can be chained with other operations."""
 
         async def source_fn(
-            stream: AsyncGenerator[None, None]
+            stream: AsyncGenerator[None, None],
         ) -> AsyncGenerator[str, None]:
             for s in ["ab", "cd"]:
                 yield s

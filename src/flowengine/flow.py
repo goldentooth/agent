@@ -50,7 +50,7 @@ class Flow(Generic[Input, Output]):
         """Map a function over the output of the flow."""
 
         async def _mapped(
-            stream: AsyncGenerator[Input, None]
+            stream: AsyncGenerator[Input, None],
         ) -> AsyncGenerator[Newput, None]:
             inner_iter = self(stream)
             try:
@@ -65,7 +65,7 @@ class Flow(Generic[Input, Output]):
         """Filter the output of the flow based on a predicate."""
 
         async def _filtered(
-            stream: AsyncGenerator[Input, None]
+            stream: AsyncGenerator[Input, None],
         ) -> AsyncGenerator[Output, None]:
             inner_iter = self(stream)
             try:
@@ -83,7 +83,7 @@ class Flow(Generic[Input, Output]):
         """Flat map a function over the output of the flow."""
 
         async def _flatmapped(
-            stream: AsyncGenerator[Input, None]
+            stream: AsyncGenerator[Input, None],
         ) -> AsyncGenerator[Newput, None]:
             inner_iter = self(stream)
             try:
@@ -133,7 +133,7 @@ class Flow(Generic[Input, Output]):
         """Label the flow for debugging purposes."""
 
         async def _labeled(
-            stream: AsyncGenerator[Input, None]
+            stream: AsyncGenerator[Input, None],
         ) -> AsyncGenerator[Output, None]:
             print(f"[Flow:{label}] starting")
             async for item in self(stream):
@@ -190,7 +190,7 @@ class Flow(Generic[Input, Output]):
         """
 
         async def _flow(
-            stream: AsyncGenerator[Input, None]
+            stream: AsyncGenerator[Input, None],
         ) -> AsyncGenerator[Output, None]:
             yielded_any = False
             async for item in self(stream):
@@ -212,7 +212,7 @@ class Flow(Generic[Input, Output]):
         """
 
         async def _batched(
-            stream: AsyncGenerator[Input, None]
+            stream: AsyncGenerator[Input, None],
         ) -> AsyncGenerator[list[Output], None]:
             output_stream = self(stream)
             batch: list[Output] = []
@@ -252,7 +252,7 @@ class Flow(Generic[Input, Output]):
 
         def decorator(f: Callable[[T], Awaitable[U]]) -> Flow[T, U]:
             async def _wrapper(
-                stream: AsyncGenerator[T, None]
+                stream: AsyncGenerator[T, None],
             ) -> AsyncGenerator[U, None]:
                 async for item in stream:
                     yield await f(item)
@@ -290,7 +290,7 @@ class Flow(Generic[Input, Output]):
 
         def decorator(f: Callable[[T], AsyncGenerator[U, None]]) -> Flow[T, U]:
             async def _wrapper(
-                stream: AsyncGenerator[T, None]
+                stream: AsyncGenerator[T, None],
             ) -> AsyncGenerator[U, None]:
                 async for item in stream:
                     async for sub in f(item):
@@ -328,7 +328,7 @@ class Flow(Generic[Input, Output]):
 
         def decorator(f: Callable[[T], U]) -> Flow[T, U]:
             async def _wrapper(
-                stream: AsyncGenerator[T, None]
+                stream: AsyncGenerator[T, None],
             ) -> AsyncGenerator[U, None]:
                 async for item in stream:
                     yield f(item)
@@ -360,7 +360,7 @@ class Flow(Generic[Input, Output]):
         """
 
         async def _wrapper(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[T, None]:
             # Ignore the input stream and yield from the iterable
             for item in iterable:
@@ -373,7 +373,7 @@ class Flow(Generic[Input, Output]):
         register: Union[
             Callable[[Callable[[T], None]], None],
             Callable[[Callable[[T], None]], Awaitable[None]],
-        ]
+        ],
     ) -> Flow[Any, T]:
         """Create a flow from an emitter system that registers callbacks.
 
@@ -402,7 +402,7 @@ class Flow(Generic[Input, Output]):
         """
 
         async def _wrapper(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[T, None]:
             # Ignore the input stream and collect emitted values
             emitted_values: list[T] = []

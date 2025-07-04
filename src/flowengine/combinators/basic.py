@@ -102,7 +102,7 @@ def map_stream(fn: Callable[[Input], Output]) -> Flow[Input, Output]:
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Output, None]:
         """Map function over each item in the stream."""
         async for item in stream:
@@ -129,7 +129,7 @@ def flat_map_stream(
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Output, None]:
         """Flat-map function over each item in the stream."""
         async for item in stream:
@@ -275,7 +275,7 @@ def collect_stream() -> Flow[Input, list[Input]]:
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[list[Input], None]:
         """Collect all items into a single list."""
         items: list[Input] = []
