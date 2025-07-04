@@ -10,6 +10,7 @@ This document outlines the detailed migration plan for extracting the Flow Engin
 - If you encounter a reference to AsyncIterator, change it to AsyncGenerator.
 - Update README.md and relevant files in docs/ as you complete each epic.
 - Create a branch for each epic, add commits to it until you have completed the epic and related work, then create a pull request.
+- If you have completed a Phase, take the time to create a .claude/FEM_RETRO_[phase id, e.g. "1A"].md file, matching the format of `.claude/FEM_RETRO_1A.md`.
 
 ## Key Statistics
 
