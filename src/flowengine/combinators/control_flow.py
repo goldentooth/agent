@@ -54,7 +54,7 @@ def if_then_stream(
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Output, None]:
         """Apply conditional processing to each item."""
         async for item in stream:
@@ -87,7 +87,7 @@ def retry_stream(n: int, flow: Flow[Input, Output]) -> Flow[Input, Output]:
     """Create a flow that retries processing items with another flow on failure."""
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Output, None]:
         """Retry processing items with the given flow on failure."""
         async for item in stream:
@@ -160,7 +160,7 @@ def switch_stream(
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Output, None]:
         """Route items to appropriate flows based on selector."""
         async for item in stream:
@@ -225,7 +225,7 @@ def while_condition_stream(
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Output, None]:
         """Apply transformation while condition is true."""
         async for item in stream:
@@ -399,7 +399,7 @@ def branch_flows(
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Output, None]:
         """Branch processing based on predicate."""
         true_items: list[Input] = []
