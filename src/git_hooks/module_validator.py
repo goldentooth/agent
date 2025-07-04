@@ -20,6 +20,12 @@ class ModuleSizeValidator(Validator):
         exclude_patterns: Optional[list[str]] = None,
     ):
         super().__init__(limit, exclude_patterns)
+        self._set_thresholds(limit, warn_threshold, urgent_threshold)
+
+    def _set_thresholds(
+        self, limit: int, warn_threshold: Optional[int], urgent_threshold: Optional[int]
+    ) -> None:
+        """Set warning and urgent thresholds."""
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9)
         self.warn_threshold = (
             warn_threshold
@@ -69,13 +75,7 @@ class ModuleSizeValidator(Validator):
         self, path: Path, total_lines: int, threshold_type: str
     ) -> ValidationResult:
         """Create warning result for module approaching limits."""
-        if threshold_type == "urgent":
-            remaining = self.limit - total_lines
-            message = f"Module approaching limit: {total_lines} lines ({remaining} lines until violation)"
-        else:  # warn
-            remaining = self.urgent_threshold - total_lines
-            message = f"Module growing large: {total_lines} lines ({remaining} lines until urgent)"
-
+        message = self._get_module_warning_message(total_lines, threshold_type)
         return ValidationResult(
             file_path=path,
             severity=ValidationSeverity.WARNING,
@@ -84,6 +84,15 @@ class ModuleSizeValidator(Validator):
             limit=self.limit,
             guidance=get_module_refactoring_guidance(),
         )
+
+    def _get_module_warning_message(self, total_lines: int, threshold_type: str) -> str:
+        """Get warning message for module."""
+        if threshold_type == "urgent":
+            remaining = self.limit - total_lines
+            return f"Module approaching limit: {total_lines} lines ({remaining} lines until violation)"
+        else:  # warn
+            remaining = self.urgent_threshold - total_lines
+            return f"Module growing large: {total_lines} lines ({remaining} lines until urgent)"
 
     def validate(self, path: Path) -> Optional[ValidationResult]:
         """Validate a module's total line count."""
@@ -94,11 +103,16 @@ class ModuleSizeValidator(Validator):
         if total_lines is None:
             return None
 
+        return self._create_module_validation_result(path, total_lines)
+
+    def _create_module_validation_result(
+        self, path: Path, total_lines: int
+    ) -> Optional[ValidationResult]:
+        """Create validation result based on total lines."""
         if total_lines > self.limit:
             return self._create_module_error_result(path, total_lines)
         elif total_lines >= self.urgent_threshold:
             return self._create_module_warning_result(path, total_lines, "urgent")
         elif total_lines >= self.warn_threshold:
             return self._create_module_warning_result(path, total_lines, "warn")
-
         return None

@@ -90,12 +90,24 @@ class ValidationConfig:
     ) -> Dict[str, int]:
         """Load configuration values from environment."""
         limit = int(os.environ.get(limit_key, default_limit))
-        warn_threshold = int(
-            os.environ.get(warn_key, str(calc.calculate_warn_threshold(limit)))
+        warn_threshold = cls._load_threshold_value(
+            warn_key, calc.calculate_warn_threshold(limit)
         )
-        urgent_threshold = int(
-            os.environ.get(urgent_key, str(calc.calculate_urgent_threshold(limit)))
+        urgent_threshold = cls._load_threshold_value(
+            urgent_key, calc.calculate_urgent_threshold(limit)
         )
+        return cls._build_config_dict(prefix, limit, warn_threshold, urgent_threshold)
+
+    @classmethod
+    def _load_threshold_value(cls, key: str, default_value: int) -> int:
+        """Load threshold value from environment with fallback."""
+        return int(os.environ.get(key, str(default_value)))
+
+    @classmethod
+    def _build_config_dict(
+        cls, prefix: str, limit: int, warn_threshold: int, urgent_threshold: int
+    ) -> Dict[str, int]:
+        """Build configuration dictionary with proper keys."""
         return {
             f"{prefix}_limit": limit,
             f"{prefix}_warn_threshold": warn_threshold,

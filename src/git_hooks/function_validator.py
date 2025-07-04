@@ -21,6 +21,12 @@ class FunctionLengthValidator(Validator):
         exclude_patterns: Optional[list[str]] = None,
     ):
         super().__init__(limit, exclude_patterns)
+        self._set_thresholds(limit, warn_threshold, urgent_threshold)
+
+    def _set_thresholds(
+        self, limit: int, warn_threshold: Optional[int], urgent_threshold: Optional[int]
+    ) -> None:
+        """Set warning and urgent thresholds."""
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.87)
         self.warn_threshold = (
             warn_threshold

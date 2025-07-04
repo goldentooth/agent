@@ -2,6 +2,7 @@
 
 import subprocess
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List
 
 # Import validators to trigger registration
@@ -64,38 +65,51 @@ class HookRunner:
     def run_hook(self, hook_config: HookConfig, warning_mode: bool = False) -> int:
         """Run a validation hook with the specified configuration."""
         validator = create_validator(hook_config.validator_type, self.config)
-
-        # Discover targets to validate
-        if hook_config.discovery_method == "files":
-            targets = get_staged_files() if is_git_repo() else get_all_files()
-        elif hook_config.discovery_method == "modules":
-            targets = get_modules()
-        else:
-            raise ValueError(
-                f"Unknown discovery method: {hook_config.discovery_method}"
-            )
+        targets = self._discover_targets(hook_config)
 
         if not targets:
             print(f"✅ {hook_config.name}: No files to check")
             return 0
 
-        # Validate all targets
+        results = self._validate_targets(validator, targets, warning_mode)
+        return self._process_results(results, hook_config.name, warning_mode)
+
+    def _discover_targets(self, hook_config: HookConfig) -> List[Path]:
+        """Discover targets to validate based on discovery method."""
+        if hook_config.discovery_method == "files":
+            return get_staged_files() if is_git_repo() else get_all_files()
+        elif hook_config.discovery_method == "modules":
+            return get_modules()
+        else:
+            raise ValueError(
+                f"Unknown discovery method: {hook_config.discovery_method}"
+            )
+
+    def _validate_targets(
+        self, validator: Validator, targets: List[Path], warning_mode: bool
+    ) -> List[ValidationResult]:
+        """Validate all targets and collect results."""
         results: List[ValidationResult] = []
         for target in targets:
             result = validator.validate(target)
-            if result:
-                if warning_mode:
-                    # In warning mode, include all results
-                    results.append(result)
-                else:
-                    # In blocking mode, only include errors
-                    if result.severity == ValidationSeverity.ERROR:
-                        results.append(result)
+            if result and self._should_include_result(result, warning_mode):
+                results.append(result)
+        return results
 
-        # Print results and determine exit code
-        print_results(results, hook_config.name)
-
+    def _should_include_result(
+        self, result: ValidationResult, warning_mode: bool
+    ) -> bool:
+        """Determine if result should be included based on mode."""
         if warning_mode:
-            return 0  # Always succeed in warning mode
+            return True  # Include all results in warning mode
         else:
-            return 1 if results else 0  # Fail if there are errors in blocking mode
+            return (
+                result.severity == ValidationSeverity.ERROR
+            )  # Only errors in blocking mode
+
+    def _process_results(
+        self, results: List[ValidationResult], hook_name: str, warning_mode: bool
+    ) -> int:
+        """Process results and determine exit code."""
+        print_results(results, hook_name)
+        return 0 if warning_mode else (1 if results else 0)

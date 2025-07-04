@@ -20,6 +20,12 @@ class FileLengthValidator(Validator):
         exclude_patterns: Optional[list[str]] = None,
     ):
         super().__init__(limit, exclude_patterns)
+        self._set_thresholds(limit, warn_threshold, urgent_threshold)
+
+    def _set_thresholds(
+        self, limit: int, warn_threshold: Optional[int], urgent_threshold: Optional[int]
+    ) -> None:
+        """Set warning and urgent thresholds."""
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9)
         self.warn_threshold = (
             warn_threshold
@@ -54,13 +60,7 @@ class FileLengthValidator(Validator):
         self, path: Path, line_count: int, threshold_type: str
     ) -> ValidationResult:
         """Create warning result for file approaching limits."""
-        if threshold_type == "urgent":
-            remaining = self.limit - line_count
-            message = f"File approaching limit: {line_count} lines ({remaining} lines until violation)"
-        else:  # warn
-            remaining = self.urgent_threshold - line_count
-            message = f"File growing large: {line_count} lines ({remaining} lines until urgent)"
-
+        message = self._get_warning_message(line_count, threshold_type)
         return ValidationResult(
             file_path=path,
             severity=ValidationSeverity.WARNING,
@@ -70,20 +70,38 @@ class FileLengthValidator(Validator):
             guidance=get_refactoring_guidance(path),
         )
 
+    def _get_warning_message(self, line_count: int, threshold_type: str) -> str:
+        """Get warning message for file."""
+        if threshold_type == "urgent":
+            remaining = self.limit - line_count
+            return f"File approaching limit: {line_count} lines ({remaining} lines until violation)"
+        else:  # warn
+            remaining = self.urgent_threshold - line_count
+            return f"File growing large: {line_count} lines ({remaining} lines until urgent)"
+
     def validate(self, path: Path) -> Optional[ValidationResult]:
         """Validate a single file's line count."""
-        if not path.exists() or not path.is_file() or self._should_exclude(path):
+        if not self._is_valid_file(path):
             return None
 
         line_count = self._get_line_count(path)
         if line_count is None:
             return None
 
+        return self._create_validation_result(path, line_count)
+
+    def _is_valid_file(self, path: Path) -> bool:
+        """Check if file is valid for validation."""
+        return path.exists() and path.is_file() and not self._should_exclude(path)
+
+    def _create_validation_result(
+        self, path: Path, line_count: int
+    ) -> Optional[ValidationResult]:
+        """Create validation result based on line count."""
         if line_count > self.limit:
             return self._create_error_result(path, line_count)
         elif line_count >= self.urgent_threshold:
             return self._create_warning_result(path, line_count, "urgent")
         elif line_count >= self.warn_threshold:
             return self._create_warning_result(path, line_count, "warn")
-
         return None
