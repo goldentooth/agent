@@ -196,7 +196,7 @@ def materialize_stream() -> Flow[Any, StreamNotification]:
     """
 
     async def _flow(
-        stream: AsyncGenerator[Any, None]
+        stream: AsyncGenerator[Any, None],
     ) -> AsyncGenerator[StreamNotification, None]:
         """Convert stream items and events to notifications."""
         try:
