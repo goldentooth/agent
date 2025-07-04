@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable
-from typing import Any, AsyncGenerator, TypeVar
+from typing import Any, AsyncGenerator, TypeVar, cast
 
 from ..exceptions import FlowExecutionError
 from ..flow import Flow
@@ -141,3 +141,56 @@ def parallel_stream(*flows: Flow[Input, Output]) -> Flow[Input, list[Output]]:
 
     flow_names = ", ".join(flow.name for flow in flows)
     return Flow(_flow, name=f"parallel({flow_names})")
+
+
+def parallel_stream_successful(
+    *flows: Flow[Input, Output]
+) -> Flow[Input, list[Output]]:
+    """Create a flow that runs flows in parallel and yields only successful results.
+
+    Ignores flows that raise exceptions and yields results from successful flows only.
+
+    Args:
+        *flows: Flows to run in parallel
+
+    Returns:
+        A flow that yields lists of successful results
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[list[Output], None]:
+        """Run flows in parallel and collect successful results."""
+        async for item in stream:
+            # Create tasks for each flow
+            tasks: list[AnyTask] = []
+
+            for flow in flows:
+                single_stream = create_single_item_stream(item)
+
+                async def run_flow_safe(
+                    f: Flow[Input, Output], s: AsyncGenerator[Input, None]
+                ) -> list[Output] | None:
+                    """Run a flow safely and return results or None on error."""
+                    try:
+                        return [result async for result in f(s)]
+                    except Exception:
+                        return None
+
+                task = asyncio.create_task(run_flow_safe(flow, single_stream))
+                tasks.append(task)
+
+            # Wait for all to complete
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Collect successful results
+            successful_results: list[Output] = []
+            for result in results:
+                if result is not None and isinstance(result, list):
+                    typed_result = cast(list[Output], result)
+                    successful_results.extend(typed_result)
+
+            yield successful_results
+
+    flow_names = ", ".join(flow.name for flow in flows)
+    return Flow(_flow, name=f"parallel_successful({flow_names})")

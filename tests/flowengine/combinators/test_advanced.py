@@ -6,7 +6,11 @@ from typing import AsyncGenerator
 import pytest
 
 from flowengine import Flow
-from flowengine.combinators.advanced import parallel_stream, race_stream
+from flowengine.combinators.advanced import (
+    parallel_stream,
+    parallel_stream_successful,
+    race_stream,
+)
 from flowengine.combinators.basic import map_stream
 from flowengine.exceptions import FlowExecutionError
 
@@ -188,3 +192,70 @@ class TestParallelStream:
 
         # Each input produces empty list (no flows)
         assert results == [[], []]
+
+
+class TestParallelStreamSuccessful:
+    """Tests for parallel_stream_successful function."""
+
+    @pytest.mark.asyncio
+    async def test_parallel_successful_all_succeed(self):
+        """Test parallel successful when all flows succeed."""
+        increment_flow: Flow[int, int] = map_stream(increment)
+        double_flow: Flow[int, int] = map_stream(double)
+
+        parallel_flow = parallel_stream_successful(increment_flow, double_flow)
+        assert "parallel_successful(map(increment), map(double))" in parallel_flow.name
+
+        input_stream = async_range(2)
+        result_stream = parallel_flow(input_stream)
+        results = [item async for item in result_stream]
+
+        assert len(results) == 2
+        assert sorted(results[0]) == [0, 1]  # double(0)=0, increment(0)=1
+        assert sorted(results[1]) == [2, 2]  # double(1)=2, increment(1)=2
+
+    @pytest.mark.asyncio
+    async def test_parallel_successful_some_fail(self):
+        """Test parallel successful when some flows fail."""
+        working_flow: Flow[int, int] = map_stream(double)
+        failing_flow: Flow[int, int] = map_stream(lambda x: 1 // x)  # Fails on 0
+        another_working: Flow[int, int] = map_stream(increment)
+
+        parallel_flow = parallel_stream_successful(
+            working_flow, failing_flow, another_working
+        )
+
+        input_stream = async_range(2)
+        result_stream = parallel_flow(input_stream)
+        results = [item async for item in result_stream]
+
+        # For 0: failing_flow fails, others succeed
+        assert sorted(results[0]) == [0, 1]  # double(0)=0, increment(0)=1
+        # For 1: all succeed
+        assert sorted(results[1]) == [1, 2, 2]  # 1//1=1, double(1)=2, increment(1)=2
+
+    @pytest.mark.asyncio
+    async def test_parallel_successful_all_fail(self):
+        """Test parallel successful when all flows fail."""
+        fail1: Flow[int, int] = map_stream(lambda x: 1 // 0)
+        fail2: Flow[int, int] = map_stream(lambda x: x // 0)
+
+        parallel_flow = parallel_stream_successful(fail1, fail2)
+
+        input_stream = async_range(1)
+        result_stream = parallel_flow(input_stream)
+        results = [item async for item in result_stream]
+
+        # Should return empty list when all fail
+        assert results == [[]]
+
+    @pytest.mark.asyncio
+    async def test_parallel_successful_empty_list(self):
+        """Test parallel successful with no flows."""
+        parallel_flow: Flow[int, list[int]] = parallel_stream_successful()
+
+        input_stream = async_range(1)
+        result_stream = parallel_flow(input_stream)
+        results = [item async for item in result_stream]
+
+        assert results == [[]]
