@@ -6,10 +6,25 @@ This module provides essential building blocks for creating and composing flows:
 - **Control flow combinators**: Conditional processing, error handling, and flow control
 - **Source flows**: Functions that create streams from various inputs
 - **Observability combinators**: Functions for logging, tracing, and monitoring streams
+- **Advanced combinators**: Parallel processing, merging, racing, and other advanced patterns
 - **Utility functions**: Helper functions for flow creation and introspection
 """
 
 from __future__ import annotations
+
+# Advanced combinators (10 functions migrated in Epic 13)
+from .advanced import (
+    chain_stream,
+    combine_latest_stream,
+    flat_map_ctx_stream,
+    merge_async_generators,
+    merge_flows,
+    merge_stream,
+    parallel_stream,
+    parallel_stream_successful,
+    race_stream,
+    zip_stream,
+)
 
 # Basic combinators (13 functions migrated in Epic 7)
 from .basic import (
@@ -107,4 +122,15 @@ __all__ = [
     "OnError",
     "OnComplete",
     "StreamNotification",
+    # Advanced combinators (10 functions)
+    "race_stream",
+    "parallel_stream",
+    "parallel_stream_successful",
+    "zip_stream",
+    "chain_stream",
+    "merge_stream",
+    "merge_flows",
+    "combine_latest_stream",
+    "flat_map_ctx_stream",
+    "merge_async_generators",
 ]
