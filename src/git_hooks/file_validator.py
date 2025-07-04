@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Optional
 
-from .core import ValidationResult, ValidationSeverity, Validator, ThresholdCalculator
+from .core import ThresholdCalculator, ValidationResult, ValidationSeverity, Validator
 from .guidance import get_refactoring_guidance
 from .validator_registry import ValidatorRegistry
 
@@ -21,8 +21,16 @@ class FileLengthValidator(Validator):
     ):
         super().__init__(limit, exclude_patterns)
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9)
-        self.warn_threshold = calc.calculate_warn_threshold(limit) if warn_threshold is None else warn_threshold
-        self.urgent_threshold = calc.calculate_urgent_threshold(limit) if urgent_threshold is None else urgent_threshold
+        self.warn_threshold = (
+            warn_threshold
+            if warn_threshold is not None
+            else calc.calculate_warn_threshold(limit)
+        )
+        self.urgent_threshold = (
+            urgent_threshold
+            if urgent_threshold is not None
+            else calc.calculate_urgent_threshold(limit)
+        )
 
     def _get_line_count(self, path: Path) -> Optional[int]:
         """Get line count for a file, returning None if unreadable."""
@@ -42,7 +50,9 @@ class FileLengthValidator(Validator):
             guidance=get_refactoring_guidance(path),
         )
 
-    def _create_warning_result(self, path: Path, line_count: int, threshold_type: str) -> ValidationResult:
+    def _create_warning_result(
+        self, path: Path, line_count: int, threshold_type: str
+    ) -> ValidationResult:
         """Create warning result for file approaching limits."""
         if threshold_type == "urgent":
             remaining = self.limit - line_count

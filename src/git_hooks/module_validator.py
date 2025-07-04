@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Optional
 
-from .core import ValidationResult, ValidationSeverity, Validator, ThresholdCalculator
+from .core import ThresholdCalculator, ValidationResult, ValidationSeverity, Validator
 from .guidance import get_module_refactoring_guidance
 from .validator_registry import ValidatorRegistry
 
@@ -21,12 +21,20 @@ class ModuleSizeValidator(Validator):
     ):
         super().__init__(limit, exclude_patterns)
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9)
-        self.warn_threshold = calc.calculate_warn_threshold(limit) if warn_threshold is None else warn_threshold
-        self.urgent_threshold = calc.calculate_urgent_threshold(limit) if urgent_threshold is None else urgent_threshold
+        self.warn_threshold = (
+            warn_threshold
+            if warn_threshold is not None
+            else calc.calculate_warn_threshold(limit)
+        )
+        self.urgent_threshold = (
+            urgent_threshold
+            if urgent_threshold is not None
+            else calc.calculate_urgent_threshold(limit)
+        )
 
     def _is_valid_module(self, path: Path) -> bool:
         """Check if path is valid module directory."""
-        return (path.exists() and path.is_dir() and not self._should_exclude(path))
+        return path.exists() and path.is_dir() and not self._should_exclude(path)
 
     def _count_module_lines(self, path: Path) -> Optional[int]:
         """Count total lines in all Python files in module."""
@@ -41,10 +49,12 @@ class ModuleSizeValidator(Validator):
                 total_lines += lines
             except (UnicodeDecodeError, PermissionError):
                 continue
-        
+
         return total_lines
 
-    def _create_module_error_result(self, path: Path, total_lines: int) -> ValidationResult:
+    def _create_module_error_result(
+        self, path: Path, total_lines: int
+    ) -> ValidationResult:
         """Create error result for module exceeding limit."""
         return ValidationResult(
             file_path=path,
@@ -55,7 +65,9 @@ class ModuleSizeValidator(Validator):
             guidance=get_module_refactoring_guidance(),
         )
 
-    def _create_module_warning_result(self, path: Path, total_lines: int, threshold_type: str) -> ValidationResult:
+    def _create_module_warning_result(
+        self, path: Path, total_lines: int, threshold_type: str
+    ) -> ValidationResult:
         """Create warning result for module approaching limits."""
         if threshold_type == "urgent":
             remaining = self.limit - total_lines
@@ -63,7 +75,7 @@ class ModuleSizeValidator(Validator):
         else:  # warn
             remaining = self.urgent_threshold - total_lines
             message = f"Module growing large: {total_lines} lines ({remaining} lines until urgent)"
-        
+
         return ValidationResult(
             file_path=path,
             severity=ValidationSeverity.WARNING,

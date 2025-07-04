@@ -4,7 +4,7 @@ import ast
 from pathlib import Path
 from typing import Optional
 
-from .core import ValidationResult, ValidationSeverity, Validator, ThresholdCalculator
+from .core import ThresholdCalculator, ValidationResult, ValidationSeverity, Validator
 from .guidance import get_refactoring_guidance
 from .validator_registry import ValidatorRegistry
 
@@ -22,13 +22,25 @@ class FunctionLengthValidator(Validator):
     ):
         super().__init__(limit, exclude_patterns)
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.87)
-        self.warn_threshold = calc.calculate_warn_threshold(limit) if warn_threshold is None else warn_threshold
-        self.urgent_threshold = calc.calculate_urgent_threshold(limit) if urgent_threshold is None else urgent_threshold
+        self.warn_threshold = (
+            warn_threshold
+            if warn_threshold is not None
+            else calc.calculate_warn_threshold(limit)
+        )
+        self.urgent_threshold = (
+            urgent_threshold
+            if urgent_threshold is not None
+            else calc.calculate_urgent_threshold(limit)
+        )
 
     def _is_valid_python_file(self, path: Path) -> bool:
         """Check if path is valid Python file."""
-        return (path.exists() and path.is_file() and 
-                path.suffix == ".py" and not self._should_exclude(path))
+        return (
+            path.exists()
+            and path.is_file()
+            and path.suffix == ".py"
+            and not self._should_exclude(path)
+        )
 
     def _parse_python_file(self, path: Path) -> Optional[ast.AST]:
         """Parse Python file, return None if invalid."""
@@ -38,7 +50,9 @@ class FunctionLengthValidator(Validator):
         except (UnicodeDecodeError, PermissionError, SyntaxError):
             return None
 
-    def _create_error_violation(self, path: Path, func_name: str, line_count: int) -> ValidationResult:
+    def _create_error_violation(
+        self, path: Path, func_name: str, line_count: int
+    ) -> ValidationResult:
         """Create error validation result."""
         return ValidationResult(
             file_path=path,
@@ -49,15 +63,11 @@ class FunctionLengthValidator(Validator):
             guidance=get_refactoring_guidance(path),
         )
 
-    def _create_warning_violation(self, path: Path, func_name: str, line_count: int, threshold_type: str) -> ValidationResult:
+    def _create_warning_violation(
+        self, path: Path, func_name: str, line_count: int, threshold_type: str
+    ) -> ValidationResult:
         """Create warning validation result."""
-        if threshold_type == "urgent":
-            remaining = self.limit - line_count
-            message = f"Function '{func_name}' approaching limit: {line_count} lines ({remaining} lines until violation)"
-        else:  # warn
-            remaining = self.urgent_threshold - line_count
-            message = f"Function '{func_name}' growing large: {line_count} lines ({remaining} lines until urgent)"
-        
+        message = self._get_warning_message(func_name, line_count, threshold_type)
         return ValidationResult(
             file_path=path,
             severity=ValidationSeverity.WARNING,
@@ -67,35 +77,57 @@ class FunctionLengthValidator(Validator):
             guidance=get_refactoring_guidance(path),
         )
 
-    def _update_worst_violation(self, current: Optional[ValidationResult], new: ValidationResult) -> ValidationResult:
+    def _get_warning_message(
+        self, func_name: str, line_count: int, threshold_type: str
+    ) -> str:
+        """Get warning message based on threshold type."""
+        if threshold_type == "urgent":
+            remaining = self.limit - line_count
+            return f"Function '{func_name}' approaching limit: {line_count} lines ({remaining} lines until violation)"
+        else:  # warn
+            remaining = self.urgent_threshold - line_count
+            return f"Function '{func_name}' growing large: {line_count} lines ({remaining} lines until urgent)"
+
+    def _update_worst_violation(
+        self, current: Optional[ValidationResult], new: ValidationResult
+    ) -> ValidationResult:
         """Update worst violation with new candidate."""
         if current is None:
             return new
-        if (new.severity == ValidationSeverity.ERROR and 
-            current.severity == ValidationSeverity.WARNING):
+        if (
+            new.severity == ValidationSeverity.ERROR
+            and current.severity == ValidationSeverity.WARNING
+        ):
             return new
-        if (new.severity == current.severity and 
-            new.line_count > current.line_count):
+        if new.severity == current.severity and new.line_count > current.line_count:
             return new
         return current
 
-    def _find_worst_violation(self, path: Path, functions: list[tuple[str, int, int]]) -> Optional[ValidationResult]:
+    def _find_worst_violation(
+        self, path: Path, functions: list[tuple[str, int, int]]
+    ) -> Optional[ValidationResult]:
         """Find worst function length violation."""
         worst_violation = None
         for func_name, start_line, end_line in functions:
             line_count = end_line - start_line + 1
-            
-            if line_count > self.limit:
-                violation = self._create_error_violation(path, func_name, line_count)
-                worst_violation = self._update_worst_violation(worst_violation, violation)
-            elif line_count >= self.urgent_threshold:
-                violation = self._create_warning_violation(path, func_name, line_count, "urgent")
-                worst_violation = self._update_worst_violation(worst_violation, violation)
-            elif line_count >= self.warn_threshold:
-                violation = self._create_warning_violation(path, func_name, line_count, "warn")
-                worst_violation = self._update_worst_violation(worst_violation, violation)
-        
+            violation = self._create_function_violation(path, func_name, line_count)
+            if violation:
+                worst_violation = self._update_worst_violation(
+                    worst_violation, violation
+                )
         return worst_violation
+
+    def _create_function_violation(
+        self, path: Path, func_name: str, line_count: int
+    ) -> Optional[ValidationResult]:
+        """Create violation for a function if it exceeds thresholds."""
+        if line_count > self.limit:
+            return self._create_error_violation(path, func_name, line_count)
+        elif line_count >= self.urgent_threshold:
+            return self._create_warning_violation(path, func_name, line_count, "urgent")
+        elif line_count >= self.warn_threshold:
+            return self._create_warning_violation(path, func_name, line_count, "warn")
+        return None
 
     def validate(self, path: Path) -> Optional[ValidationResult]:
         """Validate all functions in a Python file."""

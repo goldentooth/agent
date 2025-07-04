@@ -12,6 +12,7 @@ class ThresholdCalculator:
 
     def __init__(self, warn_multiplier: float = 0.9, urgent_multiplier: float = 0.8):
         """Initialize with multipliers for calculations."""
+        super().__init__()
         if not (0 < warn_multiplier <= 1):
             raise ValueError("Multipliers must be between 0 and 1")
         if not (0 < urgent_multiplier <= 1):

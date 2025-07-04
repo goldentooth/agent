@@ -40,69 +40,66 @@ class ValidationConfig:
     function_length_urgent_threshold: int = 13
 
     @classmethod
-    def _create_threshold_calculators(cls) -> Dict[str, ThresholdCalculator]:
-        """Create threshold calculators for different validator types."""
-        return {
-            'file_calc': ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9),
-            'module_calc': ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9),
-            'func_calc': ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.87),
-        }
-
-    @classmethod
     def _load_file_length_config(cls) -> Dict[str, int]:
         """Load file length configuration from environment."""
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9)
-        limit = int(os.environ.get(cls.FILE_LENGTH_LIMIT_KEY, "1000"))
-        warn_threshold = int(os.environ.get(
+        return cls._load_config_values(
+            cls.FILE_LENGTH_LIMIT_KEY,
+            "1000",
             cls.FILE_LENGTH_WARN_THRESHOLD_KEY,
-            str(calc.calculate_warn_threshold(limit))
-        ))
-        urgent_threshold = int(os.environ.get(
             cls.FILE_LENGTH_URGENT_THRESHOLD_KEY,
-            str(calc.calculate_urgent_threshold(limit))
-        ))
-        return {
-            'file_length_limit': limit,
-            'file_length_warn_threshold': warn_threshold,
-            'file_length_urgent_threshold': urgent_threshold,
-        }
+            calc,
+            "file_length",
+        )
 
     @classmethod
     def _load_module_size_config(cls) -> Dict[str, int]:
         """Load module size configuration from environment."""
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9)
-        limit = int(os.environ.get(cls.MODULE_SIZE_LIMIT_KEY, "5000"))
-        warn_threshold = int(os.environ.get(
+        return cls._load_config_values(
+            cls.MODULE_SIZE_LIMIT_KEY,
+            "5000",
             cls.MODULE_SIZE_WARN_THRESHOLD_KEY,
-            str(calc.calculate_warn_threshold(limit))
-        ))
-        urgent_threshold = int(os.environ.get(
             cls.MODULE_SIZE_URGENT_THRESHOLD_KEY,
-            str(calc.calculate_urgent_threshold(limit))
-        ))
-        return {
-            'module_size_limit': limit,
-            'module_size_warn_threshold': warn_threshold,
-            'module_size_urgent_threshold': urgent_threshold,
-        }
+            calc,
+            "module_size",
+        )
 
     @classmethod
     def _load_function_length_config(cls) -> Dict[str, int]:
         """Load function length configuration from environment."""
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.87)
-        limit = int(os.environ.get(cls.FUNCTION_LENGTH_LIMIT_KEY, "15"))
-        warn_threshold = int(os.environ.get(
+        return cls._load_config_values(
+            cls.FUNCTION_LENGTH_LIMIT_KEY,
+            "15",
             cls.FUNCTION_LENGTH_WARN_THRESHOLD_KEY,
-            str(calc.calculate_warn_threshold(limit))
-        ))
-        urgent_threshold = int(os.environ.get(
             cls.FUNCTION_LENGTH_URGENT_THRESHOLD_KEY,
-            str(calc.calculate_urgent_threshold(limit))
-        ))
+            calc,
+            "function_length",
+        )
+
+    @classmethod
+    def _load_config_values(
+        cls,
+        limit_key: str,
+        default_limit: str,
+        warn_key: str,
+        urgent_key: str,
+        calc: ThresholdCalculator,
+        prefix: str,
+    ) -> Dict[str, int]:
+        """Load configuration values from environment."""
+        limit = int(os.environ.get(limit_key, default_limit))
+        warn_threshold = int(
+            os.environ.get(warn_key, str(calc.calculate_warn_threshold(limit)))
+        )
+        urgent_threshold = int(
+            os.environ.get(urgent_key, str(calc.calculate_urgent_threshold(limit)))
+        )
         return {
-            'function_length_limit': limit,
-            'function_length_warn_threshold': warn_threshold,
-            'function_length_urgent_threshold': urgent_threshold,
+            f"{prefix}_limit": limit,
+            f"{prefix}_warn_threshold": warn_threshold,
+            f"{prefix}_urgent_threshold": urgent_threshold,
         }
 
     @classmethod
