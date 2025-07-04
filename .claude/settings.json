@@ -1,10 +1,9 @@
 {
-  "hooks": {
-  },
+  "hooks": {},
   "permissions": {
     "additionalDirectories": [
-        "/tmp",
-        "/var/folders"
+      "/tmp",
+      "/var/folders"
     ],
     "allow": [
       "Bash(/dev/null)",
