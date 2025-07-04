@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from abc import ABC
 from collections.abc import AsyncGenerator, Callable
 from typing import Any, TypeVar
 
@@ -15,11 +16,13 @@ from flowengine.flow import Flow
 
 Input = TypeVar("Input")
 
-# Type alias
-AnyValue = Any
+
+def _get_function_name(func: Callable[..., Any]) -> str:
+    """Get the name of a function for debugging purposes."""
+    return getattr(func, "__name__", "function")
 
 
-class StreamNotification:
+class StreamNotification(ABC):
     """Represents a stream notification (item, error, or completion)."""
 
     pass
@@ -28,7 +31,7 @@ class StreamNotification:
 class OnNext(StreamNotification):
     """Notification for a stream item."""
 
-    def __init__(self, value: AnyValue) -> None:
+    def __init__(self, value: Any) -> None:
         super().__init__()
         self.value = value
 
@@ -70,10 +73,10 @@ def log_stream(
 
     async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
         """Log each stream item and pass it through unchanged."""
+        logger = logging.getLogger(__name__)
         async for item in stream:
-            # Use print for simplicity, in production you'd use proper logging
-            if level >= logging.INFO:
-                print(f"{prefix}{item}")
+            if logger.isEnabledFor(level):
+                logger.log(level, f"{prefix}{item}")
             yield item
 
     return Flow(
@@ -86,7 +89,7 @@ def log_stream(
     )
 
 
-def trace_stream(tracer: Callable[[str, AnyValue], None]) -> Flow[Input, Input]:
+def trace_stream(tracer: Callable[[str, Any], None]) -> Flow[Input, Input]:
     """Create a flow that provides detailed tracing of stream processing.
 
     Calls the tracer function for each item with event type and item data.
@@ -112,7 +115,7 @@ def trace_stream(tracer: Callable[[str, AnyValue], None]) -> Flow[Input, Input]:
         finally:
             tracer("stream_end", None)
 
-    return Flow(_flow, name=f"trace({getattr(tracer, '__name__', 'function')})")
+    return Flow(_flow, name=f"trace({_get_function_name(tracer)})")
 
 
 def metrics_stream(counter: Callable[[str], None]) -> Flow[Input, Input]:
@@ -145,11 +148,11 @@ def metrics_stream(counter: Callable[[str], None]) -> Flow[Input, Input]:
             counter("stream.completed")
             counter(f"stream.total_items.{item_count}")
 
-    return Flow(_flow, name=f"metrics({getattr(counter, '__name__', 'function')})")
+    return Flow(_flow, name=f"metrics({_get_function_name(counter)})")
 
 
 def inspect_stream(
-    inspector: Callable[[Input, dict[str, AnyValue]], None],
+    inspector: Callable[[Input, dict[str, Any]], None],
 ) -> Flow[Input, Input]:
     """Create a flow that inspects stream items with context metadata.
 
@@ -178,7 +181,7 @@ def inspect_stream(
             yield item
             item_count += 1
 
-    return Flow(_flow, name=f"inspect({getattr(inspector, '__name__', 'function')})")
+    return Flow(_flow, name=f"inspect({_get_function_name(inspector)})")
 
 
 def materialize_stream() -> Flow[Any, StreamNotification]:

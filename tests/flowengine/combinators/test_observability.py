@@ -82,6 +82,35 @@ class TestLogStream:
         result: list[int] = [item async for item in result_stream]
         assert result == [0, 1, 2]
 
+    async def test_log_stream_with_enabled_logging(self) -> None:
+        """Test log_stream with logging enabled to ensure coverage."""
+        import logging
+
+        # Configure logging to capture the log output
+        logger = logging.getLogger("flowengine.combinators.observability")
+        logger.setLevel(logging.DEBUG)
+
+        # Create a handler to capture logs
+        import logging
+        from io import StringIO
+
+        log_capture = StringIO()
+        handler = logging.StreamHandler(log_capture)
+        handler.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+
+        try:
+            log_flow: Flow[int, int] = log_stream("test", level=logging.DEBUG)
+            result_stream = log_flow(self.get_sample_stream())
+            result: list[int] = [item async for item in result_stream]
+            assert result == [0, 1, 2]
+
+            # Verify that logging actually occurred
+            log_output = log_capture.getvalue()
+            assert "0" in log_output or "1" in log_output or "2" in log_output
+        finally:
+            logger.removeHandler(handler)
+
     def test_log_stream_metadata(self) -> None:
         """Test log_stream metadata."""
         log_flow: Flow[Any, Any] = log_stream(
