@@ -35,11 +35,9 @@ def debounce_stream(seconds: float) -> Flow[Input, Input]:
         """Debounce stream items by waiting for quiet periods."""
         items: list[Input] = []
 
-        # Collect all items first
         async for item in stream:
             items.append(item)
 
-        # If we have items, emit only the last one after the debounce period
         if items:
             await asyncio.sleep(seconds)
             yield items[-1]
@@ -59,12 +57,11 @@ def throttle_stream(rate_per_second: float) -> Flow[Input, Input]:
     Returns:
         A flow that throttles processing rate
     """
-    last_yield_time = 0.0
     min_interval = 1.0 / rate_per_second
 
     async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
         """Throttle stream processing to specified rate."""
-        nonlocal last_yield_time
+        last_yield_time = 0.0
 
         async for item in stream:
             current_time = asyncio.get_event_loop().time()
@@ -80,34 +77,65 @@ def throttle_stream(rate_per_second: float) -> Flow[Input, Input]:
 
 
 def timeout_stream(seconds: float) -> Flow[Input, Input]:
-    """Create a flow that adds a timeout to each item's processing.
+    """Create a flow that adds a timeout to stream processing.
 
-    If processing an item takes longer than the specified timeout,
-    a TimeoutError is raised.
+    If waiting for the next item takes longer than the specified timeout,
+    the stream is terminated with a TimeoutError.
 
     Args:
         seconds: Maximum time to wait for each item
 
     Returns:
-        A flow that enforces timeouts on item processing
+        A flow that enforces timeouts on stream processing
     """
 
     async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
-        """Process each item with timeout enforcement."""
-        async for item in stream:
+        """Process stream with timeout enforcement."""
+        stream_iter = aiter(stream)
+
+        while True:
             try:
-                # Use asyncio.wait_for to enforce timeout
-                yield await asyncio.wait_for(_identity_async(item), timeout=seconds)
+                # Wait for next item with timeout
+                item = await asyncio.wait_for(anext(stream_iter), timeout=seconds)
+                yield item
+            except StopAsyncIteration:
+                break
             except TimeoutError as e:
                 raise FlowTimeoutError(
-                    f"Processing timed out after {seconds} seconds for item: {item}"
+                    f"Stream processing timed out after {seconds} seconds"
                 ) from e
 
-    async def _identity_async(item: Input) -> Input:
-        """Identity function that can be awaited."""
-        return item
-
     return Flow(_flow, name=f"timeout({seconds})")
+
+
+async def _sample_collector(
+    stream: AsyncGenerator[Any, None], state: dict[str, Any]
+) -> None:
+    """Collect items from stream and update state."""
+    async for item in stream:
+        state["latest_item"] = item
+        state["has_new_item"] = True
+
+
+async def _sample_emit_at_intervals(
+    collector_task: asyncio.Task[None], interval: float, state: dict[str, Any]
+) -> AsyncGenerator[Any, None]:
+    """Emit sampled items at regular intervals."""
+    while not collector_task.done():
+        await asyncio.sleep(interval)
+        if state["has_new_item"] and state["latest_item"] is not None:
+            yield state["latest_item"]
+            state["has_new_item"] = False
+
+
+async def _sample_cleanup_task(collector_task: asyncio.Task[None]) -> None:
+    """Clean up the collector task."""
+    if not collector_task.done():
+        collector_task.cancel()
+        try:
+            await collector_task
+        except asyncio.CancelledError:
+            pass
 
 
 def sample_stream(interval: float) -> Flow[Input, Input]:
@@ -126,35 +154,15 @@ def sample_stream(interval: float) -> Flow[Input, Input]:
 
     async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
         """Sample stream at regular intervals."""
-        latest_item = None
-        has_new_item = False
-
-        async def item_collector() -> None:
-            """Collect items from the stream."""
-            nonlocal latest_item, has_new_item
-            async for item in stream:
-                latest_item = item
-                has_new_item = True
-
-        # Start the collector task
-        collector_task = asyncio.create_task(item_collector())
+        state: dict[str, Any] = {"latest_item": None, "has_new_item": False}
+        collector_task = asyncio.create_task(_sample_collector(stream, state))
 
         try:
-            while not collector_task.done():
-                # Wait for the interval
-                await asyncio.sleep(interval)
-
-                # Emit the latest item if we have a new one
-                if has_new_item and latest_item is not None:
-                    yield latest_item
-                    has_new_item = False
+            async for item in _sample_emit_at_intervals(
+                collector_task, interval, state
+            ):
+                yield item
         finally:
-            # Clean up the collector task
-            if not collector_task.done():
-                collector_task.cancel()
-                try:
-                    await collector_task
-                except asyncio.CancelledError:
-                    pass
+            await _sample_cleanup_task(collector_task)
 
     return Flow(_flow, name=f"sample({interval})")

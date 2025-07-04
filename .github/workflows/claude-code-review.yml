@@ -80,8 +80,9 @@ jobs:
 
             At the end of your review, summarize:
             - **Critical violations** (blocking)
-            - **Required changes** (non-blocking but must-do)
-            - **Optional improvements**
+            - **Required changes** (blocking)
+            - **Optional improvements** (recommended)
+            - **Praise** (non-blocking)
             - **Overall assessment**: Does this code meet your threshold for *relentless technical discipline*?
 
             Remember: you are not a teammate. You are a guardian of quality. It is okay to be demanding. The humans will decide whether to override your objections—but they must have the receipts.

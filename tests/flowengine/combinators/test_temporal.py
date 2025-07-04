@@ -15,6 +15,7 @@ from flowengine.combinators.temporal import (
     throttle_stream,
     timeout_stream,
 )
+from flowengine.exceptions import FlowTimeoutError
 from flowengine.flow import Flow
 
 
@@ -208,12 +209,16 @@ class TestTimeoutStream:
             await asyncio.sleep(0.02)  # This will trigger timeout
             yield 2
 
-        # Note: The current implementation doesn't actually enforce timeouts
-        # on the stream items themselves, only on the _identity_async function
-        # which returns immediately. This test documents the current behavior.
+        # The timeout should be triggered when waiting for the second item
         result_stream = timeout_flow(slow_stream())
-        values: list[int] = [item async for item in result_stream]
-        assert values == [1, 2]  # Currently doesn't timeout
+        values: list[int] = []
+
+        with pytest.raises(FlowTimeoutError):
+            async for item in result_stream:
+                values.append(item)
+
+        # Should have gotten the first item before timing out
+        assert values == [1]
 
     @pytest.mark.asyncio
     async def test_timeout_empty_stream(self):
@@ -233,18 +238,16 @@ class TestTimeoutStream:
         """Test timeout when actual timeout occurs."""
         timeout_flow: Flow[int, int] = timeout_stream(0.001)  # Very short timeout
 
-        # This should trigger a timeout
+        # This should trigger a timeout - slow stream generation
         async def test_stream() -> AsyncGenerator[int, None]:
+            await asyncio.sleep(0.01)  # 10ms delay before first item
             yield 1
 
-        # The current implementation doesn't actually use a slow identity,
-        # so we need to test the timeout path differently
+        # Should timeout before getting any items
         result_stream = timeout_flow(test_stream())
-        values: list[int] = [item async for item in result_stream]
 
-        # Current implementation doesn't actually timeout on stream processing
-        # This documents the current behavior
-        assert values == [1]
+        with pytest.raises(FlowTimeoutError):
+            values: list[int] = [item async for item in result_stream]
 
 
 class TestSampleStream:
@@ -378,3 +381,68 @@ class TestSampleAdvanced:
         assert len(values) >= 1
         # All values should be multiples of 10
         assert all(v % 10 == 0 for v in values)
+
+
+class TestTemporalErrorHandling:
+    """Error handling tests for temporal combinators."""
+
+    @pytest.mark.asyncio
+    async def test_delay_stream_negative_seconds(self):
+        """Test delay_stream with negative seconds."""
+        # Should work with negative seconds (effectively no delay)
+        delay_flow: Flow[int, int] = delay_stream(-0.1)
+        input_stream = async_range(2)
+        result_stream = delay_flow(input_stream)
+        values: list[int] = [item async for item in result_stream]
+        assert values == [0, 1]
+
+    @pytest.mark.asyncio
+    async def test_throttle_stream_zero_rate(self):
+        """Test throttle_stream with zero rate."""
+        with pytest.raises(ZeroDivisionError):
+            throttle_stream(0.0)
+
+    @pytest.mark.asyncio
+    async def test_throttle_stream_negative_rate(self):
+        """Test throttle_stream with negative rate."""
+        # Negative rate should work (negative interval means no delay)
+        throttle_flow: Flow[int, int] = throttle_stream(-1.0)
+        input_stream = async_range(2)
+        result_stream = throttle_flow(input_stream)
+        values: list[int] = [item async for item in result_stream]
+        assert values == [0, 1]
+
+    @pytest.mark.asyncio
+    async def test_timeout_stream_zero_timeout(self):
+        """Test timeout_stream with zero timeout."""
+        timeout_flow: Flow[int, int] = timeout_stream(0.0)
+
+        async def simple_stream() -> AsyncGenerator[int, None]:
+            yield 1
+
+        # Should timeout immediately
+        with pytest.raises(FlowTimeoutError):
+            values: list[int] = [item async for item in timeout_flow(simple_stream())]
+
+    @pytest.mark.asyncio
+    async def test_sample_stream_zero_interval(self):
+        """Test sample_stream with zero interval."""
+        sample_flow: Flow[int, int] = sample_stream(0.0)
+
+        async def fast_stream() -> AsyncGenerator[int, None]:
+            for i in range(3):
+                yield i
+                await asyncio.sleep(0.001)
+
+        # Should still work but sample very frequently
+        result_stream = sample_flow(fast_stream())
+        values: list[int] = []
+
+        start_time = time.time()
+        async for item in result_stream:
+            values.append(item)
+            if time.time() - start_time > 0.01:  # Stop after 10ms
+                break
+
+        # Should get at least some values
+        assert len(values) >= 1
