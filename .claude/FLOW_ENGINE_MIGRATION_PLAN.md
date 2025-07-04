@@ -6,6 +6,7 @@ This document outlines the detailed migration plan for extracting the Flow Engin
 
 ## General Notes
 - **The migration of any single unit (a SINGLE function, SINGLE class method, SINGLE protocol, etc) and its accompanying tests MUST be in its own, discrete commit!**
+- Each function/method must be in its own commit even if the code already exists. No exceptions!
 - Please mark each epic ✅ DONE! as you complete it.
 - If you encounter a reference to AsyncIterator, change it to AsyncGenerator.
 - Update README.md and relevant files in docs/ as you complete each epic.
