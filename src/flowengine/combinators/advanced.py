@@ -194,3 +194,35 @@ def parallel_stream_successful(
 
     flow_names = ", ".join(flow.name for flow in flows)
     return Flow(_flow, name=f"parallel_successful({flow_names})")
+
+
+def zip_stream(
+    other: AsyncGenerator[OtherInput, None],
+) -> Flow[Input, tuple[Input, OtherInput]]:
+    """Create a flow that zips items with another stream.
+
+    Pairs each item from the main stream with the corresponding item
+    from the other stream.
+
+    Args:
+        other: The other stream to zip with
+
+    Returns:
+        A flow that yields tuples of paired items
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[tuple[Input, OtherInput], None]:
+        """Zip items with another stream."""
+        other_iter = aiter(other)
+
+        async for item in stream:
+            try:
+                other_item = await anext(other_iter)
+                yield (item, other_item)
+            except StopAsyncIteration:
+                # Other stream is exhausted
+                break
+
+    return Flow(_flow, name="zip")

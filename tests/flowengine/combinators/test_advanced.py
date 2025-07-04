@@ -10,6 +10,7 @@ from flowengine.combinators.advanced import (
     parallel_stream,
     parallel_stream_successful,
     race_stream,
+    zip_stream,
 )
 from flowengine.combinators.basic import map_stream
 from flowengine.exceptions import FlowExecutionError
@@ -259,3 +260,73 @@ class TestParallelStreamSuccessful:
         results = [item async for item in result_stream]
 
         assert results == [[]]
+
+
+class TestZipStream:
+    """Tests for zip_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_zip_basic(self):
+        """Test basic zipping functionality."""
+
+        async def letters() -> AsyncGenerator[str, None]:
+            for letter in ["a", "b", "c"]:
+                yield letter
+
+        zip_flow: Flow[int, tuple[int, str]] = zip_stream(letters())
+        assert zip_flow.name == "zip"
+
+        input_stream = async_range(3)
+        result_stream = zip_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        assert values == [(0, "a"), (1, "b"), (2, "c")]
+
+    @pytest.mark.asyncio
+    async def test_zip_different_lengths_first_shorter(self):
+        """Test zipping when first stream is shorter."""
+
+        async def short_stream() -> AsyncGenerator[str, None]:
+            yield "x"
+            yield "y"
+
+        zip_flow: Flow[int, tuple[int, str]] = zip_stream(short_stream())
+
+        input_stream = async_range(5)  # Longer
+        result_stream = zip_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # Stops when other stream exhausted
+        assert values == [(0, "x"), (1, "y")]
+
+    @pytest.mark.asyncio
+    async def test_zip_different_lengths_second_shorter(self):
+        """Test zipping when second stream is shorter."""
+
+        async def short_other() -> AsyncGenerator[str, None]:
+            yield "only"
+
+        zip_flow: Flow[int, tuple[int, str]] = zip_stream(short_other())
+
+        input_stream = async_range(3)
+        result_stream = zip_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # Stops when other stream exhausted
+        assert values == [(0, "only")]
+
+    @pytest.mark.asyncio
+    async def test_zip_empty_streams(self):
+        """Test zipping with empty streams."""
+
+        async def empty() -> AsyncGenerator[str, None]:
+            if False:
+                yield "never"
+
+        zip_flow: Flow[int, tuple[int, str]] = zip_stream(empty())
+
+        input_stream = async_range(2)
+        result_stream = zip_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        assert values == []
