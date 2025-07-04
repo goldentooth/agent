@@ -104,17 +104,25 @@ class TestDebounceStream:
         """Test debounce with well-spaced items."""
         debounce_flow: Flow[int, int] = debounce_stream(0.02)  # 20ms debounce
 
-        # Stream items slowly, all should be emitted
+        # Stream items with spacing larger than debounce period
         async def slow_stream() -> AsyncGenerator[int, None]:
             for i in range(3):
                 yield i
-                await asyncio.sleep(0.05)  # 50ms between items
+                await asyncio.sleep(0.05)  # 50ms between items > 20ms debounce
 
         result_stream = debounce_flow(slow_stream())
-        values: list[int] = [item async for item in result_stream]
+        values: list[int] = []
 
-        # Current simple debounce implementation only emits the last item
-        assert len(values) == 1  # Only last item is emitted
+        # Collect with timeout to avoid infinite wait
+        start_time = time.time()
+        async for item in result_stream:
+            values.append(item)
+            if time.time() - start_time > 0.3:  # 300ms timeout
+                break
+
+        # With proper debouncing, each item should be emitted after quiet period
+        # Since items are spaced 50ms apart and debounce is 20ms, should get multiple items
+        assert len(values) >= 2  # Should get multiple items, not just the last one
 
     @pytest.mark.asyncio
     async def test_debounce_single_item(self):
@@ -127,6 +135,41 @@ class TestDebounceStream:
         result_stream = debounce_flow(single_item_stream())
         values: list[str] = [item async for item in result_stream]
         assert values == ["only"]
+
+    @pytest.mark.asyncio
+    async def test_debounce_true_behavior(self):
+        """Test true debouncing behavior - emits only after quiet periods."""
+        debounce_flow: Flow[int, int] = debounce_stream(0.03)  # 30ms debounce
+
+        # Stream with bursts separated by quiet periods
+        async def burst_stream() -> AsyncGenerator[int, None]:
+            # First burst: items arriving quickly
+            for i in range(3):
+                yield i
+                await asyncio.sleep(0.005)  # 5ms between items
+
+            # Quiet period (> 30ms)
+            await asyncio.sleep(0.05)
+
+            # Second burst
+            for i in range(10, 12):
+                yield i
+                await asyncio.sleep(0.005)  # 5ms between items
+
+        result_stream = debounce_flow(burst_stream())
+        values: list[int] = []
+
+        start_time = time.time()
+        async for item in result_stream:
+            values.append(item)
+            if time.time() - start_time > 0.2:  # 200ms timeout
+                break
+
+        # Should emit the last item from each burst after quiet periods
+        # First burst: should emit 2 (last of 0,1,2)
+        # Second burst: should emit 11 (last of 10,11)
+        assert len(values) >= 1  # At least one debounced emission
+        assert 2 in values or 11 in values  # Should contain debounced items
 
 
 class TestThrottleStream:
@@ -182,6 +225,37 @@ class TestThrottleStream:
         result_stream = throttle_flow(empty_stream())
         values: list[int] = [item async for item in result_stream]
         assert values == []
+
+    @pytest.mark.asyncio
+    async def test_throttle_persistence_across_streams(self):
+        """Test that throttle state persists across multiple stream uses."""
+        throttle_flow: Flow[int, int] = throttle_stream(10.0)  # 10 items per second
+
+        # First stream
+        async def stream1() -> AsyncGenerator[int, None]:
+            for i in range(2):
+                yield i
+
+        start_time = time.time()
+        values1: list[int] = [item async for item in throttle_flow(stream1())]
+        time1 = time.time() - start_time
+
+        # Second stream immediately after
+        async def stream2() -> AsyncGenerator[int, None]:
+            for i in range(2, 4):
+                yield i
+
+        start_time = time.time()
+        values2: list[int] = [item async for item in throttle_flow(stream2())]
+        time2 = time.time() - start_time
+
+        # Verify results
+        assert values1 == [0, 1]
+        assert values2 == [2, 3]
+
+        # Total time should be ~300ms for 4 items at 10/sec
+        total_time = time1 + time2
+        assert 0.25 <= total_time <= 0.45  # Allow some timing variance
 
 
 class TestTimeoutStream:

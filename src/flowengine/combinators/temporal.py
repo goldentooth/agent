@@ -29,18 +29,41 @@ def delay_stream(seconds: float) -> Flow[Input, Input]:
 
 
 def debounce_stream(seconds: float) -> Flow[Input, Input]:
-    """Create a flow that debounces stream items by waiting for a quiet period."""
+    """Create a flow that debounces stream items by waiting for a quiet period.
+
+    True debouncing: emits the latest item only after the stream has been quiet
+    for the specified duration. Handles infinite streams correctly.
+    """
 
     async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
         """Debounce stream items by waiting for quiet periods."""
-        items: list[Input] = []
+        latest_item = None
+        last_update_time = 0.0
 
-        async for item in stream:
-            items.append(item)
+        async def item_collector():
+            """Collect items and track timing."""
+            nonlocal latest_item, last_update_time
+            async for item in stream:
+                latest_item = item
+                last_update_time = asyncio.get_event_loop().time()
 
-        if items:
-            await asyncio.sleep(seconds)
-            yield items[-1]
+        collector = asyncio.create_task(item_collector())
+
+        try:
+            while not collector.done():
+                await asyncio.sleep(0.01)  # Check every 10ms
+
+                if latest_item is not None:
+                    current_time = asyncio.get_event_loop().time()
+                    if current_time - last_update_time >= seconds:
+                        yield latest_item
+                        latest_item = None
+        finally:
+            if not collector.done():
+                collector.cancel()
+            # Emit final item
+            if latest_item is not None:
+                yield latest_item
 
     return Flow(_flow, name=f"debounce({seconds})")
 
@@ -49,7 +72,8 @@ def throttle_stream(rate_per_second: float) -> Flow[Input, Input]:
     """Create a flow that throttles the rate of item processing.
 
     Ensures that items are processed at most at the specified rate,
-    introducing delays as necessary.
+    introducing delays as necessary. The throttling state persists across
+    all uses of this flow instance.
 
     Args:
         rate_per_second: Maximum items per second to process
@@ -58,10 +82,12 @@ def throttle_stream(rate_per_second: float) -> Flow[Input, Input]:
         A flow that throttles processing rate
     """
     min_interval = 1.0 / rate_per_second
+    # Persistent throttling state shared across all stream iterations
+    last_yield_time = 0.0
 
     async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
         """Throttle stream processing to specified rate."""
-        last_yield_time = 0.0
+        nonlocal last_yield_time
 
         async for item in stream:
             current_time = asyncio.get_event_loop().time()
