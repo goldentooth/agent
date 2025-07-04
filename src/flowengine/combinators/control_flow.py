@@ -293,3 +293,56 @@ def catch_and_continue_stream(
 
     handler_name = f"({get_function_name(handler)})" if handler else ""
     return Flow(_flow, name=f"catch_and_continue{handler_name}")
+
+
+def circuit_breaker_stream(
+    failure_threshold: int = 5, recovery_timeout: float = 60.0
+) -> Flow[Input, Input]:
+    """Create a flow that implements the circuit breaker pattern.
+
+    Tracks failures and "opens" the circuit after too many failures,
+    preventing further processing until a recovery timeout elapses.
+
+    Args:
+        failure_threshold: Number of failures before opening circuit
+        recovery_timeout: Seconds to wait before attempting recovery
+
+    Returns:
+        A flow that implements circuit breaker behavior
+    """
+    failure_count = 0
+    circuit_open = False
+    last_failure_time = 0.0
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Process stream with circuit breaker protection."""
+        nonlocal failure_count, circuit_open, last_failure_time
+
+        async for item in stream:
+            current_time = asyncio.get_event_loop().time()
+
+            # Check if we can close the circuit
+            if circuit_open and (current_time - last_failure_time) > recovery_timeout:
+                circuit_open = False
+                failure_count = 0
+
+            # If circuit is open, reject the item
+            if circuit_open:
+                raise FlowExecutionError(
+                    f"Circuit breaker open. Too many failures (threshold: {failure_threshold})"
+                )
+
+            try:
+                yield item
+                # Reset failure count on success
+                failure_count = 0
+            except Exception as e:
+                failure_count += 1
+                last_failure_time = current_time
+
+                if failure_count >= failure_threshold:
+                    circuit_open = True
+
+                raise e
+
+    return Flow(_flow, name=f"circuit_breaker({failure_threshold}, {recovery_timeout})")
