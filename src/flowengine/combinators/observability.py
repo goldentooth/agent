@@ -201,9 +201,10 @@ def materialize_stream() -> Flow[Any, StreamNotification]:
         try:
             async for item in stream:
                 yield OnNext(item)
+            # Only emit OnComplete if no exception occurred
+            yield OnComplete()
         except Exception as e:
             yield OnError(e)
-        finally:
-            yield OnComplete()
+            # Do not emit OnComplete after an error
 
     return Flow(_flow, name="materialize")

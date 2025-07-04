@@ -397,10 +397,9 @@ class TestMaterializeStream:
         result_stream = materialize_flow(error_stream())
         result: list[StreamNotification] = [item async for item in result_stream]
 
-        assert len(result) == 3  # 1 item + 1 error + 1 completion
+        assert len(result) == 2  # 1 item + 1 error (no completion after error)
         assert isinstance(result[0], OnNext)
         assert isinstance(result[1], OnError)
-        assert isinstance(result[2], OnComplete)
 
         assert result[0].value == 1
         assert isinstance(result[1].error, ValueError)
