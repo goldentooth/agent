@@ -88,6 +88,14 @@ These are the fundamental principles that govern all development work on this pr
     - Each commit must represent the smallest possible unit of work that can stand alone
     - Large commits make code review impossible and history unclear
 
+12. **Never conflate planned work with completed work. Use the TodoWrite tool to track actual progress.**
+    - Only mark items as "completed" when they are actually implemented and committed
+    - Break down large tasks into individual, trackable units
+    - Use "pending" for work not yet started, "in_progress" for current work, "completed" only for finished work
+    - The TodoWrite tool is your source of truth for progress tracking
+    - Never describe future work as if it's already done
+    - When in doubt about status, check what's actually committed in git
+
 ## Enforcement
 
 These commandments are not suggestions—they are requirements. Violations will result in:
