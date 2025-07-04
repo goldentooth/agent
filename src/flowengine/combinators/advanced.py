@@ -94,3 +94,50 @@ def race_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
 
     flow_names = ", ".join(flow.name for flow in flows)
     return Flow(_flow, name=f"race({flow_names})")
+
+
+def parallel_stream(*flows: Flow[Input, Output]) -> Flow[Input, list[Output]]:
+    """Create a flow that runs multiple flows in parallel and collects all results.
+
+    For each input item, runs all flows in parallel and yields a list of all results.
+
+    Args:
+        *flows: Flows to run in parallel
+
+    Returns:
+        A flow that yields lists of results from parallel execution
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[list[Output], None]:
+        """Run multiple flows in parallel for each item."""
+        async for item in stream:
+            # Create tasks for each flow
+            tasks: list[AnyTask] = []
+
+            for flow in flows:
+                single_stream = create_single_item_stream(item)
+
+                async def run_flow(
+                    f: Flow[Input, Output], s: AsyncGenerator[Input, None]
+                ) -> list[Output]:
+                    """Run a flow and collect all results."""
+                    return [result async for result in f(s)]
+
+                task = asyncio.create_task(run_flow(flow, single_stream))
+                tasks.append(task)
+
+            # Wait for all to complete
+            try:
+                results = await asyncio.gather(*tasks)
+                # Flatten the results since each flow returns a list
+                flattened: list[Output] = []
+                for result_list in results:
+                    flattened.extend(result_list)
+                yield flattened
+            except Exception as e:
+                raise FlowExecutionError(f"Parallel execution failed: {e}") from e
+
+    flow_names = ", ".join(flow.name for flow in flows)
+    return Flow(_flow, name=f"parallel({flow_names})")
