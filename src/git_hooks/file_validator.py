@@ -21,10 +21,8 @@ class FileLengthValidator(Validator):
     ):
         super().__init__(limit, exclude_patterns)
         calc = ThresholdCalculator(warn_multiplier=0.8, urgent_multiplier=0.9)
-        self.warn_threshold = warn_threshold or calc.calculate_warn_threshold(limit)
-        self.urgent_threshold = urgent_threshold or calc.calculate_urgent_threshold(
-            limit
-        )
+        self.warn_threshold = calc.calculate_warn_threshold(limit) if warn_threshold is None else warn_threshold
+        self.urgent_threshold = calc.calculate_urgent_threshold(limit) if urgent_threshold is None else urgent_threshold
 
     def _get_line_count(self, path: Path) -> Optional[int]:
         """Get line count for a file, returning None if unreadable."""
