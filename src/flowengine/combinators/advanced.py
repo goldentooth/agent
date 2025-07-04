@@ -39,7 +39,7 @@ def race_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Output, None]:
         """Race multiple flows for each item."""
         async for item in stream:
@@ -109,7 +109,7 @@ def parallel_stream(*flows: Flow[Input, Output]) -> Flow[Input, list[Output]]:
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[list[Output], None]:
         """Run multiple flows in parallel for each item."""
         async for item in stream:
@@ -158,7 +158,7 @@ def parallel_stream_successful(
     """
 
     async def _flow(
-        stream: AsyncGenerator[Input, None]
+        stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[list[Output], None]:
         """Run flows in parallel and collect successful results."""
         async for item in stream:

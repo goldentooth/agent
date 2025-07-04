@@ -7,6 +7,7 @@ import pytest
 
 from flowengine import Flow
 from flowengine.combinators.advanced import (
+    chain_stream,
     parallel_stream,
     parallel_stream_successful,
     race_stream,
@@ -113,7 +114,7 @@ class TestRaceStream:
         """Test racing when a flow produces no results."""
 
         async def empty_flow_fn(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for _ in stream:
                 pass  # Consume but don't yield anything
@@ -327,6 +328,93 @@ class TestZipStream:
 
         input_stream = async_range(2)
         result_stream = zip_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        assert values == []
+
+
+class TestChainStream:
+    """Tests for chain_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_chain_basic(self):
+        """Test basic stream chaining."""
+
+        async def first() -> AsyncGenerator[int, None]:
+            yield 1
+            yield 2
+
+        async def second() -> AsyncGenerator[int, None]:
+            yield 3
+            yield 4
+
+        async def third() -> AsyncGenerator[int, None]:
+            yield 5
+
+        chain_flow: Flow[None, int] = chain_stream(first(), second(), third())
+        assert "chain(3 streams)" in chain_flow.name
+
+        # Chain doesn't need input
+        async def empty_input() -> AsyncGenerator[None, None]:
+            if False:
+                yield None
+
+        result_stream = chain_flow(empty_input())
+        values = [item async for item in result_stream]
+
+        assert values == [1, 2, 3, 4, 5]
+
+    @pytest.mark.asyncio
+    async def test_chain_empty_streams(self):
+        """Test chaining with empty streams."""
+
+        async def empty() -> AsyncGenerator[str, None]:
+            if False:
+                yield "never"
+
+        async def normal() -> AsyncGenerator[str, None]:
+            yield "middle"
+
+        chain_flow: Flow[None, str] = chain_stream(empty(), normal(), empty())
+
+        async def empty_input() -> AsyncGenerator[None, None]:
+            if False:
+                yield None
+
+        result_stream = chain_flow(empty_input())
+        values = [item async for item in result_stream]
+
+        assert values == ["middle"]
+
+    @pytest.mark.asyncio
+    async def test_chain_single_stream(self):
+        """Test chaining single stream."""
+
+        async def single() -> AsyncGenerator[str, None]:
+            yield "a"
+            yield "b"
+
+        chain_flow: Flow[None, str] = chain_stream(single())
+
+        async def empty_input() -> AsyncGenerator[None, None]:
+            if False:
+                yield None
+
+        result_stream = chain_flow(empty_input())
+        values = [item async for item in result_stream]
+
+        assert values == ["a", "b"]
+
+    @pytest.mark.asyncio
+    async def test_chain_no_streams(self):
+        """Test chaining with no streams."""
+        chain_flow: Flow[None, int] = chain_stream()
+
+        async def empty_input() -> AsyncGenerator[None, None]:
+            if False:
+                yield None
+
+        result_stream = chain_flow(empty_input())
         values = [item async for item in result_stream]
 
         assert values == []
