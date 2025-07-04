@@ -138,3 +138,49 @@ def recover_stream(
             yield fallback
 
     return Flow(_flow, name=f"recover({get_function_name(handler)})")
+
+
+def switch_stream(
+    selector: Callable[[Input], str],
+    cases: dict[str, Flow[Input, Output]],
+    default: Flow[Input, Output] | None = None,
+) -> Flow[Input, Output]:
+    """Create a flow that routes items to different flows based on a selector function.
+
+    For each item, applies the selector function to determine which case flow
+    to use for processing.
+
+    Args:
+        selector: Function that returns a case key for each item
+        cases: Dictionary mapping case keys to flows
+        default: Optional default flow for unmatched cases
+
+    Returns:
+        A flow that routes items based on selector
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[Output, None]:
+        """Route items to appropriate flows based on selector."""
+        async for item in stream:
+            case_key = selector(item)
+            target_flow = cases.get(case_key, default)
+
+            if target_flow is not None:
+                # Apply target flow to a single-item stream
+                single_item_stream = _create_single_item_stream(item)
+                async for result in target_flow(single_item_stream):
+                    yield result
+            # If no matching case and no default, item is filtered out
+
+    async def _create_single_item_stream(item: Input) -> AsyncGenerator[Input, None]:
+        """Create a single-item stream."""
+        yield item
+
+    selector_name = get_function_name(selector)
+    cases_count = len(cases)
+    default_name = f", default={default.name}" if default else ""
+    return Flow(
+        _flow, name=f"switch({selector_name}, {cases_count} cases{default_name})"
+    )

@@ -1,6 +1,7 @@
 """Tests for control flow combinators."""
 
 import asyncio
+from typing import Any, Union
 
 import pytest
 
@@ -9,6 +10,7 @@ from flowengine.combinators.control_flow import (
     if_then_stream,
     recover_stream,
     retry_stream,
+    switch_stream,
 )
 from flowengine.exceptions import FlowExecutionError
 
@@ -166,3 +168,105 @@ class TestRecoverStream:
 
         # First item passes through, second triggers recovery
         assert values == [1, -1]
+
+
+class TestSwitchStream:
+    """Tests for switch_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_switch_basic(self):
+        """Test basic switch functionality."""
+
+        def categorize(x: int) -> str:
+            if x < 0:
+                return "negative"
+            elif x == 0:
+                return "zero"
+            else:
+                return "positive"
+
+        def neg_transform(x: int) -> str:
+            return f"neg_{x}"
+
+        def zero_transform(x: int) -> str:
+            return "ZERO"
+
+        def pos_transform(x: int) -> str:
+            return f"pos_{x}"
+
+        negative_flow = map_stream(neg_transform)
+        zero_flow = map_stream(zero_transform)
+        positive_flow = map_stream(pos_transform)
+
+        cases = {
+            "negative": negative_flow,
+            "zero": zero_flow,
+            "positive": positive_flow,
+        }
+
+        switch_flow = switch_stream(categorize, cases)
+        assert "switch(categorize, 3 cases)" in switch_flow.name
+
+        async def mixed_stream():
+            yield -2
+            yield 0
+            yield 3
+
+        result_stream = switch_flow(mixed_stream())
+        values = [item async for item in result_stream]
+        assert values == ["neg_-2", "ZERO", "pos_3"]
+
+    @pytest.mark.asyncio
+    async def test_switch_with_default(self):
+        """Test switch with default case."""
+
+        def size_category(x: int) -> str:
+            if x < 10:
+                return "small"
+            elif x < 100:
+                return "medium"
+            else:
+                return "large"
+
+        def small_transform(x: int) -> int:
+            return x * 2
+
+        def medium_transform(x: int) -> int:
+            return x + 10
+
+        def default_transform(x: int) -> int:
+            return x // 10
+
+        small_flow = map_stream(small_transform)
+        medium_flow = map_stream(medium_transform)
+        default_flow = map_stream(default_transform)
+
+        cases = {
+            "small": small_flow,
+            "medium": medium_flow,
+        }
+        switch_flow = switch_stream(size_category, cases, default=default_flow)
+
+        async def number_stream():
+            yield 5  # small: 5 * 2 = 10
+            yield 50  # medium: 50 + 10 = 60
+            yield 500  # large (default): 500 // 10 = 50
+
+        result_stream = switch_flow(number_stream())
+        values = [item async for item in result_stream]
+        assert values == [10, 60, 50]
+
+    @pytest.mark.asyncio
+    async def test_switch_no_case_no_default(self):
+        """Test switch with unmatched case and no default."""
+
+        def always_unknown(x: Any) -> str:
+            return "unknown"
+
+        cases = {"known": map_stream(double)}
+        switch_flow = switch_stream(always_unknown, cases)
+
+        input_stream = async_range(3)
+        result_stream = switch_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == []  # All items filtered out
