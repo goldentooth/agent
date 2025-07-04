@@ -9,6 +9,7 @@ This document outlines the detailed migration plan for extracting the Flow Engin
 - Please mark each epic ✅ DONE! as you complete it.
 - If you encounter a reference to AsyncIterator, change it to AsyncGenerator.
 - Update README.md and relevant files in docs/ as you complete each epic.
+- Create a branch for each epic, add commits to it until you have completed the epic and related work, then create a pull request.
 
 ## Key Statistics
 
