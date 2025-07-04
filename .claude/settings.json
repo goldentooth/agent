@@ -24,7 +24,6 @@
       "Bash(goldentooth-agent:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "Bash(make:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(poe:*)",
