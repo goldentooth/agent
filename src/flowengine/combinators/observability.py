@@ -14,18 +14,17 @@ from typing import Any, TypeVar
 
 from flowengine.flow import Flow
 
+from .utils import get_function_name
+
 Input = TypeVar("Input")
-
-
-def _get_function_name(func: Callable[..., Any]) -> str:
-    """Get the name of a function for debugging purposes."""
-    return getattr(func, "__name__", "function")
 
 
 class StreamNotification(ABC):
     """Represents a stream notification (item, error, or completion)."""
 
-    pass
+    def __repr__(self) -> str:
+        """Return string representation of the notification."""
+        return f"{self.__class__.__name__}()"
 
 
 class OnNext(StreamNotification):
@@ -115,7 +114,7 @@ def trace_stream(tracer: Callable[[str, Any], None]) -> Flow[Input, Input]:
         finally:
             tracer("stream_end", None)
 
-    return Flow(_flow, name=f"trace({_get_function_name(tracer)})")
+    return Flow(_flow, name=f"trace({get_function_name(tracer)})")
 
 
 def metrics_stream(counter: Callable[[str], None]) -> Flow[Input, Input]:
@@ -148,7 +147,7 @@ def metrics_stream(counter: Callable[[str], None]) -> Flow[Input, Input]:
             counter("stream.completed")
             counter(f"stream.total_items.{item_count}")
 
-    return Flow(_flow, name=f"metrics({_get_function_name(counter)})")
+    return Flow(_flow, name=f"metrics({get_function_name(counter)})")
 
 
 def inspect_stream(
@@ -181,7 +180,7 @@ def inspect_stream(
             yield item
             item_count += 1
 
-    return Flow(_flow, name=f"inspect({_get_function_name(inspector)})")
+    return Flow(_flow, name=f"inspect({get_function_name(inspector)})")
 
 
 def materialize_stream() -> Flow[Any, StreamNotification]:

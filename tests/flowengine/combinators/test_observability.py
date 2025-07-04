@@ -25,6 +25,12 @@ from flowengine.flow import Flow
 pytestmark = pytest.mark.asyncio
 
 
+async def empty_stream() -> AsyncGenerator[int, None]:
+    """Create an empty stream for testing."""
+    return
+    yield  # pragma: no cover
+
+
 class TestStreamNotifications:
     """Test stream notification classes."""
 
@@ -51,6 +57,16 @@ class TestStreamNotifications:
         assert isinstance(OnNext(1), StreamNotification)
         assert isinstance(OnError(ValueError()), StreamNotification)
         assert isinstance(OnComplete(), StreamNotification)
+
+    def test_stream_notification_abstract_repr(self) -> None:
+        """Test the abstract base class repr method."""
+
+        # Create a simple concrete subclass to test the base __repr__
+        class TestNotification(StreamNotification):
+            pass
+
+        notification = TestNotification()
+        assert repr(notification) == "TestNotification()"
 
 
 class TestLogStream:
@@ -113,7 +129,7 @@ class TestLogStream:
 
     def test_log_stream_metadata(self) -> None:
         """Test log_stream metadata."""
-        log_flow: Flow[Any, Any] = log_stream(
+        log_flow: Flow[int, int] = log_stream(
             "test", prefix="PREFIX: ", level=logging.INFO
         )
         assert log_flow.name == "log_stream(test)"
@@ -122,11 +138,6 @@ class TestLogStream:
 
     async def test_log_stream_empty_stream(self) -> None:
         """Test log_stream with empty stream."""
-
-        async def empty_stream() -> AsyncGenerator[int, None]:
-            return
-            yield  # pragma: no cover
-
         log_flow: Flow[int, int] = log_stream("test")
         result_stream = log_flow(empty_stream())
         result: list[int] = [item async for item in result_stream]
@@ -202,10 +213,6 @@ class TestTraceStream:
         def tracer(event_type: str, item: Any) -> None:
             trace_calls.append((event_type, item))
 
-        async def empty_stream() -> AsyncGenerator[int, None]:
-            return
-            yield  # pragma: no cover
-
         trace_flow: Flow[int, int] = trace_stream(tracer)
         result_stream = trace_flow(empty_stream())
         result: list[int] = [item async for item in result_stream]
@@ -277,7 +284,7 @@ class TestMetricsStream:
             pass
 
         counter.__name__ = "my_counter"
-        metrics_flow: Flow[Any, Any] = metrics_stream(counter)
+        metrics_flow: Flow[int, int] = metrics_stream(counter)
         assert metrics_flow.name == "metrics(my_counter)"
 
     async def test_metrics_stream_empty_stream(self) -> None:
@@ -286,10 +293,6 @@ class TestMetricsStream:
 
         def counter(metric_name: str) -> None:
             metrics_calls.append(metric_name)
-
-        async def empty_stream() -> AsyncGenerator[int, None]:
-            return
-            yield  # pragma: no cover
 
         metrics_flow: Flow[int, int] = metrics_stream(counter)
         result_stream = metrics_flow(empty_stream())
@@ -341,7 +344,7 @@ class TestInspectStream:
             pass
 
         inspector.__name__ = "my_inspector"
-        inspect_flow: Flow[Any, Any] = inspect_stream(inspector)
+        inspect_flow: Flow[int, int] = inspect_stream(inspector)
         assert inspect_flow.name == "inspect(my_inspector)"
 
     async def test_inspect_stream_empty_stream(self) -> None:
@@ -350,10 +353,6 @@ class TestInspectStream:
 
         def inspector(item: Any, context: dict[str, Any]) -> None:
             inspect_calls.append((item, context.copy()))
-
-        async def empty_stream() -> AsyncGenerator[int, None]:
-            return
-            yield  # pragma: no cover
 
         inspect_flow: Flow[int, int] = inspect_stream(inspector)
         result_stream = inspect_flow(empty_stream())
@@ -409,16 +408,11 @@ class TestMaterializeStream:
 
     def test_materialize_stream_metadata(self) -> None:
         """Test materialize_stream metadata."""
-        materialize_flow: Flow[Any, StreamNotification] = materialize_stream()
+        materialize_flow: Flow[int, StreamNotification] = materialize_stream()
         assert materialize_flow.name == "materialize"
 
     async def test_materialize_stream_empty_stream(self) -> None:
         """Test materialize_stream with empty stream."""
-
-        async def empty_stream() -> AsyncGenerator[int, None]:
-            return
-            yield  # pragma: no cover
-
         materialize_flow: Flow[int, StreamNotification] = materialize_stream()
         result_stream = materialize_flow(empty_stream())
         result: list[StreamNotification] = [item async for item in result_stream]

@@ -4,6 +4,7 @@ This module provides essential building blocks for creating and composing flows:
 
 - **Basic combinators**: Core operations like map, filter, compose, etc.
 - **Source flows**: Functions that create streams from various inputs
+- **Observability combinators**: Functions for logging, tracing, and monitoring streams
 - **Utility functions**: Helper functions for flow creation and introspection
 """
 
@@ -24,6 +25,19 @@ from .basic import (
     skip_stream,
     take_stream,
     until_stream,
+)
+
+# Observability combinators (5 functions + 3 notification classes migrated in Epic 11)
+from .observability import (
+    OnComplete,
+    OnError,
+    OnNext,
+    StreamNotification,
+    inspect_stream,
+    log_stream,
+    materialize_stream,
+    metrics_stream,
+    trace_stream,
 )
 
 # Sources
@@ -55,4 +69,14 @@ __all__ = [
     "collect_stream",
     "until_stream",
     "share_stream",
+    # Observability combinators (5 functions + 3 notification classes)
+    "log_stream",
+    "trace_stream",
+    "metrics_stream",
+    "inspect_stream",
+    "materialize_stream",
+    "OnNext",
+    "OnError",
+    "OnComplete",
+    "StreamNotification",
 ]
