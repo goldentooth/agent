@@ -49,6 +49,7 @@ jobs:
             - Do not allow files over 1000 lines or modules over 5000 lines. These should be refactored.
             - All work must pass pre-commit and include a clear, detailed commit message.
             - Git history must be preserved—no `git reset`.
+            - Any PR that substantially changes the codebase should update the `README.md` appropriately; if the state of `README.md` does not match the code, it is a blocking issue.
 
             ## Review Format
 
