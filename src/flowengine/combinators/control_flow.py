@@ -206,3 +206,40 @@ def tap_stream(side_effect: Callable[[Input], AnyValue]) -> Flow[Input, Input]:
             yield item
 
     return Flow(_flow, name=f"tap({get_function_name(side_effect)})")
+
+
+def while_condition_stream(
+    condition: Callable[[Input], bool], transform: Flow[Input, Output]
+) -> Flow[Input, Output]:
+    """Create a flow that applies a transformation while a condition is true.
+
+    Continues processing items with the transform flow as long as the condition
+    returns True for each item.
+
+    Args:
+        condition: Function that determines whether to continue processing
+        transform: Flow to apply while condition is true
+
+    Returns:
+        A flow that processes while condition holds
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[Output, None]:
+        """Apply transformation while condition is true."""
+        async for item in stream:
+            if not condition(item):
+                break
+
+            # Apply transform to a single-item stream
+            single_item_stream = _create_single_item_stream(item)
+            async for result in transform(single_item_stream):
+                yield result
+
+    async def _create_single_item_stream(item: Input) -> AsyncGenerator[Input, None]:
+        """Create a single-item stream."""
+        yield item
+
+    condition_name = get_function_name(condition)
+    return Flow(_flow, name=f"while({condition_name}, {transform.name})")

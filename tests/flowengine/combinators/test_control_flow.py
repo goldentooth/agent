@@ -12,6 +12,7 @@ from flowengine.combinators.control_flow import (
     retry_stream,
     switch_stream,
     tap_stream,
+    while_condition_stream,
 )
 from flowengine.exceptions import FlowExecutionError
 
@@ -331,3 +332,41 @@ class TestTapStream:
 
         assert values == []
         assert side_effects == []
+
+
+class TestWhileConditionStream:
+    """Tests for while_condition_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_while_condition_basic(self):
+        """Test basic while condition functionality."""
+
+        def less_than_3(x: int) -> bool:
+            return x < 3
+
+        double_flow = map_stream(double)
+        while_flow = while_condition_stream(less_than_3, double_flow)
+
+        assert "while(less_than_3, map(double))" in while_flow.name
+
+        input_stream = async_range(5)
+        result_stream = while_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # Process 0, 1, 2 (all < 3), stop at 3
+        assert values == [0, 2, 4]
+
+    @pytest.mark.asyncio
+    async def test_while_condition_immediate_false(self):
+        """Test while condition that's false immediately."""
+
+        def always_false(x: int) -> bool:
+            return False
+
+        process_flow = map_stream(double)
+        while_flow = while_condition_stream(always_false, process_flow)
+
+        input_stream = async_range(3)
+        result_stream = while_flow(input_stream)
+        values = [item async for item in result_stream]
+        assert values == []
