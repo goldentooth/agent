@@ -1,0 +1,96 @@
+"""Advanced combinators for complex stream operations.
+
+This module provides combinators for parallel processing, merging, racing,
+zipping, and other advanced stream composition patterns.
+"""
+
+from __future__ import annotations
+
+import asyncio
+from collections.abc import Callable
+from typing import Any, AsyncGenerator, TypeVar
+
+from ..exceptions import FlowExecutionError
+from ..flow import Flow
+from .utils import create_single_item_stream, get_function_name
+
+Input = TypeVar("Input")
+Output = TypeVar("Output")
+Newput = TypeVar("Newput")
+OtherInput = TypeVar("OtherInput")
+
+# Type aliases
+AnyValue = Any
+AnyTask = asyncio.Task[Any]
+AnyQueue = asyncio.Queue[Any]
+
+
+def race_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
+    """Create a flow that races multiple flows and yields the first result.
+
+    For each input item, runs all flows in parallel and yields the result
+    from whichever flow completes first.
+
+    Args:
+        *flows: Flows to race against each other
+
+    Returns:
+        A flow that yields first results from racing flows
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[Output, None]:
+        """Race multiple flows for each item."""
+        async for item in stream:
+            # If no flows to race, skip this item
+            if not flows:
+                continue
+
+            # Create tasks for each flow with the current item
+            tasks: list[AnyTask] = []
+
+            for flow in flows:
+                single_stream = create_single_item_stream(item)
+
+                async def run_flow(
+                    f: Flow[Input, Output], s: AsyncGenerator[Input, None]
+                ) -> Output:
+                    """Run a flow and return first result."""
+                    async for result in f(s):
+                        return result
+                    raise FlowExecutionError("Flow produced no results")
+
+                task = asyncio.create_task(run_flow(flow, single_stream))
+                tasks.append(task)
+
+            pending: set[AnyTask] = set()
+            try:
+                # Wait for first completion
+                done, pending = await asyncio.wait(
+                    tasks, return_when=asyncio.FIRST_COMPLETED
+                )
+
+                # Get result from first completed task
+                for task in done:
+                    try:
+                        result = await task
+                        yield result
+                        break
+                    except Exception:
+                        continue
+                else:
+                    # All tasks failed
+                    raise FlowExecutionError("All racing flows failed")
+
+            finally:
+                # Cancel remaining tasks
+                for task in pending:
+                    task.cancel()
+                    try:
+                        await task
+                    except asyncio.CancelledError:
+                        pass
+
+    flow_names = ", ".join(flow.name for flow in flows)
+    return Flow(_flow, name=f"race({flow_names})")
