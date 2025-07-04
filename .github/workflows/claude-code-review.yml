@@ -54,6 +54,7 @@ jobs:
               - If the state of `README.md` does not match the code, it is a blocking issue.
             - As new commits are added, you will re-review the entire PR, not just the new changes. Treat it as a new review each time.
               - There is no need to mention previously-blocking issues that have been resolved in the new commits; this is confusing.
+            - Reject code that mentions "legacy" or "backward compatibility"; we do not support legacy code and have no need to maintain backward compatibility.
 
             ## Review Format
 
