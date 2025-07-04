@@ -11,6 +11,7 @@ from flowengine.combinators.control_flow import (
     recover_stream,
     retry_stream,
     switch_stream,
+    tap_stream,
 )
 from flowengine.exceptions import FlowExecutionError
 
@@ -270,3 +271,63 @@ class TestSwitchStream:
         result_stream = switch_flow(input_stream)
         values = [item async for item in result_stream]
         assert values == []  # All items filtered out
+
+
+class TestTapStream:
+    """Tests for tap_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_tap_basic(self):
+        """Test basic tap functionality."""
+        side_effects: list[int] = []
+
+        def record_item(x: int) -> None:
+            side_effects.append(x)
+
+        tap_flow = tap_stream(record_item)
+        assert "tap(record_item)" in tap_flow.name
+
+        input_stream = async_range(3)
+        result_stream = tap_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        assert values == [0, 1, 2]
+        assert side_effects == [0, 1, 2]
+
+    @pytest.mark.asyncio
+    async def test_tap_with_async_function(self):
+        """Test tap with async side effect."""
+        side_effects: list[int] = []
+
+        async def async_record(x: int) -> None:
+            await asyncio.sleep(0.001)
+            side_effects.append(x)
+
+        tap_flow = tap_stream(async_record)
+
+        input_stream = async_range(3)
+        result_stream = tap_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        assert values == [0, 1, 2]
+        assert side_effects == [0, 1, 2]
+
+    @pytest.mark.asyncio
+    async def test_tap_empty_stream(self):
+        """Test tap on empty stream."""
+        side_effects: list[int] = []
+
+        def append_effect(x: int) -> None:
+            side_effects.append(x)
+
+        tap_flow = tap_stream(append_effect)
+
+        async def empty_stream():
+            if False:
+                yield 0
+
+        result_stream = tap_flow(empty_stream())
+        values = [item async for item in result_stream]
+
+        assert values == []
+        assert side_effects == []

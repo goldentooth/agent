@@ -184,3 +184,25 @@ def switch_stream(
     return Flow(
         _flow, name=f"switch({selector_name}, {cases_count} cases{default_name})"
     )
+
+
+def tap_stream(side_effect: Callable[[Input], AnyValue]) -> Flow[Input, Input]:
+    """Create a flow that applies a side effect to each item without changing the stream.
+
+    Useful for logging, debugging, or triggering side effects while preserving
+    the original stream data.
+
+    Args:
+        side_effect: Function to call for each item (can be sync or async)
+
+    Returns:
+        A flow that applies side effects and passes items through
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Apply side effect to each item and pass through."""
+        async for item in stream:
+            await maybe_await(side_effect, item)
+            yield item
+
+    return Flow(_flow, name=f"tap({get_function_name(side_effect)})")
