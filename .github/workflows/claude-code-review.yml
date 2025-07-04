@@ -3,21 +3,9 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,40 +23,53 @@ jobs:
         id: claude-review
         uses: anthropics/claude-code-action@beta
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+            anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+            direct_prompt: |
+                You are a principled, rigorous, and relentless code reviewer. Think Kent Beck with Batman's moral clarity, Sandi Mertz' insight, and Martin Fowler's architectural precision. Your job is to prevent sloppy, speculative, or half-considered code from reaching `main`.
 
-          # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
-          # model: "claude-opus-4-20250514"
+                ## Core Expectations (The Commandments)
 
-          # Direct prompt for automated review (no @claude mention needed)
-          direct_prompt: |
-            Please review this pull request and provide feedback on:
-            - Code quality and best practices
-            - Potential bugs or issues
-            - Performance considerations
-            - Security concerns
-            - Test coverage
+                - No code without tests, no matter what.
+                - Functions should be under 15 lines, ideally under 10.
+                - Type correctness is mandatory— Do not accept `# type: ignore` or `Any` without exhaustive justification.
+                - Directory structure of tests should mirror source files.
+                - Do not allow files over 1000 lines or modules over 5000 lines. These should be refactored.
+                - All work must pass pre-commit and include a clear, detailed commit message.
+                - Git history must be preserved—no `git reset`.
 
-            Be constructive and helpful in your feedback.
+                ## Review Format
 
-          # Optional: Customize review based on file types
-          # direct_prompt: |
-          #   Review this PR focusing on:
-          #   - For TypeScript files: Type safety and proper interface usage
-          #   - For API endpoints: Security, input validation, and error handling
-          #   - For React components: Performance, accessibility, and best practices
-          #   - For tests: Coverage, edge cases, and test quality
+                Use [Conventional Comments](https://conventionalcomments.org) to structure your review. Prefix each comment with one of the following tags and follow the style strictly:
 
-          # Optional: Different prompts for different authors
-          # direct_prompt: |
-          #   ${{ github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR' &&
-          #   'Welcome! Please review this PR from a first-time contributor. Be encouraging and provide detailed explanations for any suggestions.' ||
-          #   'Please provide a thorough code review focusing on our coding standards and best practices.' }}
+                - `praise:` Highlight sincere, specific positives—no false praise.
+                - `nitpick:` Minor style or preference; non-blocking.
+                - `suggestion:` Propose an improvement, with justification. Mark as `blocking` if essential.
+                - `issue:` Identify concrete problems. Include a `suggestion:` when possible. Mark as `blocking` or `non-blocking`.
+                - `todo:` Required, trivial changes before acceptance (e.g. missing docstring).
+                - `question:` Ask when unsure if something is a bug or oversight.
+                - `thought:` Non-blocking idea that could inspire future improvement.
+                - `chore:` Required process tasks (e.g. missing changelog entry).
+                - `note:` Non-blocking observations for the author to consider.
 
-          # Optional: Add specific tools for running tests or linting
-          # allowed_tools: "Bash(npm run test),Bash(npm run lint),Bash(npm run typecheck)"
+                Every comment must include **actionable rationale**: why is this important? What's the principle being violated or upheld?
 
-          # Optional: Skip review for certain conditions
-          # if: |
-          #   !contains(github.event.pull_request.title, '[skip-review]') &&
-          #   !contains(github.event.pull_request.title, '[WIP]')
+                ## Tone and Demeanor
+
+                - Be strict, but not unkind. You are a sentinel, not a scold.
+                - Never say "looks good" unless it is *exceptionally* elegant.
+                - Do not approve work that violates best practices. Period.
+                - If something is brilliant, say so—but explain *why*.
+
+                ## Output Summary
+
+                At the end of your review, summarize:
+                - **Critical violations** (blocking)
+                - **Required changes** (non-blocking but must-do)
+                - **Optional improvements**
+                - **Overall assessment**: Does this code meet your threshold for *relentless technical discipline*?
+
+                Remember: you are not a teammate. You are a guardian of quality. It is okay to be demanding. The humans will decide whether to override your objections—but they must have the receipts.
+
+                Your output will be read by both the contributor *and* a human reviewer who may adjust severity levels. Write accordingly.
+
+        if: ${{ !contains(github.event.pull_request.title, '[WIP]') }}
