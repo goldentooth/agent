@@ -6,6 +6,7 @@ and other aggregation patterns for stream processing.
 
 from __future__ import annotations
 
+import asyncio
 from collections import deque
 from collections.abc import AsyncGenerator, Callable, Hashable
 from typing import Any, TypeVar
@@ -246,6 +247,34 @@ def memoize_stream(key_fn: Callable[[Input], K]) -> Flow[Input, Input]:
     return Flow(_flow, name=f"memoize({get_function_name(key_fn)})")
 
 
+async def _buffer_collect_items(
+    stream: AsyncGenerator[Input, None], buffer: list[Input]
+) -> None:
+    """Collect items from stream into buffer."""
+    async for item in stream:
+        buffer.append(item)
+
+
+async def _buffer_emit_on_trigger(
+    trigger: AsyncGenerator[Any, None], buffer: list[Input]
+) -> AsyncGenerator[list[Input], None]:
+    """Emit buffer contents when trigger fires."""
+    async for _ in trigger:
+        if buffer:
+            yield list(buffer)
+            buffer.clear()
+
+
+async def _buffer_cleanup_collection_task(collect_task: asyncio.Task[None]) -> None:
+    """Cancel and await collection task cleanup."""
+    if not collect_task.done():
+        collect_task.cancel()
+        try:
+            await collect_task
+        except asyncio.CancelledError:
+            pass
+
+
 def buffer_stream(
     trigger: AsyncGenerator[Any, None],
 ) -> Flow[Input, list[Input]]:
@@ -265,55 +294,20 @@ def buffer_stream(
         stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[list[Input], None]:
         """Buffer items until trigger emits."""
-        import asyncio
-
         buffer: list[Input] = []
-        stream_done = False
-        trigger_done = False
-
-        async def collect_items() -> None:
-            """Collect items into buffer."""
-            nonlocal buffer, stream_done
-            try:
-                async for item in stream:
-                    buffer.append(item)
-            finally:
-                stream_done = True
-
-        async def emit_on_trigger() -> AsyncGenerator[list[Input], None]:
-            """Emit buffer when trigger fires."""
-            nonlocal buffer, trigger_done
-            try:
-                async for _ in trigger:
-                    if buffer:
-                        yield list(buffer)
-                        buffer = []
-            finally:
-                trigger_done = True
-
-        # Start collecting items
-        collect_task = asyncio.create_task(collect_items())
+        collect_task = asyncio.create_task(_buffer_collect_items(stream, buffer))
 
         try:
-            # Process triggers and emit buffers
-            async for buffered_items in emit_on_trigger():
+            async for buffered_items in _buffer_emit_on_trigger(trigger, buffer):
                 yield buffered_items
 
-            # Wait for collection to finish
             await collect_task
 
-            # Emit any remaining items when trigger stream ends
             if buffer:
                 yield buffer
 
         except Exception:
-            # Cancel collection if we error out
-            if not collect_task.done():
-                collect_task.cancel()
-                try:
-                    await collect_task
-                except asyncio.CancelledError:
-                    pass
+            await _buffer_cleanup_collection_task(collect_task)
             raise
 
     return Flow(_flow, name="buffer")
@@ -339,14 +333,14 @@ def expand_stream(
         stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Input, None]:
         """Recursively expand items."""
-        queue: list[tuple[Input, int]] = []
+        queue: deque[tuple[Input, int]] = deque()
 
         # Initialize queue with stream items
         async for item in stream:
             queue.append((item, 0))  # (item, depth)
 
         while queue:
-            item, depth = queue.pop(0)
+            item, depth = queue.popleft()
             yield item
 
             if depth < max_depth:
@@ -375,7 +369,6 @@ def finalize_stream(
         stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Input, None]:
         """Execute finalizer on stream completion."""
-        import asyncio
 
         try:
             async for item in stream:
