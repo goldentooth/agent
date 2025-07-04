@@ -89,14 +89,29 @@ class ValidationConfig:
         prefix: str,
     ) -> Dict[str, int]:
         """Load configuration values from environment."""
-        limit = int(os.environ.get(limit_key, default_limit))
+        limit = cls._get_limit_from_env(limit_key, default_limit)
+        thresholds = cls._get_thresholds_from_env(warn_key, urgent_key, calc, limit)
+        return cls._build_config_dict(
+            prefix, limit, thresholds["warn"], thresholds["urgent"]
+        )
+
+    @classmethod
+    def _get_limit_from_env(cls, limit_key: str, default_limit: str) -> int:
+        """Get limit value from environment."""
+        return int(os.environ.get(limit_key, default_limit))
+
+    @classmethod
+    def _get_thresholds_from_env(
+        cls, warn_key: str, urgent_key: str, calc: ThresholdCalculator, limit: int
+    ) -> Dict[str, int]:
+        """Get threshold values from environment."""
         warn_threshold = cls._load_threshold_value(
             warn_key, calc.calculate_warn_threshold(limit)
         )
         urgent_threshold = cls._load_threshold_value(
             urgent_key, calc.calculate_urgent_threshold(limit)
         )
-        return cls._build_config_dict(prefix, limit, warn_threshold, urgent_threshold)
+        return {"warn": warn_threshold, "urgent": urgent_threshold}
 
     @classmethod
     def _load_threshold_value(cls, key: str, default_value: int) -> int:
