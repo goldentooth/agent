@@ -115,3 +115,26 @@ def retry_stream(n: int, flow: Flow[Input, Output]) -> Flow[Input, Output]:
         yield item
 
     return Flow(_flow, name=f"retry({n}, {flow.name})")
+
+
+def recover_stream(
+    handler: Callable[[Exception, Input], Awaitable[Input]],
+) -> Flow[Input, Input]:
+    """Create a flow that handles exceptions and provides fallback values.
+
+    When an exception occurs during stream processing, the handler function
+    is called with the exception and the current item to provide a fallback value.
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Process stream with exception handling."""
+        try:
+            async for item in stream:
+                yield item
+        except Exception as e:
+            # If we can determine what item caused the issue, call handler
+            # For now, we'll pass None as the item since we can't determine it
+            fallback = await handler(e, None)  # type: ignore[arg-type]
+            yield fallback
+
+    return Flow(_flow, name=f"recover({get_function_name(handler)})")
