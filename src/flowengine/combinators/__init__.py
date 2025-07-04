@@ -3,6 +3,7 @@
 This module provides essential building blocks for creating and composing flows:
 
 - **Basic combinators**: Core operations like map, filter, compose, etc.
+- **Control flow combinators**: Conditional processing, error handling, and flow control
 - **Source flows**: Functions that create streams from various inputs
 - **Observability combinators**: Functions for logging, tracing, and monitoring streams
 - **Utility functions**: Helper functions for flow creation and introspection
@@ -25,6 +26,21 @@ from .basic import (
     skip_stream,
     take_stream,
     until_stream,
+)
+
+# Control flow combinators (11 functions migrated in Epic 12)
+from .control_flow import (
+    branch_flows,
+    catch_and_continue_stream,
+    chain_flows,
+    circuit_breaker_stream,
+    if_then_stream,
+    recover_stream,
+    retry_stream,
+    switch_stream,
+    tap_stream,
+    then_stream,
+    while_condition_stream,
 )
 
 # Observability combinators (5 functions + 3 notification classes migrated in Epic 11)
@@ -69,6 +85,18 @@ __all__ = [
     "collect_stream",
     "until_stream",
     "share_stream",
+    # Control flow combinators (11 functions)
+    "if_then_stream",
+    "retry_stream",
+    "recover_stream",
+    "switch_stream",
+    "tap_stream",
+    "while_condition_stream",
+    "then_stream",
+    "catch_and_continue_stream",
+    "circuit_breaker_stream",
+    "chain_flows",
+    "branch_flows",
     # Observability combinators (5 functions + 3 notification classes)
     "log_stream",
     "trace_stream",

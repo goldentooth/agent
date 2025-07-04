@@ -21,6 +21,15 @@ repos:
         language: system
         entry: bash -c 'if [ -n "$SKIP" ]; then echo "SKIP environment variable is set. Please unset it before committing." >&2; exit 1; fi'
 
+  # Initial black formatting
+  - repo: local
+    hooks:
+      - id: black-format
+        name: Black Code Formatter
+        language: system
+        entry: poetry run black .
+        files: \.py$
+
   # Basic file formatting
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

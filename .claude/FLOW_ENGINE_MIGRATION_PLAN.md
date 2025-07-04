@@ -12,6 +12,7 @@ This document outlines the detailed migration plan for extracting the Flow Engin
 - Update README.md and relevant files in docs/ as you complete each epic.
 - Create a branch for each epic, add commits to it until you have completed the epic and related work, then create a pull request.
 - If you have completed a Phase, take the time to create a .claude/FEM_RETRO_[phase id, e.g. "1A"].md file, matching the format of `.claude/FEM_RETRO_1A.md`.
+- When you prepare a commit, write the commit message to a file in a temporary directory, then create the commit using that message file. Do not write the message inline.
 
 ## Key Statistics
 
@@ -110,7 +111,7 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Tests: `tests/flowengine/combinators/test_observability.py`
 - Dependencies: `flowengine.flow`
 
-**Epic 12: Migrate control flow combinators (without context)**
+**~Epic 12: Migrate control flow combinators (without context)~ ✅ DONE!**
 - File: `src/flowengine/combinators/control_flow.py`
 - Source: `old/goldentooth_agent/flow_engine/combinators/control_flow.py` (419 lines)
 - Tests: `tests/flowengine/combinators/test_control_flow.py`

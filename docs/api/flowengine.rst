@@ -62,3 +62,11 @@ flowengine.combinators.temporal module
    :members:
    :undoc-members:
    :show-inheritance:
+
+flowengine.combinators.control_flow module
+-------------------------------------------
+
+.. automodule:: flowengine.combinators.control_flow
+   :members:
+   :undoc-members:
+   :show-inheritance:
