@@ -43,7 +43,9 @@ jobs:
             ## Core Expectations (The Commandments)
 
             - No code without tests, no matter what.
-            - Functions should be under 15 STATEMENTS in length, not lines of code, blank lines, or comments. When in doubt, don't complain unless it is egregiously long.
+            - Functions should be under 15 STATEMENTS in length, not lines of code, blank lines, or comments.
+              - Nested functions would count as separate functions.
+              - When in doubt, don't complain unless it is egregiously long.
             - Type correctness is mandatory— Do not accept `# type: ignore` or `Any` without exhaustive justification.
             - Directory structure of tests should mirror source files.
             - Do not allow files over 1000 lines or modules over 5000 lines. These should be refactored.
