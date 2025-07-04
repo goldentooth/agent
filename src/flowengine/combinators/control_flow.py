@@ -377,3 +377,63 @@ def chain_flows(*flows: Flow[Input, Input]) -> Flow[Input, Input]:
 
     flow_names = ", ".join(flow.name for flow in flows)
     return Flow(_flow, name=f"chain_flows({flow_names})")
+
+
+def branch_flows(
+    predicate: Callable[[Input], bool],
+    true_flow: Flow[Input, Output],
+    false_flow: Flow[Input, Output] | None = None,
+) -> Flow[Input, Output]:
+    """Create a flow that branches processing based on a predicate.
+
+    Splits the input stream and applies different flows to items based
+    on the predicate result.
+
+    Args:
+        predicate: Function that determines which branch to take
+        true_flow: Flow for items where predicate returns True
+        false_flow: Flow for items where predicate returns False
+
+    Returns:
+        A flow that branches processing based on predicate
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None]
+    ) -> AsyncGenerator[Output, None]:
+        """Branch processing based on predicate."""
+        true_items: list[Input] = []
+        false_items: list[Input] = []
+
+        # Collect items into separate lists
+        async for item in stream:
+            if predicate(item):
+                true_items.append(item)
+            else:
+                false_items.append(item)
+
+        # Process true branch
+        if true_items:
+
+            async def _true_stream() -> AsyncGenerator[Input, None]:
+                for item in true_items:
+                    yield item
+
+            async for result in true_flow(_true_stream()):
+                yield result
+
+        # Process false branch
+        if false_flow and false_items:
+
+            async def _false_stream() -> AsyncGenerator[Input, None]:
+                for item in false_items:
+                    yield item
+
+            async for result in false_flow(_false_stream()):
+                yield result
+
+    predicate_name = get_function_name(predicate)
+    false_name = f", false={false_flow.name}" if false_flow else ""
+    return Flow(
+        _flow, name=f"branch({predicate_name}, true={true_flow.name}{false_name})"
+    )

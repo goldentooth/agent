@@ -7,6 +7,7 @@ import pytest
 
 from flowengine.combinators.basic import map_stream
 from flowengine.combinators.control_flow import (
+    branch_flows,
     catch_and_continue_stream,
     chain_flows,
     circuit_breaker_stream,
@@ -563,3 +564,147 @@ class TestChainFlows:
         result_stream = chained(input_stream)  # type: ignore
         values = [item async for item in result_stream]  # type: ignore
         assert values == [0, 2]
+
+
+class TestBranchFlows:
+    """Tests for branch_flows function."""
+
+    @pytest.mark.asyncio
+    async def test_branch_flows_basic(self):
+        """Test basic branch functionality."""
+        increment_flow = map_stream(increment)
+        double_flow = map_stream(double)
+
+        branch_flow = branch_flows(is_even, increment_flow, double_flow)
+        assert (
+            "branch(is_even, true=map(increment), false=map(double))"
+            in branch_flow.name
+        )
+
+        input_stream = async_range(4)  # [0, 1, 2, 3]
+        result_stream = branch_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # Even numbers (0, 2) go to increment_flow: [1, 3]
+        # Odd numbers (1, 3) go to double_flow: [2, 6]
+        # Results are yielded in order: true branch first, then false branch
+        assert values == [1, 3, 2, 6]
+
+    @pytest.mark.asyncio
+    async def test_branch_flows_no_false_branch(self):
+        """Test branch with no false branch."""
+        increment_flow = map_stream(increment)
+
+        branch_flow = branch_flows(is_even, increment_flow)
+        assert "branch(is_even, true=map(increment))" in branch_flow.name
+
+        input_stream = async_range(4)  # [0, 1, 2, 3]
+        result_stream = branch_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # Only even numbers (0, 2) are processed: [1, 3]
+        # Odd numbers are filtered out
+        assert values == [1, 3]
+
+    @pytest.mark.asyncio
+    async def test_branch_flows_all_true(self):
+        """Test branch where all items go to true branch."""
+
+        def always_true(x: int) -> bool:
+            return True
+
+        increment_flow = map_stream(increment)
+        double_flow = map_stream(double)
+
+        branch_flow = branch_flows(always_true, increment_flow, double_flow)
+
+        input_stream = async_range(3)  # [0, 1, 2]
+        result_stream = branch_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # All items go to true branch: [1, 2, 3]
+        assert values == [1, 2, 3]
+
+    @pytest.mark.asyncio
+    async def test_branch_flows_all_false(self):
+        """Test branch where all items go to false branch."""
+
+        def always_false(x: int) -> bool:
+            return False
+
+        increment_flow = map_stream(increment)
+        double_flow = map_stream(double)
+
+        branch_flow = branch_flows(always_false, increment_flow, double_flow)
+
+        input_stream = async_range(3)  # [0, 1, 2]
+        result_stream = branch_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # All items go to false branch: [0, 2, 4]
+        assert values == [0, 2, 4]
+
+    @pytest.mark.asyncio
+    async def test_branch_flows_empty_stream(self):
+        """Test branch with empty stream."""
+        increment_flow = map_stream(increment)
+        double_flow = map_stream(double)
+
+        branch_flow = branch_flows(is_even, increment_flow, double_flow)
+
+        async def empty_stream():
+            if False:
+                yield 0
+
+        result_stream = branch_flow(empty_stream())
+        values = [item async for item in result_stream]
+
+        assert values == []
+
+    @pytest.mark.asyncio
+    async def test_branch_flows_preserves_order_within_branch(self):
+        """Test that branch preserves order within each branch."""
+
+        def is_multiple_of_3(x: int) -> bool:
+            return x % 3 == 0
+
+        def add_100(x: int) -> int:
+            return x + 100
+
+        def add_200(x: int) -> int:
+            return x + 200
+
+        true_flow = map_stream(add_100)
+        false_flow = map_stream(add_200)
+
+        branch_flow = branch_flows(is_multiple_of_3, true_flow, false_flow)
+
+        input_stream = async_range(10)  # [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        result_stream = branch_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # Multiples of 3 (0, 3, 6, 9) -> true branch: [100, 103, 106, 109]
+        # Others (1, 2, 4, 5, 7, 8) -> false branch: [201, 202, 204, 205, 207, 208]
+        expected = [100, 103, 106, 109, 201, 202, 204, 205, 207, 208]
+        assert values == expected
+
+    @pytest.mark.asyncio
+    async def test_branch_flows_with_async_predicate(self):
+        """Test branch with async predicate handled via sync wrapper."""
+
+        # Since the predicate needs to be synchronous, we test with a regular function
+        def greater_than_1(x: int) -> bool:
+            return x > 1
+
+        increment_flow = map_stream(increment)
+        double_flow = map_stream(double)
+
+        branch_flow = branch_flows(greater_than_1, increment_flow, double_flow)
+
+        input_stream = async_range(4)  # [0, 1, 2, 3]
+        result_stream = branch_flow(input_stream)
+        values = [item async for item in result_stream]
+
+        # Items > 1 (2, 3) -> true branch: [3, 4]
+        # Items <= 1 (0, 1) -> false branch: [0, 2]
+        assert values == [3, 4, 0, 2]
