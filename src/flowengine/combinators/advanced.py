@@ -103,6 +103,39 @@ def race_stream(*flows: Flow[Input, Output]) -> Flow[Input, Output]:
     return Flow(_flow, name=f"race({flow_names})")
 
 
+async def _run_flow_collect_all(flow: Flow[Input, Output], item: Input) -> list[Output]:
+    """Run a flow and collect all results."""
+    single_stream = create_single_item_stream(item)
+    return [result async for result in flow(single_stream)]
+
+
+def _create_parallel_tasks(
+    flows: tuple[Flow[Input, Output], ...], item: Input
+) -> list[AnyTask]:
+    """Create tasks to run all flows in parallel."""
+    return [asyncio.create_task(_run_flow_collect_all(flow, item)) for flow in flows]
+
+
+def _flatten_results(results: list[list[Any]]) -> list[Any]:
+    """Flatten list of lists into a single list."""
+    flattened: list[Any] = []
+    for result_list in results:
+        flattened.extend(result_list)
+    return flattened
+
+
+async def _run_parallel_all(
+    flows: tuple[Flow[Input, Output], ...], item: Input
+) -> list[Output]:
+    """Run all flows in parallel and collect all results."""
+    tasks = _create_parallel_tasks(flows, item)
+    try:
+        results = await asyncio.gather(*tasks)
+        return _flatten_results(results)
+    except Exception as e:
+        raise FlowExecutionError(f"Parallel execution failed: {e}") from e
+
+
 def parallel_stream(*flows: Flow[Input, Output]) -> Flow[Input, list[Output]]:
     """Create a flow that runs multiple flows in parallel and collects all results.
 
@@ -120,34 +153,46 @@ def parallel_stream(*flows: Flow[Input, Output]) -> Flow[Input, list[Output]]:
     ) -> AsyncGenerator[list[Output], None]:
         """Run multiple flows in parallel for each item."""
         async for item in stream:
-            # Create tasks for each flow
-            tasks: list[AnyTask] = []
-
-            for flow in flows:
-                single_stream = create_single_item_stream(item)
-
-                async def run_flow(
-                    f: Flow[Input, Output], s: AsyncGenerator[Input, None]
-                ) -> list[Output]:
-                    """Run a flow and collect all results."""
-                    return [result async for result in f(s)]
-
-                task = asyncio.create_task(run_flow(flow, single_stream))
-                tasks.append(task)
-
-            # Wait for all to complete
-            try:
-                results = await asyncio.gather(*tasks)
-                # Flatten the results since each flow returns a list
-                flattened: list[Output] = []
-                for result_list in results:
-                    flattened.extend(result_list)
-                yield flattened
-            except Exception as e:
-                raise FlowExecutionError(f"Parallel execution failed: {e}") from e
+            yield await _run_parallel_all(flows, item)
 
     flow_names = ", ".join(flow.name for flow in flows)
     return Flow(_flow, name=f"parallel({flow_names})")
+
+
+async def _run_flow_safely(
+    flow: Flow[Input, Output], item: Input
+) -> list[Output] | None:
+    """Run a flow safely and return results or None on error."""
+    single_stream = create_single_item_stream(item)
+    try:
+        return [result async for result in flow(single_stream)]
+    except Exception:
+        return None
+
+
+def _create_safe_flow_tasks(
+    flows: tuple[Flow[Input, Output], ...], item: Input
+) -> list[AnyTask]:
+    """Create tasks to run flows safely."""
+    return [asyncio.create_task(_run_flow_safely(flow, item)) for flow in flows]
+
+
+def _collect_successful_results(results: list[Any]) -> list[Any]:
+    """Collect successful results from task results."""
+    successful: list[Any] = []
+    for result in results:
+        if result is not None and isinstance(result, list):
+            successful.extend(cast(list[Any], result))
+    return successful
+
+
+async def _run_parallel_successful(
+    flows: tuple[Flow[Input, Output], ...], item: Input
+) -> list[Output]:
+    """Run flows in parallel and return only successful results."""
+    tasks = _create_safe_flow_tasks(flows, item)
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    return _collect_successful_results(results)
 
 
 def parallel_stream_successful(
@@ -169,38 +214,29 @@ def parallel_stream_successful(
     ) -> AsyncGenerator[list[Output], None]:
         """Run flows in parallel and collect successful results."""
         async for item in stream:
-            # Create tasks for each flow
-            tasks: list[AnyTask] = []
-
-            for flow in flows:
-                single_stream = create_single_item_stream(item)
-
-                async def run_flow_safe(
-                    f: Flow[Input, Output], s: AsyncGenerator[Input, None]
-                ) -> list[Output] | None:
-                    """Run a flow safely and return results or None on error."""
-                    try:
-                        return [result async for result in f(s)]
-                    except Exception:
-                        return None
-
-                task = asyncio.create_task(run_flow_safe(flow, single_stream))
-                tasks.append(task)
-
-            # Wait for all to complete
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-
-            # Collect successful results
-            successful_results: list[Output] = []
-            for result in results:
-                if result is not None and isinstance(result, list):
-                    typed_result = cast(list[Output], result)
-                    successful_results.extend(typed_result)
-
-            yield successful_results
+            yield await _run_parallel_successful(flows, item)
 
     flow_names = ", ".join(flow.name for flow in flows)
     return Flow(_flow, name=f"parallel_successful({flow_names})")
+
+
+async def _get_next_or_stop(other_iter: Any) -> Any:
+    """Get next item from iterator or raise StopAsyncIteration."""
+    return await anext(other_iter)
+
+
+async def _zip_streams(
+    stream: AsyncGenerator[Input, None], other: AsyncGenerator[OtherInput, None]
+) -> AsyncGenerator[tuple[Input, OtherInput], None]:
+    """Core logic for zipping two streams."""
+    other_iter = aiter(other)
+
+    async for item in stream:
+        try:
+            other_item = await _get_next_or_stop(other_iter)
+            yield (item, other_item)
+        except StopAsyncIteration:
+            break
 
 
 def zip_stream(
@@ -222,17 +258,19 @@ def zip_stream(
         stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[tuple[Input, OtherInput], None]:
         """Zip items with another stream."""
-        other_iter = aiter(other)
-
-        async for item in stream:
-            try:
-                other_item = await anext(other_iter)
-                yield (item, other_item)
-            except StopAsyncIteration:
-                # Other stream is exhausted
-                break
+        async for result in _zip_streams(stream, other):
+            yield result
 
     return Flow(_flow, name="zip")
+
+
+async def _chain_all_streams(
+    streams: tuple[AsyncGenerator[Input, None], ...],
+) -> AsyncGenerator[Input, None]:
+    """Chain all streams sequentially."""
+    for stream in streams:
+        async for item in stream:
+            yield item
 
 
 def chain_stream(*streams: AsyncGenerator[Input, None]) -> Flow[None, Input]:
@@ -249,9 +287,8 @@ def chain_stream(*streams: AsyncGenerator[Input, None]) -> Flow[None, Input]:
 
     async def _flow(_: AsyncGenerator[None, None]) -> AsyncGenerator[Input, None]:
         """Chain multiple streams sequentially."""
-        for stream in streams:
-            async for item in stream:
-                yield item
+        async for item in _chain_all_streams(streams):
+            yield item
 
     return Flow(_flow, name=f"chain({len(streams)} streams)")
 
@@ -383,6 +420,55 @@ def merge_flows(*flows: Flow[Input, Input]) -> Flow[Input, Input]:
     return merge_stream(*flows)
 
 
+async def _get_first_other_item(
+    other_iter: Any,
+) -> Any:
+    """Get the first item from the other stream."""
+    try:
+        return await anext(other_iter)
+    except StopAsyncIteration:
+        return None
+
+
+async def _update_latest_value(other_iter: Any, latest_holder: list[Any]) -> None:
+    """Background task to continuously update the latest value."""
+    try:
+        async for item in other_iter:
+            latest_holder[0] = item
+    except Exception:
+        pass
+
+
+async def _cleanup_update_task(update_task: asyncio.Task[None]) -> None:
+    """Cancel and cleanup the background update task."""
+    update_task.cancel()
+    try:
+        await update_task
+    except asyncio.CancelledError:
+        pass
+
+
+async def _combine_with_latest(
+    stream: AsyncGenerator[Input, None], other: AsyncGenerator[OtherInput, None]
+) -> AsyncGenerator[tuple[Input, OtherInput], None]:
+    """Core logic for combining stream items with latest other value."""
+    other_iter = aiter(other)
+    latest_other = await _get_first_other_item(other_iter)
+
+    if latest_other is None:
+        return
+
+    latest_holder: list[Any] = [latest_other]
+    update_task = asyncio.create_task(_update_latest_value(other_iter, latest_holder))
+
+    try:
+        async for item in stream:
+            if latest_holder[0] is not None:
+                yield (item, latest_holder[0])
+    finally:
+        await _cleanup_update_task(update_task)
+
+
 def combine_latest_stream(
     other: AsyncGenerator[OtherInput, None],
 ) -> Flow[Input, tuple[Input, OtherInput]]:
@@ -402,39 +488,20 @@ def combine_latest_stream(
         stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[tuple[Input, OtherInput], None]:
         """Combine items with latest value from other stream."""
-        latest_other = None
-        other_iter = aiter(other)
-
-        # Try to get first item from other stream
-        try:
-            latest_other = await anext(other_iter)
-        except StopAsyncIteration:
-            # Other stream is empty
-            return
-
-        # Start background task to update latest_other
-        async def update_latest() -> None:
-            nonlocal latest_other
-            try:
-                async for item in other_iter:
-                    latest_other = item
-            except Exception:
-                pass
-
-        update_task = asyncio.create_task(update_latest())
-
-        try:
-            async for item in stream:
-                if latest_other is not None:
-                    yield (item, latest_other)
-        finally:
-            update_task.cancel()
-            try:
-                await update_task
-            except asyncio.CancelledError:
-                pass
+        async for result in _combine_with_latest(stream, other):
+            yield result
 
     return Flow(_flow, name="combine_latest")
+
+
+async def _apply_flat_map_with_context(
+    fn: Callable[[Any, Any], AsyncGenerator[Any, None]], item: Any
+) -> AsyncGenerator[Any, None]:
+    """Apply flat map function with context to a single item."""
+    # For this simplified version, we pass the item as both arguments
+    # In a full implementation, this would maintain context properly
+    async for result in fn(item, item):
+        yield result
 
 
 def flat_map_ctx_stream(
@@ -456,13 +523,45 @@ def flat_map_ctx_stream(
         stream: AsyncGenerator[Input, None],
     ) -> AsyncGenerator[Newput, None]:
         """Flat-map with access to original context."""
-        async for original_item in stream:
-            # For this simplified version, we pass the item as both arguments
-            # In a full implementation, this would maintain context properly
-            async for result in fn(original_item, original_item):  # type: ignore[arg-type]
+        async for item in stream:
+            async for result in _apply_flat_map_with_context(fn, item):
                 yield result
 
     return Flow(_flow, name=f"flat_map_ctx({get_function_name(fn)})")
+
+
+async def _collect_from_generator(
+    gen: AsyncGenerator[Input, None], result_queue: AnyQueue
+) -> None:
+    """Collect items from a generator into the result queue."""
+    try:
+        async for item in gen:
+            await result_queue.put(item)
+    except Exception as e:
+        await result_queue.put(e)
+    finally:
+        await result_queue.put(None)  # Signal completion
+
+
+def _create_generator_collection_tasks(
+    generators: tuple[AsyncGenerator[Input, None], ...], result_queue: AnyQueue
+) -> list[asyncio.Task[None]]:
+    """Create tasks to collect from all generators."""
+    return [
+        asyncio.create_task(_collect_from_generator(gen, result_queue))
+        for gen in generators
+    ]
+
+
+async def _cleanup_generator_tasks(tasks: list[asyncio.Task[None]]) -> None:
+    """Cancel and cleanup generator collection tasks."""
+    for task in tasks:
+        if not task.done():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 async def merge_async_generators(
@@ -481,41 +580,11 @@ async def merge_async_generators(
     if not generators:
         return
 
-    # Use a queue to merge results
     result_queue: AnyQueue = asyncio.Queue()
-
-    async def collect_from_generator(gen: AsyncGenerator[Input, None]) -> None:
-        """Collect items from a generator into the result queue."""
-        try:
-            async for item in gen:
-                await result_queue.put(item)
-        except Exception as e:
-            await result_queue.put(e)
-        finally:
-            await result_queue.put(None)  # Signal completion
-
-    # Start collection tasks
-    tasks = [asyncio.create_task(collect_from_generator(gen)) for gen in generators]
-
-    completed = 0
-    total = len(generators)
+    tasks = _create_generator_collection_tasks(generators, result_queue)
 
     try:
-        while completed < total:
-            result = await result_queue.get()
-
-            if result is None:
-                completed += 1
-            elif isinstance(result, Exception):
-                raise result
-            else:
-                yield result
+        async for result in _process_queue_results(result_queue, len(generators)):
+            yield result
     finally:
-        # Clean up remaining tasks
-        for task in tasks:
-            if not task.done():
-                task.cancel()
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
+        await _cleanup_generator_tasks(tasks)
