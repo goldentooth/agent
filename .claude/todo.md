@@ -44,3 +44,5 @@
 42. What can we do to interestingly and effectively integrate the flow system with Jupyter, etc?
 43. We can add a semi-persistent database with SQLite; this can host local RAG, perhaps some other local stuff that's not critical for long-term preservation. How can we make this absolutely bulletproof, highly observable, and maintainable?
 44. Revisit `agent-knowledge-base`. Is this still valuable? What if we get into 100,000-1,000,000 files? Does this just become absurd, and should we abandon it now?
+45. Add a semantic testing framework that will support our ability to test the Flow engine sufficiently and comprehensively.
+46. Add custom static analysis lints that will support our ability to test the Flow engine.
