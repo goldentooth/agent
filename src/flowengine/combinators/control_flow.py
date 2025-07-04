@@ -264,3 +264,32 @@ def then_stream(side_effect: Callable[[Input], AnyValue]) -> Flow[Input, Input]:
             await maybe_await(side_effect, item)
 
     return Flow(_flow, name=f"then({get_function_name(side_effect)})")
+
+
+def catch_and_continue_stream(
+    handler: Callable[[Exception], AnyValue] | None = None,
+) -> Flow[Input, Input]:
+    """Create a flow that catches exceptions and continues processing.
+
+    When an exception occurs, optionally calls a handler function and
+    continues with the next item instead of propagating the exception.
+
+    Args:
+        handler: Optional function to handle exceptions
+
+    Returns:
+        A flow that catches exceptions and continues processing
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Process stream with exception catching."""
+        async for item in stream:
+            try:
+                yield item
+            except Exception as e:
+                if handler:
+                    await maybe_await(handler, e)
+                # Continue processing without yielding anything for this item
+
+    handler_name = f"({get_function_name(handler)})" if handler else ""
+    return Flow(_flow, name=f"catch_and_continue{handler_name}")

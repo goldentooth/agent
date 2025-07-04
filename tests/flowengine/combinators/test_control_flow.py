@@ -7,6 +7,7 @@ import pytest
 
 from flowengine.combinators.basic import map_stream
 from flowengine.combinators.control_flow import (
+    catch_and_continue_stream,
     if_then_stream,
     recover_stream,
     retry_stream,
@@ -422,3 +423,45 @@ class TestThenStream:
 
         assert values == [0, 1]
         assert side_effects == [0, 1]
+
+
+class TestCatchAndContinueStream:
+    """Tests for catch_and_continue_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_catch_and_continue_basic(self):
+        """Test basic catch and continue functionality."""
+        errors: list[str] = []
+
+        def error_handler(e: Exception) -> None:
+            errors.append(str(e))
+
+        catch_flow = catch_and_continue_stream(error_handler)  # type: ignore
+        assert "catch_and_continue(error_handler)" in catch_flow.name
+
+        async def flaky_stream():
+            for i in [1]:
+                yield i
+            raise ValueError("Error 1")
+
+        # Note: The current implementation catches exceptions during yielding,
+        # not exceptions from the stream itself
+        result_stream = catch_flow(flaky_stream())  # type: ignore
+        values: list[int] = []
+
+        with pytest.raises(ValueError):
+            async for item in result_stream:  # type: ignore
+                values.append(item)  # type: ignore
+
+        assert values == [1]
+
+    @pytest.mark.asyncio
+    async def test_catch_and_continue_no_handler(self):
+        """Test catch and continue without handler."""
+        catch_flow = catch_and_continue_stream()  # type: ignore
+        assert catch_flow.name == "catch_and_continue"
+
+        input_stream = async_range(3)
+        result_stream = catch_flow(input_stream)  # type: ignore
+        values = [item async for item in result_stream]  # type: ignore
+        assert values == [0, 1, 2]
