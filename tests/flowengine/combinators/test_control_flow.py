@@ -8,6 +8,7 @@ import pytest
 from flowengine.combinators.basic import map_stream
 from flowengine.combinators.control_flow import (
     catch_and_continue_stream,
+    chain_flows,
     circuit_breaker_stream,
     if_then_stream,
     recover_stream,
@@ -520,3 +521,45 @@ class TestCircuitBreakerStream:
         result_stream = breaker_flow(async_range(2))  # type: ignore
         values = [item async for item in result_stream]  # type: ignore
         assert values == [0, 1]
+
+
+class TestChainFlows:
+    """Tests for chain_flows function."""
+
+    @pytest.mark.asyncio
+    async def test_chain_flows_basic(self):
+        """Test basic flow chaining."""
+        increment_flow = map_stream(increment)
+        double_flow = map_stream(double)
+
+        def str_transform(x: int) -> str:
+            return str(x)
+
+        str_flow = map_stream(str_transform)
+
+        chained = chain_flows(increment_flow, double_flow, str_flow)  # type: ignore
+        assert (
+            "chain_flows(map(increment), map(double), map(str_transform))"
+            in chained.name
+        )
+
+        input_stream = async_range(3)
+        result_stream = chained(input_stream)  # type: ignore
+        values = [item async for item in result_stream]  # type: ignore
+
+        # Each flow processes original stream: [0,1,2]
+        # increment: [1,2,3]
+        # double: [0,2,4]
+        # str: ["0","1","2"]
+        assert values == [1, 2, 3, 0, 2, 4, "0", "1", "2"]
+
+    @pytest.mark.asyncio
+    async def test_chain_flows_single(self):
+        """Test chaining single flow."""
+        single_flow = map_stream(double)
+        chained = chain_flows(single_flow)  # type: ignore
+
+        input_stream = async_range(2)
+        result_stream = chained(input_stream)  # type: ignore
+        values = [item async for item in result_stream]  # type: ignore
+        assert values == [0, 2]

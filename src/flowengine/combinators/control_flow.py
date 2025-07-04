@@ -346,3 +346,34 @@ def circuit_breaker_stream(
                 raise e
 
     return Flow(_flow, name=f"circuit_breaker({failure_threshold}, {recovery_timeout})")
+
+
+def chain_flows(*flows: Flow[Input, Input]) -> Flow[Input, Input]:
+    """Create a flow that chains multiple flows sequentially.
+
+    Applies each flow in sequence to the same input stream.
+    Each flow processes the original stream independently.
+
+    Args:
+        *flows: Flows to chain sequentially
+
+    Returns:
+        A flow that applies all flows to the input stream
+    """
+
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+        """Chain multiple flows sequentially."""
+        # Convert stream to list to replay it for each flow
+        items = [item async for item in stream]
+
+        for flow in flows:
+            # Create a fresh stream for each flow
+            async def _replay_stream() -> AsyncGenerator[Input, None]:
+                for item in items:
+                    yield item
+
+            async for result in flow(_replay_stream()):
+                yield result
+
+    flow_names = ", ".join(flow.name for flow in flows)
+    return Flow(_flow, name=f"chain_flows({flow_names})")
