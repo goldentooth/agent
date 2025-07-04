@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import AsyncGenerator, Callable, Hashable
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from flowengine.combinators.utils import get_function_name
 from flowengine.flow import Flow
@@ -210,8 +210,8 @@ def pairwise_stream() -> Flow[Input, tuple[Input, Input]]:
         first = True
 
         async for item in stream:
-            if not first:
-                yield (previous, item)  # type: ignore[arg-type]
+            if not first and previous is not None:
+                yield (previous, item)
             previous = item
             first = False
 
@@ -244,3 +244,76 @@ def memoize_stream(key_fn: Callable[[Input], K]) -> Flow[Input, Input]:
                 yield item
 
     return Flow(_flow, name=f"memoize({get_function_name(key_fn)})")
+
+
+def buffer_stream(
+    trigger: AsyncGenerator[Any, None],
+) -> Flow[Input, list[Input]]:
+    """Create a flow that buffers items until a trigger emits.
+
+    Collects items in a buffer and emits the buffer contents when
+    the trigger stream produces a value.
+
+    Args:
+        trigger: Stream that triggers buffer emission
+
+    Returns:
+        A flow that buffers items until triggered
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[list[Input], None]:
+        """Buffer items until trigger emits."""
+        import asyncio
+
+        buffer: list[Input] = []
+        stream_done = False
+        trigger_done = False
+
+        async def collect_items() -> None:
+            """Collect items into buffer."""
+            nonlocal buffer, stream_done
+            try:
+                async for item in stream:
+                    buffer.append(item)
+            finally:
+                stream_done = True
+
+        async def emit_on_trigger() -> AsyncGenerator[list[Input], None]:
+            """Emit buffer when trigger fires."""
+            nonlocal buffer, trigger_done
+            try:
+                async for _ in trigger:
+                    if buffer:
+                        yield list(buffer)
+                        buffer = []
+            finally:
+                trigger_done = True
+
+        # Start collecting items
+        collect_task = asyncio.create_task(collect_items())
+
+        try:
+            # Process triggers and emit buffers
+            async for buffered_items in emit_on_trigger():
+                yield buffered_items
+
+            # Wait for collection to finish
+            await collect_task
+
+            # Emit any remaining items when trigger stream ends
+            if buffer:
+                yield buffer
+
+        except Exception:
+            # Cancel collection if we error out
+            if not collect_task.done():
+                collect_task.cancel()
+                try:
+                    await collect_task
+                except asyncio.CancelledError:
+                    pass
+            raise
+
+    return Flow(_flow, name="buffer")

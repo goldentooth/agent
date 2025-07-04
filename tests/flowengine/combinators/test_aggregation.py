@@ -6,6 +6,7 @@ import pytest
 
 from flowengine.combinators.aggregation import (
     batch_stream,
+    buffer_stream,
     chunk_stream,
     distinct_stream,
     group_by_stream,
@@ -570,3 +571,105 @@ async def test_memoize_stream_single_item():
 
     result: list[str] = await flow.to_list()(test_stream())
     assert result == ["hello"]
+
+
+@pytest.mark.asyncio
+async def test_buffer_stream_basic():
+    """Test buffer_stream with basic trigger functionality."""
+    import asyncio
+
+    # Create trigger stream that fires twice
+    async def trigger_stream():
+        await asyncio.sleep(0.01)  # Let some items accumulate
+        yield "trigger1"
+        await asyncio.sleep(0.01)  # Let more items accumulate
+        yield "trigger2"
+
+    flow: Flow[int, list[int]] = buffer_stream(trigger_stream())
+
+    # Create test input stream
+    async def test_stream():
+        for i in range(6):
+            yield i
+            await asyncio.sleep(0.005)  # Small delay between items
+
+    # Execute the flow
+    result: list[list[int]] = await flow.to_list()(test_stream())
+
+    # Should have 2-3 buffers depending on timing
+    assert len(result) >= 2
+    assert len(result) <= 3
+
+    # All items should be present across all buffers
+    all_items = [item for buffer in result for item in buffer]
+    assert set(all_items) == set(range(6))
+
+
+@pytest.mark.asyncio
+async def test_buffer_stream_immediate_trigger():
+    """Test buffer_stream with immediate trigger."""
+
+    # Create trigger that fires immediately
+    async def trigger_stream():
+        yield "trigger"
+
+    flow: Flow[str, list[str]] = buffer_stream(trigger_stream())
+
+    # Create test input stream
+    async def test_stream():
+        yield "a"
+        yield "b"
+
+    # Execute the flow
+    result: list[list[str]] = await flow.to_list()(test_stream())
+
+    # Should have at least one buffer with remaining items
+    assert len(result) >= 1
+    all_items = [item for buffer in result for item in buffer]
+    assert set(all_items) == {"a", "b"}
+
+
+@pytest.mark.asyncio
+async def test_buffer_stream_no_trigger():
+    """Test buffer_stream with no triggers."""
+
+    # Create empty trigger stream
+    async def trigger_stream():
+        return
+        yield  # unreachable
+
+    flow: Flow[int, list[int]] = buffer_stream(trigger_stream())
+
+    # Create test input stream
+    async def test_stream():
+        for i in range(3):
+            yield i
+
+    # Execute the flow
+    result: list[list[int]] = await flow.to_list()(test_stream())
+
+    # Should have one buffer with all remaining items
+    assert len(result) == 1
+    assert result[0] == [0, 1, 2]
+
+
+@pytest.mark.asyncio
+async def test_buffer_stream_empty_input():
+    """Test buffer_stream with empty input stream."""
+
+    # Create trigger stream
+    async def trigger_stream():
+        yield "trigger"
+
+    flow: Flow[int, list[int]] = buffer_stream(trigger_stream())
+
+    # Create empty input stream
+    async def test_stream():
+        return
+        yield  # unreachable
+
+    # Execute the flow
+    result: list[list[int]] = await flow.to_list()(test_stream())
+
+    # Should have no buffers for empty input
+    assert result == []
