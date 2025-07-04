@@ -355,3 +355,35 @@ def expand_stream(
                     queue.append((expanded, depth + 1))
 
     return Flow(_flow, name=f"expand({get_function_name(expander)}, depth={max_depth})")
+
+
+def finalize_stream(
+    finalizer: Callable[[], Any],
+) -> Flow[Input, Input]:
+    """Create a flow that executes a finalizer function when the stream completes.
+
+    The finalizer is called whether the stream completes normally or with an error.
+
+    Args:
+        finalizer: Function to call when stream processing finishes
+
+    Returns:
+        A flow that executes cleanup on completion
+    """
+
+    async def _flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[Input, None]:
+        """Execute finalizer on stream completion."""
+        import asyncio
+
+        try:
+            async for item in stream:
+                yield item
+        finally:
+            if asyncio.iscoroutinefunction(finalizer):
+                await finalizer()
+            else:
+                finalizer()
+
+    return Flow(_flow, name=f"finalize({get_function_name(finalizer)})")
