@@ -303,6 +303,17 @@ class FlowAnalyzer:
 
         return graph
 
+    def _extract_description(self, flow: AnyFlow) -> str | None:
+        """Extract description from flow function docstring."""
+        if hasattr(flow, "_flow"):
+            flow_attr = getattr(flow, "_flow", None)
+            if flow_attr and hasattr(flow_attr, "__doc__"):
+                docstring = getattr(flow_attr, "__doc__", None)
+                if docstring and isinstance(docstring, str):
+                    # Return first line of docstring
+                    return str(docstring.strip().split("\n")[0])
+        return None
+
     def analyze_composition(self, flows: FlowList) -> FlowGraph:
         """Analyze a composition of multiple flows."""
         graph = FlowGraph()

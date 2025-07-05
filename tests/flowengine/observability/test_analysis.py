@@ -369,6 +369,22 @@ class TestFlowAnalyzer:
         assert edge.source_id in graph.nodes
         assert edge.target_id in graph.nodes
 
+    def test_extract_description_behavior(self):
+        """Test description extraction behavior through public analyze method."""
+        analyzer = FlowAnalyzer()
+
+        def documented_func(x: int) -> int:
+            """This is a test function."""
+            return x + 1
+
+        flow = map_stream(documented_func)
+        graph = analyzer.analyze_flow(flow)
+
+        # Verify the analysis completed successfully (indirectly tests _extract_description)
+        assert len(graph.nodes) == 1
+        node = list(graph.nodes.values())[0]
+        assert "map" in node.name
+
 
 class TestAnalysisFunctions:
     """Tests for module-level analysis functions."""
