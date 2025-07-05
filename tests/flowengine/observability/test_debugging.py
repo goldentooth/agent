@@ -3,7 +3,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
@@ -16,6 +16,7 @@ from flowengine.observability.debugging import (
     FlowDebugger,
     FlowExecutionContext,
     FlowExecutionErrorWithContext,
+    debug_stream,
     get_flow_debugger,
 )
 
@@ -427,3 +428,100 @@ class TestFlowExecutionErrorWithContext:
         assert "Current Item:" not in captured.out
         assert "📚 Execution Stack:" not in captured.out
         assert "🔍 Original Exception:" not in captured.out
+
+
+class TestDebugStream:
+    """Tests for debug_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_debug_stream_basic(self):
+        """Test basic debug stream functionality."""
+        debugger = get_flow_debugger()
+        debugger.debug_enabled = False  # Disable output for test
+
+        async def test_stream():
+            for i in range(3):
+                yield i
+
+        debug_flow = debug_stream()
+        result = await debug_flow.to_list()(test_stream())
+
+        assert result == [0, 1, 2]
+
+    @pytest.mark.asyncio
+    async def test_debug_stream_with_logging(self, capsys: "CaptureFixture[str]"):
+        """Test debug stream with logging enabled."""
+        debugger = get_flow_debugger()
+        debugger.debug_enabled = True
+
+        try:
+
+            async def test_stream():
+                for i in range(2):
+                    yield i
+
+            debug_flow = debug_stream(log_items=True)
+            result = await debug_flow.to_list()(test_stream())
+
+            assert result == [0, 1]
+
+            captured = capsys.readouterr()
+            assert "🐛 Debug: debug_stream processing item 1: 0" in captured.out
+            assert "🐛 Debug: debug_stream processing item 2: 1" in captured.out
+        finally:
+            debugger.debug_enabled = False
+
+    @pytest.mark.asyncio
+    async def test_debug_stream_with_breakpoint_condition(self):
+        """Test debug stream with breakpoint condition."""
+        debugger = get_flow_debugger()
+        debugger.debug_enabled = True
+
+        try:
+
+            async def test_stream():
+                for i in range(5):
+                    yield i
+
+            # Mock the breakpoint trigger to avoid interactive input
+            original_check = debugger.check_breakpoint
+
+            async def mock_check_breakpoint(
+                item: Any, context: FlowExecutionContext
+            ) -> None:
+                # Just record that breakpoint was hit
+                context.metadata["breakpoint_hit"] = True
+
+            debugger.check_breakpoint = mock_check_breakpoint
+
+            debug_flow = debug_stream(breakpoint_condition=lambda x: x == 2)
+            result = await debug_flow.to_list()(test_stream())
+
+            assert result == [0, 1, 2, 3, 4]
+            # Verify breakpoint was triggered (would be in execution history)
+            assert len(debugger.execution_history) > 0
+
+            # Restore original method
+            debugger.check_breakpoint = original_check
+        finally:
+            debugger.debug_enabled = False
+            debugger.execution_history.clear()
+
+    @pytest.mark.asyncio
+    async def test_debug_stream_error_handling(self):
+        """Test debug stream error handling."""
+
+        async def failing_stream():
+            yield 1
+            raise ValueError("Test error")
+
+        debug_flow = debug_stream()
+
+        with pytest.raises(FlowExecutionErrorWithContext) as exc_info:
+            await debug_flow.to_list()(failing_stream())
+
+        error = exc_info.value
+        assert "Error in debug stream: Test error" in str(error)
+        assert error.flow_name == "debug_stream"
+        assert isinstance(error.original_exception, ValueError)
+        assert str(error.original_exception) == "Test error"

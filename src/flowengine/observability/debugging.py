@@ -255,6 +255,58 @@ class FlowExecutionErrorWithContext(FlowError):
             )
 
 
+def debug_stream(
+    breakpoint_condition: ItemCondition | None = None, log_items: bool = True
+) -> Flow[Any, Any]:
+    """Create a flow that adds debugging capabilities to the pipeline.
+
+    Args:
+        breakpoint_condition: Optional condition to trigger breakpoints
+        log_items: Whether to log items as they pass through
+
+    Returns:
+        A flow that provides debugging and passes items through unchanged.
+    """
+    from collections.abc import AsyncGenerator
+
+    async def _flow(stream: AsyncGenerator[Any, None]) -> AsyncGenerator[Any, None]:
+        flow_name = "debug_stream"
+        parent_flow = (
+            _flow_debugger.execution_stack[-1].flow_name
+            if _flow_debugger.execution_stack
+            else None
+        )
+
+        async with _flow_debugger.execution_context(flow_name, parent_flow) as context:
+            try:
+                async for item in stream:
+                    context.current_item = item
+                    context.item_index += 1
+
+                    if log_items and _flow_debugger.debug_enabled:
+                        print(
+                            f"🐛 Debug: {flow_name} processing item {context.item_index}: {item}"
+                        )
+
+                    # Check breakpoint
+                    if breakpoint_condition and breakpoint_condition(item):
+                        await _flow_debugger.check_breakpoint(item, context)
+
+                    yield item
+
+            except Exception as e:
+                # Enhance exception with debugging context
+                enhanced_error = FlowExecutionErrorWithContext(
+                    f"Error in debug stream: {str(e)}",
+                    flow_name=flow_name,
+                    execution_context=context,
+                    original_exception=e,
+                )
+                raise enhanced_error from e
+
+    return Flow(_flow, name="debug")
+
+
 # Convenience functions for accessing the global debugger
 def get_flow_debugger() -> FlowDebugger:
     """Get the global flow debugger instance."""
