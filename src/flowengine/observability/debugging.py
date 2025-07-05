@@ -194,6 +194,10 @@ class FlowDebugger:
             json.dump(trace_data, f, indent=2)
 
 
+# Global debugger instance
+_flow_debugger = FlowDebugger()
+
+
 class FlowExecutionErrorWithContext(FlowError):
     """Enhanced flow execution error with debugging context."""
 
@@ -208,3 +212,12 @@ class FlowExecutionErrorWithContext(FlowError):
         self.flow_name = flow_name
         self.execution_context = execution_context
         self.original_exception = original_exception
+
+        # Capture execution stack
+        self.execution_stack = list(_flow_debugger.execution_stack)
+
+
+# Convenience functions for accessing the global debugger
+def get_flow_debugger() -> FlowDebugger:
+    """Get the global flow debugger instance."""
+    return _flow_debugger

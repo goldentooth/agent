@@ -12,6 +12,7 @@ from flowengine.observability.debugging import (
     FlowDebugger,
     FlowExecutionContext,
     FlowExecutionErrorWithContext,
+    get_flow_debugger,
 )
 
 
@@ -310,3 +311,22 @@ class TestFlowExecutionErrorWithContext:
         assert error.flow_name == "test_flow"
         assert error.execution_context == context
         assert error.original_exception == original_error
+
+    def test_error_captures_execution_stack(self):
+        """Test that error captures current execution stack."""
+        debugger = get_flow_debugger()
+
+        # Add some contexts to the global debugger stack
+        context1 = FlowExecutionContext("flow1", datetime.now())
+        context2 = FlowExecutionContext("flow2", datetime.now())
+        debugger.execution_stack = [context1, context2]
+
+        try:
+            error = FlowExecutionErrorWithContext("Test error")
+
+            assert len(error.execution_stack) == 2
+            assert error.execution_stack[0] == context1
+            assert error.execution_stack[1] == context2
+        finally:
+            # Clean up
+            debugger.execution_stack.clear()
