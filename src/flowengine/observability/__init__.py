@@ -29,6 +29,20 @@ from .health import (  # Core health types; Health monitoring; Configuration val
     validate_flow_configuration,
 )
 
+# Performance monitoring
+from .performance import (
+    FlowMetrics,
+    PerformanceMonitor,
+    benchmark_stream,
+    enable_memory_tracking,
+    export_performance_metrics,
+    get_performance_monitor,
+    get_performance_summary,
+    memory_profile_stream,
+    monitored_stream,
+    performance_stream,
+)
+
 __all__ = [
     # Core health types
     "HealthStatus",
@@ -56,4 +70,15 @@ __all__ = [
     "validate_flow_configuration",
     "register_health_check",
     "export_health_report",
+    # Performance monitoring (9 exports)
+    "FlowMetrics",
+    "PerformanceMonitor",
+    "monitored_stream",
+    "performance_stream",
+    "benchmark_stream",
+    "get_performance_monitor",
+    "enable_memory_tracking",
+    "get_performance_summary",
+    "export_performance_metrics",
+    "memory_profile_stream",
 ]

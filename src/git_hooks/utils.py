@@ -20,6 +20,15 @@ DEFAULT_EXCLUDE_PATTERNS = [
     "dist/",
     ".pytest_cache/",
     "docs/",
+    "*.md",
+    "*.rst",
+    "*.txt",
+    "*.json",
+    "*.yaml",
+    "*.yml",
+    "*.toml",
+    "*.cfg",
+    "*.ini",
 ]
 
 
