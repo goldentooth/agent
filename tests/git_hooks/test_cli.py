@@ -163,6 +163,17 @@ class TestCLI:
 
     def test_get_modules_finds_python_directories(self, tmp_path: Path) -> None:
         """Test get_modules finds directories containing Python files."""
+        self._create_test_module_structure(tmp_path)
+
+        modules = utils.get_modules(tmp_path)
+        module_names = {m.name for m in modules}
+
+        assert "module1" in module_names
+        assert "module2" in module_names
+        assert "other" not in module_names
+
+    def _create_test_module_structure(self, tmp_path: Path) -> None:
+        """Create test module structure with Python and non-Python directories."""
         # Create module structure
         module1 = tmp_path / "module1"
         module1.mkdir()
@@ -177,13 +188,6 @@ class TestCLI:
         other = tmp_path / "other"
         other.mkdir()
         (other / "data.txt").touch()
-
-        modules = utils.get_modules(tmp_path)
-        module_names = {m.name for m in modules}
-
-        assert "module1" in module_names
-        assert "module2" in module_names
-        assert "other" not in module_names
 
     def test_print_results_empty(self, capsys: pytest.CaptureFixture[str]) -> None:
         """Test print_results with no results."""
@@ -299,8 +303,8 @@ class TestCLI:
         result = subprocess.run(
             ["python", "-m", "src.git_hooks.cli"], capture_output=True, text=True
         )
-        assert result.returncode == 1
-        assert "Usage:" in result.stdout
+        assert result.returncode == 2  # Typer exits with 2 for missing command
+        assert "Usage:" in result.stderr  # Typer outputs to stderr
 
     def test_cli_main_file_length(self) -> None:
         """Test CLI main with file_length command."""
@@ -345,8 +349,8 @@ class TestCLI:
             capture_output=True,
             text=True,
         )
-        assert result.returncode == 1
-        assert "Unknown hook type" in result.stdout
+        assert result.returncode == 2  # Typer uses exit code 2 for unknown commands
+        assert "No such command" in result.stderr  # Typer outputs to stderr
 
     def test_print_results_with_non_urgent_warnings(
         self, capsys: pytest.CaptureFixture[str]

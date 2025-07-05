@@ -105,12 +105,12 @@ format-ruff-check = "ruff check src/ tests/"
 format-check = ["format-black-check", "format-isort-check", "format-ruff-check"]
 
 # Git hooks tasks for file and module size validation
-file-length = "python -m src.git_hooks.cli file_length"
-file-length-warnings = "python -m src.git_hooks.cli file_length_warnings"
-module-size = "python -m src.git_hooks.cli module_size"
-module-size-warnings = "python -m src.git_hooks.cli module_size_warnings"
-function-length = "python -m src.git_hooks.cli function_length"
-function-length-warnings = "python -m src.git_hooks.cli function_length_warnings"
+file-length = "python -m src.git_hooks.cli file-length --all-files"
+file-length-warnings = "python -m src.git_hooks.cli file-length --warnings --all-files"
+module-size = "python -m src.git_hooks.cli module-size --all-files"
+module-size-warnings = "python -m src.git_hooks.cli module-size --warnings --all-files"
+function-length = "python -m src.git_hooks.cli function-length --all-files"
+function-length-warnings = "python -m src.git_hooks.cli function-length --warnings --all-files"
 
 [tool.mypy]
 # Strict type checking configuration aligned with Pylance standards

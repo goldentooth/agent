@@ -127,18 +127,36 @@ class TestFlowMetrics:
         )
 
         result = metrics.to_dict()
+        self._assert_complete_serialization(result)
 
-        # Check all required fields are present
+    def _assert_complete_serialization(
+        self, result: dict[str, float | int | str | list[str]]
+    ) -> None:
+        """Assert that all fields are correctly serialized."""
         assert result["name"] == "test_flow"
-        assert abs(result["duration_ms"] - 2000.0) < 1.0
         assert result["items_processed"] == 200
         assert result["items_yielded"] == 180
-        assert abs(result["throughput_items_per_sec"] - 100.0) < 0.1
-        assert abs(result["yield_rate"] - 0.9) < 0.01
         assert result["error_count"] == 1
         assert result["errors"] == ["test error"]
         assert result["memory_usage_kb"] == 1024.0
         assert result["peak_memory_kb"] == 2048.0
+        self._assert_numeric_fields(result)
+
+    def _assert_numeric_fields(
+        self, result: dict[str, float | int | str | list[str]]
+    ) -> None:
+        """Assert numeric fields with proper type checking."""
+        duration_ms = result["duration_ms"]
+        assert isinstance(duration_ms, (float, int))
+        assert abs(float(duration_ms) - 2000.0) < 1.0
+
+        throughput = result["throughput_items_per_sec"]
+        assert isinstance(throughput, (float, int))
+        assert abs(float(throughput) - 100.0) < 0.1
+
+        yield_rate = result["yield_rate"]
+        assert isinstance(yield_rate, (float, int))
+        assert abs(float(yield_rate) - 0.9) < 0.01
 
     def test_to_dict_minimal_data(self) -> None:
         """Test dictionary conversion with minimal data."""

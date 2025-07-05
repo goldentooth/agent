@@ -75,8 +75,8 @@ class TestFunctionLengthValidator:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             test_file = Path(tmpdir) / "test.py"
-            # Create a function with 14 lines
-            function_body = "\n".join(f"    line_{i} = {i}" for i in range(10))
+            # Create a function with 13 statements (at urgent threshold)
+            function_body = "\n".join(f"    line_{i} = {i}" for i in range(12))
             test_file.write_text(
                 f'''def urgent_function():
     """An urgent function."""
@@ -89,7 +89,7 @@ class TestFunctionLengthValidator:
             assert result is not None
             assert result.severity == ValidationSeverity.WARNING
             assert "urgent_function" in result.message
-            assert result.line_count >= 13
+            assert result.line_count >= 13  # Should be 13 statements
 
     def test_multiple_functions_validates_longest(self) -> None:
         """Should validate all functions and return longest violation."""
@@ -118,6 +118,9 @@ def long_function():
     line_11 = 11
     line_12 = 12
     line_13 = 13
+    line_14 = 14
+    line_15 = 15
+    line_16 = 16
     return 42
 '''
             )

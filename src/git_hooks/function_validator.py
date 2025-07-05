@@ -208,7 +208,7 @@ class FunctionLengthValidator(Validator):
         """Count the number of statements in a function."""
         # Count all statement nodes within the function body
         # Exclude the function definition itself
-        statements = []
+        statements: list[ast.stmt] = []
         for child in ast.walk(node):
             if isinstance(child, ast.stmt) and child != node:
                 # Only count statements that are direct children or in the function body
