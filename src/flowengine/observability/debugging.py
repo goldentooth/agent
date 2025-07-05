@@ -407,3 +407,8 @@ async def debug_session(
 def get_flow_debugger() -> FlowDebugger:
     """Get the global flow debugger instance."""
     return _flow_debugger
+
+
+def enable_flow_debugging() -> None:
+    """Enable flow debugging globally."""
+    _flow_debugger.enable_debugging()

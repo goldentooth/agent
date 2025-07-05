@@ -19,6 +19,7 @@ from flowengine.observability.debugging import (
     FlowExecutionErrorWithContext,
     debug_session,
     debug_stream,
+    enable_flow_debugging,
     get_flow_debugger,
     inspect_flow,
     traced_flow,
@@ -994,3 +995,66 @@ class TestDebugSession:
         finally:
             debugger.debug_enabled = original_state
             debugger.execution_history.clear()
+
+
+class TestEnableFlowDebugging:
+    """Tests for enable_flow_debugging function."""
+
+    def test_enable_flow_debugging(self):
+        """Test enabling flow debugging globally."""
+        debugger = get_flow_debugger()
+        original_state = debugger.debug_enabled
+
+        try:
+            # Start with debugging disabled
+            debugger.disable_debugging()
+            assert not debugger.debug_enabled
+
+            # Enable debugging using convenience function
+            enable_flow_debugging()
+
+            # Should be enabled now
+            assert debugger.debug_enabled
+
+        finally:
+            debugger.debug_enabled = original_state
+
+    def test_enable_flow_debugging_when_already_enabled(self):
+        """Test enabling debugging when it's already enabled."""
+        debugger = get_flow_debugger()
+        original_state = debugger.debug_enabled
+
+        try:
+            # Start with debugging enabled
+            debugger.enable_debugging()
+            assert debugger.debug_enabled
+
+            # Enable again using convenience function
+            enable_flow_debugging()
+
+            # Should still be enabled
+            assert debugger.debug_enabled
+
+        finally:
+            debugger.debug_enabled = original_state
+
+    def test_enable_flow_debugging_affects_global_debugger(self):
+        """Test that enable_flow_debugging affects the global debugger instance."""
+        debugger = get_flow_debugger()
+        original_state = debugger.debug_enabled
+
+        try:
+            # Disable debugging
+            debugger.disable_debugging()
+            assert not debugger.debug_enabled
+
+            # Enable using convenience function
+            enable_flow_debugging()
+
+            # Verify the same debugger instance is affected
+            same_debugger = get_flow_debugger()
+            assert same_debugger is debugger
+            assert same_debugger.debug_enabled
+
+        finally:
+            debugger.debug_enabled = original_state
