@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, TypeVar
 
+from ..exceptions import FlowError
 from ..flow import Flow
 
 # Type aliases for debugging
@@ -191,3 +192,19 @@ class FlowDebugger:
 
         with open(filepath, "w") as f:
             json.dump(trace_data, f, indent=2)
+
+
+class FlowExecutionErrorWithContext(FlowError):
+    """Enhanced flow execution error with debugging context."""
+
+    def __init__(
+        self,
+        message: str,
+        flow_name: str | None = None,
+        execution_context: FlowExecutionContext | None = None,
+        original_exception: Exception | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.flow_name = flow_name
+        self.execution_context = execution_context
+        self.original_exception = original_exception

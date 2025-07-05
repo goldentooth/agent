@@ -11,6 +11,7 @@ from flowengine.observability.debugging import (
     BreakpointRegistry,
     FlowDebugger,
     FlowExecutionContext,
+    FlowExecutionErrorWithContext,
 )
 
 
@@ -288,3 +289,24 @@ class TestFlowDebugger:
         assert "execution_history" in data
         assert "breakpoints" in data
         assert "test_flow" in data["breakpoints"]
+
+
+class TestFlowExecutionErrorWithContext:
+    """Tests for FlowExecutionErrorWithContext class."""
+
+    def test_error_creation(self):
+        """Test error creation with context."""
+        context = FlowExecutionContext("test_flow", datetime.now())
+        original_error = ValueError("Original error")
+
+        error = FlowExecutionErrorWithContext(
+            "Test error",
+            flow_name="test_flow",
+            execution_context=context,
+            original_exception=original_error,
+        )
+
+        assert str(error) == "Test error"
+        assert error.flow_name == "test_flow"
+        assert error.execution_context == context
+        assert error.original_exception == original_error
