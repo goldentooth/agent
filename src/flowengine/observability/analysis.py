@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 
 from ..flow import Flow
@@ -496,9 +497,10 @@ class FlowAnalyzer:
         patterns = self.detect_patterns(graph)
         optimizations = self.generate_optimization_suggestions(graph)
 
+        graph_dict = graph.to_dict()
         analysis_data = {
-            "timestamp": str(graph.to_dict().get("timestamp", "unknown")),
-            "graph": graph.to_dict(),
+            "timestamp": datetime.now().isoformat(),
+            "graph": graph_dict,
             "patterns": patterns,
             "optimization_suggestions": optimizations,
             "summary": {
