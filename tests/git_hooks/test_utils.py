@@ -215,6 +215,35 @@ class TestPrintWarningResults:
         assert "⚠️  WARNING: test_file.py (Test warning)" in captured.out
         assert "Test guidance" in captured.out
 
+    def test_print_multiple_warnings_same_guidance(self, capsys):
+        """Test printing multiple warnings with same guidance only prints guidance once."""
+        warning1 = ValidationResult(
+            file_path=Path("file1.py"),
+            severity=ValidationSeverity.WARNING,
+            message="Warning 1",
+            line_count=40,
+            limit=50,
+            guidance="Same guidance for all",
+        )
+        warning2 = ValidationResult(
+            file_path=Path("file2.py"),
+            severity=ValidationSeverity.WARNING,
+            message="Warning 2",
+            line_count=42,
+            limit=50,
+            guidance="Same guidance for all",
+        )
+
+        _print_warning_results([warning1, warning2])
+        captured = capsys.readouterr()
+
+        # Both warnings should be printed
+        assert "⚠️  WARNING: file1.py (Warning 1)" in captured.out
+        assert "⚠️  WARNING: file2.py (Warning 2)" in captured.out
+
+        # Guidance should only appear once
+        assert captured.out.count("Same guidance for all") == 1
+
 
 class TestPrintSingleWarning:
     """Test suite for _print_single_warning function."""

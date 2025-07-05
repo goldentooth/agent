@@ -1,5 +1,7 @@
 """Utility functions for git hooks validation."""
 
+# pyright: reportUnusedFunction=false
+
 import subprocess
 from pathlib import Path
 from typing import List, Optional
@@ -96,12 +98,31 @@ def _print_warning_results(warning_results: List[ValidationResult]) -> None:
     if not warning_results:
         return
 
+    # Group warnings by guidance to avoid repetition
+    from collections import defaultdict
+
+    warnings_by_guidance: defaultdict[str, List[ValidationResult]] = defaultdict(list)
+
     for result in warning_results:
-        _print_single_warning(result)
+        warnings_by_guidance[result.guidance].append(result)
+
+    # Print warnings grouped by guidance
+    for guidance, results in warnings_by_guidance.items():
+        for result in results:
+            _print_single_warning_without_guidance(result)
+
+        # Print guidance once for the group
+        if guidance:
+            print(guidance)
+            print()
 
 
 def _print_single_warning(result: ValidationResult) -> None:
-    """Print a single warning result with appropriate formatting."""
+    """Print a single warning result with appropriate formatting.
+
+    Note: This function is kept for backward compatibility and testing.
+    The main code path uses _print_single_warning_without_guidance.
+    """
     display_path = str(result.file_path).lstrip("./")
 
     if _is_urgent_warning(result):
@@ -111,6 +132,16 @@ def _print_single_warning(result: ValidationResult) -> None:
 
     print(result.guidance)
     print()
+
+
+def _print_single_warning_without_guidance(result: ValidationResult) -> None:
+    """Print a single warning without the guidance text."""
+    display_path = str(result.file_path).lstrip("./")
+
+    if _is_urgent_warning(result):
+        print(f"🔶 URGENT: {display_path} ({result.message})")
+    else:
+        print(f"⚠️  WARNING: {display_path} ({result.message})")
 
 
 def _is_urgent_warning(result: ValidationResult) -> bool:
