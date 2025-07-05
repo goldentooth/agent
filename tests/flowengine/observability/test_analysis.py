@@ -255,13 +255,21 @@ class TestFlowGraph:
 
         graph_dict = graph.to_dict()
 
-        assert "nodes" in graph_dict
-        assert "edges" in graph_dict
-        assert "entry_points" in graph_dict
-        assert "exit_points" in graph_dict
-        assert "analysis" in graph_dict
-        assert graph_dict["analysis"]["complexity_score"] == 1
-        assert graph_dict["analysis"]["node_count"] == 1
+        # Check main structure
+        required_keys = ["nodes", "edges", "entry_points", "exit_points", "analysis"]
+        assert all(key in graph_dict for key in required_keys)
+
+        # Check analysis fields
+        analysis = graph_dict["analysis"]
+        expected_analysis = {
+            "complexity_score": 1,
+            "node_count": 1,
+            "edge_count": 0,
+            "depth": 1,
+            "critical_path": ["1"],
+            "cycles": [],
+        }
+        assert all(analysis[key] == expected_analysis[key] for key in expected_analysis)
 
 
 class TestFlowAnalyzer:

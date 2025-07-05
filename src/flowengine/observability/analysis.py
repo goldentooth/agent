@@ -203,8 +203,11 @@ class FlowGraph:
             "exit_points": self.exit_points,
             "analysis": {
                 "complexity_score": self.complexity_score,
+                "depth": self.depth,
                 "node_count": len(self.nodes),
                 "edge_count": len(self.edges),
+                "critical_path": self.get_critical_path(),
+                "cycles": self.find_cycles(),
             },
         }
 
