@@ -22,8 +22,6 @@ from flowengine.combinators.observability import (
 )
 from flowengine.flow import Flow
 
-pytestmark = pytest.mark.asyncio
-
 
 async def empty_stream() -> AsyncGenerator[int, None]:
     """Create an empty stream for testing."""
@@ -77,6 +75,7 @@ class TestLogStream:
         for i in range(3):
             yield i
 
+    @pytest.mark.asyncio
     async def test_log_stream_passes_items_through(self) -> None:
         """Test that log_stream passes items through unchanged."""
         log_flow: Flow[int, int] = log_stream("test")
@@ -84,6 +83,7 @@ class TestLogStream:
         result: list[int] = [item async for item in result_stream]
         assert result == [0, 1, 2]
 
+    @pytest.mark.asyncio
     async def test_log_stream_with_prefix(self) -> None:
         """Test log_stream with prefix."""
         log_flow: Flow[int, int] = log_stream("test", prefix="DEBUG: ")
@@ -91,6 +91,7 @@ class TestLogStream:
         result: list[int] = [item async for item in result_stream]
         assert result == [0, 1, 2]
 
+    @pytest.mark.asyncio
     async def test_log_stream_with_level(self) -> None:
         """Test log_stream with different levels."""
         log_flow: Flow[int, int] = log_stream("test", level=logging.INFO)
@@ -98,6 +99,7 @@ class TestLogStream:
         result: list[int] = [item async for item in result_stream]
         assert result == [0, 1, 2]
 
+    @pytest.mark.asyncio
     async def test_log_stream_with_enabled_logging(self) -> None:
         """Test log_stream with logging enabled to ensure coverage."""
         import logging
@@ -136,6 +138,7 @@ class TestLogStream:
         assert log_flow.metadata["prefix"] == "PREFIX: "
         assert log_flow.metadata["level"] == logging.INFO
 
+    @pytest.mark.asyncio
     async def test_log_stream_empty_stream(self) -> None:
         """Test log_stream with empty stream."""
         log_flow: Flow[int, int] = log_stream("test")
@@ -152,6 +155,7 @@ class TestTraceStream:
         for i in range(3):
             yield i
 
+    @pytest.mark.asyncio
     async def test_trace_stream_passes_items_through(self) -> None:
         """Test that trace_stream passes items through unchanged."""
         trace_calls: list[tuple[str, Any]] = []
@@ -173,6 +177,7 @@ class TestTraceStream:
         ]
         assert trace_calls == expected_calls
 
+    @pytest.mark.asyncio
     async def test_trace_stream_with_error(self) -> None:
         """Test trace_stream with error in stream."""
         trace_calls: list[tuple[str, Any]] = []
@@ -206,6 +211,7 @@ class TestTraceStream:
         trace_flow: Flow[int, int] = trace_stream(tracer)
         assert trace_flow.name == "trace(my_tracer)"
 
+    @pytest.mark.asyncio
     async def test_trace_stream_empty_stream(self) -> None:
         """Test trace_stream with empty stream."""
         trace_calls: list[tuple[str, Any]] = []
@@ -229,6 +235,7 @@ class TestMetricsStream:
         for i in range(3):
             yield i
 
+    @pytest.mark.asyncio
     async def test_metrics_stream_passes_items_through(self) -> None:
         """Test that metrics_stream passes items through unchanged."""
         metrics_calls: list[str] = []
@@ -251,6 +258,7 @@ class TestMetricsStream:
         ]
         assert metrics_calls == expected_calls
 
+    @pytest.mark.asyncio
     async def test_metrics_stream_with_error(self) -> None:
         """Test metrics_stream with error in stream."""
         metrics_calls: list[str] = []
@@ -287,6 +295,7 @@ class TestMetricsStream:
         metrics_flow: Flow[int, int] = metrics_stream(counter)
         assert metrics_flow.name == "metrics(my_counter)"
 
+    @pytest.mark.asyncio
     async def test_metrics_stream_empty_stream(self) -> None:
         """Test metrics_stream with empty stream."""
         metrics_calls: list[str] = []
@@ -315,6 +324,7 @@ class TestInspectStream:
         for i in range(3):
             yield i
 
+    @pytest.mark.asyncio
     async def test_inspect_stream_passes_items_through(self) -> None:
         """Test that inspect_stream passes items through unchanged."""
         inspect_calls: list[tuple[Any, dict[str, Any]]] = []
@@ -347,6 +357,7 @@ class TestInspectStream:
         inspect_flow: Flow[int, int] = inspect_stream(inspector)
         assert inspect_flow.name == "inspect(my_inspector)"
 
+    @pytest.mark.asyncio
     async def test_inspect_stream_empty_stream(self) -> None:
         """Test inspect_stream with empty stream."""
         inspect_calls: list[tuple[Any, dict[str, Any]]] = []
@@ -370,6 +381,7 @@ class TestMaterializeStream:
         for i in range(3):
             yield i
 
+    @pytest.mark.asyncio
     async def test_materialize_stream_normal_items(self) -> None:
         """Test materialize_stream with normal items."""
         materialize_flow: Flow[int, StreamNotification] = materialize_stream()
@@ -386,6 +398,7 @@ class TestMaterializeStream:
         assert result[1].value == 1
         assert result[2].value == 2
 
+    @pytest.mark.asyncio
     async def test_materialize_stream_with_error(self) -> None:
         """Test materialize_stream with error in stream."""
 
@@ -410,6 +423,7 @@ class TestMaterializeStream:
         materialize_flow: Flow[int, StreamNotification] = materialize_stream()
         assert materialize_flow.name == "materialize"
 
+    @pytest.mark.asyncio
     async def test_materialize_stream_empty_stream(self) -> None:
         """Test materialize_stream with empty stream."""
         materialize_flow: Flow[int, StreamNotification] = materialize_stream()

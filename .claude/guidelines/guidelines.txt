@@ -32,28 +32,34 @@ These are the fundamental principles that govern all development work on this pr
    - Avoid over-engineering and premature optimization
    - Focus on making the test green, not on future possibilities
 
-3. **Do not write functions of more than 10 statements or lines, and try not to write any of more than 5 statements or lines.**
+3. **Do not write functions of more than 15 statements or lines, and try not to write any of more than 10 statements or lines.**
    - Keep functions small and focused on a single responsibility
-   - If a function exceeds 10 lines, break it into smaller functions
-   - Aim for 5 lines or fewer whenever possible
+   - If a function exceeds 15 lines, break it into smaller functions
+   - Aim for 10 lines or fewer whenever possible
 
-4. **Do not add anything to a file with more than 1000 lines. If you need to add a line to a file with 1000 lines in it, stop what you're doing and ask me for advice.**
+4. **Do not add anything to a module with more than 1000 lines.**
+   - If you need to add a line to a module with 1000 lines in it, decompose it into smaller modules.
    - Files must remain manageable and focused
    - Large files indicate design problems that need addressing
    - Seek guidance before contributing to bloated files
 
-5. **Do not add anything to a module with more than 5000 lines. If you need to add a line to a file in a module with 5000 or more lines in it, stop what you are doing and ask me for guidance.**
-   - Modules must maintain reasonable scope and complexity
-   - Large modules indicate architectural issues
-   - Always consult before adding to oversized modules
+5. **Do not add anything to a package with more than 5000 lines.**
+   - If you need to add a line to a module in a package with 5000 or more lines in it, decompose it into smaller packages.
+   - Packages must maintain reasonable scope and complexity
+   - Large packages indicate architectural issues
+   - Always consult before adding to oversized packages
 
-6. **Tests must always match the structure of the codebase, i.e. code in src/goldentooth_agent/core/widget/ should be covered by tests in tests/goldentooth_agent/core/widget and integration/global tests in tests/integration.**
+6. **Tests must always match the structure of the codebase.**
    - Test structure mirrors source structure exactly
+     - e.g. code in src/goldentooth_agent/core/widget/ should be covered by tests in tests/goldentooth_agent/core/widget
+     - e.g. integration/global tests go in tests/integration
    - Unit tests go in tests/<package_name> with matching directory structure
    - Integration tests go in tests/integration/ with matching directory structure
    - This ensures tests are discoverable and maintainable
 
-7. **If you are unclear on anything, ask me for guidance. Do not go off half-cocked trying to please me. I will git reset your ass and make you do it again.**
+7. **If you are unclear on anything, ask me for guidance.**
+   - Do not go off half-cocked trying to please me.
+   - I will git reset your ass and make you do it again.
    - Uncertainty requires consultation, not assumption
    - Better to ask questions than implement incorrectly
    - Mistakes waste time and effort for everyone
@@ -74,6 +80,21 @@ These are the fundamental principles that govern all development work on this pr
     - Quality is non-negotiable
     - Excellence is the minimum acceptable standard
     - Prepare to defend every decision and implementation choice
+
+11. **It is never appropriate to make large commits. We commit a single change and the tests to cover it.**
+    - That may be a single small function
+    - That may be a single class method
+    - Never make more changes in a single commit than the minimum necessary to be a coherent, tested, validated whole
+    - Each commit must represent the smallest possible unit of work that can stand alone
+    - Large commits make code review impossible and history unclear
+
+12. **Never conflate planned work with completed work. Use the TodoWrite tool to track actual progress.**
+    - Only mark items as "completed" when they are actually implemented and committed
+    - Break down large tasks into individual, trackable units
+    - Use "pending" for work not yet started, "in_progress" for current work, "completed" only for finished work
+    - The TodoWrite tool is your source of truth for progress tracking
+    - Never describe future work as if it's already done
+    - When in doubt about status, check what's actually committed in git
 
 ## Enforcement
 
