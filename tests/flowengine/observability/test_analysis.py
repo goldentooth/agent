@@ -498,6 +498,29 @@ class TestFlowAnalyzer:
         assert pattern["nodes"] == ["1", "2", "3", "4"]
         assert "4 stages" in pattern["description"]
 
+    def test_detect_error_handling_pattern(self):
+        """Test detection of error handling pattern."""
+        analyzer = FlowAnalyzer()
+        graph = FlowGraph()
+
+        # Create nodes with error handling
+        nodes = {
+            "1": FlowNode(id="1", name="normal", flow_type="utility"),
+            "2": FlowNode(id="2", name="retry", flow_type="error_handling"),
+            "3": FlowNode(id="3", name="recover", flow_type="error_handling"),
+        }
+        graph.nodes.update(nodes)
+
+        patterns = analyzer.detect_patterns(graph)
+
+        # Should detect the error handling pattern
+        assert len(patterns) == 1
+        pattern = patterns[0]
+        assert pattern["pattern"] == "error_handling"
+        assert set(pattern["nodes"]) == {"2", "3"}
+        assert "2 error handling stage" in pattern["description"]
+        assert "fault tolerance" in pattern["reliability_impact"]
+
 
 class TestAnalysisFunctions:
     """Tests for module-level analysis functions."""

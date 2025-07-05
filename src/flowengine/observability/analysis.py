@@ -417,8 +417,18 @@ class FlowAnalyzer:
         return None
 
     def _detect_error_handling_pattern(self, graph: FlowGraph) -> PatternData | None:
-        """Detect error handling pattern."""
-        # TODO: Implement error handling pattern detection
+        """Detect error handling patterns."""
+        error_handling_nodes = [
+            node for node in graph.nodes.values() if node.flow_type == "error_handling"
+        ]
+
+        if error_handling_nodes:
+            return {
+                "pattern": "error_handling",
+                "description": f"Pipeline includes {len(error_handling_nodes)} error handling stage(s)",
+                "nodes": [node.id for node in error_handling_nodes],
+                "reliability_impact": "High - improved fault tolerance",
+            }
         return None
 
 
