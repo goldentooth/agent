@@ -5,6 +5,7 @@ from flowengine.combinators.basic import map_stream
 from flowengine.observability.analysis import (
     AnalysisData,
     AnyFlow,
+    FlowEdge,
     FlowList,
     FlowMetadata,
     FlowNode,
@@ -52,3 +53,31 @@ class TestFlowNode:
         assert node_dict["flow_type"] == "transformation"
         assert node_dict["inputs"] == ["input1"]
         assert node_dict["outputs"] == ["output1"]
+
+
+class TestFlowEdge:
+    """Tests for FlowEdge class."""
+
+    def test_flow_edge_creation(self):
+        """Test basic FlowEdge creation."""
+        edge = FlowEdge(source_id="node1", target_id="node2", edge_type="sequential")
+
+        assert edge.source_id == "node1"
+        assert edge.target_id == "node2"
+        assert edge.edge_type == "sequential"
+
+    def test_flow_edge_to_dict(self):
+        """Test FlowEdge to_dict conversion."""
+        edge = FlowEdge(
+            source_id="node1",
+            target_id="node2",
+            edge_type="data_flow",
+            metadata={"weight": 1.0},
+        )
+
+        edge_dict = edge.to_dict()
+
+        assert edge_dict["source_id"] == "node1"
+        assert edge_dict["target_id"] == "node2"
+        assert edge_dict["edge_type"] == "data_flow"
+        assert edge_dict["metadata"]["weight"] == 1.0

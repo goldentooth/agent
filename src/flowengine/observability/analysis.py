@@ -48,3 +48,22 @@ class FlowNode:
             "outputs": self.outputs,
             "complexity_score": self.complexity_score,
         }
+
+
+@dataclass
+class FlowEdge:
+    """Represents an edge (connection) between Flow nodes."""
+
+    source_id: str
+    target_id: str
+    edge_type: str = "data_flow"
+    metadata: FlowMetadata = field(default_factory=lambda: {})
+
+    def to_dict(self) -> AnalysisData:
+        """Convert edge to dictionary representation."""
+        return {
+            "source_id": self.source_id,
+            "target_id": self.target_id,
+            "edge_type": self.edge_type,
+            "metadata": self.metadata,
+        }
