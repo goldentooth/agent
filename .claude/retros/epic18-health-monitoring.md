@@ -18,7 +18,14 @@ Epic 18 focuses on migrating the health monitoring system from `old/goldentooth_
 - HealthCheckResult must be migrated before HealthCheck due to dependency
 
 ## Challenges & Solutions
-- TBD as implementation progresses
+1. Type annotations for async functions
+   - Pyright was strict about the check function type needing to be Awaitable[bool] not just bool
+   - Solution: Updated CheckFunction type to use Union[Callable[[], Awaitable[bool]], Callable[[], AsyncGenerator[bool, None]]]
+   - Used cast() to properly type the check results based on runtime checks
+
+2. Async test marking
+   - Pytest requires async tests to be marked with @pytest.mark.asyncio
+   - Solution: Added decorators to all async test methods
 
 ## Lessons Learned
 - TBD as implementation progresses
