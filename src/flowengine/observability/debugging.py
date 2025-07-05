@@ -233,6 +233,27 @@ class FlowExecutionErrorWithContext(FlowError):
             "traceback": traceback.format_exc() if self.original_exception else None,
         }
 
+    def print_debug_info(self) -> None:
+        """Print comprehensive debug information."""
+        print(f"\n❌ Flow Execution Error in '{self.flow_name}'")
+        print(f"   Message: {str(self)}")
+
+        if self.execution_context:
+            print(f"   Current Item: {self.execution_context.current_item}")
+            print(f"   Item Index: {self.execution_context.item_index}")
+
+        if self.execution_stack:
+            print("\n📚 Execution Stack:")
+            for i, ctx in enumerate(reversed(self.execution_stack)):
+                indent = "  " * i
+                print(f"{indent}└─ {ctx.flow_name} (item {ctx.item_index})")
+
+        if self.original_exception:
+            print("\n🔍 Original Exception:")
+            print(
+                f"   {type(self.original_exception).__name__}: {self.original_exception}"
+            )
+
 
 # Convenience functions for accessing the global debugger
 def get_flow_debugger() -> FlowDebugger:

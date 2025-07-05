@@ -3,8 +3,12 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:
+    from pytest import CaptureFixture
 
 from flowengine.observability.debugging import (
     BreakpointCondition,
@@ -363,3 +367,63 @@ class TestFlowExecutionErrorWithContext:
         assert debug_info["original_exception"] is None
         assert debug_info["traceback"] is None
         assert debug_info["execution_stack"] == []
+
+    def test_print_debug_info(self, capsys: "CaptureFixture[str]"):
+        """Test printing debug information."""
+        context = FlowExecutionContext("test_flow", datetime.now())
+        context.current_item = "test_item"
+        context.item_index = 5
+
+        original_error = ValueError("Original error")
+        error = FlowExecutionErrorWithContext(
+            "Test error",
+            flow_name="test_flow",
+            execution_context=context,
+            original_exception=original_error,
+        )
+
+        error.print_debug_info()
+        captured = capsys.readouterr()
+
+        assert "❌ Flow Execution Error in 'test_flow'" in captured.out
+        assert "Message: Test error" in captured.out
+        assert "Current Item: test_item" in captured.out
+        assert "Item Index: 5" in captured.out
+        assert "Original Exception:" in captured.out
+        assert "ValueError: Original error" in captured.out
+
+    def test_print_debug_info_with_execution_stack(self, capsys: "CaptureFixture[str]"):
+        """Test printing debug info with execution stack."""
+        debugger = get_flow_debugger()
+
+        # Add contexts to the execution stack
+        context1 = FlowExecutionContext("flow1", datetime.now())
+        context1.item_index = 1
+        context2 = FlowExecutionContext("flow2", datetime.now())
+        context2.item_index = 2
+
+        debugger.execution_stack = [context1, context2]
+
+        try:
+            error = FlowExecutionErrorWithContext("Test error", flow_name="test_flow")
+            error.print_debug_info()
+            captured = capsys.readouterr()
+
+            assert "📚 Execution Stack:" in captured.out
+            assert "└─ flow2 (item 2)" in captured.out
+            assert "  └─ flow1 (item 1)" in captured.out
+        finally:
+            debugger.execution_stack.clear()
+
+    def test_print_debug_info_minimal(self, capsys: "CaptureFixture[str]"):
+        """Test printing debug info with minimal information."""
+        error = FlowExecutionErrorWithContext("Test error")
+        error.print_debug_info()
+        captured = capsys.readouterr()
+
+        assert "❌ Flow Execution Error in 'None'" in captured.out
+        assert "Message: Test error" in captured.out
+        # Should not contain optional sections
+        assert "Current Item:" not in captured.out
+        assert "📚 Execution Stack:" not in captured.out
+        assert "🔍 Original Exception:" not in captured.out
