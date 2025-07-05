@@ -17,6 +17,7 @@ from flowengine.observability.analysis import (
     PatternData,
     PatternList,
     analyze_flow,
+    analyze_flow_composition,
     get_flow_analyzer,
 )
 
@@ -389,3 +390,20 @@ class TestAnalysisFunctions:
         analyzer = get_flow_analyzer()
 
         assert isinstance(analyzer, FlowAnalyzer)
+
+    def test_analyze_flow_composition_function(self):
+        """Test analyze_flow_composition convenience function."""
+
+        def increment(x: int) -> int:
+            return x + 1
+
+        def double(x: int) -> int:
+            return x * 2
+
+        flows = [map_stream(increment), map_stream(double)]
+        graph = analyze_flow_composition(flows)
+
+        assert len(graph.nodes) == 2
+        assert len(graph.edges) == 1
+        assert len(graph.entry_points) == 1
+        assert len(graph.exit_points) == 1

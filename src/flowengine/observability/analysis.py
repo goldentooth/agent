@@ -341,6 +341,11 @@ def analyze_flow(flow: AnyFlow) -> FlowGraph:
     return _flow_analyzer.analyze_flow(flow)
 
 
+def analyze_flow_composition(flows: FlowList) -> FlowGraph:
+    """Analyze a composition of multiple flows."""
+    return _flow_analyzer.analyze_composition(flows)
+
+
 def get_flow_analyzer() -> FlowAnalyzer:
     """Get the global flow analyzer instance."""
     return _flow_analyzer
