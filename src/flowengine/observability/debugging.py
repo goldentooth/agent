@@ -174,3 +174,7 @@ class FlowDebugger:
         print(f"   String: {str(item)}")
         if hasattr(item, "__dict__"):
             print(f"   Attributes: {list(item.__dict__.keys())}")
+
+    def get_execution_trace(self) -> TraceData:
+        """Get the full execution trace."""
+        return [ctx.to_dict() for ctx in self.execution_history]

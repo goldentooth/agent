@@ -246,3 +246,20 @@ class TestFlowDebugger:
         await debugger.check_breakpoint(5, context)
 
         # No exceptions should be raised
+
+    def test_get_execution_trace(self):
+        """Test getting execution trace."""
+        debugger = FlowDebugger()
+
+        # Add some history
+        context1 = FlowExecutionContext("flow1", datetime.now())
+        context2 = FlowExecutionContext("flow2", datetime.now())
+
+        debugger.execution_history = [context1, context2]
+
+        trace = debugger.get_execution_trace()
+
+        assert len(trace) == 2
+        assert all(isinstance(item, dict) for item in trace)
+        assert trace[0]["flow_name"] == "flow1"
+        assert trace[1]["flow_name"] == "flow2"
