@@ -133,3 +133,16 @@ class FlowAnalyzer:
                 "has_metadata": hasattr(flow, "metadata") and bool(flow.metadata),
             },
         )
+
+    def analyze_flow(self, flow: AnyFlow) -> FlowGraph:
+        """Analyze a single Flow and return its graph representation."""
+        graph = FlowGraph()
+
+        node_id = self._generate_node_id()
+        node = self._create_flow_node(flow, node_id)
+
+        graph.nodes[node_id] = node
+        graph.entry_points = [node_id]
+        graph.exit_points = [node_id]
+
+        return graph

@@ -172,3 +172,20 @@ class TestFlowAnalyzer:
         # The create node method should be present and callable
         assert hasattr(analyzer, "_create_flow_node")
         assert callable(getattr(analyzer, "_create_flow_node"))
+
+    def test_analyze_single_flow(self):
+        """Test analyzing a single flow."""
+        analyzer = FlowAnalyzer()
+
+        def increment(x: int) -> int:
+            return x + 1
+
+        flow = map_stream(increment)
+        graph = analyzer.analyze_flow(flow)
+
+        assert len(graph.nodes) == 1
+        assert len(graph.entry_points) == 1
+        assert len(graph.exit_points) == 1
+
+        node = list(graph.nodes.values())[0]
+        assert "map" in node.name
