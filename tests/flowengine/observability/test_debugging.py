@@ -145,3 +145,77 @@ class TestFlowDebugger:
         assert len(debugger.execution_stack) == 0
         assert len(debugger.execution_history) == 1
         assert debugger.execution_history[0] == context
+
+    @pytest.mark.asyncio
+    async def test_execution_context_history_limit(self):
+        """Test execution context history limit enforcement."""
+        debugger = FlowDebugger()
+        debugger.max_history = 2  # Set small limit for testing
+
+        # Add contexts beyond the limit
+        async with debugger.execution_context("flow1"):
+            pass
+        async with debugger.execution_context("flow2"):
+            pass
+        async with debugger.execution_context("flow3"):  # This should trigger cleanup
+            pass
+
+        # Should only keep the last 2 contexts
+        assert len(debugger.execution_history) == 2
+        assert debugger.execution_history[0].flow_name == "flow2"
+        assert debugger.execution_history[1].flow_name == "flow3"
+
+    @pytest.mark.asyncio
+    async def test_execution_context_stack_corruption(self):
+        """Test execution context cleanup when stack is corrupted."""
+        debugger = FlowDebugger()
+
+        async with debugger.execution_context("flow1") as context1:
+            # Manually corrupt the stack to test the safety check
+            debugger.execution_stack.clear()  # This simulates stack corruption
+
+            # The context manager should still clean up safely
+            pass
+
+        # Both contexts should be in history even with corrupted stack
+        assert len(debugger.execution_history) == 1
+        assert debugger.execution_history[0] == context1
+
+    @pytest.mark.asyncio
+    async def test_execution_context_wrong_order_cleanup(self):
+        """Test execution context when contexts exit out of order."""
+        debugger = FlowDebugger()
+
+        async with debugger.execution_context("flow1") as context1:
+            async with debugger.execution_context("flow2") as context2:
+                # Manually swap the stack order to test the safety check
+                debugger.execution_stack[0], debugger.execution_stack[1] = (
+                    debugger.execution_stack[1],
+                    debugger.execution_stack[0],
+                )
+                # context2 will exit first but won't be the last in stack
+
+        # Both should be in history despite the corruption
+        assert len(debugger.execution_history) == 2
+
+    def test_context_to_dict_with_none_values(self):
+        """Test context serialization with None values."""
+        context = FlowExecutionContext(
+            flow_name="test_flow",
+            started_at=datetime.now(),
+            current_item=None,  # Explicitly test None case
+        )
+
+        context_dict = context.to_dict()
+        assert context_dict["current_item"] is None
+
+    def test_enable_disable_debugging_cycle(self):
+        """Test multiple enable/disable cycles."""
+        debugger = FlowDebugger()
+
+        for _ in range(3):
+            assert not debugger.debug_enabled
+            debugger.enable_debugging()
+            assert debugger.debug_enabled
+            debugger.disable_debugging()
+            assert not debugger.debug_enabled
