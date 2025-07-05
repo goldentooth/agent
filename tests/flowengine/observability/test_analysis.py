@@ -18,6 +18,9 @@ from flowengine.observability.analysis import (
     PatternList,
     analyze_flow,
     analyze_flow_composition,
+    detect_flow_patterns,
+    export_flow_analysis,
+    generate_flow_optimizations,
     get_flow_analyzer,
 )
 
@@ -521,6 +524,60 @@ class TestFlowAnalyzer:
         assert "2 error handling stage" in pattern["description"]
         assert "fault tolerance" in pattern["reliability_impact"]
 
+    def test_generate_optimization_suggestions_empty(self):
+        """Test optimization suggestions for empty graph."""
+        analyzer = FlowAnalyzer()
+        graph = FlowGraph()
+
+        suggestions = analyzer.generate_optimization_suggestions(graph)
+
+        # Empty graph should have no suggestions
+        assert suggestions == []
+
+    def test_generate_optimization_suggestions_caching(self):
+        """Test caching suggestions for expensive nodes."""
+        analyzer = FlowAnalyzer()
+        graph = FlowGraph()
+
+        # Create expensive nodes (complexity >= 3)
+        expensive_node = FlowNode(
+            id="1", name="expensive", flow_type="utility", complexity_score=5
+        )
+        cheap_node = FlowNode(
+            id="2", name="cheap", flow_type="utility", complexity_score=1
+        )
+
+        graph.nodes["1"] = expensive_node
+        graph.nodes["2"] = cheap_node
+
+        suggestions = analyzer.generate_optimization_suggestions(graph)
+
+        # Should suggest caching for expensive node
+        assert len(suggestions) == 1
+        suggestion = suggestions[0]
+        assert suggestion["type"] == "caching"
+        assert "1" in suggestion["affected_nodes"]
+        assert "2" not in suggestion["affected_nodes"]
+
+    def test_generate_optimization_suggestions_batching(self):
+        """Test batching suggestions for high complexity."""
+        analyzer = FlowAnalyzer()
+        graph = FlowGraph()
+
+        # Create high complexity graph (> 10)
+        for i in range(5):
+            node = FlowNode(
+                id=str(i), name=f"node{i}", flow_type="utility", complexity_score=3
+            )
+            graph.nodes[str(i)] = node
+
+        suggestions = analyzer.generate_optimization_suggestions(graph)
+
+        # Should suggest batching for high complexity
+        batching_suggestions = [s for s in suggestions if s["type"] == "batching"]
+        assert len(batching_suggestions) == 1
+        assert "throughput" in batching_suggestions[0]["potential_benefit"]
+
 
 class TestAnalysisFunctions:
     """Tests for module-level analysis functions."""
@@ -559,3 +616,66 @@ class TestAnalysisFunctions:
         assert len(graph.edges) == 1
         assert len(graph.entry_points) == 1
         assert len(graph.exit_points) == 1
+
+    def test_detect_flow_patterns_function(self):
+        """Test detect_flow_patterns convenience function."""
+        graph = FlowGraph()
+
+        # Create error handling node
+        error_node = FlowNode(id="1", name="retry", flow_type="error_handling")
+        graph.nodes["1"] = error_node
+
+        patterns = detect_flow_patterns(graph)
+
+        assert len(patterns) == 1
+        assert patterns[0]["pattern"] == "error_handling"
+
+    def test_generate_flow_optimizations_function(self):
+        """Test generate_flow_optimizations convenience function."""
+        graph = FlowGraph()
+
+        # Create expensive node for caching suggestion
+        expensive_node = FlowNode(
+            id="1", name="expensive", flow_type="utility", complexity_score=5
+        )
+        graph.nodes["1"] = expensive_node
+
+        optimizations = generate_flow_optimizations(graph)
+
+        assert len(optimizations) == 1
+        assert optimizations[0]["type"] == "caching"
+
+    def test_export_flow_analysis_function(self):
+        """Test export_flow_analysis convenience function."""
+        import json
+        import os
+        import tempfile
+
+        graph = FlowGraph()
+
+        # Create simple graph for export
+        node = FlowNode(id="1", name="test", flow_type="utility")
+        graph.nodes["1"] = node
+        graph.entry_points = ["1"]
+        graph.exit_points = ["1"]
+
+        # Export to temporary file
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
+            tmp_path = tmp.name
+
+        try:
+            export_flow_analysis(graph, tmp_path)
+
+            # Verify the file was created and contains expected data
+            with open(tmp_path, "r") as f:
+                exported_data = json.load(f)
+
+            assert "graph" in exported_data
+            assert "patterns" in exported_data
+            assert "optimization_suggestions" in exported_data
+            assert "summary" in exported_data
+            assert exported_data["summary"]["total_nodes"] == 1
+        finally:
+            # Clean up
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)

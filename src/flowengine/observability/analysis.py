@@ -7,6 +7,7 @@ and understanding the structure and behavior of complex Flow pipelines.
 from __future__ import annotations
 
 import hashlib
+import json
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -431,6 +432,89 @@ class FlowAnalyzer:
             }
         return None
 
+    def _find_sequential_transformations(self, graph: FlowGraph) -> list[str]:
+        """Find sequences of transformation nodes."""
+        transformation_sequences: list[str] = []
+
+        for node_id, node in graph.nodes.items():
+            if node.flow_type == "transformation":
+                # Check if this transformation is followed by another transformation
+                outgoing_edges = [
+                    edge for edge in graph.edges if edge.source_id == node_id
+                ]
+                for edge in outgoing_edges:
+                    target_node = graph.nodes.get(edge.target_id)
+                    if target_node and target_node.flow_type == "transformation":
+                        transformation_sequences.extend([node_id, target_node.id])
+
+        return list(set(transformation_sequences))
+
+    def generate_optimization_suggestions(self, graph: FlowGraph) -> OptimizationList:
+        """Generate optimization suggestions for the flow graph."""
+        suggestions: OptimizationList = []
+
+        # Suggest parallel processing opportunities
+        sequential_transformations = self._find_sequential_transformations(graph)
+        if len(sequential_transformations) > 1:
+            suggestions.append(
+                {
+                    "type": "parallelization",
+                    "description": "Multiple sequential transformations could be parallelized",
+                    "affected_nodes": sequential_transformations,
+                    "potential_benefit": "Reduced latency through parallel execution",
+                }
+            )
+
+        # Suggest batching opportunities
+        if graph.complexity_score > 10:
+            suggestions.append(
+                {
+                    "type": "batching",
+                    "description": "High complexity pipeline could benefit from batching",
+                    "potential_benefit": "Improved throughput for large datasets",
+                }
+            )
+
+        # Suggest caching opportunities
+        expensive_nodes = [
+            node.id for node in graph.nodes.values() if node.complexity_score >= 3
+        ]
+        if expensive_nodes:
+            suggestions.append(
+                {
+                    "type": "caching",
+                    "description": "Expensive operations could benefit from caching",
+                    "affected_nodes": expensive_nodes,
+                    "potential_benefit": "Reduced computation for repeated inputs",
+                }
+            )
+
+        return suggestions
+
+    def export_analysis(self, graph: FlowGraph, filepath: str) -> None:
+        """Export comprehensive flow analysis to JSON file."""
+        patterns = self.detect_patterns(graph)
+        optimizations = self.generate_optimization_suggestions(graph)
+
+        analysis_data = {
+            "timestamp": str(graph.to_dict().get("timestamp", "unknown")),
+            "graph": graph.to_dict(),
+            "patterns": patterns,
+            "optimization_suggestions": optimizations,
+            "summary": {
+                "total_nodes": len(graph.nodes),
+                "total_edges": len(graph.edges),
+                "complexity_score": graph.complexity_score,
+                "depth": graph.depth,
+                "has_cycles": bool(graph.find_cycles()),
+                "patterns_detected": len(patterns),
+                "optimization_opportunities": len(optimizations),
+            },
+        }
+
+        with open(filepath, "w") as f:
+            json.dump(analysis_data, f, indent=2)
+
 
 # Global analyzer instance
 _flow_analyzer = FlowAnalyzer()
@@ -444,6 +528,21 @@ def analyze_flow(flow: AnyFlow) -> FlowGraph:
 def analyze_flow_composition(flows: FlowList) -> FlowGraph:
     """Analyze a composition of multiple flows."""
     return _flow_analyzer.analyze_composition(flows)
+
+
+def detect_flow_patterns(graph: FlowGraph) -> PatternList:
+    """Detect common patterns in a flow graph."""
+    return _flow_analyzer.detect_patterns(graph)
+
+
+def generate_flow_optimizations(graph: FlowGraph) -> OptimizationList:
+    """Generate optimization suggestions for a flow graph."""
+    return _flow_analyzer.generate_optimization_suggestions(graph)
+
+
+def export_flow_analysis(graph: FlowGraph, filepath: str) -> None:
+    """Export comprehensive flow analysis to JSON file."""
+    _flow_analyzer.export_analysis(graph, filepath)
 
 
 def get_flow_analyzer() -> FlowAnalyzer:
