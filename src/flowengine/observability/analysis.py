@@ -84,6 +84,83 @@ class FlowGraph:
         """Calculate total complexity score of the graph."""
         return sum(node.complexity_score for node in self.nodes.values())
 
+    @property
+    def depth(self) -> int:
+        """Calculate maximum depth of the graph."""
+        if not self.nodes:
+            return 0
+
+        # Find longest path from entry to exit
+        max_depth = 0
+        for entry_id in self.entry_points:
+            depth = self._calculate_depth_from_node(entry_id, set())
+            max_depth = max(max_depth, depth)
+
+        return max_depth
+
+    def _calculate_depth_from_node(self, node_id: str, visited: set[str]) -> int:
+        """Calculate depth from a specific node."""
+        if node_id in visited or node_id not in self.nodes:
+            return 0
+
+        visited.add(node_id)
+
+        # Find outgoing edges
+        outgoing_edges = [edge for edge in self.edges if edge.source_id == node_id]
+
+        if not outgoing_edges:
+            return 1
+
+        max_child_depth = 0
+        for edge in outgoing_edges:
+            child_depth = self._calculate_depth_from_node(
+                edge.target_id, visited.copy()
+            )
+            max_child_depth = max(max_child_depth, child_depth)
+
+        return 1 + max_child_depth
+
+    def get_critical_path(self) -> list[str]:
+        """Find the critical path (longest path) through the graph."""
+        if not self.entry_points:
+            return []
+
+        longest_path = []
+        max_length = 0
+
+        for entry_id in self.entry_points:
+            path = self._find_longest_path_from_node(entry_id, set())
+            if len(path) > max_length:
+                max_length = len(path)
+                longest_path = path
+
+        return longest_path
+
+    def _find_longest_path_from_node(
+        self, node_id: str, visited: set[str]
+    ) -> list[str]:
+        """Find the longest path from a specific node."""
+        if node_id in visited or node_id not in self.nodes:
+            return []
+
+        visited.add(node_id)
+
+        # Find outgoing edges
+        outgoing_edges = [edge for edge in self.edges if edge.source_id == node_id]
+
+        if not outgoing_edges:
+            return [node_id]
+
+        longest_child_path: list[str] = []
+        for edge in outgoing_edges:
+            child_path = self._find_longest_path_from_node(
+                edge.target_id, visited.copy()
+            )
+            if len(child_path) > len(longest_child_path):
+                longest_child_path = child_path
+
+        return [node_id] + longest_child_path
+
     def to_dict(self) -> AnalysisData:
         """Convert graph to dictionary representation."""
         return {

@@ -113,6 +113,101 @@ class TestFlowGraph:
 
         assert graph.complexity_score == 4
 
+    def test_flow_graph_depth_empty(self):
+        """Test depth calculation for empty graph."""
+        graph = FlowGraph()
+        assert graph.depth == 0
+
+    def test_flow_graph_depth_single_node(self):
+        """Test depth calculation for single node."""
+        graph = FlowGraph()
+        node1 = FlowNode(id="1", name="single", flow_type="utility")
+        graph.nodes["1"] = node1
+        graph.entry_points = ["1"]
+        graph.exit_points = ["1"]
+
+        assert graph.depth == 1
+
+    def test_flow_graph_depth_chain(self):
+        """Test depth calculation for chained nodes."""
+        graph = FlowGraph()
+
+        node1 = FlowNode(id="1", name="first", flow_type="utility")
+        node2 = FlowNode(id="2", name="second", flow_type="transformation")
+        node3 = FlowNode(id="3", name="third", flow_type="utility")
+
+        graph.nodes["1"] = node1
+        graph.nodes["2"] = node2
+        graph.nodes["3"] = node3
+
+        # Create chain: 1 -> 2 -> 3
+        edge1 = FlowEdge(source_id="1", target_id="2")
+        edge2 = FlowEdge(source_id="2", target_id="3")
+        graph.edges = [edge1, edge2]
+
+        graph.entry_points = ["1"]
+        graph.exit_points = ["3"]
+
+        assert graph.depth == 3
+
+    def test_flow_graph_critical_path_empty(self):
+        """Test critical path for empty graph."""
+        graph = FlowGraph()
+        assert graph.get_critical_path() == []
+
+    def test_flow_graph_critical_path_single_node(self):
+        """Test critical path for single node."""
+        graph = FlowGraph()
+        node1 = FlowNode(id="1", name="single", flow_type="utility")
+        graph.nodes["1"] = node1
+        graph.entry_points = ["1"]
+
+        assert graph.get_critical_path() == ["1"]
+
+    def test_flow_graph_critical_path_chain(self):
+        """Test critical path for chained nodes."""
+        graph = FlowGraph()
+
+        node1 = FlowNode(id="1", name="first", flow_type="utility")
+        node2 = FlowNode(id="2", name="second", flow_type="transformation")
+        node3 = FlowNode(id="3", name="third", flow_type="utility")
+
+        graph.nodes["1"] = node1
+        graph.nodes["2"] = node2
+        graph.nodes["3"] = node3
+
+        edge1 = FlowEdge(source_id="1", target_id="2")
+        edge2 = FlowEdge(source_id="2", target_id="3")
+        graph.edges = [edge1, edge2]
+
+        graph.entry_points = ["1"]
+
+        assert graph.get_critical_path() == ["1", "2", "3"]
+
+    def test_flow_graph_critical_path_multiple_branches(self):
+        """Test critical path with multiple branches."""
+        graph = FlowGraph()
+
+        # Create nodes
+        nodes = {
+            "1": FlowNode(id="1", name="root", flow_type="utility"),
+            "2": FlowNode(id="2", name="branch1", flow_type="transformation"),
+            "3": FlowNode(id="3", name="branch2", flow_type="utility"),
+            "4": FlowNode(id="4", name="end", flow_type="utility"),
+        }
+        graph.nodes.update(nodes)
+
+        # Create edges: 1->2, 1->3, 2->4
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="1", target_id="3"),
+            FlowEdge(source_id="2", target_id="4"),
+        ]
+        graph.entry_points = ["1"]
+
+        # Should find the longer path: 1->2->4 (length 3)
+        assert graph.get_critical_path() == ["1", "2", "4"]
+
     def test_flow_graph_to_dict(self):
         """Test FlowGraph to_dict conversion."""
         graph = FlowGraph()
