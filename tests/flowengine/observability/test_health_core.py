@@ -1,10 +1,12 @@
 """Tests for core health monitoring functionality."""
 
+import asyncio
 from datetime import datetime
 
 import pytest
 
 from flowengine.observability.health.core import (
+    HealthCheck,
     HealthCheckResult,
     HealthStatus,
     SystemHealth,
@@ -233,3 +235,172 @@ class TestSystemHealth:
 
         health_dict = health.to_dict()
         assert health_dict["summary"]["total_checks"] == 0
+
+
+class TestHealthCheck:
+    """Tests for HealthCheck class."""
+
+    @pytest.mark.asyncio
+    async def test_health_check_creation(self) -> None:
+        """Test creating a HealthCheck instance."""
+
+        async def check_function() -> bool:
+            return True
+
+        health_check = HealthCheck(
+            name="test_check",
+            description="Test health check",
+            check_function=check_function,
+        )
+
+        assert health_check.name == "test_check"
+        assert health_check.description == "Test health check"
+        assert health_check.check_function == check_function
+        assert health_check.timeout_seconds == 5.0
+        assert health_check.critical is False
+        assert health_check.enabled is True
+        assert health_check.tags == []
+
+    @pytest.mark.asyncio
+    async def test_health_check_with_all_fields(self) -> None:
+        """Test creating a HealthCheck with all fields."""
+
+        async def check_function() -> bool:
+            return True
+
+        health_check = HealthCheck(
+            name="test_check",
+            description="Test health check",
+            check_function=check_function,
+            timeout_seconds=10.0,
+            critical=True,
+            enabled=False,
+            tags=["database", "critical"],
+        )
+
+        assert health_check.timeout_seconds == 10.0
+        assert health_check.critical is True
+        assert health_check.enabled is False
+        assert health_check.tags == ["database", "critical"]
+
+    @pytest.mark.asyncio
+    async def test_health_check_run_success(self) -> None:
+        """Test running a successful health check."""
+
+        async def check_function() -> bool:
+            await asyncio.sleep(0.1)
+            return True
+
+        health_check = HealthCheck(
+            name="test_check",
+            description="Test health check",
+            check_function=check_function,
+        )
+
+        result = await health_check.run()
+
+        assert result.name == "test_check"
+        assert result.status == HealthStatus.HEALTHY
+        assert result.message == "Check passed"
+        assert result.duration_seconds >= 0.1
+        assert result.critical is False
+        assert result.error is None
+
+    @pytest.mark.asyncio
+    async def test_health_check_run_failure(self) -> None:
+        """Test running a failing health check."""
+
+        async def check_function() -> bool:
+            return False
+
+        health_check = HealthCheck(
+            name="test_check",
+            description="Test health check",
+            check_function=check_function,
+            critical=True,
+        )
+
+        result = await health_check.run()
+
+        assert result.status == HealthStatus.WARNING
+        assert result.message == "Check failed"
+        assert result.critical is True
+
+    @pytest.mark.asyncio
+    async def test_health_check_run_timeout(self) -> None:
+        """Test health check timeout."""
+
+        async def check_function() -> bool:
+            await asyncio.sleep(2.0)
+            return True
+
+        health_check = HealthCheck(
+            name="test_check",
+            description="Test health check",
+            check_function=check_function,
+            timeout_seconds=0.1,
+        )
+
+        result = await health_check.run()
+
+        assert result.status == HealthStatus.CRITICAL
+        assert "timed out after 0.1s" in result.message
+        assert result.critical is True
+        assert result.duration_seconds >= 0.1
+
+    @pytest.mark.asyncio
+    async def test_health_check_run_exception(self) -> None:
+        """Test health check with exception."""
+
+        async def check_function() -> bool:
+            raise ValueError("Test error")
+
+        health_check = HealthCheck(
+            name="test_check",
+            description="Test health check",
+            check_function=check_function,
+        )
+
+        result = await health_check.run()
+
+        assert result.status == HealthStatus.CRITICAL
+        assert "Test error" in result.message
+        assert result.error == "Test error"
+
+    @pytest.mark.asyncio
+    async def test_health_check_with_async_generator(self) -> None:
+        """Test health check with async generator."""
+
+        async def check_function():
+            await asyncio.sleep(0.05)
+            yield True
+
+        health_check = HealthCheck(
+            name="test_check",
+            description="Test health check",
+            check_function=check_function,
+        )
+
+        result = await health_check.run()
+
+        assert result.status == HealthStatus.HEALTHY
+        assert result.message == "Check passed"
+
+    @pytest.mark.asyncio
+    async def test_health_check_async_generator_empty(self) -> None:
+        """Test health check with empty async generator."""
+
+        async def check_function():
+            return
+            yield  # This makes it a generator but never yields
+
+        health_check = HealthCheck(
+            name="test_check",
+            description="Test health check",
+            check_function=check_function,
+        )
+
+        result = await health_check.run()
+
+        assert result.status == HealthStatus.WARNING
+        assert result.message == "Check failed"
