@@ -109,7 +109,30 @@ class HookRunner:
             if verbose:
                 print(f"Checking {target}...")
                 # Show detailed function info for function length validator
-                if hasattr(validator, "get_all_function_info"):
+                if hasattr(validator, "get_all_function_statements"):
+                    function_info = getattr(validator, "get_all_function_statements")(
+                        target
+                    )
+                    if function_info:
+                        print(f"  Functions found:")
+                        for (
+                            func_name,
+                            start_line,
+                            end_line,
+                            line_count,
+                            stmt_count,
+                        ) in function_info:
+                            status = (
+                                "❌"
+                                if stmt_count > 15
+                                else "⚠️" if stmt_count > 12 else "✅"
+                            )
+                            print(
+                                f"    {func_name}: {stmt_count} statements, {line_count} lines (lines {start_line}-{end_line}) {status}"
+                            )
+                    else:
+                        print(f"  No functions found")
+                elif hasattr(validator, "get_all_function_info"):
                     function_info = getattr(validator, "get_all_function_info")(target)
                     if function_info:
                         print(f"  Functions found:")

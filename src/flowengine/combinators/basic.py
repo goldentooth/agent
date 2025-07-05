@@ -25,25 +25,7 @@ C = TypeVar("C")
 async def run_fold(
     initial_stream: AsyncGenerator[Input, None], steps: list[Flow[Input, Input]]
 ) -> AsyncGenerator[Input, None]:
-    """Execute a list of flows sequentially, piping the stream through each step.
-
-    This is a fold/reduce operation where each flow receives the output stream of the
-    previous flow as its input. Useful for building sequential processing pipelines.
-
-    Args:
-        initial_stream: The initial input stream
-        steps: List of flows to execute in order
-
-    Returns:
-        The final output stream after all steps have been executed
-
-    Example:
-        increment_flow = Flow.from_sync_fn(lambda x: x + 1)
-        double_flow = Flow.from_sync_fn(lambda x: x * 2)
-        input_stream = async_range(3)  # [0, 1, 2]
-        result_stream = run_fold(input_stream, [increment_flow, double_flow])
-        # Result: [2, 4, 6] -> (0+1)*2, (1+1)*2, (2+1)*2
-    """
+    """Execute a list of flows sequentially, piping the stream through each step."""
     current_stream = initial_stream
     for step in steps:
         current_stream = step(current_stream)
@@ -213,23 +195,7 @@ def skip_stream(n: int) -> Flow[Input, Input]:
 def guard_stream(
     predicate: Callable[[Input], bool], message: str = "Guard condition failed"
 ) -> Flow[Input, Input]:
-    """Create a flow that validates items or raises an exception.
-
-    Args:
-        predicate: Function that returns True for valid items
-        message: Error message if validation fails
-
-    Returns:
-        A flow that yields items if they pass validation
-
-    Raises:
-        FlowValidationError: If any item fails the guard condition
-
-    Example:
-        is_positive = lambda x: x > 0
-        positive_guard = guard_stream(is_positive, "Must be positive")
-        # Use: validated_stream = positive_guard(number_stream)
-    """
+    """Create a flow that validates items or raises an exception."""
 
     async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
         """Validate each item or raise an exception."""
@@ -287,22 +253,7 @@ def collect_stream() -> Flow[Input, list[Input]]:
 
 
 def until_stream(predicate: Callable[[Input], bool]) -> Flow[Input, Input]:
-    """Create a flow that processes items until a predicate becomes true.
-
-    Once the predicate returns True for an item, that item is yielded
-    and processing stops (the predicate item is included in output).
-
-    Args:
-        predicate: Function that determines when to stop processing
-
-    Returns:
-        A flow that processes until predicate is satisfied
-
-    Example:
-        is_zero = lambda x: x == 0
-        until_zero = until_stream(is_zero)
-        # Use: limited_stream = until_zero(number_stream)
-    """
+    """Create a flow that processes items until a predicate becomes true."""
 
     async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
         """Process items until predicate becomes true."""
@@ -310,13 +261,17 @@ def until_stream(predicate: Callable[[Input], bool]) -> Flow[Input, Input]:
             async for item in stream:
                 yield item
                 if predicate(item):
-                    break  # Stop processing after yielding the matching item
+                    break
         finally:
-            # Ensure the stream is properly closed when we break early
-            if hasattr(stream, "aclose"):
-                await stream.aclose()
+            await _cleanup_stream(stream)
 
     return Flow(_flow, name=f"until({get_function_name(predicate)})")
+
+
+async def _cleanup_stream(stream: AsyncGenerator[Input, None]) -> None:
+    """Clean up a stream by closing it if possible."""
+    if hasattr(stream, "aclose"):
+        await stream.aclose()
 
 
 def share_stream() -> Flow[Input, Input]:
