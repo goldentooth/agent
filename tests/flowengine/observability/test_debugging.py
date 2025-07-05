@@ -115,3 +115,18 @@ class TestFlowDebugger:
 
         assert "custom_flow" in debugger.breakpoints
         assert debugger.breakpoints["custom_flow"] == condition
+
+    def test_remove_breakpoint(self):
+        """Test removing breakpoints."""
+        debugger = FlowDebugger()
+
+        # Add a breakpoint first
+        debugger.add_breakpoint("test_flow")
+        assert "test_flow" in debugger.breakpoints
+
+        # Remove the breakpoint
+        debugger.remove_breakpoint("test_flow")
+        assert "test_flow" not in debugger.breakpoints
+
+        # Removing non-existent breakpoint should not raise error
+        debugger.remove_breakpoint("non_existent")  # Should not raise

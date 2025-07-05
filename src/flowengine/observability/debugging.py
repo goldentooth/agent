@@ -89,3 +89,7 @@ class FlowDebugger:
             condition: Function that determines when to break (item, context) -> bool
         """
         self.breakpoints[flow_name] = condition
+
+    def remove_breakpoint(self, flow_name: str) -> None:
+        """Remove a breakpoint for a flow."""
+        self.breakpoints.pop(flow_name, None)
