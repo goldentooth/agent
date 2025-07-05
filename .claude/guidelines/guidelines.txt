@@ -3,7 +3,8 @@
 These are the fundamental principles that govern all development work on this project. Every line of code, every test, and every commit must adhere to these commandments.
 
 ## The Guidelines
-- When you prepare a commit, write the commit message to a file in a temporary directory, then create the commit using that message file. Do not write the message inline.
+- When you prepare a commit, don't use the `-m` option. Do not write the message inline.
+  - Instead, write the commit message to a file in a temporary directory, then create the commit using that message file.
 - Each function/method must be in its own commit even if the code already exists. No exceptions!
 - Update README.md and relevant files in docs/ before opening a pull request.
 - Maintain a file in .claude/retros/<initiative-name.md> for each task (i.e. pull request) that you end up performing.

@@ -7,6 +7,7 @@
     ],
     "allow": [
       "Bash(/dev/null)",
+      "Bash(cat:*)",
       "Bash(cd:*)",
       "Bash(chmod:*)",
       "Bash(cp:*)",
@@ -19,7 +20,7 @@
       "Bash(gh:*)",
       "Bash(git add:*)",
       "Bash(git checkout:*)",
-      "Bash(git commit:*)",
+      "Bash(git commit -F:*)",
       "Bash(git mv:*)",
       "Bash(goldentooth-agent:*)",
       "Bash(grep:*)",
@@ -46,6 +47,7 @@
     "deny": [
       "Bash(git reset:*)",
       "Bash(git commit --no-verify:*)",
+      "Bash(git commit -m:*)",
       "Bash(SKIP:*)"
     ]
   }

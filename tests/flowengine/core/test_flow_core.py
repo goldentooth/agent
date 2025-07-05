@@ -651,6 +651,12 @@ class TestFlowLabel:
         self, capsys: pytest.CaptureFixture[str]
     ) -> None:
         """Test multiple labels in a flow chain."""
+        labeled_flow = self._create_labeled_flow_chain()
+        items = await self._execute_labeled_flow(labeled_flow)
+        self._assert_multiple_label_output(capsys, items)
+
+    def _create_labeled_flow_chain(self) -> Flow[None, int]:
+        """Create a flow chain with multiple labels."""
 
         async def source_fn(
             stream: AsyncGenerator[None, None],
@@ -662,16 +668,22 @@ class TestFlowLabel:
             return x * 2
 
         flow = Flow(source_fn, name="source")
-        labeled_flow = flow.label("input").map(double).label("output")
+        return flow.label("input").map(double).label("output")
+
+    async def _execute_labeled_flow(self, labeled_flow: Flow[None, int]) -> list[int]:
+        """Execute the labeled flow and return results."""
 
         async def empty_stream() -> AsyncGenerator[None, None]:
             return
             yield  # pragma: no cover
 
         result = labeled_flow(empty_stream())
-        items = [item async for item in result]
+        return [item async for item in result]
 
-        # Check output
+    def _assert_multiple_label_output(
+        self, capsys: pytest.CaptureFixture[str], items: list[int]
+    ) -> None:
+        """Assert the output contains expected debug messages and results."""
         captured = capsys.readouterr()
         assert "[Flow:input] starting" in captured.out
         assert "[Flow:input] yield: 1" in captured.out
@@ -679,5 +691,4 @@ class TestFlowLabel:
         assert "[Flow:output] starting" in captured.out
         assert "[Flow:output] yield: 2" in captured.out
         assert "[Flow:output] yield: 4" in captured.out
-
         assert items == [2, 4]

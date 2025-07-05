@@ -81,19 +81,28 @@ class Flow(Generic[Input, Output]):
         self, fn: Callable[[Output], AsyncGenerator[Newput, None]]
     ) -> "Flow[Input, Newput]":
         """Flat map a function over the output of the flow."""
-
-        async def _flatmapped(
-            stream: AsyncGenerator[Input, None],
-        ) -> AsyncGenerator[Newput, None]:
-            inner_iter = self(stream)
-            try:
-                async for item in inner_iter:
-                    async for sub in fn(item):
-                        yield sub
-            finally:
-                await inner_iter.aclose()
-
+        _flatmapped = self._create_flatmap_generator(fn)
         return Flow(_flatmapped, name=f"{self.name}.flat_map({fn.__name__})")
+
+    def _create_flatmap_generator(
+        self, fn: Callable[[Output], AsyncGenerator[Newput, None]]
+    ) -> Callable[[AsyncGenerator[Input, None]], AsyncGenerator[Newput, None]]:
+        """Create the flat map generator function."""
+        return lambda stream: self._process_flatmap_stream(stream, fn)
+
+    async def _process_flatmap_stream(
+        self,
+        stream: AsyncGenerator[Input, None],
+        fn: Callable[[Output], AsyncGenerator[Newput, None]],
+    ) -> AsyncGenerator[Newput, None]:
+        """Process stream through flat map function."""
+        inner_iter = self(stream)
+        try:
+            async for item in inner_iter:
+                async for sub in fn(item):
+                    yield sub
+        finally:
+            await inner_iter.aclose()
 
     def to_list(
         self,
@@ -154,18 +163,29 @@ class Flow(Generic[Input, Output]):
         Returns:
             List of up to `limit` items from the flow
         """
-        results: list[Output] = []
-        count = 0
+        return await self._safe_preview_collection(stream, limit)
+
+    async def _safe_preview_collection(
+        self, stream: AsyncGenerator[Input, None], limit: int
+    ) -> list[Output]:
+        """Safely collect preview items with resource cleanup."""
         async_iter = self(stream)
         try:
-            async for item in async_iter:
-                if count >= limit:
-                    break
-                results.append(item)
-                count += 1
+            return await self._collect_preview_items(async_iter, limit)
         finally:
-            # Ensure async iterator is properly closed
             await async_iter.aclose()
+
+    async def _collect_preview_items(
+        self, async_iter: AsyncGenerator[Output, None], limit: int
+    ) -> list[Output]:
+        """Collect preview items up to the limit."""
+        results: list[Output] = []
+        count = 0
+        async for item in async_iter:
+            if count >= limit:
+                break
+            results.append(item)
+            count += 1
         return results
 
     def print(self) -> "Flow[Input, Output]":
@@ -188,18 +208,25 @@ class Flow(Generic[Input, Output]):
         Returns:
             New flow that yields the default value if original flow is empty
         """
-
-        async def _flow(
-            stream: AsyncGenerator[Input, None],
-        ) -> AsyncGenerator[Output, None]:
-            yielded_any = False
-            async for item in self(stream):
-                yielded_any = True
-                yield item
-            if not yielded_any:
-                yield default
-
+        _flow = self._create_fallback_generator(default)
         return Flow(_flow, name=f"{self.name}.with_fallback({default})")
+
+    def _create_fallback_generator(
+        self, default: Output
+    ) -> Callable[[AsyncGenerator[Input, None]], AsyncGenerator[Output, None]]:
+        """Create fallback generator that yields default if no items produced."""
+        return lambda stream: self._process_fallback_stream(stream, default)
+
+    async def _process_fallback_stream(
+        self, stream: AsyncGenerator[Input, None], default: Output
+    ) -> AsyncGenerator[Output, None]:
+        """Process stream with fallback value if empty."""
+        yielded_any = False
+        async for item in self(stream):
+            yielded_any = True
+            yield item
+        if not yielded_any:
+            yield default
 
     def batch(self, size: int) -> "Flow[Input, list[Output]]":
         """Batch the output into groups of the specified size.
@@ -210,22 +237,32 @@ class Flow(Generic[Input, Output]):
         Returns:
             Flow that yields lists of items
         """
-
-        async def _batched(
-            stream: AsyncGenerator[Input, None],
-        ) -> AsyncGenerator[list[Output], None]:
-            output_stream = self(stream)
-            batch: list[Output] = []
-            async for item in output_stream:
-                batch.append(item)
-                if len(batch) >= size:
-                    yield batch
-                    batch = []
-            # Yield remaining items if any
-            if batch:
-                yield batch
-
+        _batched = self._create_batch_generator(size)
         return Flow(_batched, name=f"{self.name}.batch({size})")
+
+    def _create_batch_generator(
+        self, size: int
+    ) -> Callable[[AsyncGenerator[Input, None]], AsyncGenerator[list[Output], None]]:
+        """Create the batch generator function."""
+        return lambda stream: self._process_batch_stream(stream, size)
+
+    async def _process_batch_stream(
+        self, stream: AsyncGenerator[Input, None], size: int
+    ) -> AsyncGenerator[list[Output], None]:
+        """Process stream into batches of specified size."""
+        output_stream = self(stream)
+        batch: list[Output] = []
+        async for item in output_stream:
+            batch.append(item)
+            if self._should_yield_batch(batch, size):
+                yield batch
+                batch = []
+        if batch:
+            yield batch
+
+    def _should_yield_batch(self, batch: list[Output], size: int) -> bool:
+        """Check if batch should be yielded based on size."""
+        return len(batch) >= size
 
     @staticmethod
     @overload
@@ -243,26 +280,36 @@ class Flow(Generic[Input, Output]):
     ) -> Flow[T, U] | Callable[[Callable[[T], Awaitable[U]]], Flow[T, U]]:
         """Create a flow from an async function that takes an input and returns an output.
 
-        Can be used as a decorator::
-
-            @Flow.from_value_fn
-            async def process(item):
-                return await some_async_operation(item)
+        Can be used as a decorator for async transformations.
         """
+        decorator = Flow._create_value_fn_decorator()
+        return decorator if fn is None else decorator(fn)
+
+    @staticmethod
+    def _create_value_fn_decorator() -> (
+        Callable[[Callable[[T], Awaitable[U]]], Flow[T, U]]
+    ):
+        """Create decorator for async value functions."""
 
         def decorator(f: Callable[[T], Awaitable[U]]) -> Flow[T, U]:
-            async def _wrapper(
-                stream: AsyncGenerator[T, None],
-            ) -> AsyncGenerator[U, None]:
-                async for item in stream:
-                    yield await f(item)
-
+            _wrapper = Flow._create_value_wrapper(f)
             return Flow(_wrapper, name=f.__name__)
 
-        if fn is None:
-            return decorator
-        else:
-            return decorator(fn)
+        return decorator
+
+    @staticmethod
+    def _create_value_wrapper(
+        f: Callable[[T], Awaitable[U]],
+    ) -> Callable[[AsyncGenerator[T, None]], AsyncGenerator[U, None]]:
+        """Create wrapper that applies function to each stream item."""
+
+        async def _wrapper(
+            stream: AsyncGenerator[T, None],
+        ) -> AsyncGenerator[U, None]:
+            async for item in stream:
+                yield await f(item)
+
+        return _wrapper
 
     @staticmethod
     @overload
@@ -280,28 +327,37 @@ class Flow(Generic[Input, Output]):
     ) -> Flow[T, U] | Callable[[Callable[[T], AsyncGenerator[U, None]]], Flow[T, U]]:
         """Create a flow from an async function that returns an async iterator.
 
-        Can be used as a decorator::
-
-            @Flow.from_event_fn
-            async def split_lines(text):
-                for line in text.split('\\n'):
-                    yield line
+        Can be used as a decorator for functions that yield multiple values per input.
         """
+        decorator = Flow._create_event_decorator()
+        return decorator if fn is None else decorator(fn)
+
+    @staticmethod
+    def _create_event_decorator() -> (
+        Callable[[Callable[[T], AsyncGenerator[U, None]]], Flow[T, U]]
+    ):
+        """Create decorator for event-based functions."""
 
         def decorator(f: Callable[[T], AsyncGenerator[U, None]]) -> Flow[T, U]:
-            async def _wrapper(
-                stream: AsyncGenerator[T, None],
-            ) -> AsyncGenerator[U, None]:
-                async for item in stream:
-                    async for sub in f(item):
-                        yield sub
-
+            _wrapper = Flow._create_event_stream_wrapper(f)
             return Flow(_wrapper, name=f.__name__)
 
-        if fn is None:
-            return decorator
-        else:
-            return decorator(fn)
+        return decorator
+
+    @staticmethod
+    def _create_event_stream_wrapper(
+        f: Callable[[T], AsyncGenerator[U, None]],
+    ) -> Callable[[AsyncGenerator[T, None]], AsyncGenerator[U, None]]:
+        """Create wrapper for event stream processing."""
+
+        async def _wrapper(
+            stream: AsyncGenerator[T, None],
+        ) -> AsyncGenerator[U, None]:
+            async for item in stream:
+                async for sub in f(item):
+                    yield sub
+
+        return _wrapper
 
     @staticmethod
     @overload
@@ -319,12 +375,14 @@ class Flow(Generic[Input, Output]):
     ) -> Flow[T, U] | Callable[[Callable[[T], U]], Flow[T, U]]:
         """Create a flow from a synchronous function that takes an input and returns an output.
 
-        Can be used as a decorator::
-
-            @Flow.from_sync_fn
-            def double(x):
-                return x * 2
+        Can be used as a decorator for simple transformations.
         """
+        decorator = Flow._create_sync_decorator()
+        return decorator if fn is None else decorator(fn)
+
+    @staticmethod
+    def _create_sync_decorator() -> Callable[[Callable[[T], U]], Flow[T, U]]:
+        """Create decorator for synchronous functions."""
 
         def decorator(f: Callable[[T], U]) -> Flow[T, U]:
             async def _wrapper(
@@ -335,29 +393,26 @@ class Flow(Generic[Input, Output]):
 
             return Flow(_wrapper, name=f.__name__)
 
-        if fn is None:
-            return decorator
-        else:
-            return decorator(fn)
+        return decorator
 
     @staticmethod
     def from_iterable(iterable: Iterable[T]) -> Flow[Any, T]:
         """Create a flow from an iterable that ignores input stream.
 
         Args:
-            iterable: Any iterable (list, tuple, range, etc.) to convert to flow
+            iterable: Any iterable to convert to flow
 
         Returns:
             Flow that yields all items from the iterable, ignoring input stream
-
-        Example::
-
-            # Create flow from list
-            flow = Flow.from_iterable([1, 2, 3])
-
-            # Create flow from range
-            flow = Flow.from_iterable(range(10))
         """
+        _wrapper = Flow._create_iterable_wrapper(iterable)
+        return Flow(_wrapper, name="from_iterable")
+
+    @staticmethod
+    def _create_iterable_wrapper(
+        iterable: Iterable[T],
+    ) -> Callable[[AsyncGenerator[Any, None]], AsyncGenerator[T, None]]:
+        """Create wrapper for iterable-based flows."""
 
         async def _wrapper(
             stream: AsyncGenerator[Any, None],
@@ -366,7 +421,7 @@ class Flow(Generic[Input, Output]):
             for item in iterable:
                 yield item
 
-        return Flow(_wrapper, name="from_iterable")
+        return _wrapper
 
     @staticmethod
     def from_emitter(
@@ -378,50 +433,68 @@ class Flow(Generic[Input, Output]):
         """Create a flow from an emitter system that registers callbacks.
 
         Args:
-            register: Function that registers a callback. Can be sync or async.
-                      The callback will be called with emitted values.
-
-        Returns:
-            Flow that yields all values emitted through the callback system
-
-        Example::
-
-            # Sync emitter
-            def setup_callbacks(callback):
-                callback("event1")
-                callback("event2")
-
-            flow = Flow.from_emitter(setup_callbacks)
-
-            # Async emitter
-            async def setup_async_callbacks(callback):
-                await some_async_setup()
-                callback("async_event")
-
-            flow = Flow.from_emitter(setup_async_callbacks)
+            register: Function that registers a callback
         """
-
-        async def _wrapper(
-            stream: AsyncGenerator[Any, None],
-        ) -> AsyncGenerator[T, None]:
-            # Ignore the input stream and collect emitted values
-            emitted_values: list[T] = []
-
-            def callback(value: T) -> None:
-                emitted_values.append(value)
-
-            # Call the register function with our callback
-            result = register(callback)
-
-            # If register function is async, await it
-            if result is not None and hasattr(result, "__await__"):
-                await result
-
-            # Yield all collected values
-            for value in emitted_values:
-                yield value
-
+        _wrapper = Flow._create_emitter_wrapper(register)
         return Flow(_wrapper, name="from_emitter")
+
+    @staticmethod
+    def _create_emitter_wrapper(
+        register: Union[
+            Callable[[Callable[[T], None]], None],
+            Callable[[Callable[[T], None]], Awaitable[None]],
+        ],
+    ) -> Callable[[AsyncGenerator[Any, None]], AsyncGenerator[T, None]]:
+        """Create wrapper for emitter-based flows."""
+        return lambda stream: Flow._process_emitter_stream(stream, register)
+
+    @staticmethod
+    async def _process_emitter_stream(
+        stream: AsyncGenerator[Any, None],
+        register: Union[
+            Callable[[Callable[[T], None]], None],
+            Callable[[Callable[[T], None]], Awaitable[None]],
+        ],
+    ) -> AsyncGenerator[T, None]:
+        """Process emitter stream by collecting and yielding values."""
+        emitted_values = await Flow._collect_emitted_values(register)
+        for value in emitted_values:
+            yield value
+
+    @staticmethod
+    async def _collect_emitted_values(
+        register: Union[
+            Callable[[Callable[[T], None]], None],
+            Callable[[Callable[[T], None]], Awaitable[None]],
+        ],
+    ) -> list[T]:
+        """Collect values emitted through callback system."""
+        emitted_values: list[T] = []
+        callback = Flow._create_collector_callback(emitted_values)
+        await Flow._execute_register_function(register, callback)
+        return emitted_values
+
+    @staticmethod
+    def _create_collector_callback(emitted_values: list[T]) -> Callable[[T], None]:
+        """Create callback that collects values into the provided list."""
+
+        def callback(value: T) -> None:
+            emitted_values.append(value)
+
+        return callback
+
+    @staticmethod
+    async def _execute_register_function(
+        register: Union[
+            Callable[[Callable[[T], None]], None],
+            Callable[[Callable[[T], None]], Awaitable[None]],
+        ],
+        callback: Callable[[T], None],
+    ) -> None:
+        """Execute register function, handling both sync and async cases."""
+        result = register(callback)
+        if result is not None and hasattr(result, "__await__"):
+            await result
 
     @staticmethod
     def identity() -> Flow[T, T]:
@@ -429,19 +502,6 @@ class Flow(Generic[Input, Output]):
 
         Returns:
             Flow that yields each input item unchanged
-
-        Example::
-
-            # Create identity flow
-            flow = Flow.identity()
-
-            # Use with any stream type
-            async def string_stream():
-                yield "hello"
-                yield "world"
-
-            result = flow(string_stream())
-            items = [item async for item in result]  # ["hello", "world"]
         """
 
         async def _identity(stream: AsyncGenerator[T, None]) -> AsyncGenerator[T, None]:
@@ -459,19 +519,6 @@ class Flow(Generic[Input, Output]):
 
         Returns:
             Flow that yields the given value once, ignoring input stream
-
-        Example::
-
-            # Create pure value flow
-            flow = Flow.pure("hello")
-
-            # Yields "hello" regardless of input
-            async def any_stream():
-                yield 1
-                yield 2
-
-            result = flow(any_stream())
-            items = [item async for item in result]  # ["hello"]
         """
 
         async def _pure(stream: AsyncGenerator[Any, None]) -> AsyncGenerator[T, None]:

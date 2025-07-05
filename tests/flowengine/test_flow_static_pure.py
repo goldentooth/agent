@@ -60,8 +60,12 @@ class TestFlowPure:
     @pytest.mark.asyncio
     async def test_pure_with_different_value_types(self) -> None:
         """Test that pure flow works with different value types."""
+        await self._test_pure_with_string()
+        await self._test_pure_with_integer()
+        await self._test_pure_with_list()
 
-        # String value
+    async def _test_pure_with_string(self) -> None:
+        """Test pure flow with string value."""
         string_flow: Flow[Any, str] = Flow.pure("test")
 
         async def dummy_stream1() -> AsyncGenerator[None, None]:
@@ -71,7 +75,8 @@ class TestFlowPure:
         items1: list[str] = [item async for item in result1]
         assert items1 == ["test"]
 
-        # Integer value
+    async def _test_pure_with_integer(self) -> None:
+        """Test pure flow with integer value."""
         int_flow: Flow[Any, int] = Flow.pure(123)
 
         async def dummy_stream2() -> AsyncGenerator[None, None]:
@@ -81,7 +86,8 @@ class TestFlowPure:
         items2: list[int] = [item async for item in result2]
         assert items2 == [123]
 
-        # List value
+    async def _test_pure_with_list(self) -> None:
+        """Test pure flow with list value."""
         list_flow: Flow[Any, list[str]] = Flow.pure(["a", "b", "c"])
 
         async def dummy_stream3() -> AsyncGenerator[None, None]:

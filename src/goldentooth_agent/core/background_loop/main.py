@@ -75,15 +75,26 @@ class BackgroundEventLoop:
         if not self._running:
             return
 
+        self._mark_shutdown_started()
+        self._stop_event_loop()
+        self._wait_for_shutdown_completion(timeout)
+        self._check_shutdown_success()
+
+    def _mark_shutdown_started(self) -> None:
+        """Mark the background loop as shutting down."""
         self._running = False
 
-        # Schedule loop stop in the event loop thread
+    def _stop_event_loop(self) -> None:
+        """Stop the event loop if it's running."""
         if self.loop.is_running():
             self.loop.call_soon_threadsafe(self.loop.stop)
 
-        # Wait for the thread to complete
+    def _wait_for_shutdown_completion(self, timeout: float) -> None:
+        """Wait for the shutdown to complete within the timeout."""
         self._shutdown_complete.wait(timeout)
 
+    def _check_shutdown_success(self) -> None:
+        """Check if shutdown completed successfully and log warnings."""
         if self.thread.is_alive():
             logger.warning("Background event loop thread did not shutdown cleanly")
 

@@ -63,24 +63,55 @@ def print_results(results: List[ValidationResult], hook_type: str) -> None:
         print(f"✅ {hook_type}: All files within healthy limits")
         return
 
+    errors, warnings = _separate_results_by_severity(results)
+    _print_error_results(errors, hook_type)
+    _print_warning_results(warnings)
+
+
+def _separate_results_by_severity(
+    results: List[ValidationResult],
+) -> tuple[List[ValidationResult], List[ValidationResult]]:
+    """Separate results into errors and warnings."""
     errors = [r for r in results if r.severity == ValidationSeverity.ERROR]
     warnings = [r for r in results if r.severity == ValidationSeverity.WARNING]
+    return errors, warnings
 
-    if errors:
-        print(f"❌ {hook_type} violations found:")
-        for result in errors:
-            display_path = str(result.file_path).lstrip("./")
-            print(f"  {display_path}: {result.line_count} lines")
-        print("\nPlease refactor large files/modules before committing.")
-        print("See .claude/guidelines/guidelines.txt for requirements")
 
-    if warnings:
-        for result in warnings:
-            display_path = str(result.file_path).lstrip("./")
-            if result.severity == ValidationSeverity.WARNING:
-                if result.line_count >= result.limit * 0.9:  # Urgent threshold
-                    print(f"🔶 URGENT: {display_path} ({result.message})")
-                else:
-                    print(f"⚠️  WARNING: {display_path} ({result.message})")
-                print(result.guidance)
-                print()
+def _print_error_results(errors: List[ValidationResult], hook_type: str) -> None:
+    """Print error validation results."""
+    if not errors:
+        return
+
+    print(f"❌ {hook_type} violations found:")
+    for result in errors:
+        display_path = str(result.file_path).lstrip("./")
+        print(f"  {display_path}: {result.line_count} lines")
+    print("\nPlease refactor large files/modules before committing.")
+    print("See .claude/guidelines/guidelines.txt for requirements")
+
+
+def _print_warning_results(warning_results: List[ValidationResult]) -> None:
+    """Print warning validation results with urgency levels."""
+    if not warning_results:
+        return
+
+    for result in warning_results:
+        _print_single_warning(result)
+
+
+def _print_single_warning(result: ValidationResult) -> None:
+    """Print a single warning result with appropriate formatting."""
+    display_path = str(result.file_path).lstrip("./")
+
+    if _is_urgent_warning(result):
+        print(f"🔶 URGENT: {display_path} ({result.message})")
+    else:
+        print(f"⚠️  WARNING: {display_path} ({result.message})")
+
+    print(result.guidance)
+    print()
+
+
+def _is_urgent_warning(result: ValidationResult) -> bool:
+    """Check if warning should be marked as urgent."""
+    return result.line_count >= result.limit * 0.9

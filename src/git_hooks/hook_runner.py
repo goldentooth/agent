@@ -3,7 +3,7 @@
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List
+from typing import Any, List, Optional
 
 # Import validators to trigger registration
 from . import (  # noqa: F401  # type: ignore[reportUnusedImport]
@@ -62,16 +62,27 @@ class HookRunner:
         super().__init__()
         self.config = config
 
-    def run_hook(self, hook_config: HookConfig, warning_mode: bool = False) -> int:
+    def run_hook(
+        self,
+        hook_config: HookConfig,
+        warning_mode: bool = False,
+        target_files: Optional[List[Path]] = None,
+        verbose: bool = False,
+    ) -> int:
         """Run a validation hook with the specified configuration."""
         validator = create_validator(hook_config.validator_type, self.config)
-        targets = self._discover_targets(hook_config)
+
+        # Use provided target files or discover them
+        if target_files is not None:
+            targets = target_files
+        else:
+            targets = self._discover_targets(hook_config)
 
         if not targets:
             print(f"✅ {hook_config.name}: No files to check")
             return 0
 
-        results = self._validate_targets(validator, targets, warning_mode)
+        results = self._validate_targets(validator, targets, warning_mode, verbose)
         return self._process_results(results, hook_config.name, warning_mode)
 
     def _discover_targets(self, hook_config: HookConfig) -> List[Path]:
@@ -86,14 +97,69 @@ class HookRunner:
             )
 
     def _validate_targets(
-        self, validator: Validator, targets: List[Path], warning_mode: bool
+        self,
+        validator: Validator,
+        targets: List[Path],
+        warning_mode: bool,
+        verbose: bool = False,
     ) -> List[ValidationResult]:
         """Validate all targets and collect results."""
         results: List[ValidationResult] = []
         for target in targets:
+            if verbose:
+                print(f"Checking {target}...")
+                # Show detailed function info for function length validator
+                if hasattr(validator, "get_all_function_statements"):
+                    function_info = getattr(validator, "get_all_function_statements")(
+                        target
+                    )
+                    if function_info:
+                        print(f"  Functions found:")
+                        for (
+                            func_name,
+                            start_line,
+                            end_line,
+                            line_count,
+                            stmt_count,
+                        ) in function_info:
+                            status = (
+                                "❌"
+                                if stmt_count > 15
+                                else "⚠️" if stmt_count > 12 else "✅"
+                            )
+                            print(
+                                f"    {func_name}: {stmt_count} statements, {line_count} lines (lines {start_line}-{end_line}) {status}"
+                            )
+                    else:
+                        print(f"  No functions found")
+                elif hasattr(validator, "get_all_function_info"):
+                    function_info = getattr(validator, "get_all_function_info")(target)
+                    if function_info:
+                        print(f"  Functions found:")
+                        for (
+                            func_name,
+                            start_line,
+                            end_line,
+                            line_count,
+                        ) in function_info:
+                            status = (
+                                "❌"
+                                if line_count > 15
+                                else "⚠️" if line_count > 12 else "✅"
+                            )
+                            print(
+                                f"    {func_name}: {line_count} lines (lines {start_line}-{end_line}) {status}"
+                            )
+                    else:
+                        print(f"  No functions found")
+
             result = validator.validate(target)
             if result and self._should_include_result(result, warning_mode):
                 results.append(result)
+                if verbose:
+                    print(f"  📋 Validation result: {result.message}")
+            elif verbose and result is None:
+                print(f"  ✅ No validation issues found")
         return results
 
     def _should_include_result(
