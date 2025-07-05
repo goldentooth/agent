@@ -170,10 +170,19 @@ class TestFlowConfigValidator:
         assert len(errors) == 1
         assert "not in allowed values" in errors[0]
 
-    def test_validate_config_range_checks(self) -> None:
+    @pytest.mark.parametrize(
+        "temp_value,expected_error_count,error_keywords",
+        [
+            (50, 0, []),
+            (-10, 2, ["below minimum"]),
+            (150, 1, ["above maximum"]),
+        ],
+    )
+    def test_validate_config_range_checks(
+        self, temp_value: int, expected_error_count: int, error_keywords: list[str]
+    ) -> None:
         """Test numeric range validation."""
         validator = FlowConfigValidator()
-
         schema = {
             "temperature": {
                 "required": True,
@@ -183,23 +192,11 @@ class TestFlowConfigValidator:
             }
         }
         validator.set_config_schema(schema)
-
-        # Valid value
-        config = {"temperature": 50}
+        config = {"temperature": temp_value}
         errors = validator.validate_config(config)
-        assert errors == []
-
-        # Below minimum
-        config = {"temperature": -10}
-        errors = validator.validate_config(config)
-        assert len(errors) == 2  # validator + range check
-        assert any("below minimum" in error for error in errors)
-
-        # Above maximum
-        config = {"temperature": 150}
-        errors = validator.validate_config(config)
-        assert len(errors) == 1
-        assert "above maximum" in errors[0]
+        assert len(errors) == expected_error_count
+        for keyword in error_keywords:
+            assert any(keyword in error for error in errors)
 
     def test_validate_flow_config_basic(self) -> None:
         """Test basic flow configuration validation."""
