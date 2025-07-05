@@ -67,3 +67,32 @@ class FlowEdge:
             "edge_type": self.edge_type,
             "metadata": self.metadata,
         }
+
+
+@dataclass
+class FlowGraph:
+    """Represents a complete Flow composition as a directed graph."""
+
+    nodes: dict[str, FlowNode] = field(default_factory=lambda: {})
+    edges: list[FlowEdge] = field(default_factory=lambda: [])
+    entry_points: list[str] = field(default_factory=lambda: [])
+    exit_points: list[str] = field(default_factory=lambda: [])
+
+    @property
+    def complexity_score(self) -> int:
+        """Calculate total complexity score of the graph."""
+        return sum(node.complexity_score for node in self.nodes.values())
+
+    def to_dict(self) -> AnalysisData:
+        """Convert graph to dictionary representation."""
+        return {
+            "nodes": {node_id: node.to_dict() for node_id, node in self.nodes.items()},
+            "edges": [edge.to_dict() for edge in self.edges],
+            "entry_points": self.entry_points,
+            "exit_points": self.exit_points,
+            "analysis": {
+                "complexity_score": self.complexity_score,
+                "node_count": len(self.nodes),
+                "edge_count": len(self.edges),
+            },
+        }

@@ -6,6 +6,7 @@ from flowengine.observability.analysis import (
     AnalysisData,
     AnyFlow,
     FlowEdge,
+    FlowGraph,
     FlowList,
     FlowMetadata,
     FlowNode,
@@ -81,3 +82,49 @@ class TestFlowEdge:
         assert edge_dict["target_id"] == "node2"
         assert edge_dict["edge_type"] == "data_flow"
         assert edge_dict["metadata"]["weight"] == 1.0
+
+
+class TestFlowGraph:
+    """Tests for FlowGraph class."""
+
+    def test_flow_graph_creation(self):
+        """Test basic FlowGraph creation."""
+        graph = FlowGraph()
+
+        assert len(graph.nodes) == 0
+        assert len(graph.edges) == 0
+        assert len(graph.entry_points) == 0
+        assert len(graph.exit_points) == 0
+
+    def test_flow_graph_complexity_score(self):
+        """Test complexity score calculation."""
+        graph = FlowGraph()
+
+        node1 = FlowNode(id="1", name="simple", flow_type="utility", complexity_score=1)
+        node2 = FlowNode(
+            id="2", name="complex", flow_type="transformation", complexity_score=3
+        )
+
+        graph.nodes["1"] = node1
+        graph.nodes["2"] = node2
+
+        assert graph.complexity_score == 4
+
+    def test_flow_graph_to_dict(self):
+        """Test FlowGraph to_dict conversion."""
+        graph = FlowGraph()
+
+        node1 = FlowNode(id="1", name="test", flow_type="utility")
+        graph.nodes["1"] = node1
+        graph.entry_points = ["1"]
+        graph.exit_points = ["1"]
+
+        graph_dict = graph.to_dict()
+
+        assert "nodes" in graph_dict
+        assert "edges" in graph_dict
+        assert "entry_points" in graph_dict
+        assert "exit_points" in graph_dict
+        assert "analysis" in graph_dict
+        assert graph_dict["analysis"]["complexity_score"] == 1
+        assert graph_dict["analysis"]["node_count"] == 1
