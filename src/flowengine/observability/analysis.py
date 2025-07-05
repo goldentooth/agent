@@ -96,3 +96,13 @@ class FlowGraph:
                 "edge_count": len(self.edges),
             },
         }
+
+
+class FlowAnalyzer:
+    """Analyzer for Flow compositions and structures."""
+
+    def __init__(self) -> None:
+        """Initialize the FlowAnalyzer."""
+        super().__init__()
+        self.node_id_counter = 0
+        self.flow_registry: FlowRegistry = {}

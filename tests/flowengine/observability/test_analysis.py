@@ -5,6 +5,7 @@ from flowengine.combinators.basic import map_stream
 from flowengine.observability.analysis import (
     AnalysisData,
     AnyFlow,
+    FlowAnalyzer,
     FlowEdge,
     FlowGraph,
     FlowList,
@@ -128,3 +129,14 @@ class TestFlowGraph:
         assert "analysis" in graph_dict
         assert graph_dict["analysis"]["complexity_score"] == 1
         assert graph_dict["analysis"]["node_count"] == 1
+
+
+class TestFlowAnalyzer:
+    """Tests for FlowAnalyzer class."""
+
+    def test_analyzer_creation(self):
+        """Test FlowAnalyzer creation."""
+        analyzer = FlowAnalyzer()
+
+        assert analyzer.node_id_counter == 0
+        assert len(analyzer.flow_registry) == 0
