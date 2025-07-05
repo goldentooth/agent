@@ -100,3 +100,18 @@ class TestFlowDebugger:
 
         debugger.disable_debugging()
         assert not debugger.debug_enabled
+
+    def test_add_breakpoint(self):
+        """Test adding breakpoints."""
+        debugger = FlowDebugger()
+
+        # Add breakpoint with default condition
+        debugger.add_breakpoint("test_flow")
+        assert "test_flow" in debugger.breakpoints
+
+        # Add breakpoint with custom condition
+        condition: BreakpointCondition = lambda item, ctx: item > 5
+        debugger.add_breakpoint("custom_flow", condition)
+
+        assert "custom_flow" in debugger.breakpoints
+        assert debugger.breakpoints["custom_flow"] == condition

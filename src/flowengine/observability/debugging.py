@@ -76,3 +76,16 @@ class FlowDebugger:
     def disable_debugging(self) -> None:
         """Disable debugging mode."""
         self.debug_enabled = False
+
+    def add_breakpoint(
+        self,
+        flow_name: str,
+        condition: BreakpointCondition = lambda item, _ctx: True,
+    ) -> None:
+        """Add a breakpoint for a specific flow.
+
+        Args:
+            flow_name: Name of the flow to break on
+            condition: Function that determines when to break (item, context) -> bool
+        """
+        self.breakpoints[flow_name] = condition
