@@ -4,7 +4,7 @@ These are the fundamental principles that govern all development work on this pr
 
 ## The Guidelines
 - When you prepare a commit, don't use the `-m` option. Do not write the message inline.
-  - Instead, write the commit message to a file in a temporary directory, then create the commit using that message file.
+  - Instead, write the commit message to a temporary file (e.g. via `mktemp`), then create the commit using that message file.
   - Don't use multiline `cat` commands and HEREDOCs to write commit messages, because then I have to approve it.
   - Use the Write tool to create the message.
 - Each function/method must be in its own commit even if the code already exists. No exceptions!
