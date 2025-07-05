@@ -15,6 +15,7 @@ Epic 18 focuses on migrating the health monitoring system from `old/goldentooth_
 - Following TDD approach: tests first, then implementation
 - Each class/function migrated in individual commits
 - Maintaining 100% test coverage throughout
+- HealthCheckResult must be migrated before HealthCheck due to dependency
 
 ## Challenges & Solutions
 - TBD as implementation progresses
