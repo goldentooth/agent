@@ -135,17 +135,18 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 ### Phase 3A: Core Observability (Epics 15-18)
 
-**Epic 15: Migrate performance monitoring**
+**~Epic 15: Migrate performance monitoring~ ✅ DONE!**
 - File: `src/flowengine/observability/performance.py`
 - Source: `old/goldentooth_agent/flow_engine/observability/performance.py` (362 lines)
 - Tests: `tests/flowengine/observability/test_performance.py`
 - Dependencies: `flowengine.flow`
 
-**Epic 16: Migrate analysis tools**
+**~Epic 16: Migrate analysis tools~ ✅ DONE!**
 - File: `src/flowengine/observability/analysis.py`
 - Source: `old/goldentooth_agent/flow_engine/observability/analysis.py` (551 lines)
 - Tests: `tests/flowengine/observability/test_analysis.py`
 - Dependencies: `flowengine.flow`, `flowengine.combinators`
+- **Result**: Core analysis functionality migrated with FlowNode, FlowEdge, FlowGraph, and FlowAnalyzer classes, public API complete
 
 **Epic 17: Migrate debugging tools**
 - File: `src/flowengine/observability/debugging.py`
