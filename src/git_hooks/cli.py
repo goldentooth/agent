@@ -44,7 +44,6 @@ def get_files_by_glob(pattern: str, all_files: bool = False) -> List[Path]:
             # If there are staged files, limit to staged files
             staged_files = set(get_staged_files())
             matching_files = [f for f in matching_files if f in staged_files]
-        # If no staged files, check all tracked files (not just staged)
 
     return matching_files
 

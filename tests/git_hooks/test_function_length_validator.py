@@ -76,7 +76,7 @@ class TestFunctionLengthValidator:
         with tempfile.TemporaryDirectory() as tmpdir:
             test_file = Path(tmpdir) / "test.py"
             # Create a function with 13 statements (at urgent threshold)
-            function_body = "\n".join(f"    line_{i} = {i}" for i in range(12))
+            function_body = "\n".join(f"    line_{i} = {i}" for i in range(13))
             test_file.write_text(
                 f'''def urgent_function():
     """An urgent function."""
