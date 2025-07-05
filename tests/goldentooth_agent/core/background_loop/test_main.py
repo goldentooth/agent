@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import threading
+from collections.abc import Callable
 from concurrent.futures import Future
 
 import pytest
@@ -80,18 +81,32 @@ class TestBackgroundEventLoop:
         loop = BackgroundEventLoop()
         execution_order: list[int] = []
 
-        async def ordered_coroutine(index: int) -> int:
-            execution_order.append(index)
-            return index
+        futures = self._submit_ordered_coroutines(loop, execution_order)
+        self._wait_for_all_futures(futures)
+        assert execution_order == list(range(10))
 
+    def _submit_ordered_coroutines(
+        self, loop: BackgroundEventLoop, execution_order: list[int]
+    ) -> list[Future[int]]:
+        """Submit ordered coroutines to the loop."""
         futures: list[Future[int]] = []
         for i in range(10):
-            futures.append(loop.submit(ordered_coroutine(i)))
+            futures.append(
+                loop.submit(self._create_ordered_coroutine(i, execution_order))
+            )
+        return futures
 
+    async def _create_ordered_coroutine(
+        self, index: int, execution_order: list[int]
+    ) -> int:
+        """Create coroutine that tracks execution order."""
+        execution_order.append(index)
+        return index
+
+    def _wait_for_all_futures(self, futures: list[Future[int]]) -> None:
+        """Wait for all futures to complete."""
         for future in futures:
             future.result(timeout=1.0)
-
-        assert execution_order == list(range(10))
 
     def test_handles_long_running_coroutines(self):
         """BackgroundEventLoop should handle long-running coroutines."""
@@ -110,24 +125,34 @@ class TestBackgroundEventLoop:
         loop = BackgroundEventLoop()
         results: list[int] = []
 
-        async def test_coroutine(thread_id: int) -> int:
-            await asyncio.sleep(0.01)
-            return thread_id
-
         def submit_from_thread(thread_id: int) -> None:
-            future = loop.submit(test_coroutine(thread_id))
+            future = loop.submit(self._create_test_coroutine(thread_id))
             results.append(future.result(timeout=2.0))
 
+        threads = self._create_test_threads(submit_from_thread)
+        self._wait_for_threads_completion(threads)
+        assert sorted(results) == list(range(10))
+
+    async def _create_test_coroutine(self, thread_id: int) -> int:
+        """Create a test coroutine for thread safety testing."""
+        await asyncio.sleep(0.01)
+        return thread_id
+
+    def _create_test_threads(
+        self, target_func: Callable[[int], None]
+    ) -> list[threading.Thread]:
+        """Create and start test threads."""
         threads: list[threading.Thread] = []
         for i in range(10):
-            thread = threading.Thread(target=submit_from_thread, args=(i,))
+            thread = threading.Thread(target=target_func, args=(i,))
             threads.append(thread)
             thread.start()
+        return threads
 
+    def _wait_for_threads_completion(self, threads: list[threading.Thread]) -> None:
+        """Wait for all threads to complete."""
         for thread in threads:
             thread.join(timeout=3.0)
-
-        assert sorted(results) == list(range(10))
 
 
 class TestRunInBackground:
@@ -192,92 +217,166 @@ class TestIntegration:
 
     def test_full_workflow(self):
         """Test the complete workflow of creating and using background loops."""
-        # Create a background loop
         loop = BackgroundEventLoop()
 
-        # Define some async operations
+        fetch_result = self._fetch_test_data(loop)
+        final_result = self._process_test_data(loop, fetch_result)
+        assert final_result == "ITEM_42"
+
+    def _fetch_test_data(self, loop: BackgroundEventLoop) -> dict[str, str | int]:
+        """Fetch test data using the background loop."""
+
         async def fetch_data(item_id: int) -> dict[str, str | int]:
             await asyncio.sleep(0.1)
             return {"id": item_id, "data": f"item_{item_id}"}
+
+        fetch_future = loop.submit(fetch_data(42))
+        return fetch_future.result(timeout=1.0)
+
+    def _process_test_data(
+        self, loop: BackgroundEventLoop, data: dict[str, str | int]
+    ) -> str:
+        """Process test data using the background loop."""
 
         async def process_data(data: dict[str, str | int]) -> str:
             await asyncio.sleep(0.05)
             return str(data["data"]).upper()
 
-        # Submit and chain operations
-        fetch_future = loop.submit(fetch_data(42))
-        fetch_result = fetch_future.result(timeout=1.0)
-
-        process_future = loop.submit(process_data(fetch_result))
-        final_result = process_future.result(timeout=1.0)
-
-        assert final_result == "ITEM_42"
+        process_future = loop.submit(process_data(data))
+        return process_future.result(timeout=1.0)
 
     def test_error_handling_workflow(self):
         """Test error handling in the complete workflow."""
         loop = BackgroundEventLoop()
 
+        self._test_failing_operation(loop)
+        self._test_recovery_operation(loop)
+
+    def _test_failing_operation(self, loop: BackgroundEventLoop) -> None:
+        """Test that failing operations raise expected errors."""
+
         async def operation_that_fails():
             await asyncio.sleep(0.1)
             raise ValueError("Operation failed")
 
-        async def recovery_operation():
-            return "recovered"
-
-        # First operation fails
         future1 = loop.submit(operation_that_fails())
         with pytest.raises(ValueError, match="Operation failed"):
             future1.result(timeout=1.0)
 
-        # Recovery operation succeeds
+    def _test_recovery_operation(self, loop: BackgroundEventLoop) -> None:
+        """Test recovery operation succeeds after failure."""
+
+        async def recovery_operation():
+            return "recovered"
+
         future2 = loop.submit(recovery_operation())
         result = future2.result(timeout=1.0)
         assert result == "recovered"
 
     def test_resource_cleanup(self):
         """Test that resources are properly managed."""
-        # Create and use a background loop
         loop = BackgroundEventLoop()
+
+        self._verify_thread_running(loop)
+        self._test_work_submission(loop)
+        self._verify_daemon_thread_properties(loop)
+
+    def _verify_thread_running(self, loop: BackgroundEventLoop) -> None:
+        """Verify the background thread is running."""
+        assert loop.thread.is_alive()
+
+    def _test_work_submission(self, loop: BackgroundEventLoop) -> None:
+        """Test submitting work to the loop."""
 
         async def test_operation():
             return "completed"
 
-        # Verify the thread is running
-        assert loop.thread.is_alive()
-
-        # Submit work
         future = loop.submit(test_operation())
         result = future.result(timeout=1.0)
         assert result == "completed"
 
-        # Thread should still be running (daemon thread)
+    def _verify_daemon_thread_properties(self, loop: BackgroundEventLoop) -> None:
+        """Verify daemon thread properties."""
         assert loop.thread.is_alive()
-
-        # Since it's a daemon thread, it will be cleaned up on exit
         assert loop.thread.daemon
 
 
 class TestBackgroundEventLoopShutdown:
     """Test shutdown and error handling for BackgroundEventLoop."""
 
+    def test_mark_shutdown_started(self):
+        """Test _mark_shutdown_started sets running to False."""
+        loop = BackgroundEventLoop()
+        assert loop._running is True  # type: ignore[reportPrivateUsage]
+
+        loop._mark_shutdown_started()  # type: ignore[reportPrivateUsage]
+        assert loop._running is False  # type: ignore[reportPrivateUsage]
+
+    def test_stop_event_loop_when_running(self):
+        """Test _stop_event_loop stops a running loop."""
+        loop = BackgroundEventLoop()
+        assert loop.loop.is_running()
+
+        loop._stop_event_loop()  # type: ignore[reportPrivateUsage]
+        # Give time for the stop to take effect
+        import time
+
+        time.sleep(0.1)
+
+    def test_stop_event_loop_when_not_running(self):
+        """Test _stop_event_loop is safe when loop not running."""
+        loop = BackgroundEventLoop()
+        loop.shutdown(timeout=1.0)
+
+        # Should not raise error even if loop already stopped
+        loop._stop_event_loop()  # type: ignore[reportPrivateUsage]
+
+    def test_wait_for_shutdown_completion(self):
+        """Test _wait_for_shutdown_completion waits for completion."""
+        loop = BackgroundEventLoop()
+
+        # Start shutdown process
+        loop._mark_shutdown_started()  # type: ignore[reportPrivateUsage]
+        loop._stop_event_loop()  # type: ignore[reportPrivateUsage]
+
+        # Should complete within timeout
+        loop._wait_for_shutdown_completion(2.0)  # type: ignore[reportPrivateUsage]
+
+    def test_check_shutdown_success_when_alive(self):
+        """Test _check_shutdown_success logs warning when thread alive."""
+        loop = BackgroundEventLoop()
+
+        # Since thread is still alive, this should not raise an error
+        # The warning will be logged but we can't easily capture it here
+        loop._check_shutdown_success()  # type: ignore[reportPrivateUsage]
+
+    def test_check_shutdown_success_when_dead(self):
+        """Test _check_shutdown_success is quiet when thread dead."""
+        loop = BackgroundEventLoop()
+        loop.shutdown(timeout=2.0)
+
+        # Thread should be dead now, no warning expected
+        loop._check_shutdown_success()  # type: ignore[reportPrivateUsage]
+
     def test_submit_after_shutdown_raises_error(self):
         """Submit should raise RuntimeError after shutdown."""
         loop = BackgroundEventLoop()
-
-        # Shutdown the loop
         loop.shutdown(timeout=2.0)
 
-        async def test_coroutine():
-            return "should_not_run"
-
-        # Should raise RuntimeError since loop is not running
         with pytest.raises(RuntimeError, match="Background event loop is not running"):
-            # Need to create and immediately close the coroutine to avoid warning
-            coro = test_coroutine()
-            try:
-                loop.submit(coro)
-            finally:
-                coro.close()
+            self._try_submit_after_shutdown(loop)
+
+    def _try_submit_after_shutdown(self, loop: BackgroundEventLoop) -> None:
+        """Try to submit coroutine after shutdown, expecting failure."""
+        coro = self._create_simple_coroutine()
+        try:
+            loop.submit(coro)
+        finally:
+            coro.close()
+
+    async def _create_simple_coroutine(self):
+        """Create a simple test coroutine."""
+        return "should_not_run"
 
     def test_shutdown_graceful(self):
         """Test graceful shutdown of background event loop."""
