@@ -330,3 +330,36 @@ class TestFlowExecutionErrorWithContext:
         finally:
             # Clean up
             debugger.execution_stack.clear()
+
+    def test_get_debug_info(self):
+        """Test getting comprehensive debug information."""
+        context = FlowExecutionContext("test_flow", datetime.now())
+        original_error = ValueError("Original error")
+
+        error = FlowExecutionErrorWithContext(
+            "Test error",
+            flow_name="test_flow",
+            execution_context=context,
+            original_exception=original_error,
+        )
+
+        debug_info = error.get_debug_info()
+
+        assert debug_info["error_message"] == "Test error"
+        assert debug_info["flow_name"] == "test_flow"
+        assert debug_info["execution_context"] == context.to_dict()
+        assert debug_info["original_exception"] == "Original error"
+        assert isinstance(debug_info["execution_stack"], list)
+        assert "traceback" in debug_info
+
+    def test_get_debug_info_with_none_values(self):
+        """Test debug info with None values."""
+        error = FlowExecutionErrorWithContext("Test error")
+        debug_info = error.get_debug_info()
+
+        assert debug_info["error_message"] == "Test error"
+        assert debug_info["flow_name"] is None
+        assert debug_info["execution_context"] is None
+        assert debug_info["original_exception"] is None
+        assert debug_info["traceback"] is None
+        assert debug_info["execution_stack"] == []

@@ -216,6 +216,23 @@ class FlowExecutionErrorWithContext(FlowError):
         # Capture execution stack
         self.execution_stack = list(_flow_debugger.execution_stack)
 
+    def get_debug_info(self) -> DebugData:
+        """Get comprehensive debug information."""
+        import traceback
+
+        return {
+            "error_message": str(self),
+            "flow_name": self.flow_name,
+            "execution_context": (
+                self.execution_context.to_dict() if self.execution_context else None
+            ),
+            "execution_stack": [ctx.to_dict() for ctx in self.execution_stack],
+            "original_exception": (
+                str(self.original_exception) if self.original_exception else None
+            ),
+            "traceback": traceback.format_exc() if self.original_exception else None,
+        }
+
 
 # Convenience functions for accessing the global debugger
 def get_flow_debugger() -> FlowDebugger:
