@@ -4,6 +4,20 @@ This module provides comprehensive monitoring, health checking, performance anal
 and debugging capabilities for Flow-based applications.
 """
 
+# Analysis and optimization
+from .analysis import (
+    FlowAnalyzer,
+    FlowEdge,
+    FlowGraph,
+    FlowNode,
+    analyze_flow,
+    analyze_flow_composition,
+    detect_flow_patterns,
+    export_flow_analysis,
+    generate_flow_optimizations,
+    get_flow_analyzer,
+)
+
 # Health monitoring exports
 from .health import (  # Core health types; Health monitoring; Configuration validation; Built-in health checks; Convenience functions
     FlowConfigValidator,
@@ -44,6 +58,17 @@ from .performance import (
 )
 
 __all__ = [
+    # Analysis (10 exports)
+    "FlowNode",
+    "FlowEdge",
+    "FlowGraph",
+    "FlowAnalyzer",
+    "analyze_flow",
+    "analyze_flow_composition",
+    "detect_flow_patterns",
+    "generate_flow_optimizations",
+    "export_flow_analysis",
+    "get_flow_analyzer",
     # Core health types
     "HealthStatus",
     "HealthCheck",
@@ -70,7 +95,7 @@ __all__ = [
     "validate_flow_configuration",
     "register_health_check",
     "export_health_report",
-    # Performance monitoring (9 exports)
+    # Performance monitoring (10 exports)
     "FlowMetrics",
     "PerformanceMonitor",
     "monitored_stream",
