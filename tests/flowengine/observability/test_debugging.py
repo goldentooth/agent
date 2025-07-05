@@ -219,3 +219,30 @@ class TestFlowDebugger:
             assert debugger.debug_enabled
             debugger.disable_debugging()
             assert not debugger.debug_enabled
+
+    @pytest.mark.asyncio
+    async def test_check_breakpoint_disabled(self):
+        """Test breakpoint checking when debugging is disabled."""
+        debugger = FlowDebugger()
+        debugger.add_breakpoint("test_flow", lambda item, ctx: True)
+
+        context = FlowExecutionContext("test_flow", datetime.now())
+
+        # Should not trigger breakpoint when debugging disabled
+        await debugger.check_breakpoint("test_item", context)
+
+        # No exceptions should be raised
+
+    @pytest.mark.asyncio
+    async def test_check_breakpoint_no_condition_match(self):
+        """Test breakpoint checking when condition doesn't match."""
+        debugger = FlowDebugger()
+        debugger.enable_debugging()
+        debugger.add_breakpoint("test_flow", lambda item, ctx: item > 10)
+
+        context = FlowExecutionContext("test_flow", datetime.now())
+
+        # Should not trigger breakpoint for item = 5
+        await debugger.check_breakpoint(5, context)
+
+        # No exceptions should be raised

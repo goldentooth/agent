@@ -116,3 +116,61 @@ class FlowDebugger:
             self.execution_history.append(context)
             if len(self.execution_history) > self.max_history:
                 self.execution_history.pop(0)
+
+    async def check_breakpoint(
+        self, item: AnyItem, context: FlowExecutionContext
+    ) -> None:
+        """Check if a breakpoint should trigger."""
+        if not self.debug_enabled:
+            return
+
+        flow_name = context.flow_name
+        if flow_name in self.breakpoints:
+            condition = self.breakpoints[flow_name]
+            if condition(item, context):
+                await self._trigger_breakpoint(item, context)
+
+    async def _trigger_breakpoint(
+        self, item: AnyItem, context: FlowExecutionContext
+    ) -> None:
+        """Trigger a breakpoint and enter interactive mode."""
+        print(f"\n🔍 Breakpoint hit in flow: {context.flow_name}")
+        print(f"   Item: {item}")
+        print(f"   Index: {context.item_index}")
+        print(f"   Context: {context.to_dict()}")
+        print("   Commands: (c)ontinue, (s)tack, (i)nspect, (q)uit")
+        await self._handle_breakpoint_commands(item)
+
+    async def _handle_breakpoint_commands(self, item: AnyItem) -> None:
+        """Handle interactive breakpoint commands."""
+        while True:
+            try:
+                command = input("debug> ").strip().lower()
+                if command in ["c", "continue"]:
+                    break
+                elif command in ["s", "stack"]:
+                    self._print_execution_stack()
+                elif command in ["i", "inspect"]:
+                    self._print_item_inspection(item)
+                elif command in ["q", "quit"]:
+                    raise KeyboardInterrupt("Debug session terminated")
+                else:
+                    print("Unknown command. Use (c)ontinue, (s)tack, (i)nspect, (q)uit")
+            except (EOFError, KeyboardInterrupt):
+                break
+
+    def _print_execution_stack(self) -> None:
+        """Print the current execution stack."""
+        print("\n📚 Execution Stack:")
+        for i, context in enumerate(reversed(self.execution_stack)):
+            indent = "  " * i
+            print(f"{indent}└─ {context.flow_name} (item {context.item_index})")
+
+    def _print_item_inspection(self, item: AnyItem) -> None:
+        """Print detailed inspection of the current item."""
+        print("\n🔬 Item Inspection:")
+        print(f"   Type: {type(item).__name__}")
+        print(f"   Value: {repr(item)}")
+        print(f"   String: {str(item)}")
+        if hasattr(item, "__dict__"):
+            print(f"   Attributes: {list(item.__dict__.keys())}")
