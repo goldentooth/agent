@@ -159,3 +159,16 @@ class TestFlowAnalyzer:
         # The signature method should be present and callable
         assert hasattr(analyzer, "_get_flow_signature")
         assert callable(getattr(analyzer, "_get_flow_signature"))
+
+    def test_create_flow_node(self):
+        """Test flow node creation capability."""
+        analyzer = FlowAnalyzer()
+
+        def increment(x: int) -> int:
+            return x + 1
+
+        flow = map_stream(increment)
+
+        # The create node method should be present and callable
+        assert hasattr(analyzer, "_create_flow_node")
+        assert callable(getattr(analyzer, "_create_flow_node"))

@@ -120,3 +120,16 @@ class FlowAnalyzer:
             "|".join(components).encode(), usedforsecurity=False
         ).hexdigest()[:8]
         return signature
+
+    def _create_flow_node(self, flow: AnyFlow, node_id: str) -> FlowNode:
+        """Create a FlowNode from a Flow object."""
+        return FlowNode(
+            id=node_id,
+            name=flow.name,
+            flow_type="utility",
+            complexity_score=1,
+            metadata={
+                "signature": self._get_flow_signature(flow),
+                "has_metadata": hasattr(flow, "metadata") and bool(flow.metadata),
+            },
+        )
