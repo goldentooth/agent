@@ -307,6 +307,54 @@ def debug_stream(
     return Flow(_flow, name="debug")
 
 
+def traced_flow(flow: Flow[Input, Output]) -> Flow[Input, Output]:
+    """Wrap a flow with execution tracing and enhanced error reporting.
+
+    Args:
+        flow: The flow to wrap with tracing
+
+    Returns:
+        A flow with enhanced debugging and error reporting.
+    """
+    from collections.abc import AsyncGenerator
+
+    async def _traced_flow(
+        stream: AsyncGenerator[Input, None],
+    ) -> AsyncGenerator[Output, None]:
+        flow_name = flow.name
+        parent_flow = (
+            _flow_debugger.execution_stack[-1].flow_name
+            if _flow_debugger.execution_stack
+            else None
+        )
+
+        async with _flow_debugger.execution_context(flow_name, parent_flow) as context:
+            try:
+                async for item in flow(stream):
+                    context.current_item = item
+                    context.item_index += 1
+
+                    # Check for breakpoints
+                    await _flow_debugger.check_breakpoint(item, context)
+
+                    yield item
+
+            except Exception as e:
+                # Enhance exception with debugging context
+                if not isinstance(e, FlowExecutionErrorWithContext):
+                    enhanced_error = FlowExecutionErrorWithContext(
+                        f"Error in flow '{flow_name}': {str(e)}",
+                        flow_name=flow_name,
+                        execution_context=context,
+                        original_exception=e,
+                    )
+                    raise enhanced_error from e
+                else:
+                    raise  # Re-raise already enhanced errors
+
+    return Flow(_traced_flow, name=f"traced({flow.name})")
+
+
 # Convenience functions for accessing the global debugger
 def get_flow_debugger() -> FlowDebugger:
     """Get the global flow debugger instance."""
