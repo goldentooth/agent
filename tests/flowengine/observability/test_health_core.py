@@ -4,7 +4,11 @@ from datetime import datetime
 
 import pytest
 
-from flowengine.observability.health.core import HealthCheckResult, HealthStatus
+from flowengine.observability.health.core import (
+    HealthCheckResult,
+    HealthStatus,
+    SystemHealth,
+)
 
 
 class TestHealthStatus:
@@ -113,3 +117,119 @@ class TestHealthCheckResult:
 
         result_dict = result.to_dict()
         assert result_dict["metadata"] == metadata
+
+
+class TestSystemHealth:
+    """Tests for SystemHealth class."""
+
+    def test_system_health_creation(self) -> None:
+        """Test creating a SystemHealth instance."""
+        checks = [
+            HealthCheckResult(
+                name="check1",
+                status=HealthStatus.HEALTHY,
+                message="OK",
+                duration_seconds=0.1,
+            ),
+            HealthCheckResult(
+                name="check2",
+                status=HealthStatus.WARNING,
+                message="Warning",
+                duration_seconds=0.2,
+            ),
+        ]
+
+        health = SystemHealth(
+            status=HealthStatus.WARNING,
+            message="System has warnings",
+            checks=checks,
+        )
+
+        assert health.status == HealthStatus.WARNING
+        assert health.message == "System has warnings"
+        assert len(health.checks) == 2
+        assert isinstance(health.timestamp, datetime)
+
+    def test_healthy_checks_property(self) -> None:
+        """Test healthy_checks property."""
+        checks = [
+            HealthCheckResult("check1", HealthStatus.HEALTHY, "OK", 0.1),
+            HealthCheckResult("check2", HealthStatus.WARNING, "Warning", 0.2),
+            HealthCheckResult("check3", HealthStatus.HEALTHY, "OK", 0.3),
+        ]
+
+        health = SystemHealth(HealthStatus.WARNING, "Mixed", checks)
+        healthy = health.healthy_checks
+
+        assert len(healthy) == 2
+        assert all(check.status == HealthStatus.HEALTHY for check in healthy)
+
+    def test_warning_checks_property(self) -> None:
+        """Test warning_checks property."""
+        checks = [
+            HealthCheckResult("check1", HealthStatus.HEALTHY, "OK", 0.1),
+            HealthCheckResult("check2", HealthStatus.WARNING, "Warning", 0.2),
+            HealthCheckResult("check3", HealthStatus.WARNING, "Warning", 0.3),
+        ]
+
+        health = SystemHealth(HealthStatus.WARNING, "Has warnings", checks)
+        warnings = health.warning_checks
+
+        assert len(warnings) == 2
+        assert all(check.status == HealthStatus.WARNING for check in warnings)
+
+    def test_critical_checks_property(self) -> None:
+        """Test critical_checks property."""
+        checks = [
+            HealthCheckResult("check1", HealthStatus.CRITICAL, "Critical", 0.1),
+            HealthCheckResult("check2", HealthStatus.WARNING, "Warning", 0.2),
+            HealthCheckResult("check3", HealthStatus.CRITICAL, "Critical", 0.3),
+        ]
+
+        health = SystemHealth(HealthStatus.CRITICAL, "Has critical issues", checks)
+        critical = health.critical_checks
+
+        assert len(critical) == 2
+        assert all(check.status == HealthStatus.CRITICAL for check in critical)
+
+    def test_system_health_to_dict(self) -> None:
+        """Test converting SystemHealth to dictionary."""
+        timestamp = datetime.now()
+        checks = [
+            HealthCheckResult("check1", HealthStatus.HEALTHY, "OK", 0.1),
+            HealthCheckResult("check2", HealthStatus.WARNING, "Warning", 0.2),
+            HealthCheckResult("check3", HealthStatus.CRITICAL, "Critical", 0.3),
+        ]
+
+        health = SystemHealth(
+            status=HealthStatus.CRITICAL,
+            message="System has critical issues",
+            checks=checks,
+            timestamp=timestamp,
+        )
+
+        health_dict = health.to_dict()
+
+        assert health_dict["status"] == "critical"
+        assert health_dict["message"] == "System has critical issues"
+        assert health_dict["timestamp"] == timestamp.isoformat()
+        assert health_dict["summary"]["total_checks"] == 3
+        assert health_dict["summary"]["healthy"] == 1
+        assert health_dict["summary"]["warning"] == 1
+        assert health_dict["summary"]["critical"] == 1
+        assert len(health_dict["checks"]) == 3
+
+    def test_system_health_empty_checks(self) -> None:
+        """Test SystemHealth with no checks."""
+        health = SystemHealth(
+            status=HealthStatus.UNKNOWN,
+            message="No checks configured",
+            checks=[],
+        )
+
+        assert len(health.healthy_checks) == 0
+        assert len(health.warning_checks) == 0
+        assert len(health.critical_checks) == 0
+
+        health_dict = health.to_dict()
+        assert health_dict["summary"]["total_checks"] == 0

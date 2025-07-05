@@ -50,3 +50,43 @@ class HealthCheckResult:
             "timestamp": self.timestamp.isoformat(),
             "metadata": self.metadata,
         }
+
+
+@dataclass
+class SystemHealth:
+    """Overall system health status."""
+
+    status: HealthStatus
+    message: str
+    checks: list[HealthCheckResult]
+    timestamp: datetime = field(default_factory=datetime.now)
+
+    @property
+    def healthy_checks(self) -> list[HealthCheckResult]:
+        """Get all healthy checks."""
+        return [check for check in self.checks if check.status == HealthStatus.HEALTHY]
+
+    @property
+    def warning_checks(self) -> list[HealthCheckResult]:
+        """Get all warning checks."""
+        return [check for check in self.checks if check.status == HealthStatus.WARNING]
+
+    @property
+    def critical_checks(self) -> list[HealthCheckResult]:
+        """Get all critical checks."""
+        return [check for check in self.checks if check.status == HealthStatus.CRITICAL]
+
+    def to_dict(self) -> HealthData:
+        """Convert to dictionary."""
+        return {
+            "status": self.status.value,
+            "message": self.message,
+            "timestamp": self.timestamp.isoformat(),
+            "summary": {
+                "total_checks": len(self.checks),
+                "healthy": len(self.healthy_checks),
+                "warning": len(self.warning_checks),
+                "critical": len(self.critical_checks),
+            },
+            "checks": [check.to_dict() for check in self.checks],
+        }
