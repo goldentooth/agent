@@ -14,10 +14,15 @@ if TYPE_CHECKING:
 from flowengine.observability.debugging import (
     FlowDebugger,
     FlowExecutionContext,
+    add_flow_breakpoint,
     debug_session,
+    disable_flow_debugging,
     enable_flow_debugging,
+    export_execution_trace,
+    get_execution_trace,
     get_flow_debugger,
     inspect_flow,
+    remove_flow_breakpoint,
 )
 
 
@@ -359,3 +364,120 @@ class TestEnableFlowDebugging:
 
         finally:
             debugger.debug_enabled = original_state
+
+    def test_disable_flow_debugging(self):
+        """Test that disable_flow_debugging disables the global debugger."""
+        debugger = get_flow_debugger()
+        original_state = debugger.debug_enabled
+
+        try:
+            # Enable debugging first
+            debugger.enable_debugging()
+            assert debugger.debug_enabled
+
+            # Disable using convenience function
+            disable_flow_debugging()
+            assert not debugger.debug_enabled
+
+        finally:
+            debugger.debug_enabled = original_state
+
+    def test_add_flow_breakpoint(self):
+        """Test that add_flow_breakpoint adds a breakpoint to the global debugger."""
+        debugger = get_flow_debugger()
+        original_breakpoints = debugger.breakpoints.copy()
+
+        try:
+            # Add a breakpoint
+            add_flow_breakpoint("test_flow")
+            assert "test_flow" in debugger.breakpoints
+
+            # Add a breakpoint with custom condition
+            def custom_condition(item: Any, ctx: FlowExecutionContext) -> bool:
+                return item == "test"
+
+            add_flow_breakpoint("test_flow_2", custom_condition)
+            assert "test_flow_2" in debugger.breakpoints
+            assert debugger.breakpoints["test_flow_2"] == custom_condition
+
+        finally:
+            debugger.breakpoints = original_breakpoints
+
+    def test_remove_flow_breakpoint(self):
+        """Test that remove_flow_breakpoint removes a breakpoint from the global debugger."""
+        debugger = get_flow_debugger()
+        original_breakpoints = debugger.breakpoints.copy()
+
+        try:
+            # Add a breakpoint first
+            debugger.add_breakpoint("test_flow")
+            assert "test_flow" in debugger.breakpoints
+
+            # Remove using convenience function
+            remove_flow_breakpoint("test_flow")
+            assert "test_flow" not in debugger.breakpoints
+
+        finally:
+            debugger.breakpoints = original_breakpoints
+
+    def test_get_execution_trace(self):
+        """Test that get_execution_trace returns the global debugger's trace."""
+        debugger = get_flow_debugger()
+        original_history = debugger.execution_history.copy()
+
+        try:
+            # Get trace using convenience function
+            trace = get_execution_trace()
+
+            # Should return the same trace data as the debugger
+            assert trace == debugger.get_execution_trace()
+
+            # Add some data to verify they're accessing the same debugger
+            # Create a proper context to add to history
+            from datetime import datetime
+
+            from flowengine.observability.debugging import FlowExecutionContext
+
+            test_context = FlowExecutionContext("test_flow", datetime.now())
+            debugger.execution_history.append(test_context)
+
+            updated_trace = get_execution_trace()
+            assert len(updated_trace) == len(original_history) + 1
+            assert updated_trace[-1]["flow_name"] == "test_flow"
+        finally:
+            debugger.execution_history.clear()
+            debugger.execution_history.extend(original_history)
+
+    def test_export_execution_trace(self, tmp_path: Path):
+        """Test that export_execution_trace exports the global debugger's trace."""
+        debugger = get_flow_debugger()
+        original_history = debugger.execution_history.copy()
+
+        try:
+            # Set up a trace entry by creating a proper context
+            from datetime import datetime
+
+            from flowengine.observability.debugging import FlowExecutionContext
+
+            test_context = FlowExecutionContext("test_flow", datetime.now())
+            debugger.execution_history.append(test_context)
+
+            # Export using convenience function
+            filepath = tmp_path / "trace.json"
+            export_execution_trace(str(filepath))
+
+            # Verify file was created and contains trace data
+            assert filepath.exists()
+
+            with open(filepath) as f:
+                exported_data = json.load(f)
+
+            # The exported data contains additional metadata, check the execution_history
+            assert "execution_history" in exported_data
+            execution_history = exported_data["execution_history"]
+            assert len(execution_history) == 1
+            assert execution_history[0]["flow_name"] == "test_flow"
+            assert "started_at" in execution_history[0]
+        finally:
+            debugger.execution_history.clear()
+            debugger.execution_history.extend(original_history)

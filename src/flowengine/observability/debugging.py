@@ -412,3 +412,31 @@ def get_flow_debugger() -> FlowDebugger:
 def enable_flow_debugging() -> None:
     """Enable flow debugging globally."""
     _flow_debugger.enable_debugging()
+
+
+def disable_flow_debugging() -> None:
+    """Disable flow debugging globally."""
+    _flow_debugger.disable_debugging()
+
+
+def add_flow_breakpoint(
+    flow_name: str,
+    condition: BreakpointCondition = lambda item, ctx: True,
+) -> None:
+    """Add a breakpoint for a specific flow."""
+    _flow_debugger.add_breakpoint(flow_name, condition)
+
+
+def remove_flow_breakpoint(flow_name: str) -> None:
+    """Remove a breakpoint for a flow."""
+    _flow_debugger.remove_breakpoint(flow_name)
+
+
+def get_execution_trace() -> TraceData:
+    """Get the current execution trace."""
+    return _flow_debugger.get_execution_trace()
+
+
+def export_execution_trace(filepath: str) -> None:
+    """Export execution trace to a JSON file."""
+    _flow_debugger.export_trace(filepath)
