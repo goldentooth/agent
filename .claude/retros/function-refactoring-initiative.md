@@ -25,6 +25,19 @@ Refactoring functions that exceed the 15-line limit to comply with guideline #3.
 - Each helper method can be independently tested
 - Maintaining existing public API while refactoring internals preserves compatibility
 
+### Commit 2: Refactor print_results function in git_hooks utils
+- **File**: `src/git_hooks/utils.py`
+- **Function**: `print_results` (was 27 lines → now 9 lines)
+- **Approach**: Split into 5 helper methods:
+  - `_separate_results_by_severity()` - Separates errors from warnings
+  - `_print_error_results()` - Handles error result formatting
+  - `_print_warning_results()` - Handles warning result formatting
+  - `_print_single_warning()` - Formats individual warning messages
+  - `_is_urgent_warning()` - Determines warning urgency level
+- **Tests**: Created comprehensive test suite with 16 test cases
+- **Result**: Main function now 9 lines, all helpers under 12 lines each
+
+Note: Some test functions still exceed 15 lines and need future refactoring.
+
 ## Next Steps
-- Continue with `print_results` function in `src/git_hooks/utils.py` (27 lines)
-- Work through flowengine combinators systematically
+- Work through flowengine combinators systematically, starting with flow.py
