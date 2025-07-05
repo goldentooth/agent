@@ -83,3 +83,11 @@ class TestFlowDebugger:
         assert debugger.breakpoints == {}
         assert not debugger.debug_enabled
         assert debugger.max_history == 1000
+
+    def test_enable_debugging(self):
+        """Test enabling debugging."""
+        debugger = FlowDebugger()
+        assert not debugger.debug_enabled
+
+        debugger.enable_debugging()
+        assert debugger.debug_enabled

@@ -68,3 +68,7 @@ class FlowDebugger:
         self.breakpoints: BreakpointRegistry = {}
         self.debug_enabled = False
         self.max_history = 1000
+
+    def enable_debugging(self) -> None:
+        """Enable debugging mode."""
+        self.debug_enabled = True
