@@ -6,7 +6,8 @@ execution context tracking, and flow introspection capabilities.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import AsyncGenerator, Callable
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, TypeVar
@@ -93,3 +94,25 @@ class FlowDebugger:
     def remove_breakpoint(self, flow_name: str) -> None:
         """Remove a breakpoint for a flow."""
         self.breakpoints.pop(flow_name, None)
+
+    @asynccontextmanager
+    async def execution_context(
+        self, flow_name: str, parent_flow: str | None = None
+    ) -> AsyncGenerator[FlowExecutionContext]:
+        """Context manager for tracking flow execution."""
+        context = FlowExecutionContext(
+            flow_name=flow_name, started_at=datetime.now(), parent_flow=parent_flow
+        )
+
+        self.execution_stack.append(context)
+
+        try:
+            yield context
+        finally:
+            if self.execution_stack and self.execution_stack[-1] == context:
+                self.execution_stack.pop()
+
+            # Add to history
+            self.execution_history.append(context)
+            if len(self.execution_history) > self.max_history:
+                self.execution_history.pop(0)

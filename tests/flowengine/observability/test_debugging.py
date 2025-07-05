@@ -130,3 +130,18 @@ class TestFlowDebugger:
 
         # Removing non-existent breakpoint should not raise error
         debugger.remove_breakpoint("non_existent")  # Should not raise
+
+    @pytest.mark.asyncio
+    async def test_execution_context_manager(self):
+        """Test execution context manager."""
+        debugger = FlowDebugger()
+
+        async with debugger.execution_context("test_flow") as context:
+            assert context.flow_name == "test_flow"
+            assert len(debugger.execution_stack) == 1
+            assert debugger.execution_stack[0] == context
+
+        # After exiting context
+        assert len(debugger.execution_stack) == 0
+        assert len(debugger.execution_history) == 1
+        assert debugger.execution_history[0] == context
