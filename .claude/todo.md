@@ -45,3 +45,4 @@
 43. We can add a semi-persistent database with SQLite; this can host local RAG, perhaps some other local stuff that's not critical for long-term preservation. How can we make this absolutely bulletproof, highly observable, and maintainable?
 44. Revisit `agent-knowledge-base`. Is this still valuable? What if we get into 100,000-1,000,000 files? Does this just become absurd, and should we abandon it now?
 45. Probably split out anything correlating Flow and Context into a subclass or smth.
+46. Remove tests/ from function-line-length check exclusion list.
