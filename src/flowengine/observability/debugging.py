@@ -355,6 +355,28 @@ def traced_flow(flow: Flow[Input, Output]) -> Flow[Input, Output]:
     return Flow(_traced_flow, name=f"traced({flow.name})")
 
 
+def inspect_flow(flow: Flow[Any, Any]) -> DebugData:
+    """Inspect a flow and return metadata about its structure.
+
+    Args:
+        flow: The flow to inspect
+
+    Returns:
+        Dictionary containing flow metadata and structure information.
+    """
+    import asyncio
+
+    return {
+        "name": flow.name,
+        "type": type(flow).__name__,
+        "function_name": getattr(flow.fn, "__name__", "anonymous"),
+        "metadata": flow.metadata if hasattr(flow, "metadata") else {},
+        "is_async": asyncio.iscoroutinefunction(flow.fn),
+        "docstring": getattr(flow.fn, "__doc__", None),
+        "module": getattr(flow.fn, "__module__", None),
+    }
+
+
 # Convenience functions for accessing the global debugger
 def get_flow_debugger() -> FlowDebugger:
     """Get the global flow debugger instance."""
