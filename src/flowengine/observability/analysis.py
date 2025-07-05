@@ -303,6 +303,34 @@ class FlowAnalyzer:
 
         return graph
 
+    def analyze_composition(self, flows: FlowList) -> FlowGraph:
+        """Analyze a composition of multiple flows."""
+        graph = FlowGraph()
+
+        if not flows:
+            return graph
+
+        # Create nodes for each flow
+        node_ids: list[str] = []
+        for flow in flows:
+            node_id = self._generate_node_id()
+            node = self._create_flow_node(flow, node_id)
+            graph.nodes[node_id] = node
+            node_ids.append(node_id)
+
+        # Create edges between consecutive flows
+        for i in range(len(node_ids) - 1):
+            edge = FlowEdge(
+                source_id=node_ids[i], target_id=node_ids[i + 1], edge_type="sequential"
+            )
+            graph.edges.append(edge)
+
+        # Set entry and exit points
+        graph.entry_points = [node_ids[0]]
+        graph.exit_points = [node_ids[-1]]
+
+        return graph
+
 
 # Global analyzer instance
 _flow_analyzer = FlowAnalyzer()

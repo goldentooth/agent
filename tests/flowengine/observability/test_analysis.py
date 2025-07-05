@@ -334,6 +334,40 @@ class TestFlowAnalyzer:
             node.flow_type == "transformation"
         )  # map should be categorized as transformation
 
+    def test_analyze_composition_empty(self):
+        """Test analyzing empty composition."""
+        analyzer = FlowAnalyzer()
+        graph = analyzer.analyze_composition([])
+
+        assert len(graph.nodes) == 0
+        assert len(graph.edges) == 0
+        assert len(graph.entry_points) == 0
+        assert len(graph.exit_points) == 0
+
+    def test_analyze_composition_multiple_flows(self):
+        """Test analyzing composition of multiple flows."""
+        analyzer = FlowAnalyzer()
+
+        def increment(x: int) -> int:
+            return x + 1
+
+        def double(x: int) -> int:
+            return x * 2
+
+        flows = [map_stream(increment), map_stream(double)]
+        graph = analyzer.analyze_composition(flows)
+
+        assert len(graph.nodes) == 2
+        assert len(graph.edges) == 1
+        assert len(graph.entry_points) == 1
+        assert len(graph.exit_points) == 1
+
+        # Check edge connects first to second flow
+        edge = graph.edges[0]
+        assert edge.edge_type == "sequential"
+        assert edge.source_id in graph.nodes
+        assert edge.target_id in graph.nodes
+
 
 class TestAnalysisFunctions:
     """Tests for module-level analysis functions."""
