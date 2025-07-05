@@ -5,7 +5,11 @@ from datetime import datetime
 
 import pytest
 
-from flowengine.observability.debugging import FlowExecutionContext
+from flowengine.observability.debugging import (
+    BreakpointCondition,
+    BreakpointRegistry,
+    FlowExecutionContext,
+)
 
 
 class TestFlowExecutionContext:
@@ -43,3 +47,24 @@ class TestFlowExecutionContext:
         assert context_dict["item_index"] == 5
         assert context_dict["parent_flow"] == "parent_flow"
         assert "execution_id" in context_dict
+
+
+class TestBreakpointTypes:
+    """Tests for breakpoint-related type aliases."""
+
+    def test_breakpoint_condition_callable(self):
+        """Test BreakpointCondition type works with callables."""
+        context = FlowExecutionContext("test", datetime.now())
+
+        # Simple condition
+        condition: BreakpointCondition = lambda item, ctx: item > 5
+        assert condition(10, context) is True
+        assert condition(3, context) is False
+
+    def test_breakpoint_registry_dict(self):
+        """Test BreakpointRegistry type works with dictionaries."""
+        condition: BreakpointCondition = lambda item, ctx: True
+        registry: BreakpointRegistry = {"test_flow": condition}
+
+        assert "test_flow" in registry
+        assert registry["test_flow"] == condition

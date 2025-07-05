@@ -52,3 +52,8 @@ class FlowExecutionContext:
             "execution_id": self.execution_id,
             "metadata": self.metadata,
         }
+
+
+# Breakpoint-related aliases (after FlowExecutionContext is defined)
+BreakpointCondition = Callable[[Any, FlowExecutionContext], bool]
+BreakpointRegistry = dict[str, BreakpointCondition]
