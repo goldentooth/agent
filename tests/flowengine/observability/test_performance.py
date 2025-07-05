@@ -23,6 +23,16 @@ from flowengine.observability.performance import (
 )
 
 
+@pytest.fixture(autouse=True)
+def reset_global_performance_monitor():
+    """Reset the global performance monitor before each test to prevent interference."""
+    monitor = get_performance_monitor()
+    monitor.reset_metrics()
+    yield
+    # Optionally reset after test as well
+    monitor.reset_metrics()
+
+
 def get_mock_flow_metrics(overrides: dict[str, Any] | None = None) -> FlowMetrics:
     """Factory for creating test FlowMetrics instances."""
     base = _get_base_metrics_dict()
