@@ -8,17 +8,24 @@ from __future__ import annotations
 
 import json
 import time
-from collections import defaultdict
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
 from ..flow import Flow
 
+# Optional import for memory tracking
+_psutil_available = False
+try:
+    import psutil
+
+    _psutil_available = True
+except ImportError:
+    psutil = None  # type: ignore
+
 # Type aliases for performance monitoring
 PerformanceData = dict[str, Any]
 AnyFlow = Flow[Any, Any]
-StatsList = list[Any]
 AnyIteratorFactory = Callable[[], AsyncGenerator[Any, None]]
 BenchmarkResult = dict[str, Any]
 
@@ -132,7 +139,6 @@ class PerformanceMonitor:
     def __init__(self) -> None:
         super().__init__()
         self.metrics: dict[str, FlowMetrics] = {}
-        self.global_stats: defaultdict[str, StatsList] = defaultdict(list)
         self.memory_tracking = False
 
     def start_monitoring(self, name: str) -> str:
@@ -156,7 +162,6 @@ class PerformanceMonitor:
     def reset_metrics(self) -> None:
         """Reset all metrics."""
         self.metrics.clear()
-        self.global_stats.clear()
 
     def export_metrics(self, filepath: str) -> None:
         """Export metrics to a file."""
@@ -187,12 +192,14 @@ class PerformanceMonitor:
 
     def record_memory_usage(self, metrics_id: str) -> None:
         """Record current memory usage."""
-        if not self.memory_tracking or metrics_id not in self.metrics:
+        if (
+            not self.memory_tracking
+            or metrics_id not in self.metrics
+            or not _psutil_available
+        ):
             return
         try:
-            import psutil
-
-            process = psutil.Process()
+            process = psutil.Process()  # type: ignore
             memory_info = process.memory_info()
             current_usage = memory_info.rss / 1024
             metrics = self.metrics[metrics_id]
@@ -327,12 +334,8 @@ def get_performance_monitor() -> PerformanceMonitor:
 
 def enable_memory_tracking() -> None:
     """Memory usage tracking."""
-    try:
-        import psutil
-
+    if _psutil_available:
         _performance_monitor.memory_tracking = True
-    except ImportError:
-        pass
 
 
 def get_performance_summary() -> PerformanceData:
