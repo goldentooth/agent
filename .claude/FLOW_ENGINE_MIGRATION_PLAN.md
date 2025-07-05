@@ -125,10 +125,11 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Dependencies: `flowengine.flow`, `flowengine.combinators.basic`
 - **Status**: Complete (10 functions migrated, all refactored to ≤15 lines)
 
-**Epic 14: Complete combinators __init__.py**
+**~Epic 14: Complete combinators __init__.py~ ✅ DONE!**
 - File: `src/flowengine/combinators/__init__.py` (complete)
 - Source: `old/goldentooth_agent/flow_engine/combinators/__init__.py` (171 lines)
 - Export all combinators
+- **Result**: All 65 combinators exported across 8 categories, comprehensive public API complete
 
 ## Phase 3: Observability System (Epics 15-22)
 
