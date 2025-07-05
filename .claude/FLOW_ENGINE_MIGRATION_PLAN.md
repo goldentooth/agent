@@ -60,7 +60,7 @@ from .performance import (
 
 ---
 
-### Epic 20: Create observability analysis exports  
+### Epic 20: Create observability analysis exports
 **Unit**: Analysis and optimization exports
 **Source**: `old/goldentooth_agent/flow_engine/observability/__init__.py` (analysis section)
 **Target**: `src/flowengine/observability/__init__.py` (partial)
@@ -436,7 +436,7 @@ __all__ = [
 
 ---
 
-### Epic 38: Migrate registry test class 2 
+### Epic 38: Migrate registry test class 2
 **Unit**: Registry filtering and search tests
 **Source**: `old/tests/flow_engine/registry/test_registry.py` (TestRegistryFiltering)
 **Target**: `tests/flowengine/registry/test_registry.py`

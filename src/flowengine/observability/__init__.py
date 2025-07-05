@@ -18,6 +18,23 @@ from .analysis import (
     get_flow_analyzer,
 )
 
+# Debugging and introspection
+from .debugging import (
+    FlowDebugger,
+    FlowExecutionContext,
+    add_flow_breakpoint,
+    debug_session,
+    debug_stream,
+    disable_flow_debugging,
+    enable_flow_debugging,
+    export_execution_trace,
+    get_execution_trace,
+    get_flow_debugger,
+    inspect_flow,
+    remove_flow_breakpoint,
+    traced_flow,
+)
+
 # Health monitoring exports
 from .health import (  # Core health types; Health monitoring; Configuration validation; Built-in health checks; Convenience functions
     FlowConfigValidator,
@@ -69,6 +86,20 @@ __all__ = [
     "generate_flow_optimizations",
     "export_flow_analysis",
     "get_flow_analyzer",
+    # Debugging (13 exports)
+    "FlowExecutionContext",
+    "FlowDebugger",
+    "debug_stream",
+    "traced_flow",
+    "get_flow_debugger",
+    "enable_flow_debugging",
+    "disable_flow_debugging",
+    "add_flow_breakpoint",
+    "remove_flow_breakpoint",
+    "get_execution_trace",
+    "export_execution_trace",
+    "inspect_flow",
+    "debug_session",
     # Core health types
     "HealthStatus",
     "HealthCheck",

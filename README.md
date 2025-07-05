@@ -124,7 +124,7 @@ items = [item async for item in result]  # [0, 2, 4, 6, 8]
 ```python
 from flowengine import Flow
 from flowengine.combinators import (
-    batch_stream, debounce_stream, parallel_stream, 
+    batch_stream, debounce_stream, parallel_stream,
     retry_stream, circuit_breaker_stream
 )
 
