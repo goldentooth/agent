@@ -150,6 +150,29 @@ class FunctionLengthValidator(Validator):
 
         return self._find_worst_violation(path, functions)
 
+    def get_all_function_info(self, path: Path) -> list[tuple[str, int, int, int]]:
+        """Get information about all functions in a file for verbose output.
+
+        Returns:
+            List of tuples: (function_name, start_line, end_line, line_count)
+        """
+        if not self._is_valid_python_file(path):
+            return []
+
+        tree = self._parse_python_file(path)
+        if tree is None:
+            return []
+
+        functions = self._find_functions(tree)
+        function_info: list[tuple[str, int, int, int]] = []
+        for func_name, start_line, end_line in functions:
+            line_count = end_line - start_line + 1
+            function_info.append((func_name, start_line, end_line, line_count))
+
+        # Sort by line count descending
+        function_info.sort(key=lambda x: x[3], reverse=True)
+        return function_info
+
     def _find_functions(self, tree: ast.AST) -> list[tuple[str, int, int]]:
         """Find all function definitions with their line ranges."""
         functions: list[tuple[str, int, int]] = []
