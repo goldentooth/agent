@@ -322,6 +322,8 @@ class TestBackgroundEventLoopShutdown:
         import time
 
         time.sleep(0.1)
+        # Verify the loop is no longer running
+        assert not loop.loop.is_running()
 
     def test_stop_event_loop_when_not_running(self):
         """Test _stop_event_loop is safe when loop not running."""

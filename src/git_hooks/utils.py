@@ -90,12 +90,12 @@ def _print_error_results(errors: List[ValidationResult], hook_type: str) -> None
     print("See .claude/guidelines/guidelines.txt for requirements")
 
 
-def _print_warning_results(warnings: List[ValidationResult]) -> None:
+def _print_warning_results(warning_results: List[ValidationResult]) -> None:
     """Print warning validation results with urgency levels."""
-    if not warnings:
+    if not warning_results:
         return
 
-    for result in warnings:
+    for result in warning_results:
         _print_single_warning(result)
 
 
