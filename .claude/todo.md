@@ -44,3 +44,4 @@
 42. We can add a semi-persistent database with SQLite; this can host local RAG, perhaps some other local stuff that's not critical for long-term preservation. How can we make this absolutely bulletproof, highly observable, and maintainable?
 43. Revisit `agent-knowledge-base`. Is this still valuable? What if we get into 100,000-1,000,000 files? Does this just become absurd, and should we abandon it now?
 44. Probably split out anything correlating Flow and Context into a subclass or smth.
+45. Replace placeholder health check implementations in Epic 18 with proper flow execution monitoring, error tracking, and performance metrics collection. Current implementations are basic placeholders that need real system integration for production use.
