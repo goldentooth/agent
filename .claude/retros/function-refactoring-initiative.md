@@ -39,5 +39,26 @@ Refactoring functions that exceed the 15-line limit to comply with guideline #3.
 
 Note: Some test functions still exceed 15 lines and need future refactoring.
 
+### Commit 3: Complete flow.py function length refactoring
+- **File**: `src/flowengine/flow.py`
+- **Functions**: Refactored all 12 originally oversized functions + several helper methods
+- **Approach**: Systematic extraction of single-responsibility helper methods
+  - Used lambda functions for simple wrapper creation
+  - Extracted nested async generators into separate methods
+  - Reduced verbose docstrings while preserving essential information
+  - Maintained all existing public interfaces and behavior
+- **Key patterns developed**:
+  - Main function → calls helper that returns lambda → lambda calls processing function
+  - Example: `batch()` → `_create_batch_generator()` → `lambda: _process_batch_stream()`
+- **Result**: All 70+ functions in flow.py now comply with 15-line limit
+- **Challenges**: Black formatting caused some functions to grow, requiring additional refactoring
+
 ## Next Steps
-- Work through flowengine combinators systematically, starting with flow.py
+- Work through flowengine combinators systematically, starting with src/flowengine/combinators/basic.py
+
+## Key Insights
+- Nested async generator functions are often the main cause of line count violations
+- Helper method extraction maintains code readability while improving testability
+- Lambda wrappers provide clean delegation without adding unnecessary complexity
+- Docstring reduction is sometimes necessary but should preserve essential API information
+- Black formatting can affect line counts and should be considered during refactoring
