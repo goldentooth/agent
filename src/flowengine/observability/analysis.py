@@ -146,3 +146,17 @@ class FlowAnalyzer:
         graph.exit_points = [node_id]
 
         return graph
+
+
+# Global analyzer instance
+_flow_analyzer = FlowAnalyzer()
+
+
+def analyze_flow(flow: AnyFlow) -> FlowGraph:
+    """Analyze a single Flow and return its graph representation."""
+    return _flow_analyzer.analyze_flow(flow)
+
+
+def get_flow_analyzer() -> FlowAnalyzer:
+    """Get the global flow analyzer instance."""
+    return _flow_analyzer

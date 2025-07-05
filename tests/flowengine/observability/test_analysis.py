@@ -16,6 +16,8 @@ from flowengine.observability.analysis import (
     OptimizationList,
     PatternData,
     PatternList,
+    analyze_flow,
+    get_flow_analyzer,
 )
 
 
@@ -189,3 +191,25 @@ class TestFlowAnalyzer:
 
         node = list(graph.nodes.values())[0]
         assert "map" in node.name
+
+
+class TestAnalysisFunctions:
+    """Tests for module-level analysis functions."""
+
+    def test_analyze_flow_function(self):
+        """Test analyze_flow convenience function."""
+
+        def increment(x: int) -> int:
+            return x + 1
+
+        flow = map_stream(increment)
+        graph = analyze_flow(flow)
+
+        assert len(graph.nodes) == 1
+        assert len(graph.entry_points) == 1
+
+    def test_get_flow_analyzer_function(self):
+        """Test get_flow_analyzer convenience function."""
+        analyzer = get_flow_analyzer()
+
+        assert isinstance(analyzer, FlowAnalyzer)
