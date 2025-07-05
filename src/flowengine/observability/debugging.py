@@ -130,9 +130,9 @@ class FlowDebugger:
         if flow_name in self.breakpoints:
             condition = self.breakpoints[flow_name]
             if condition(item, context):
-                await self._trigger_breakpoint(item, context)
+                await self.trigger_breakpoint(item, context)
 
-    async def _trigger_breakpoint(
+    async def trigger_breakpoint(
         self, item: AnyItem, context: FlowExecutionContext
     ) -> None:
         """Trigger a breakpoint and enter interactive mode."""
@@ -141,9 +141,9 @@ class FlowDebugger:
         print(f"   Index: {context.item_index}")
         print(f"   Context: {context.to_dict()}")
         print("   Commands: (c)ontinue, (s)tack, (i)nspect, (q)uit")
-        await self._handle_breakpoint_commands(item)
+        await self.handle_breakpoint_commands(item)
 
-    async def _handle_breakpoint_commands(self, item: AnyItem) -> None:
+    async def handle_breakpoint_commands(self, item: AnyItem) -> None:
         """Handle interactive breakpoint commands."""
         while True:
             try:
@@ -151,9 +151,9 @@ class FlowDebugger:
                 if command in ["c", "continue"]:
                     break
                 elif command in ["s", "stack"]:
-                    self._print_execution_stack()
+                    self.print_execution_stack()
                 elif command in ["i", "inspect"]:
-                    self._print_item_inspection(item)
+                    self.print_item_inspection(item)
                 elif command in ["q", "quit"]:
                     raise KeyboardInterrupt("Debug session terminated")
                 else:
@@ -161,14 +161,14 @@ class FlowDebugger:
             except (EOFError, KeyboardInterrupt):
                 break
 
-    def _print_execution_stack(self) -> None:
+    def print_execution_stack(self) -> None:
         """Print the current execution stack."""
         print("\n📚 Execution Stack:")
         for i, context in enumerate(reversed(self.execution_stack)):
             indent = "  " * i
             print(f"{indent}└─ {context.flow_name} (item {context.item_index})")
 
-    def _print_item_inspection(self, item: AnyItem) -> None:
+    def print_item_inspection(self, item: AnyItem) -> None:
         """Print detailed inspection of the current item."""
         print("\n🔬 Item Inspection:")
         print(f"   Type: {type(item).__name__}")
