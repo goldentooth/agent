@@ -389,13 +389,31 @@ class FlowAnalyzer:
         return None
 
     def _detect_fan_out_pattern(self, graph: FlowGraph) -> PatternData | None:
-        """Detect fan-out pattern."""
-        # TODO: Implement fan-out pattern detection
+        """Detect fan-out pattern (one node with multiple outputs)."""
+        for node_id, node in graph.nodes.items():
+            outgoing_edges = [edge for edge in graph.edges if edge.source_id == node_id]
+
+            if len(outgoing_edges) > 2:
+                return {
+                    "pattern": "fan_out",
+                    "description": f"Node '{node.name}' fans out to {len(outgoing_edges)} targets",
+                    "nodes": [node_id] + [edge.target_id for edge in outgoing_edges],
+                    "complexity_impact": "High - multiple parallel execution paths",
+                }
         return None
 
     def _detect_pipeline_pattern(self, graph: FlowGraph) -> PatternData | None:
-        """Detect pipeline pattern."""
-        # TODO: Implement pipeline pattern detection
+        """Detect linear pipeline pattern."""
+        if len(graph.entry_points) == 1 and len(graph.exit_points) == 1:
+            critical_path = graph.get_critical_path()
+
+            if len(critical_path) >= 3:  # At least 3 nodes in sequence
+                return {
+                    "pattern": "linear_pipeline",
+                    "description": f"Linear pipeline with {len(critical_path)} stages",
+                    "nodes": critical_path,
+                    "performance_characteristic": "Sequential processing, limited parallelism",
+                }
         return None
 
     def _detect_error_handling_pattern(self, graph: FlowGraph) -> PatternData | None:

@@ -435,6 +435,69 @@ class TestFlowAnalyzer:
         assert pattern["nodes"] == ["1", "2"]
         assert "transformation followed by filtering" in pattern["description"].lower()
 
+    def test_detect_fan_out_pattern(self):
+        """Test detection of fan-out pattern."""
+        analyzer = FlowAnalyzer()
+        graph = FlowGraph()
+
+        # Create one source node and multiple target nodes
+        source_node = FlowNode(id="1", name="source", flow_type="utility")
+        target1 = FlowNode(id="2", name="target1", flow_type="utility")
+        target2 = FlowNode(id="3", name="target2", flow_type="utility")
+        target3 = FlowNode(id="4", name="target3", flow_type="utility")
+
+        graph.nodes.update({"1": source_node, "2": target1, "3": target2, "4": target3})
+
+        # Create edges for fan-out (1 -> 2, 1 -> 3, 1 -> 4)
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="1", target_id="3"),
+            FlowEdge(source_id="1", target_id="4"),
+        ]
+
+        patterns = analyzer.detect_patterns(graph)
+
+        # Should detect the fan-out pattern
+        assert len(patterns) == 1
+        pattern = patterns[0]
+        assert pattern["pattern"] == "fan_out"
+        assert pattern["nodes"] == ["1", "2", "3", "4"]
+        assert "3 targets" in pattern["description"]
+
+    def test_detect_pipeline_pattern(self):
+        """Test detection of linear pipeline pattern."""
+        analyzer = FlowAnalyzer()
+        graph = FlowGraph()
+
+        # Create linear chain: node1 -> node2 -> node3 -> node4
+        nodes = {
+            "1": FlowNode(id="1", name="stage1", flow_type="utility"),
+            "2": FlowNode(id="2", name="stage2", flow_type="transformation"),
+            "3": FlowNode(id="3", name="stage3", flow_type="utility"),
+            "4": FlowNode(id="4", name="stage4", flow_type="utility"),
+        }
+        graph.nodes.update(nodes)
+
+        # Create sequential edges
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="2", target_id="3"),
+            FlowEdge(source_id="3", target_id="4"),
+        ]
+
+        # Set single entry and exit points
+        graph.entry_points = ["1"]
+        graph.exit_points = ["4"]
+
+        patterns = analyzer.detect_patterns(graph)
+
+        # Should detect the linear pipeline pattern
+        assert len(patterns) == 1
+        pattern = patterns[0]
+        assert pattern["pattern"] == "linear_pipeline"
+        assert pattern["nodes"] == ["1", "2", "3", "4"]
+        assert "4 stages" in pattern["description"]
+
 
 class TestAnalysisFunctions:
     """Tests for module-level analysis functions."""
