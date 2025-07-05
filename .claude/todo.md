@@ -31,17 +31,16 @@
 29. Ensure that CLI commands are simple proxy functions with no meaningful logic, as they are somewhat complex to test. Can we establish a policy of dividing the command implementation (which is mostly e.g. Typer configuration and parameter annotations) from the actual invocation of the commands (which should be just mapping those parameters to existing library code)? We should add this to guidelines too.
 30. Add guidelines on how CLI commands should be structured for consistency, e.g. we want commands to be single words whenever possible and kind of reverse-dns-named or something similar.
 31. Add a link to the GitHub Pages site (https://goldentooth.github.io/agent/) in the README.
-32. Let's try to prevent functions from exceeding about ten lines (or, more accurately, statements) in length. If a function exceeds that, we should complain about it. We need to add an automated test for this immediately!
-33. Let's replace any use of `inject.me()` with `world[<Type>]`, e.g. `world[SomeServiceClass]`. The former seems to trigger Pylance/Pyright's `reportCallInDefaultInitializer` lint. This should be considered a guideline for future development. Or maybe not. IDK. `inject.me()` is probably the best functionally, but the type implications are not great.
-34. Our RAG agent is not a FlowAgent... why not? Let's tackle the issues that cause this discrepancy so we can unify agent capabilities.
-35. What do I need to do to install goldentooth-agent globally?
-36. What do I need to do to install goldentooth-agent globally and also have the alias command `gta`?
-37. RAG agent: Embedding dimension mismatch: Search operations fail with dimension alignment errors
-38. RAG agent: Chat mode EOF loop: RAG agent in interactive chat gets stuck in an error loop
-39. Let's remove that code that checks if the embedding length is equal to 0 in 'src/goldentooth_agent/core/embeddings/vector_store.py'. Instead, while we're in "development mode", let's just nuke the DB semi-regularly and rebuild it.
-40. Why are RAG imports timing out after two minutes? What can we do to address this?
-41. Add a `docs types` command to list the types of documents supported in our RAG implementation.
-42. What can we do to interestingly and effectively integrate the flow system with Jupyter, etc?
-43. We can add a semi-persistent database with SQLite; this can host local RAG, perhaps some other local stuff that's not critical for long-term preservation. How can we make this absolutely bulletproof, highly observable, and maintainable?
-44. Revisit `agent-knowledge-base`. Is this still valuable? What if we get into 100,000-1,000,000 files? Does this just become absurd, and should we abandon it now?
-45. Probably split out anything correlating Flow and Context into a subclass or smth.
+32. Let's replace any use of `inject.me()` with `world[<Type>]`, e.g. `world[SomeServiceClass]`. The former seems to trigger Pylance/Pyright's `reportCallInDefaultInitializer` lint. This should be considered a guideline for future development. Or maybe not. IDK. `inject.me()` is probably the best functionally, but the type implications are not great.
+33. Our RAG agent is not a FlowAgent... why not? Let's tackle the issues that cause this discrepancy so we can unify agent capabilities.
+34. What do I need to do to install goldentooth-agent globally?
+35. What do I need to do to install goldentooth-agent globally and also have the alias command `gta`?
+36. RAG agent: Embedding dimension mismatch: Search operations fail with dimension alignment errors
+37. RAG agent: Chat mode EOF loop: RAG agent in interactive chat gets stuck in an error loop
+38. Let's remove that code that checks if the embedding length is equal to 0 in 'src/goldentooth_agent/core/embeddings/vector_store.py'. Instead, while we're in "development mode", let's just nuke the DB semi-regularly and rebuild it.
+39. Why are RAG imports timing out after two minutes? What can we do to address this?
+40. Add a `docs types` command to list the types of documents supported in our RAG implementation.
+41. What can we do to interestingly and effectively integrate the flow system with Jupyter, etc?
+42. We can add a semi-persistent database with SQLite; this can host local RAG, perhaps some other local stuff that's not critical for long-term preservation. How can we make this absolutely bulletproof, highly observable, and maintainable?
+43. Revisit `agent-knowledge-base`. Is this still valuable? What if we get into 100,000-1,000,000 files? Does this just become absurd, and should we abandon it now?
+44. Probably split out anything correlating Flow and Context into a subclass or smth.
