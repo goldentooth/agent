@@ -5,7 +5,17 @@ and system diagnostics for Flow-based applications.
 """
 
 # Health check implementations
-from .checks import FlowHealthMonitor
+from .checks import (
+    FlowHealthMonitor,
+    check_flow_configuration,
+    check_flow_dependencies,
+    check_flow_errors,
+    check_flow_performance,
+    check_flow_responsiveness,
+    check_memory_usage,
+    check_resource_limits,
+    check_system_resources,
+)
 
 # Core health monitoring types
 from .core import HealthCheck, HealthCheckResult, HealthStatus, SystemHealth
@@ -32,6 +42,15 @@ __all__ = [
     "FlowHealthMonitor",
     # Configuration validation
     "FlowConfigValidator",
+    # Built-in health checks
+    "check_flow_performance",
+    "check_flow_errors",
+    "check_memory_usage",
+    "check_flow_dependencies",
+    "check_flow_configuration",
+    "check_resource_limits",
+    "check_flow_responsiveness",
+    "check_system_resources",
     # Convenience functions
     "health_check_stream",
     "get_health_monitor",

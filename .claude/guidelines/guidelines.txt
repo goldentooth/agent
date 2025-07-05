@@ -3,11 +3,13 @@
 These are the fundamental principles that govern all development work on this project. Every line of code, every test, and every commit must adhere to these commandments.
 
 ## The Guidelines
-- When you prepare a commit, don't use the `-m` option. Do not write the message inline.
-  - Instead, write the commit message to a temporary file (e.g. via `mktemp`), then create the commit using that message file.
-  - Don't use multiline `cat` commands and HEREDOCs to write commit messages, because then I have to approve it.
-  - Use the Write tool to create the message.
-- Each function/method must be in its own commit even if the code already exists. No exceptions!
+- When you prepare a commit, DO NOT use the `-m` option and do not write the message inline.
+  - DO NOT use multiline `cat` commands and HEREDOCs to write commit messages, because then I have to approve it.
+  - Instead:
+    - create a directory via `mktemp -d`
+    - use the Write tool to write the commit message to the file
+    - create the commit using that message file with `git commit -F`
+- Each function/method MUST be in its own commit even if the code already exists. No exceptions!
 - Update README.md and relevant files in docs/ before opening a pull request.
 - Maintain a file in .claude/retros/<initiative-name.md> for each task (i.e. pull request) that you end up performing.
   - Create this along with your first commit, and update it with each subsequent commit.

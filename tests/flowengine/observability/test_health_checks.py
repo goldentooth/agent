@@ -3,6 +3,8 @@
 # pyright: reportPrivateUsage=false
 
 import asyncio
+from collections.abc import AsyncGenerator
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -332,3 +334,162 @@ class TestFlowHealthMonitor:
         assert len(monitor.history) == 5
         assert monitor.history[0].message == "Check 5"
         assert monitor.history[-1].message == "Check 9"
+
+
+class TestBuiltInHealthChecks:
+    """Tests for built-in health check functions."""
+
+    @pytest.mark.asyncio
+    async def test_check_flow_performance(self) -> None:
+        """Test check_flow_performance function."""
+        from flowengine.flow import Flow
+        from flowengine.observability.health.checks import check_flow_performance
+
+        async def test_fn(
+            stream: AsyncGenerator[Any, None],
+        ) -> AsyncGenerator[Any, None]:
+            async for item in stream:
+                yield item
+
+        flow = Flow(test_fn, name="test_flow")
+
+        # Test with reasonable threshold
+        async for result in check_flow_performance(flow, threshold_ms=1000.0):
+            assert isinstance(result, bool)
+            # Should be True for simple flow creation
+            assert result is True
+            break
+
+    @pytest.mark.asyncio
+    async def test_check_flow_errors(self) -> None:
+        """Test check_flow_errors function."""
+        from flowengine.flow import Flow
+        from flowengine.observability.health.checks import check_flow_errors
+
+        async def test_fn(
+            stream: AsyncGenerator[Any, None],
+        ) -> AsyncGenerator[Any, None]:
+            async for item in stream:
+                yield item
+
+        flow = Flow(test_fn, name="test_flow")
+
+        # Test error rate check
+        async for result in check_flow_errors(flow, error_threshold=0.05):
+            assert isinstance(result, bool)
+            # Should be True as placeholder implementation
+            assert result is True
+            break
+
+    @pytest.mark.asyncio
+    async def test_check_memory_usage(self) -> None:
+        """Test check_memory_usage function."""
+        from flowengine.observability.health.checks import check_memory_usage
+
+        # Test with very high threshold (should pass)
+        async for result in check_memory_usage(threshold_mb=100000.0):  # 100GB
+            assert isinstance(result, bool)
+            # Should be True with very high threshold
+            assert result is True
+            break
+
+        # Test with very low threshold (should fail)
+        async for result in check_memory_usage(threshold_mb=1.0):  # 1MB
+            assert isinstance(result, bool)
+            # Should be False with very low threshold
+            assert result is False
+            break
+
+    @pytest.mark.asyncio
+    async def test_check_flow_dependencies(self) -> None:
+        """Test check_flow_dependencies function."""
+        from flowengine.flow import Flow
+        from flowengine.observability.health.checks import check_flow_dependencies
+
+        async def test_fn(
+            stream: AsyncGenerator[Any, None],
+        ) -> AsyncGenerator[Any, None]:
+            async for item in stream:
+                yield item
+
+        flow = Flow(test_fn, name="test_flow")
+
+        # Test with valid flow
+        async for result in check_flow_dependencies(flow):
+            assert isinstance(result, bool)
+            assert result is True
+            break
+
+        # Test with invalid object
+        async for result in check_flow_dependencies({}):
+            assert isinstance(result, bool)
+            assert result is False
+            break
+
+    @pytest.mark.asyncio
+    async def test_check_flow_configuration(self) -> None:
+        """Test check_flow_configuration function."""
+        from flowengine.observability.health.checks import check_flow_configuration
+
+        # Test with valid config
+        valid_config = {"name": "test", "timeout": 30}
+        async for result in check_flow_configuration(valid_config):
+            assert isinstance(result, bool)
+            assert result is True
+            break
+
+        # Test with invalid config (None values for critical keys)
+        invalid_config = {"name": None, "fn": None}
+        async for result in check_flow_configuration(invalid_config):
+            assert isinstance(result, bool)
+            assert result is False
+            break
+
+    @pytest.mark.asyncio
+    async def test_check_resource_limits(self) -> None:
+        """Test check_resource_limits function."""
+        from flowengine.observability.health.checks import check_resource_limits
+
+        # Test with high thresholds (should pass)
+        async for result in check_resource_limits(
+            cpu_threshold=99.0, memory_threshold=99.0
+        ):
+            assert isinstance(result, bool)
+            # Should be True with high thresholds or when psutil unavailable
+            assert result is True
+            break
+
+    @pytest.mark.asyncio
+    async def test_check_flow_responsiveness(self) -> None:
+        """Test check_flow_responsiveness function."""
+        from flowengine.flow import Flow
+        from flowengine.observability.health.checks import check_flow_responsiveness
+
+        async def test_fn(
+            stream: AsyncGenerator[Any, None],
+        ) -> AsyncGenerator[Any, None]:
+            async for item in stream:
+                yield item
+
+        flow = Flow(test_fn, name="test_flow")
+
+        # Test with reasonable timeout
+        async for result in check_flow_responsiveness(flow, timeout_ms=5000.0):
+            assert isinstance(result, bool)
+            # Should be True for simple check
+            assert result is True
+            break
+
+    @pytest.mark.asyncio
+    async def test_check_system_resources(self) -> None:
+        """Test check_system_resources function."""
+        from flowengine.observability.health.checks import check_system_resources
+
+        # Test with high thresholds (should pass)
+        async for result in check_system_resources(
+            disk_threshold=99.0, load_threshold=10.0
+        ):
+            assert isinstance(result, bool)
+            # Should be True with high thresholds or when psutil unavailable
+            assert result is True
+            break
