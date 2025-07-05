@@ -46,3 +46,5 @@
 44. Revisit `agent-knowledge-base`. Is this still valuable? What if we get into 100,000-1,000,000 files? Does this just become absurd, and should we abandon it now?
 45. Probably split out anything correlating Flow and Context into a subclass or smth.
 46. Remove tests/ from function-line-length check exclusion list.
+47. Function length check should list the function name, not just the file name and the length.
+48. Merge/compound the file length complaints and instructions rather than displaying them multiple times.

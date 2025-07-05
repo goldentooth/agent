@@ -41,7 +41,7 @@ class TestPrintResults:
         captured = capsys.readouterr()
 
         assert "❌ Test Hook violations found:" in captured.out
-        assert "test_file.py: 100 lines" in captured.out
+        assert "test_file.py: Test error" in captured.out
         assert "Please refactor large files/modules before committing." in captured.out
 
     def test_print_results_with_warnings_only(self, capsys):
@@ -69,7 +69,7 @@ class TestPrintResults:
         captured = capsys.readouterr()
 
         assert "❌ Test Hook violations found:" in captured.out
-        assert "error_file.py: 100 lines" in captured.out
+        assert "error_file.py: Test error" in captured.out
         assert "⚠️  WARNING: warning_file.py (Test warning)" in captured.out
 
     def _create_mixed_results(self):
@@ -162,7 +162,7 @@ class TestPrintErrorResults:
         captured = capsys.readouterr()
 
         assert "❌ Test Hook violations found:" in captured.out
-        assert "test_file.py: 100 lines" in captured.out
+        assert "test_file.py: Test error" in captured.out
         assert "Please refactor large files/modules before committing." in captured.out
 
     def test_print_multiple_errors(self, capsys):
@@ -185,8 +185,8 @@ class TestPrintErrorResults:
         _print_error_results([error1, error2], "Test Hook")
         captured = capsys.readouterr()
 
-        assert "file1.py: 100 lines" in captured.out
-        assert "file2.py: 200 lines" in captured.out
+        assert "file1.py: Error 1" in captured.out
+        assert "file2.py: Error 2" in captured.out
 
 
 class TestPrintWarningResults:

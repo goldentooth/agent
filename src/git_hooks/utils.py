@@ -85,7 +85,8 @@ def _print_error_results(errors: List[ValidationResult], hook_type: str) -> None
     print(f"❌ {hook_type} violations found:")
     for result in errors:
         display_path = str(result.file_path).lstrip("./")
-        print(f"  {display_path}: {result.line_count} lines")
+        # Include the full message which contains function/module name and details
+        print(f"  {display_path}: {result.message}")
     print("\nPlease refactor large files/modules before committing.")
     print("See .claude/guidelines/guidelines.txt for requirements")
 
