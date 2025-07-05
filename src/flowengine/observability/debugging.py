@@ -72,3 +72,7 @@ class FlowDebugger:
     def enable_debugging(self) -> None:
         """Enable debugging mode."""
         self.debug_enabled = True
+
+    def disable_debugging(self) -> None:
+        """Disable debugging mode."""
+        self.debug_enabled = False

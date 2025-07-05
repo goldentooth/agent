@@ -91,3 +91,12 @@ class TestFlowDebugger:
 
         debugger.enable_debugging()
         assert debugger.debug_enabled
+
+    def test_disable_debugging(self):
+        """Test disabling debugging."""
+        debugger = FlowDebugger()
+        debugger.enable_debugging()
+        assert debugger.debug_enabled
+
+        debugger.disable_debugging()
+        assert not debugger.debug_enabled
