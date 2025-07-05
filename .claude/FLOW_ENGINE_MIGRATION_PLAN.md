@@ -135,7 +135,7 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 ### Phase 3A: Core Observability (Epics 15-18)
 
-**Epic 15: Migrate performance monitoring**
+**~Epic 15: Migrate performance monitoring~ ✅ DONE!**
 - File: `src/flowengine/observability/performance.py`
 - Source: `old/goldentooth_agent/flow_engine/observability/performance.py` (362 lines)
 - Tests: `tests/flowengine/observability/test_performance.py`
