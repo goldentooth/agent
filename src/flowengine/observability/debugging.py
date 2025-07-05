@@ -6,6 +6,7 @@ execution context tracking, and flow introspection capabilities.
 
 from __future__ import annotations
 
+import json
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -178,3 +179,15 @@ class FlowDebugger:
     def get_execution_trace(self) -> TraceData:
         """Get the full execution trace."""
         return [ctx.to_dict() for ctx in self.execution_history]
+
+    def export_trace(self, filepath: str) -> None:
+        """Export execution trace to a JSON file."""
+        trace_data = {
+            "timestamp": datetime.now().isoformat(),
+            "current_stack": [ctx.to_dict() for ctx in self.execution_stack],
+            "execution_history": self.get_execution_trace(),
+            "breakpoints": list(self.breakpoints.keys()),
+        }
+
+        with open(filepath, "w") as f:
+            json.dump(trace_data, f, indent=2)

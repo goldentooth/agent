@@ -2,6 +2,7 @@
 
 import json
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -263,3 +264,27 @@ class TestFlowDebugger:
         assert all(isinstance(item, dict) for item in trace)
         assert trace[0]["flow_name"] == "flow1"
         assert trace[1]["flow_name"] == "flow2"
+
+    def test_export_trace(self, tmp_path: Path):
+        """Test exporting execution trace."""
+        debugger = FlowDebugger()
+
+        # Add some history
+        context = FlowExecutionContext("test_flow", datetime.now())
+        debugger.execution_history = [context]
+        debugger.breakpoints["test_flow"] = lambda item, ctx: True
+
+        filepath = tmp_path / "trace.json"
+        debugger.export_trace(str(filepath))
+
+        assert filepath.exists()
+
+        # Verify JSON content
+        with open(filepath) as f:
+            data = json.load(f)
+
+        assert "timestamp" in data
+        assert "current_stack" in data
+        assert "execution_history" in data
+        assert "breakpoints" in data
+        assert "test_flow" in data["breakpoints"]
