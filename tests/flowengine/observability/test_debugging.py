@@ -8,6 +8,7 @@ import pytest
 from flowengine.observability.debugging import (
     BreakpointCondition,
     BreakpointRegistry,
+    FlowDebugger,
     FlowExecutionContext,
 )
 
@@ -68,3 +69,17 @@ class TestBreakpointTypes:
 
         assert "test_flow" in registry
         assert registry["test_flow"] == condition
+
+
+class TestFlowDebugger:
+    """Tests for FlowDebugger class."""
+
+    def test_debugger_creation(self):
+        """Test FlowDebugger creation."""
+        debugger = FlowDebugger()
+
+        assert debugger.execution_stack == []
+        assert debugger.execution_history == []
+        assert debugger.breakpoints == {}
+        assert not debugger.debug_enabled
+        assert debugger.max_history == 1000

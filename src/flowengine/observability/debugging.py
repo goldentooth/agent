@@ -57,3 +57,14 @@ class FlowExecutionContext:
 # Breakpoint-related aliases (after FlowExecutionContext is defined)
 BreakpointCondition = Callable[[Any, FlowExecutionContext], bool]
 BreakpointRegistry = dict[str, BreakpointCondition]
+
+
+class FlowDebugger:
+    """Debugging system for Flow executions."""
+
+    def __init__(self) -> None:  # pyright: ignore[reportMissingSuperCall]
+        self.execution_stack: list[FlowExecutionContext] = []
+        self.execution_history: list[FlowExecutionContext] = []
+        self.breakpoints: BreakpointRegistry = {}
+        self.debug_enabled = False
+        self.max_history = 1000
