@@ -34,253 +34,894 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Can be used standalone
 - Follows the existing clean architecture
 
-## Phase 1: Foundation (Epics 1-8)
+# Flow Engine Migration Plans - Part 2: Observability & Registry Systems
 
-### Phase 1A: Core Infrastructure (Epics 1-4)
+## Phase 3: Observability System (Epics 15-31)
 
-**~Epic 1: Create flowengine package structure~ ✅ DONE!**
-- Create `src/flowengine/__init__.py`
-- Create `src/flowengine/py.typed`
-- Update `pyproject.toml` dependencies
-- Create basic package structure
+...
 
-**~Epic 2: Migrate core exceptions~ ✅ DONE!**
-- File: `src/flowengine/exceptions.py`
-- Source: `old/goldentooth_agent/flow_engine/core/exceptions.py` (31 lines)
-- Tests: `tests/flowengine/test_exceptions.py`
-- Dependencies: None
+### Epic 19: Create observability performance exports
+**Unit**: Performance monitoring exports
+**Source**: `old/goldentooth_agent/flow_engine/observability/__init__.py` (performance section)
+**Target**: `src/flowengine/observability/__init__.py` (partial)
 
-**~Epic 3: Migrate protocols~  ✅ DONE!**
-- File: `src/flowengine/protocols.py`
-- Source: `old/goldentooth_agent/flow_engine/protocols.py` (56 lines)
-- Tests: `tests/flowengine/test_protocols.py`
-- Dependencies: None
+**Performance exports structure**:
+```python
+# Performance monitoring
+from .performance import (
+    FlowMetrics, PerformanceMonitor, monitored_stream, performance_stream,
+    benchmark_stream, get_performance_monitor, enable_memory_tracking,
+    get_performance_summary, export_performance_metrics, memory_profile_stream
+)
+```
 
-**~Epic 4: Migrate core Flow class~ ✅ DONE!**
-- File: `src/flowengine/flow.py`
-- Source: `old/goldentooth_agent/flow_engine/core/flow.py` (342 lines)
-- Tests: `tests/flowengine/test_flow.py`
-- Dependencies: `flowengine.exceptions`
+**Dependencies**: `flowengine.observability.performance`
+**Coverage**: 100% - performance module exports
 
-### Phase 1B: Combinator Utilities (Epics 5-8)
+---
 
-**~Epic 5: Migrate combinator utilities~ ✅ DONE!**
-- File: `src/flowengine/combinators/utils.py`
-- Source: `old/goldentooth_agent/flow_engine/combinators/utils.py` (28 lines)
-- Tests: `tests/flowengine/combinators/test_utils.py`
-- Dependencies: None
+### Epic 20: Create observability analysis exports  
+**Unit**: Analysis and optimization exports
+**Source**: `old/goldentooth_agent/flow_engine/observability/__init__.py` (analysis section)
+**Target**: `src/flowengine/observability/__init__.py` (partial)
 
-**~Epic 6: Migrate sources combinators~ ✅ DONE!**
-- File: `src/flowengine/combinators/sources.py`
-- Source: `old/goldentooth_agent/flow_engine/combinators/sources.py` (85 lines)
-- Tests: `tests/flowengine/combinators/test_sources.py`
-- Dependencies: `flowengine.flow`, `flowengine.combinators.utils`
+**Analysis exports structure**:
+```python
+# Analysis and optimization
+from .analysis.core import FlowNode, FlowEdge, FlowGraph, FlowAnalyzer
+from .analysis.graph import (
+    analyze_flow, analyze_flow_composition, detect_flow_patterns,
+    find_cycles, calculate_dependencies, visualize_flow_graph
+)
+from .analysis.optimization import (
+    generate_flow_optimizations, export_flow_analysis, get_flow_analyzer,
+    optimize_flow_composition
+)
+```
 
-**~Epic 7: Migrate basic combinators~ ✅ DONE!**
-- File: `src/flowengine/combinators/basic.py`
-- Source: `old/goldentooth_agent/flow_engine/combinators/basic.py` (231 lines)
-- Tests: `tests/flowengine/combinators/test_basic_*.py` (split into 4 files)
-- Dependencies: `flowengine.flow`, `flowengine.exceptions`, `flowengine.combinators.utils`
-- **Result**: All 13 functions migrated with 99% coverage, tests split to respect 1000-line limit
+**Dependencies**: `flowengine.observability.analysis`
+**Coverage**: 100% - analysis module exports
 
-**~Epic 8: Create basic combinators __init__.py~ ✅ DONE!**
-- File: `src/flowengine/combinators/__init__.py` (partial)
-- Export basic combinators
-- Tests: Update existing tests
-- **Result**: Clean public API with 19 exported functions (utils, sources, basic combinators)
+---
 
-## Phase 2: Core Combinators (Epics 9-14)
+### Epic 21: Create observability debugging exports
+**Unit**: Debugging and introspection exports
+**Source**: `old/goldentooth_agent/flow_engine/observability/__init__.py` (debugging section)
+**Target**: `src/flowengine/observability/__init__.py` (partial)
 
-**~Epic 9: Migrate aggregation combinators~ ✅ DONE!**
-- File: `src/flowengine/combinators/aggregation.py`
-- Source: `old/goldentooth_agent/flow_engine/combinators/aggregation.py` (360 lines)
-- Tests: `tests/flowengine/combinators/test_aggregation.py`
-- Dependencies: `flowengine.flow`, `flowengine.combinators.basic`
-- **Result**: All 11 functions migrated with 97% coverage, including buffer_stream, expand_stream, and finalize_stream
+**Debugging exports structure**:
+```python
+# Debugging and introspection
+from .debugging import (
+    FlowExecutionContext, FlowDebugger, debug_stream, traced_flow,
+    get_flow_debugger, enable_flow_debugging, disable_flow_debugging,
+    add_flow_breakpoint, remove_flow_breakpoint, get_execution_trace,
+    export_execution_trace, inspect_flow, debug_session, step_debugger
+)
+```
 
-**~Epic 10: Migrate temporal combinators~ ✅ DONE!**
-- File: `src/flowengine/combinators/temporal.py`
-- Source: `old/goldentooth_agent/flow_engine/combinators/temporal.py` (160 lines)
-- Tests: `tests/flowengine/combinators/test_temporal.py`
-- Dependencies: `flowengine.flow`, `flowengine.combinators.basic`
-- **Result**: All 6 functions migrated with 97% coverage, full type safety compliance
+**Dependencies**: `flowengine.observability.debugging`
+**Coverage**: 100% - debugging module exports
 
-**~Epic 11: Migrate observability combinators~ ✅ DONE!**
-- File: `src/flowengine/combinators/observability.py`
-- Source: `old/goldentooth_agent/flow_engine/combinators/observability.py` (197 lines)
-- Tests: `tests/flowengine/combinators/test_observability.py`
-- Dependencies: `flowengine.flow`
+---
 
-**~Epic 12: Migrate control flow combinators (without context)~ ✅ DONE!**
-- File: `src/flowengine/combinators/control_flow.py`
-- Source: `old/goldentooth_agent/flow_engine/combinators/control_flow.py` (419 lines)
-- Tests: `tests/flowengine/combinators/test_control_flow.py`
-- Dependencies: `flowengine.flow`, `flowengine.exceptions`
-- **Note**: Remove context-dependent features initially
+### Epic 22: Create observability health exports
+**Unit**: Health monitoring exports
+**Source**: `old/goldentooth_agent/flow_engine/observability/__init__.py` (health section)
+**Target**: `src/flowengine/observability/__init__.py` (partial)
 
-**~Epic 13: Migrate advanced combinators~ ✅ DONE!**
-- File: `src/flowengine/combinators/advanced.py`
-- Source: `old/goldentooth_agent/flow_engine/combinators/advanced.py` (474 lines)
-- Tests: `tests/flowengine/combinators/test_advanced.py`
-- Dependencies: `flowengine.flow`, `flowengine.combinators.basic`
-- **Status**: Complete (10 functions migrated, all refactored to ≤15 lines)
+**Health exports structure**:
+```python
+# Health monitoring
+from .health.core import HealthStatus, HealthCheck, HealthCheckResult, SystemHealth
+from .health.checks import FlowHealthMonitor
+from .health.reporting import (
+    FlowConfigValidator, health_check_stream, get_health_monitor,
+    get_config_validator, check_system_health, validate_flow_configuration,
+    register_health_check, export_health_report
+)
+```
 
-**~Epic 14: Complete combinators __init__.py~ ✅ DONE!**
-- File: `src/flowengine/combinators/__init__.py` (complete)
-- Source: `old/goldentooth_agent/flow_engine/combinators/__init__.py` (171 lines)
-- Export all combinators
-- **Result**: All 65 combinators exported across 8 categories, comprehensive public API complete
+**Dependencies**: `flowengine.observability.health`
+**Coverage**: 100% - health module exports
 
-## Phase 3: Observability System (Epics 15-22)
+---
 
-### Phase 3A: Core Observability (Epics 15-18)
+### Epic 23: Complete observability __init__.py
+**Unit**: Complete observability module exports
+**Source**: `old/goldentooth_agent/flow_engine/observability/__init__.py` (__all__ section)
+**Target**: `src/flowengine/observability/__init__.py` (complete)
 
-**~Epic 15: Migrate performance monitoring~ ✅ DONE!**
-- File: `src/flowengine/observability/performance.py`
-- Source: `old/goldentooth_agent/flow_engine/observability/performance.py` (362 lines)
-- Tests: `tests/flowengine/observability/test_performance.py`
-- Dependencies: `flowengine.flow`
+**Complete __all__ list**:
+```python
+__all__ = [
+    # Performance (9 exports)
+    "FlowMetrics", "PerformanceMonitor", "monitored_stream", "performance_stream",
+    "benchmark_stream", "get_performance_monitor", "enable_memory_tracking",
+    "get_performance_summary", "export_performance_metrics", "memory_profile_stream",
 
-**~Epic 16: Migrate analysis tools~ ✅ DONE!**
-- File: `src/flowengine/observability/analysis.py`
-- Source: `old/goldentooth_agent/flow_engine/observability/analysis.py` (551 lines)
-- Tests: `tests/flowengine/observability/test_analysis.py`
-- Dependencies: `flowengine.flow`, `flowengine.combinators`
-- **Result**: Core analysis functionality migrated with FlowNode, FlowEdge, FlowGraph, and FlowAnalyzer classes, public API complete
+    # Analysis (14 exports)
+    "FlowNode", "FlowEdge", "FlowGraph", "FlowAnalyzer", "analyze_flow",
+    "analyze_flow_composition", "detect_flow_patterns", "find_cycles",
+    "calculate_dependencies", "visualize_flow_graph", "generate_flow_optimizations",
+    "export_flow_analysis", "get_flow_analyzer", "optimize_flow_composition",
 
-**Epic 17: Migrate debugging tools**
-- File: `src/flowengine/observability/debugging.py`
-- Source: `old/goldentooth_agent/flow_engine/observability/debugging.py` (436 lines)
-- Tests: `tests/flowengine/observability/test_debugging.py`
-- Dependencies: `flowengine.flow`, `flowengine.observability.performance`
+    # Debugging (14 exports)
+    "FlowExecutionContext", "FlowDebugger", "debug_stream", "traced_flow",
+    "get_flow_debugger", "enable_flow_debugging", "disable_flow_debugging",
+    "add_flow_breakpoint", "remove_flow_breakpoint", "get_execution_trace",
+    "export_execution_trace", "inspect_flow", "debug_session", "step_debugger",
 
-**Epic 18: Migrate health monitoring**
-- File: `src/flowengine/observability/health.py`
-- Source: `old/goldentooth_agent/flow_engine/observability/health.py` (619 lines)
-- Tests: `tests/flowengine/observability/test_health.py`
-- Dependencies: `flowengine.flow`, `flowengine.exceptions`
+    # Health (13 exports)
+    "HealthStatus", "HealthCheck", "HealthCheckResult", "SystemHealth",
+    "FlowHealthMonitor", "FlowConfigValidator", "health_check_stream",
+    "get_health_monitor", "get_config_validator", "check_system_health",
+    "validate_flow_configuration", "register_health_check", "export_health_report"
+]
+```
 
-### Phase 3B: Observability Integration (Epics 19-22)
+**Dependencies**: All previous epic exports
+**Coverage**: 100% - complete observability API verification
 
-**Epic 19: Create observability __init__.py**
-- File: `src/flowengine/observability/__init__.py`
-- Source: `old/goldentooth_agent/flow_engine/observability/__init__.py` (121 lines)
-- Export all observability tools
+---
 
-**Epic 20: Migrate flow benchmarks tests**
-- File: `tests/flowengine/observability/test_benchmarks.py`
-- Source: `old/tests/flow_engine/observability/test_flow_benchmarks.py` (368 lines)
-- Dependencies: Complete observability system
+### Epic 24: Migrate flow benchmarks test class 1
+**Unit**: Core benchmarking test class
+**Source**: `old/tests/flow_engine/observability/test_flow_benchmarks.py` (TestFlowBenchmarks)
+**Target**: `tests/flowengine/observability/test_benchmarks.py`
 
-**Epic 21: Migrate observability integration tests**
-- File: `tests/flowengine/observability/test_integration.py`
-- Source: `old/tests/flow_engine/observability/test_observability_integration.py` (465 lines)
-- Dependencies: Complete observability system
+**Test class to migrate**:
+1. `TestFlowBenchmarks` - Core benchmarking tests
+   - Methods: `test_simple_flow_performance()`, `test_complex_composition_performance()`, `test_memory_usage_tracking()`
 
-**Epic 22: Create observability test conftest**
-- File: `tests/flowengine/observability/conftest.py`
-- Test configuration for observability tests
+**Test scenarios**:
+- Simple stream operations (map, filter)
+- Complex compositions (nested flows)
+- Memory usage tracking
 
-## Phase 4: Registry System (Epics 23-26)
+**Dependencies**: Performance monitoring system
+**Coverage**: 100% - core benchmark functionality
 
-**Epic 23: Migrate flow registry**
-- File: `src/flowengine/registry/main.py`
-- Source: `old/goldentooth_agent/flow_engine/registry/main.py` (311 lines)
-- Tests: `tests/flowengine/registry/test_main.py`
-- Dependencies: `flowengine.flow`
+---
 
-**Epic 24: Create registry __init__.py**
-- File: `src/flowengine/registry/__init__.py`
-- Source: `old/goldentooth_agent/flow_engine/registry/__init__.py` (26 lines)
-- Export registry functionality
+### Epic 25: Migrate flow benchmarks test class 2
+**Unit**: Performance regression test class
+**Source**: `old/tests/flow_engine/observability/test_flow_benchmarks.py` (TestPerformanceRegression)
+**Target**: `tests/flowengine/observability/test_benchmarks.py`
 
-**Epic 25: Migrate registry tests**
-- File: `tests/flowengine/registry/test_registry.py`
-- Source: `old/tests/flow_engine/registry/test_registry.py` (578 lines)
-- Dependencies: Complete registry system
+**Test class to migrate**:
+2. `TestPerformanceRegression` - Regression testing
+   - Methods: `test_performance_doesnt_degrade()`, `test_memory_leaks()`, `test_throughput_consistency()`
 
-**Epic 26: Create registry test conftest**
-- File: `tests/flowengine/registry/conftest.py`
-- Test configuration for registry tests
+**Test scenarios**:
+- Performance regression detection
+- Memory leak detection
+- Throughput consistency validation
 
-## Phase 5: Advanced Features (Epics 27-35)
+**Dependencies**: Performance monitoring system
+**Coverage**: 100% - regression test scenarios
 
-### Phase 5A: Standalone Features (Epics 27-30)
+---
 
-**Epic 27: Migrate extensions**
-- File: `src/flowengine/extensions.py`
-- Source: `old/goldentooth_agent/flow_engine/extensions.py` (79 lines)
-- Tests: `tests/flowengine/test_extensions.py`
-- Dependencies: `flowengine.flow`
+### Epic 26: Migrate flow benchmarks test class 3
+**Unit**: Benchmark reporting test class
+**Source**: `old/tests/flow_engine/observability/test_flow_benchmarks.py` (TestBenchmarkReporting)
+**Target**: `tests/flowengine/observability/test_benchmarks.py`
 
-**Epic 28: Migrate trampoline (without context)**
-- File: `src/flowengine/trampoline.py`
-- Source: `old/goldentooth_agent/flow_engine/trampoline.py` (335 lines, context-stripped)
-- Tests: `tests/flowengine/test_trampoline.py`
-- Dependencies: `flowengine.flow`
-- **Note**: Remove context-dependent features initially
+**Test class to migrate**:
+3. `TestBenchmarkReporting` - Benchmark reporting tests
+   - Methods: `test_benchmark_export()`, `test_performance_comparison()`, `test_statistical_analysis()`
 
-**Epic 29: Migrate ergonomics tests**
-- File: `tests/flowengine/test_ergonomics.py`
-- Source: `old/tests/flow_engine/test_ergonomics.py` (391 lines)
-- Dependencies: Complete core system
+**Test scenarios**:
+- Benchmark data export
+- Performance comparison analysis
+- Statistical analysis of benchmarks
 
-**Epic 30: Migrate property-based tests**
-- File: `tests/flowengine/test_property_based.py`
-- Source: `old/tests/flow_engine/test_property_based.py` (525 lines)
-- Dependencies: Complete core system, hypothesis
+**Dependencies**: Performance monitoring system
+**Coverage**: 100% - benchmark reporting scenarios
 
-### Phase 5B: Integration Preparation (Epics 31-35)
+---
 
-**Epic 31: Create lazy imports framework**
-- File: `src/flowengine/lazy_imports.py`
-- Source: `old/goldentooth_agent/flow_engine/lazy_imports.py` (36 lines, adapted)
-- Tests: `tests/flowengine/test_lazy_imports.py`
-- Dependencies: None
-- **Note**: Prepare for future context integration
+### Epic 27: Migrate observability integration test class 1
+**Unit**: Cross-component integration tests
+**Source**: `old/tests/flow_engine/observability/test_observability_integration.py` (TestObservabilityIntegration)
+**Target**: `tests/flowengine/observability/test_integration.py`
 
-**Epic 32: Create integration interfaces**
-- File: `src/flowengine/integrations/__init__.py`
-- Interface definitions for future integration
+**Test class to migrate**:
+1. `TestObservabilityIntegration` - Cross-component integration
+   - Methods: `test_monitoring_debugging_integration()`, `test_health_performance_integration()`, `test_analysis_monitoring_integration()`
 
-**Epic 33: Create integration tests structure**
-- File: `tests/flowengine/integrations/__init__.py`
-- Test structure for future integration
+**Integration scenarios**:
+- Monitoring and debugging integration
+- Health and performance integration
+- Analysis and monitoring integration
 
-**Epic 34: Migrate core flow tests**
-- File: `tests/flowengine/test_flow_core.py`
-- Source: `old/tests/flow_engine/core/test_main.py` (992 lines)
-- Dependencies: Complete core system
+**Dependencies**: Complete observability system
+**Coverage**: 100% - cross-component integration
 
-**Epic 35: Create main test conftest**
-- File: `tests/flowengine/conftest.py`
-- Source: `old/tests/flow_engine/conftest.py` (83 lines)
-- Global test configuration
+---
 
-## Phase 6: Package Completion (Epics 36-40)
+### Epic 28: Migrate observability integration test class 2
+**Unit**: Lifecycle management tests
+**Source**: `old/tests/flow_engine/observability/test_observability_integration.py` (TestObservabilityLifecycle)
+**Target**: `tests/flowengine/observability/test_integration.py`
 
-**Epic 36: Create main package __init__.py**
-- File: `src/flowengine/__init__.py`
-- Source: `old/goldentooth_agent/flow_engine/__init__.py` (319 lines, adapted)
-- Export all functionality
+**Test class to migrate**:
+2. `TestObservabilityLifecycle` - Lifecycle management
+   - Methods: `test_startup_shutdown()`, `test_configuration_changes()`, `test_resource_cleanup()`
 
-**Epic 37: Update pyproject.toml**
-- Add flowengine as separate package
-- Configure package metadata
-- Add to build system
+**Lifecycle scenarios**:
+- System startup and shutdown
+- Configuration change handling
+- Resource cleanup verification
 
-**Epic 38: Add integration to goldentooth_agent**
-- File: `src/goldentooth_agent/core/flow_engine.py`
-- Import and integrate flowengine
-- Minimal integration layer
+**Dependencies**: Complete observability system
+**Coverage**: 100% - lifecycle management
 
-**Epic 39: Create goldentooth integration tests**
-- File: `tests/goldentooth_agent/core/test_flow_engine_integration.py`
-- Test integration with main package
+---
 
-**Epic 40: Update package documentation**
-- File: `src/flowengine/README.md`
-- Documentation for standalone package
+### Epic 29: Migrate observability integration test class 3
+**Unit**: Real-world scenario tests
+**Source**: `old/tests/flow_engine/observability/test_observability_integration.py` (TestObservabilityScenarios)
+**Target**: `tests/flowengine/observability/test_integration.py`
+
+**Test class to migrate**:
+3. `TestObservabilityScenarios` - Real-world scenarios
+   - Methods: `test_production_monitoring()`, `test_development_debugging()`, `test_performance_optimization()`
+
+**Scenario tests**:
+- Production monitoring workflows
+- Development debugging workflows
+- Performance optimization workflows
+
+**Dependencies**: Complete observability system
+**Coverage**: 100% - real-world scenarios
+
+---
+
+### Epic 30: Create observability test fixtures
+**Unit**: Observability test configuration fixtures
+**Target**: `tests/flowengine/observability/conftest.py`
+
+**Fixtures to create**:
+1. `performance_monitor` - Configured performance monitor
+2. `flow_analyzer` - Configured flow analyzer
+3. `flow_debugger` - Configured debugger
+4. `health_monitor` - Configured health monitor
+
+**Dependencies**: Complete observability system
+**Coverage**: 100% - core test fixtures
+
+---
+
+### Epic 31: Create observability test utilities
+**Unit**: Observability test utility functions
+**Target**: `tests/flowengine/observability/conftest.py`
+
+**Test utilities to create**:
+5. `sample_flows` - Sample flows for testing
+6. `benchmark_data` - Benchmark test data
+7. `observability_config` - Test configuration
+8. `create_test_flow()` - Create flows for testing
+9. `generate_test_stream()` - Generate test data streams
+10. `assert_performance_within_bounds()` - Performance assertions
+11. `cleanup_observability()` - Test cleanup
+
+**Dependencies**: Complete observability system
+**Coverage**: 100% - test utilities and data
+
+---
+
+## Phase 4: Registry System (Epics 32-39)
+
+### Epic 32: Migrate flow registry core class
+**Unit**: FlowRegistry class implementation
+**Source**: `old/goldentooth_agent/flow_engine/registry/main.py` (FlowRegistry class)
+**Target**: `src/flowengine/registry/main.py`
+
+**Core class to migrate**:
+1. `FlowRegistry` - Main registry class
+   - Properties: `flows`, `categories`, `tags`, `metadata`
+   - Methods: `register()`, `unregister()`, `get()`, `list()`, `search()`, `clear()`
+
+**Registry features**:
+- Name-based flow storage and retrieval
+- Category and tag-based organization
+- Metadata storage and querying
+- Thread-safe registration operations
+
+**Dependencies**: `flowengine.flow`
+**Coverage**: 100% - registry class functionality
+
+---
+
+### Epic 33: Migrate flow registry functions part 1
+**Unit**: Core registry utility functions
+**Source**: `old/goldentooth_agent/flow_engine/registry/main.py` (functions 1-4)
+**Target**: `src/flowengine/registry/main.py`
+
+**Functions to migrate**:
+2. `register_flow(name, flow, category, tags, metadata)` - Register a flow
+3. `get_flow(name)` - Get flow by name
+4. `list_flows(category, tags)` - List flows with filters
+5. `search_flows(query)` - Search flows by query
+
+**Functionality**:
+- Basic flow CRUD operations
+- Search functionality (name, description, tags)
+
+**Dependencies**: FlowRegistry class
+**Coverage**: 100% - core registry functions
+
+---
+
+### Epic 34: Migrate flow registry functions part 2
+**Unit**: Advanced registry utility functions
+**Source**: `old/goldentooth_agent/flow_engine/registry/main.py` (functions 5-8)
+**Target**: `src/flowengine/registry/main.py`
+
+**Functions to migrate**:
+6. `unregister_flow(name)` - Remove flow from registry
+7. `clear_registry()` - Clear all registered flows
+8. `export_registry(format)` - Export registry contents
+9. `import_registry(data)` - Import registry contents
+
+**Functionality**:
+- Registry management operations
+- Export/import capabilities (JSON, YAML)
+
+**Dependencies**: FlowRegistry class and core functions
+**Coverage**: 100% - advanced registry functions
+
+---
+
+### Epic 35: Migrate flow registry global instance and decorator
+**Unit**: Global registry instance and decorator support
+**Source**: `old/goldentooth_agent/flow_engine/registry/main.py` (global instance and decorator)
+**Target**: `src/flowengine/registry/main.py`
+
+**Components to migrate**:
+10. `flow_registry` - Global registry singleton
+11. `registered_flow(name, category, tags)` - Decorator for auto-registration
+
+**Functionality**:
+- Global registry instance management
+- Decorator-based auto-registration
+
+**Dependencies**: Complete FlowRegistry implementation
+**Coverage**: 100% - global instance and decorator
+
+---
+
+### Epic 36: Create registry __init__.py
+**Unit**: Registry module exports
+**Source**: `old/goldentooth_agent/flow_engine/registry/__init__.py` (26 lines)
+**Target**: `src/flowengine/registry/__init__.py`
+
+**Export structure**:
+```python
+from .main import (
+    FlowRegistry, register_flow, get_flow, list_flows, search_flows,
+    unregister_flow, clear_registry, export_registry, import_registry,
+    flow_registry, registered_flow
+)
+
+__all__ = [
+    "FlowRegistry", "register_flow", "get_flow", "list_flows", "search_flows",
+    "unregister_flow", "clear_registry", "export_registry", "import_registry",
+    "flow_registry", "registered_flow"
+]
+```
+
+**Dependencies**: `flowengine.registry.main`
+**Coverage**: 100% - registry API verification
+
+---
+
+### Epic 37: Migrate registry test class 1
+**Unit**: Core registry functionality tests
+**Source**: `old/tests/flow_engine/registry/test_registry.py` (TestFlowRegistry)
+**Target**: `tests/flowengine/registry/test_registry.py`
+
+**Test class to migrate**:
+1. `TestFlowRegistry` - Core registry functionality
+   - Methods: `test_register_flow()`, `test_get_flow()`, `test_list_flows()`, `test_search_flows()`
+
+**Test scenarios**:
+- Basic CRUD operations
+- Flow retrieval and listing
+
+**Dependencies**: Complete registry system
+**Coverage**: 100% - core registry functionality
+
+---
+
+### Epic 38: Migrate registry test class 2 
+**Unit**: Registry filtering and search tests
+**Source**: `old/tests/flow_engine/registry/test_registry.py` (TestRegistryFiltering)
+**Target**: `tests/flowengine/registry/test_registry.py`
+
+**Test class to migrate**:
+2. `TestRegistryFiltering` - Filtering and search tests
+   - Methods: `test_category_filtering()`, `test_tag_filtering()`, `test_combined_filtering()`, `test_search_queries()`
+
+**Test scenarios**:
+- Advanced search and filtering
+- Category and tag-based queries
+
+**Dependencies**: Complete registry system
+**Coverage**: 100% - filtering functionality
+
+---
+
+### Epic 39: Migrate registry test class 3
+**Unit**: Registry persistence and decorator tests
+**Source**: `old/tests/flow_engine/registry/test_registry.py` (TestRegistryPersistence, TestRegistryDecorator)
+**Target**: `tests/flowengine/registry/test_registry.py`
+
+**Test classes to migrate**:
+3. `TestRegistryPersistence` - Export/import functionality
+   - Methods: `test_export_json()`, `test_export_yaml()`, `test_import_round_trip()`, `test_import_validation()`
+
+4. `TestRegistryDecorator` - Decorator functionality
+   - Methods: `test_registered_flow_decorator()`, `test_decorator_metadata()`, `test_decorator_categories()`
+
+**Test scenarios**:
+- Persistence and serialization
+- Decorator auto-registration
+
+**Dependencies**: Complete registry system
+**Coverage**: 100% - persistence and decorator functionality
+
+## Phase 5: Advanced Features (Epics 40-51)
+
+### Epic 40: Migrate extension base class
+**Unit**: FlowExtension base class
+**Source**: `old/goldentooth_agent/flow_engine/extensions.py` (FlowExtension class)
+**Target**: `src/flowengine/extensions.py`
+
+**Class to migrate**:
+1. `FlowExtension` - Base extension class
+   - Properties: `name`, `version`, `description`, `enabled`
+   - Methods: `install()`, `uninstall()`, `configure()`, `get_info()`
+
+**Extension features**:
+- Extension metadata and versioning
+- Basic lifecycle management
+
+**Dependencies**: `flowengine.flow`
+**Coverage**: 100% - extension base class
+
+---
+
+### Epic 41: Migrate extension registry class
+**Unit**: ExtensionRegistry management class
+**Source**: `old/goldentooth_agent/flow_engine/extensions.py` (ExtensionRegistry class)
+**Target**: `src/flowengine/extensions.py`
+
+**Class to migrate**:
+2. `ExtensionRegistry` - Extension management
+   - Properties: `extensions`, `enabled_extensions`
+   - Methods: `register_extension()`, `unregister_extension()`, `enable()`, `disable()`, `list_extensions()`
+
+**Extension features**:
+- Dynamic extension loading/unloading
+- Extension configuration management
+- Extension dependency resolution
+
+**Dependencies**: FlowExtension class
+**Coverage**: 100% - extension registry functionality
+
+---
+
+### Epic 42: Migrate extension utility functions
+**Unit**: Extension utility functions
+**Source**: `old/goldentooth_agent/flow_engine/extensions.py` (utility functions)
+**Target**: `src/flowengine/extensions.py`
+
+**Functions to migrate**:
+3. `install_extension(extension)` - Install flow extension
+4. `uninstall_extension(name)` - Remove extension
+5. `enable_extension(name)` - Enable extension
+6. `disable_extension(name)` - Disable extension
+7. `list_extensions()` - List available extensions
+8. `get_extension_info(name)` - Get extension details
+
+**Extension features**:
+- Extension lifecycle management
+- Extension information queries
+
+**Dependencies**: Complete extension system
+**Coverage**: 100% - extension utility functions
+
+---
+
+### Epic 43: Migrate trampoline constants and combinators
+**Unit**: Trampoline constants and combinator class
+**Source**: `old/goldentooth_agent/flow_engine/trampoline.py` (constants and TrampolineFlowCombinators)
+**Target**: `src/flowengine/trampoline.py`
+
+**Constants to migrate**:
+1. `SHOULD_EXIT_KEY` - Trampoline exit signal key
+2. `SHOULD_BREAK_KEY` - Trampoline break signal key
+3. `SHOULD_SKIP_KEY` - Trampoline skip signal key
+
+**Class to migrate**:
+4. `TrampolineFlowCombinators` - Trampoline-aware combinators
+   - Methods: `trampoline_map()`, `trampoline_filter()`, `trampoline_flat_map()`, `trampoline_fold()`
+
+**Dependencies**: `flowengine.flow`
+**Coverage**: 100% - trampoline constants and combinators
+
+---
+
+### Epic 44: Migrate trampoline execution functions
+**Unit**: Trampoline execution functions
+**Source**: `old/goldentooth_agent/flow_engine/trampoline.py` (execution functions)
+**Target**: `src/flowengine/trampoline.py`
+
+**Functions to migrate**:
+5. `extend_flow_with_trampoline()` - Add trampoline methods to Flow class
+6. `trampoline_execute(flow, stream)` - Execute with trampoline
+7. `should_exit(item)` - Check for exit condition
+8. `should_break(item)` - Check for break condition
+
+**Trampoline features**:
+- Non-recursive execution patterns
+- Stack-safe execution for deep compositions
+
+**Dependencies**: Trampoline constants and combinators
+**Coverage**: 100% - trampoline execution functionality
+
+---
+
+### Epic 45: Migrate trampoline signal functions
+**Unit**: Trampoline signal creation functions
+**Source**: `old/goldentooth_agent/flow_engine/trampoline.py` (signal functions)
+**Target**: `src/flowengine/trampoline.py`
+
+**Functions to migrate**:
+9. `should_skip(item)` - Check for skip condition
+10. `create_exit_signal()` - Create exit signal
+11. `create_break_signal()` - Create break signal
+12. `create_skip_signal()` - Create skip signal
+
+**Trampoline features**:
+- Control flow signals (exit, break, skip)
+- Signal-based flow control
+
+**Dependencies**: Trampoline execution functions
+**Coverage**: 100% - trampoline signal functionality
+
+---
+
+### Epic 46: Migrate ergonomics test class 1
+**Unit**: Flow chaining and creation tests
+**Source**: `old/tests/flow_engine/test_ergonomics.py` (TestFlowChaining, TestFlowCreation)
+**Target**: `tests/flowengine/test_ergonomics.py`
+
+**Test classes to migrate**:
+1. `TestFlowChaining` - Method chaining ergonomics
+   - Methods: `test_fluent_api()`, `test_method_composition()`, `test_readable_chains()`
+
+2. `TestFlowCreation` - Flow creation patterns
+   - Methods: `test_factory_methods()`, `test_decorator_patterns()`, `test_lambda_flows()`
+
+**Test scenarios**:
+- Fluent API usability
+- Method discoverability
+- Flow creation patterns
+
+**Dependencies**: Complete core system
+**Coverage**: 100% - chaining and creation ergonomics
+
+---
+
+### Epic 47: Migrate ergonomics test class 2
+**Unit**: Debugging and composition tests
+**Source**: `old/tests/flow_engine/test_ergonomics.py` (TestFlowDebugging, TestFlowComposition)
+**Target**: `tests/flowengine/test_ergonomics.py`
+
+**Test classes to migrate**:
+3. `TestFlowDebugging` - Debugging ergonomics
+   - Methods: `test_debug_labels()`, `test_flow_inspection()`, `test_error_messages()`
+
+4. `TestFlowComposition` - Composition patterns
+   - Methods: `test_pipe_operator()`, `test_compose_function()`, `test_nested_composition()`
+
+**Test scenarios**:
+- Error message clarity
+- Composition patterns
+
+**Dependencies**: Complete core system
+**Coverage**: 100% - debugging and composition ergonomics
+
+---
+
+### Epic 48: Migrate ergonomics test class 3
+**Unit**: Documentation and introspection tests
+**Source**: `old/tests/flow_engine/test_ergonomics.py` (TestFlowDocumentation)
+**Target**: `tests/flowengine/test_ergonomics.py`
+
+**Test class to migrate**:
+5. `TestFlowDocumentation` - Self-documenting flows
+   - Methods: `test_flow_names()`, `test_metadata_preservation()`, `test_introspection()`
+
+**Test scenarios**:
+- Documentation and introspection
+- IDE integration (type hints)
+- Common usage patterns
+
+**Dependencies**: Complete core system
+**Coverage**: 100% - documentation ergonomics
+
+---
+
+### Epic 49: Migrate property-based test class 1
+**Unit**: Core flow and combinator property tests
+**Source**: `old/tests/flow_engine/test_property_based.py` (TestFlowProperties, TestCombinatorProperties)
+**Target**: `tests/flowengine/test_property_based.py`
+
+**Test classes to migrate**:
+1. `TestFlowProperties` - Core flow properties
+   - Methods: `test_flow_composition_associativity()`, `test_flow_identity_laws()`, `test_flow_functor_laws()`
+
+2. `TestCombinatorProperties` - Combinator mathematical properties
+   - Methods: `test_map_composition()`, `test_filter_composition()`, `test_associativity_laws()`
+
+**Property tests**:
+- Mathematical laws (associativity, identity)
+- Combinator composition properties
+
+**Dependencies**: Complete core system, hypothesis library
+**Coverage**: 100% - flow and combinator properties
+
+---
+
+### Epic 50: Migrate property-based test class 2
+**Unit**: Stream and performance property tests
+**Source**: `old/tests/flow_engine/test_property_based.py` (TestStreamProperties, TestPerformanceProperties)
+**Target**: `tests/flowengine/test_property_based.py`
+
+**Test classes to migrate**:
+3. `TestStreamProperties` - Stream processing properties
+   - Methods: `test_stream_ordering()`, `test_stream_completeness()`, `test_error_propagation()`
+
+4. `TestPerformanceProperties` - Performance characteristics
+   - Methods: `test_linear_scaling()`, `test_memory_bounds()`, `test_time_complexity()`
+
+**Property tests**:
+- Stream processing invariants
+- Performance characteristic verification
+
+**Dependencies**: Complete core system, hypothesis library
+**Coverage**: 100% - stream and performance properties
+
+---
+
+### Epic 51: Create property-based test strategies
+**Unit**: Hypothesis test strategies
+**Source**: `old/tests/flow_engine/test_property_based.py` (strategy definitions)
+**Target**: `tests/flowengine/test_property_based.py`
+
+**Hypothesis strategies to create**:
+```python
+@composite
+def flow_strategy(draw):
+    """Generate arbitrary flows for testing."""
+
+@composite
+def stream_strategy(draw):
+    """Generate arbitrary streams for testing."""
+
+@composite
+def combinator_strategy(draw):
+    """Generate arbitrary combinator compositions."""
+```
+
+**Strategy features**:
+- Generate random flow compositions
+- Test error handling properties
+- Resource usage bounds checking
+
+**Dependencies**: Complete core system, hypothesis library
+**Coverage**: 100% - property test strategies
+
+---
+
+## Phase 6: Package Completion (Epics 52-60)
+
+### Epic 52: Create lazy imports framework
+**Unit**: Lazy import framework for optional dependencies
+**Source**: `old/goldentooth_agent/flow_engine/lazy_imports.py` (36 lines, adapted)
+**Target**: `src/flowengine/lazy_imports.py`
+
+**Classes and functions to migrate**:
+1. `LazyImport` - Lazy import wrapper
+   - Properties: `module_name`, `imported_module`, `is_available`
+   - Methods: `get_module()`, `get_attribute()`, `is_available()`
+
+2. `lazy_import(module_name)` - Create lazy import
+3. `try_import(module_name, fallback)` - Try import with fallback
+
+**Dependencies**: None
+**Coverage**: 100% - lazy import base functionality
+
+---
+
+### Epic 53: Complete lazy imports framework
+**Unit**: Complete lazy import system
+**Source**: `old/goldentooth_agent/flow_engine/lazy_imports.py` (remaining functions)
+**Target**: `src/flowengine/lazy_imports.py`
+
+**Functions to complete**:
+4. `check_availability(module_name)` - Check if module available
+5. `get_available_integrations()` - List available integrations
+
+**Lazy import targets** (prepared for future integration):
+- `goldentooth_agent.core.context` - Context system (optional)
+- `goldentooth_agent.core.util.maybe_await` - Async utilities (optional)
+- Third-party visualization libraries (optional)
+
+**Dependencies**: LazyImport base classes
+**Coverage**: 100% - complete lazy import functionality
+
+---
+
+### Epic 54: Create integration interfaces
+**Unit**: Integration interface definitions
+**Target**: `src/flowengine/integrations/__init__.py`
+
+**Protocol definitions**:
+```python
+from typing import Protocol, TypeVar, Any
+
+T = TypeVar("T")
+
+class ContextIntegrationProtocol(Protocol):
+    """Protocol for context system integration."""
+    def get_context_value(self, key: str) -> Any: ...
+    def set_context_value(self, key: str, value: Any) -> None: ...
+    def with_context(self, updates: dict[str, Any]) -> "ContextIntegrationProtocol": ...
+```
+
+**Dependencies**: `flowengine.protocols`
+**Coverage**: 100% - context integration protocol
+
+---
+
+### Epic 55: Complete integration interfaces
+**Unit**: Complete integration protocol definitions
+**Target**: `src/flowengine/integrations/__init__.py`
+
+**Additional protocols**:
+```python
+class LoggingIntegrationProtocol(Protocol):
+    """Protocol for logging system integration."""
+    def log(self, level: str, message: str, **kwargs: Any) -> None: ...
+    def get_logger(self, name: str) -> Any: ...
+
+class MetricsIntegrationProtocol(Protocol):
+    """Protocol for metrics system integration."""
+    def record_metric(self, name: str, value: float, tags: dict[str, str]) -> None: ...
+    def increment_counter(self, name: str, tags: dict[str, str]) -> None: ...
+```
+
+**Dependencies**: Context integration protocol
+**Coverage**: 100% - complete integration protocols
+
+---
+
+### Epic 56: Create integration registry
+**Unit**: Integration registry implementation
+**Target**: `src/flowengine/integrations/__init__.py`
+
+**Integration registry**:
+```python
+class IntegrationRegistry:
+    """Registry for optional integrations."""
+
+    def register_context_integration(self, integration: ContextIntegrationProtocol) -> None: ...
+    def register_logging_integration(self, integration: LoggingIntegrationProtocol) -> None: ...
+    def register_metrics_integration(self, integration: MetricsIntegrationProtocol) -> None: ...
+```
+
+**Dependencies**: All integration protocols
+**Coverage**: 100% - integration registry functionality
+
+---
+
+### Epic 57: Migrate core flow tests part 1
+**Unit**: Flow construction and execution tests
+**Source**: `old/tests/flow_engine/core/test_main.py` (TestFlowConstruction, TestFlowExecution)
+**Target**: `tests/flowengine/test_flow_core.py`
+
+**Test classes to migrate**:
+1. `TestFlowConstruction` - Flow creation and initialization
+   - Methods: `test_flow_creation()`, `test_flow_metadata()`, `test_flow_naming()`
+
+2. `TestFlowExecution` - Core execution functionality
+   - Methods: `test_basic_execution()`, `test_async_execution()`, `test_stream_processing()`
+
+**Dependencies**: Complete core system
+**Coverage**: 100% - flow construction and execution
+
+---
+
+### Epic 58: Migrate core flow tests part 2
+**Unit**: Flow composition and methods tests
+**Source**: `old/tests/flow_engine/core/test_main.py` (TestFlowComposition, TestFlowMethods)
+**Target**: `tests/flowengine/test_flow_core.py`
+
+**Test classes to migrate**:
+3. `TestFlowComposition` - Flow composition patterns
+   - Methods: `test_pipe_composition()`, `test_nested_composition()`, `test_complex_composition()`
+
+4. `TestFlowMethods` - All Flow class methods
+   - Methods: `test_map()`, `test_filter()`, `test_flat_map()`, `test_for_each()`, `test_to_list()`, etc.
+
+**Dependencies**: Complete core system
+**Coverage**: 100% - flow composition and methods
+
+---
+
+### Epic 59: Migrate core flow tests part 3
+**Unit**: Flow factories and error handling tests
+**Source**: `old/tests/flow_engine/core/test_main.py` (TestFlowFactories, TestFlowErrorHandling, TestFlowPerformance)
+**Target**: `tests/flowengine/test_flow_core.py`
+
+**Test classes to migrate**:
+5. `TestFlowFactories` - Factory method functionality
+   - Methods: `test_from_value_fn()`, `test_from_sync_fn()`, `test_from_event_fn()`, etc.
+
+6. `TestFlowErrorHandling` - Error scenarios
+   - Methods: `test_execution_errors()`, `test_composition_errors()`, `test_resource_cleanup()`
+
+7. `TestFlowPerformance` - Performance characteristics
+   - Methods: `test_large_streams()`, `test_memory_usage()`, `test_execution_time()`
+
+**Dependencies**: Complete core system
+**Coverage**: 100% - flow factories, error handling, and performance
+
+---
+
+### Epic 60: Create main test conftest and complete package
+**Unit**: Global test configuration and package completion
+**Source**: `old/tests/flow_engine/conftest.py` (83 lines)
+**Target**: `tests/flowengine/conftest.py` and complete package setup
+
+**Global fixtures**:
+1. `event_loop` - Async test event loop
+2. `async_test_timeout` - Test timeout configuration
+3. `test_data_dir` - Test data directory
+4. `temp_dir` - Temporary directory for tests
+5. `sample_data` - Common test data sets
+6. `performance_config` - Performance test configuration
+7. `debug_config` - Debug test configuration
+
+**Test utilities**:
+8. `async_range(n)` - Generate async range
+9. `async_list(items)` - Create async iterator from list
+10. `collect_async(iterator)` - Collect async iterator to list
+11. `assert_streams_equal(stream1, stream2)` - Compare async streams
+12. `time_async_operation(coro)` - Time async operations
+13. `assert_performance_within_bounds(operation, bounds)` - Performance assertions
+
+**Test data factories**:
+14. `create_test_flow()` - Generic test flow factory
+15. `create_large_stream()` - Large data stream factory
+16. `create_error_stream()` - Error-producing stream factory
+17. `create_slow_stream()` - Slow stream factory
+
+**Package completion tasks**:
+- Create main package `__init__.py` with all exports
+- Update `pyproject.toml` configuration
+- Add integration to `goldentooth_agent`
+- Create integration tests
+- Update package documentation
+
+**Dependencies**: All flowengine modules
+**Coverage**: 100% - complete package and test infrastructure
 
 ## File Size and Module Constraints
 

@@ -247,8 +247,15 @@ class TestTracedFlow:
             for i in range(3):
                 yield i
 
-        with pytest.raises(FlowExecutionErrorWithContext) as exc_info:
-            await traced.to_list()(test_stream())
+        # Use explicit async context manager style to ensure proper cleanup
+        test_gen = test_stream()
+        try:
+            with pytest.raises(FlowExecutionErrorWithContext) as exc_info:
+                await traced.to_list()(test_gen)
+        finally:
+            # Ensure the generator is properly closed
+            if hasattr(test_gen, "aclose"):
+                await test_gen.aclose()
 
         error = exc_info.value
         # Should preserve the original enhanced error, not double-wrap it
