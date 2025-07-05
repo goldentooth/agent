@@ -7,7 +7,6 @@
     ],
     "allow": [
       "Bash(/dev/null)",
-      "Bash(cat:*)",
       "Bash(cd:*)",
       "Bash(chmod:*)",
       "Bash(cp:*)",
@@ -45,9 +44,10 @@
     ],
     "defaultMode": "acceptEdits",
     "deny": [
-      "Bash(git reset:*)",
+      "Bash(cat:*)",
       "Bash(git commit --no-verify:*)",
       "Bash(git commit -m:*)",
+      "Bash(git reset:*)",
       "Bash(SKIP:*)"
     ]
   }

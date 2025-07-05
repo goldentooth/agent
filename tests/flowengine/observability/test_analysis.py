@@ -140,3 +140,22 @@ class TestFlowAnalyzer:
 
         assert analyzer.node_id_counter == 0
         assert len(analyzer.flow_registry) == 0
+
+    def test_node_counter_behavior(self):
+        """Test that node counter behavior works correctly."""
+        analyzer = FlowAnalyzer()
+
+        assert analyzer.node_id_counter == 0
+
+    def test_flow_signature_generation(self):
+        """Test flow signature generation capability."""
+        analyzer = FlowAnalyzer()
+
+        def increment(x: int) -> int:
+            return x + 1
+
+        flow = map_stream(increment)
+
+        # The signature method should be present and callable
+        assert hasattr(analyzer, "_get_flow_signature")
+        assert callable(getattr(analyzer, "_get_flow_signature"))

@@ -6,6 +6,7 @@ and understanding the structure and behavior of complex Flow pipelines.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -106,3 +107,16 @@ class FlowAnalyzer:
         super().__init__()
         self.node_id_counter = 0
         self.flow_registry: FlowRegistry = {}
+
+    def _generate_node_id(self) -> str:
+        """Generate a unique node ID."""
+        self.node_id_counter += 1
+        return f"node_{self.node_id_counter}"
+
+    def _get_flow_signature(self, flow: AnyFlow) -> str:
+        """Generate a signature for a flow based on its properties."""
+        components = [flow.name, str(type(flow)), str(getattr(flow, "metadata", {}))]
+        signature = hashlib.md5(
+            "|".join(components).encode(), usedforsecurity=False
+        ).hexdigest()[:8]
+        return signature
