@@ -21,6 +21,15 @@ repos:
         language: system
         entry: bash -c 'if [ -n "$SKIP" ]; then echo "SKIP environment variable is set. Please unset it before committing." >&2; exit 1; fi'
 
+  # Ensure that lying bastard hasn't added any pyright comments, e.g. `# pyright: .*`
+  - repo: local
+    hooks:
+      - id: check-pyright-overrides
+        name: Check Pyright Overrides
+        language: system
+        entry: |
+          bash -c 'if git diff --cached | grep -q "# pyright: .*"; then echo "Pyright comments found. Please remove them before committing." >&2; exit 1; fi'
+
   # Initial black formatting
   - repo: local
     hooks:
