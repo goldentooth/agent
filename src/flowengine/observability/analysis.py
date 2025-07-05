@@ -161,6 +161,39 @@ class FlowGraph:
 
         return [node_id] + longest_child_path
 
+    def find_cycles(self) -> list[list[str]]:
+        """Find cycles in the graph."""
+        cycles: list[list[str]] = []
+        visited: set[str] = set()
+        rec_stack: set[str] = set()
+
+        def dfs(node_id: str, path: list[str]) -> None:
+            if node_id in rec_stack:
+                # Found a cycle
+                cycle_start = path.index(node_id)
+                cycle = path[cycle_start:]
+                cycles.append(cycle)
+                return
+
+            if node_id in visited:
+                return
+
+            visited.add(node_id)
+            rec_stack.add(node_id)
+
+            # Follow outgoing edges
+            outgoing_edges = [edge for edge in self.edges if edge.source_id == node_id]
+            for edge in outgoing_edges:
+                dfs(edge.target_id, path + [edge.target_id])
+
+            rec_stack.remove(node_id)
+
+        for entry_id in self.entry_points:
+            if entry_id not in visited:
+                dfs(entry_id, [entry_id])
+
+        return cycles
+
     def to_dict(self) -> AnalysisData:
         """Convert graph to dictionary representation."""
         return {

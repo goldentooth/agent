@@ -208,6 +208,42 @@ class TestFlowGraph:
         # Should find the longer path: 1->2->4 (length 3)
         assert graph.get_critical_path() == ["1", "2", "4"]
 
+    def test_flow_graph_find_cycles_no_cycles(self):
+        """Test cycle detection with no cycles."""
+        graph = FlowGraph()
+
+        nodes = {
+            "1": FlowNode(id="1", name="first", flow_type="utility"),
+            "2": FlowNode(id="2", name="second", flow_type="transformation"),
+        }
+        graph.nodes.update(nodes)
+
+        graph.edges = [FlowEdge(source_id="1", target_id="2")]
+        graph.entry_points = ["1"]
+
+        assert graph.find_cycles() == []
+
+    def test_flow_graph_find_cycles_with_cycle(self):
+        """Test cycle detection with a simple cycle."""
+        graph = FlowGraph()
+
+        nodes = {
+            "1": FlowNode(id="1", name="first", flow_type="utility"),
+            "2": FlowNode(id="2", name="second", flow_type="transformation"),
+        }
+        graph.nodes.update(nodes)
+
+        # Create cycle: 1->2->1
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="2", target_id="1"),
+        ]
+        graph.entry_points = ["1"]
+
+        cycles = graph.find_cycles()
+        assert len(cycles) == 1
+        assert "1" in cycles[0] and "2" in cycles[0]
+
     def test_flow_graph_to_dict(self):
         """Test FlowGraph to_dict conversion."""
         graph = FlowGraph()
