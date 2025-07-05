@@ -212,7 +212,7 @@ class TestCLI:
         utils.print_results(results, "Test hook")
         captured = capsys.readouterr()
         assert "❌ Test hook violations found:" in captured.out
-        assert "big_file.py: 1500 lines" in captured.out
+        assert "big_file.py: File exceeds limit" in captured.out
 
     def test_print_results_with_warnings(
         self, capsys: pytest.CaptureFixture[str]
