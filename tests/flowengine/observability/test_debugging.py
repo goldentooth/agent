@@ -17,6 +17,7 @@ from flowengine.observability.debugging import (
     FlowDebugger,
     FlowExecutionContext,
     FlowExecutionErrorWithContext,
+    debug_session,
     debug_stream,
     get_flow_debugger,
     inspect_flow,
@@ -846,3 +847,150 @@ class TestInspectFlow:
 
         # Note: When functions are wrapped by Flow, the async detection
         # may not work as expected due to the wrapping mechanism
+
+
+class TestDebugSession:
+    """Tests for debug_session context manager."""
+
+    @pytest.mark.asyncio
+    async def test_debug_session_enables_debugging(self):
+        """Test that debug session enables debugging."""
+        debugger = get_flow_debugger()
+        original_state = debugger.debug_enabled
+
+        try:
+            # Ensure debugging is initially disabled
+            debugger.disable_debugging()
+            assert not debugger.debug_enabled
+
+            async with debug_session(enable_breakpoints=True) as session_debugger:
+                # Should be enabled during session
+                assert session_debugger.debug_enabled
+                assert session_debugger is debugger  # Same instance
+
+            # Should be restored after session
+            assert not debugger.debug_enabled
+        finally:
+            debugger.debug_enabled = original_state
+
+    @pytest.mark.asyncio
+    async def test_debug_session_disables_debugging(self):
+        """Test that debug session can disable debugging."""
+        debugger = get_flow_debugger()
+        original_state = debugger.debug_enabled
+
+        try:
+            # Enable debugging initially
+            debugger.enable_debugging()
+            assert debugger.debug_enabled
+
+            async with debug_session(enable_breakpoints=False) as session_debugger:
+                # Should be disabled during session
+                assert not session_debugger.debug_enabled
+                assert session_debugger is debugger
+
+            # Should be restored after session
+            assert debugger.debug_enabled
+        finally:
+            debugger.debug_enabled = original_state
+
+    @pytest.mark.asyncio
+    async def test_debug_session_restores_state_on_exception(self):
+        """Test that debug session restores state even when exception occurs."""
+        debugger = get_flow_debugger()
+        original_state = debugger.debug_enabled
+
+        try:
+            # Ensure debugging is initially disabled
+            debugger.disable_debugging()
+            assert not debugger.debug_enabled
+
+            with pytest.raises(ValueError):
+                async with debug_session(enable_breakpoints=True):
+                    assert debugger.debug_enabled
+                    raise ValueError("Test exception")
+
+            # Should be restored even after exception
+            assert not debugger.debug_enabled
+        finally:
+            debugger.debug_enabled = original_state
+
+    @pytest.mark.asyncio
+    async def test_debug_session_nested_sessions(self):
+        """Test nested debug sessions."""
+        debugger = get_flow_debugger()
+        original_state = debugger.debug_enabled
+
+        try:
+            # Start with debugging disabled
+            debugger.disable_debugging()
+            assert not debugger.debug_enabled
+
+            async with debug_session(enable_breakpoints=True):
+                assert debugger.debug_enabled
+
+                # Nested session that disables debugging
+                async with debug_session(enable_breakpoints=False):
+                    assert not debugger.debug_enabled
+
+                # Should restore to enabled state
+                assert debugger.debug_enabled
+
+            # Should restore to original disabled state
+            assert not debugger.debug_enabled
+        finally:
+            debugger.debug_enabled = original_state
+
+    @pytest.mark.asyncio
+    async def test_debug_session_yields_debugger_instance(self):
+        """Test that debug session yields the debugger instance."""
+        debugger = get_flow_debugger()
+
+        async with debug_session() as session_debugger:
+            assert isinstance(session_debugger, FlowDebugger)
+            assert session_debugger is debugger
+            assert hasattr(session_debugger, "enable_debugging")
+            assert hasattr(session_debugger, "add_breakpoint")
+            assert hasattr(session_debugger, "execution_history")
+
+    @pytest.mark.asyncio
+    async def test_debug_session_with_actual_flow_execution(self):
+        """Test debug session with actual flow execution."""
+        from flowengine.flow import Flow
+
+        debugger = get_flow_debugger()
+        original_state = debugger.debug_enabled
+
+        try:
+            # Create a simple flow
+            async def test_flow_fn(
+                stream: AsyncGenerator[int, None],
+            ) -> AsyncGenerator[int, None]:
+                async for item in stream:
+                    yield item * 2
+
+            test_flow = Flow(test_flow_fn, name="test_flow")
+
+            async def test_stream():
+                for i in range(3):
+                    yield i
+
+            # Execute flow without debugging
+            debugger.disable_debugging()
+            result1 = await test_flow.to_list()(test_stream())
+            history_count_before = len(debugger.execution_history)
+
+            # Execute flow with debugging session
+            async with debug_session(enable_breakpoints=True):
+                result2 = await test_flow.to_list()(test_stream())
+
+            # Results should be the same
+            assert result1 == result2 == [0, 2, 4]
+
+            # Debug session should not have affected execution history
+            # (since this flow doesn't use the debugging decorators)
+            assert len(debugger.execution_history) >= history_count_before
+
+        finally:
+            debugger.debug_enabled = original_state
+            debugger.execution_history.clear()

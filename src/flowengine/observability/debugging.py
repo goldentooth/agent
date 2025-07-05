@@ -377,6 +377,32 @@ def inspect_flow(flow: Flow[Any, Any]) -> DebugData:
     }
 
 
+@asynccontextmanager
+async def debug_session(
+    enable_breakpoints: bool = True,
+) -> AsyncGenerator[FlowDebugger, None]:
+    """Context manager for a temporary debugging session.
+
+    Args:
+        enable_breakpoints: Whether to enable breakpoint functionality
+
+    Example:
+        async with debug_session():
+            # All flows will have debugging enabled
+            result = await my_flow.to_list(test_stream)
+    """
+    old_debug_state = _flow_debugger.debug_enabled
+
+    try:
+        if enable_breakpoints:
+            _flow_debugger.enable_debugging()
+        else:
+            _flow_debugger.disable_debugging()
+        yield _flow_debugger
+    finally:
+        _flow_debugger.debug_enabled = old_debug_state
+
+
 # Convenience functions for accessing the global debugger
 def get_flow_debugger() -> FlowDebugger:
     """Get the global flow debugger instance."""
