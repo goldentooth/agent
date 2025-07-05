@@ -3,6 +3,8 @@
 This module provides essential building blocks for creating and composing flows:
 
 - **Basic combinators**: Core operations like map, filter, compose, etc.
+- **Aggregation combinators**: Batching, grouping, scanning, and windowing operations
+- **Temporal combinators**: Time-based operations like debounce, throttle, and delay
 - **Control flow combinators**: Conditional processing, error handling, and flow control
 - **Source flows**: Functions that create streams from various inputs
 - **Observability combinators**: Functions for logging, tracing, and monitoring streams
@@ -24,6 +26,21 @@ from .advanced import (
     parallel_stream_successful,
     race_stream,
     zip_stream,
+)
+
+# Aggregation combinators (11 functions migrated in Epic 9)
+from .aggregation import (
+    batch_stream,
+    buffer_stream,
+    chunk_stream,
+    distinct_stream,
+    expand_stream,
+    finalize_stream,
+    group_by_stream,
+    memoize_stream,
+    pairwise_stream,
+    scan_stream,
+    window_stream,
 )
 
 # Basic combinators (13 functions migrated in Epic 7)
@@ -71,17 +88,26 @@ from .observability import (
     trace_stream,
 )
 
-# Sources
+# Sources (4 functions migrated in Epic 6)
 from .sources import empty_flow, range_flow, repeat_flow, start_with_stream
 
-# Utils
+# Temporal combinators (5 functions migrated in Epic 10)
+from .temporal import (
+    debounce_stream,
+    delay_stream,
+    sample_stream,
+    throttle_stream,
+    timeout_stream,
+)
+
+# Utils (2 functions migrated in Epic 5)
 from .utils import create_single_item_stream, get_function_name
 
 __all__ = [
-    # Utils
+    # Utils (2 functions)
     "get_function_name",
     "create_single_item_stream",
-    # Sources
+    # Sources (4 functions)
     "range_flow",
     "repeat_flow",
     "empty_flow",
@@ -100,6 +126,24 @@ __all__ = [
     "collect_stream",
     "until_stream",
     "share_stream",
+    # Aggregation combinators (11 functions)
+    "batch_stream",
+    "buffer_stream",
+    "chunk_stream",
+    "distinct_stream",
+    "expand_stream",
+    "finalize_stream",
+    "group_by_stream",
+    "memoize_stream",
+    "pairwise_stream",
+    "scan_stream",
+    "window_stream",
+    # Temporal combinators (5 functions)
+    "debounce_stream",
+    "delay_stream",
+    "sample_stream",
+    "throttle_stream",
+    "timeout_stream",
     # Control flow combinators (11 functions)
     "if_then_stream",
     "retry_stream",
@@ -112,7 +156,7 @@ __all__ = [
     "circuit_breaker_stream",
     "chain_flows",
     "branch_flows",
-    # Observability combinators (5 functions + 3 notification classes)
+    # Observability combinators (5 functions + 4 classes)
     "log_stream",
     "trace_stream",
     "metrics_stream",
