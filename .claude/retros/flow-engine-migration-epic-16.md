@@ -18,13 +18,9 @@ Epic 16: Migrate analysis tools - Migrating the Flow analysis and introspection 
 ### Main Class
 4. `FlowAnalyzer` - Main analyzer class with pattern detection and optimization suggestions
 
-### Module Functions (6 functions)
+### Module Functions (2 functions)
 5. `analyze_flow` - Analyze single Flow
-6. `analyze_flow_composition` - Analyze multiple flows
-7. `detect_flow_patterns` - Find common patterns
-8. `generate_flow_optimizations` - Generate optimization suggestions
-9. `export_flow_analysis` - Export analysis to JSON
-10. `get_flow_analyzer` - Get global analyzer instance
+6. `get_flow_analyzer` - Get global analyzer instance
 
 ## Migration Challenges
 
@@ -75,7 +71,7 @@ The code uses proper type annotations with type aliases defined at the module le
 
 ## Migration Results
 
-### Successfully Migrated Components (10 commits)
+### Successfully Migrated Components (12 commits)
 1. Module docstring and type aliases
 2. FlowNode class with to_dict method
 3. FlowEdge class with to_dict method
@@ -87,6 +83,7 @@ The code uses proper type annotations with type aliases defined at the module le
 9. FlowAnalyzer._create_flow_node method
 10. FlowAnalyzer.analyze_flow method
 11. Module-level convenience functions (analyze_flow, get_flow_analyzer)
+12. Documentation updates marking Epic 16 complete
 
 ### Test Coverage
 - Comprehensive test coverage for all migrated components

@@ -121,13 +121,56 @@ class FlowAnalyzer:
         ).hexdigest()[:8]
         return signature
 
+    def _categorize_flow_type(self, flow: AnyFlow) -> str:
+        """Categorize the type of flow based on its name and characteristics."""
+        name = flow.name.lower()
+
+        type_keywords = {
+            "transformation": ["map", "transform", "convert"],
+            "filtering": ["filter", "where", "select"],
+            "aggregation": ["batch", "chunk", "group"],
+            "selection": ["take", "skip", "limit"],
+            "concurrency": ["parallel", "race", "merge"],
+            "error_handling": ["retry", "recover", "catch"],
+            "timing": ["delay", "timeout", "throttle"],
+            "observability": ["log", "debug", "trace", "inspect"],
+            "deduplication": ["distinct", "unique", "memoize"],
+        }
+
+        for flow_type, keywords in type_keywords.items():
+            if any(keyword in name for keyword in keywords):
+                return flow_type
+
+        return "utility"
+
+    def _calculate_complexity(self, flow: AnyFlow) -> int:
+        """Calculate complexity score for a flow."""
+        base_complexity = 1
+        name = flow.name.lower()
+
+        complexity_additions = {
+            3: ["parallel", "race", "merge", "branch"],
+            2: ["retry", "circuit_breaker", "recover", "flat_map", "expand", "window"],
+            1: ["batch", "chunk", "scan"],
+        }
+
+        for addition, keywords in complexity_additions.items():
+            if any(keyword in name for keyword in keywords):
+                base_complexity += addition
+                break
+
+        return base_complexity
+
     def _create_flow_node(self, flow: AnyFlow, node_id: str) -> FlowNode:
         """Create a FlowNode from a Flow object."""
+        flow_type = self._categorize_flow_type(flow)
+        complexity = self._calculate_complexity(flow)
+
         return FlowNode(
             id=node_id,
             name=flow.name,
-            flow_type="utility",
-            complexity_score=1,
+            flow_type=flow_type,
+            complexity_score=complexity,
             metadata={
                 "signature": self._get_flow_signature(flow),
                 "has_metadata": hasattr(flow, "metadata") and bool(flow.metadata),

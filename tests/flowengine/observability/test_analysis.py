@@ -191,6 +191,9 @@ class TestFlowAnalyzer:
 
         node = list(graph.nodes.values())[0]
         assert "map" in node.name
+        assert (
+            node.flow_type == "transformation"
+        )  # map should be categorized as transformation
 
 
 class TestAnalysisFunctions:
