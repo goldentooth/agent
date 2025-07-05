@@ -276,6 +276,26 @@ class TestFlowGraph:
         assert all(analysis[key] == expected_analysis[key] for key in expected_analysis)
 
 
+# Helper functions for FlowAnalyzer tests
+def build_map_filter_graph():
+    """Build a test graph with map-filter pattern."""
+    graph = FlowGraph()
+    map_node = FlowNode(id="1", name="map_func", flow_type="transformation")
+    filter_node = FlowNode(id="2", name="filter_func", flow_type="filtering")
+    graph.nodes["1"] = map_node
+    graph.nodes["2"] = filter_node
+    edge = FlowEdge(source_id="1", target_id="2")
+    graph.edges = [edge]
+    return graph
+
+
+def assert_map_filter_pattern(pattern: PatternData) -> None:
+    """Assert that pattern matches map-filter expectations."""
+    assert pattern["pattern"] == "map_filter"
+    assert pattern["nodes"] == ["1", "2"]
+    assert "transformation followed by filtering" in pattern["description"].lower()
+
+
 class TestFlowAnalyzer:
     """Tests for FlowAnalyzer class."""
 
@@ -416,27 +436,10 @@ class TestFlowAnalyzer:
     def test_detect_map_filter_pattern(self):
         """Test detection of map-filter pattern."""
         analyzer = FlowAnalyzer()
-        graph = FlowGraph()
-
-        # Create nodes: transformation -> filtering
-        map_node = FlowNode(id="1", name="map_func", flow_type="transformation")
-        filter_node = FlowNode(id="2", name="filter_func", flow_type="filtering")
-
-        graph.nodes["1"] = map_node
-        graph.nodes["2"] = filter_node
-
-        # Create edge connecting them
-        edge = FlowEdge(source_id="1", target_id="2")
-        graph.edges = [edge]
-
+        graph = build_map_filter_graph()
         patterns = analyzer.detect_patterns(graph)
-
-        # Should detect the map-filter pattern
         assert len(patterns) == 1
-        pattern = patterns[0]
-        assert pattern["pattern"] == "map_filter"
-        assert pattern["nodes"] == ["1", "2"]
-        assert "transformation followed by filtering" in pattern["description"].lower()
+        assert_map_filter_pattern(patterns[0])
 
     def test_detect_fan_out_pattern(self):
         """Test detection of fan-out pattern."""
