@@ -342,6 +342,67 @@ class FlowAnalyzer:
 
         return graph
 
+    def detect_patterns(self, graph: FlowGraph) -> PatternList:
+        """Detect common patterns in the flow graph."""
+        patterns: PatternList = []
+
+        # Detect map-filter pattern
+        map_filter_pattern = self._detect_map_filter_pattern(graph)
+        if map_filter_pattern:
+            patterns.append(map_filter_pattern)
+
+        # Detect fan-out pattern
+        fan_out_pattern = self._detect_fan_out_pattern(graph)
+        if fan_out_pattern:
+            patterns.append(fan_out_pattern)
+
+        # Detect pipeline pattern
+        pipeline_pattern = self._detect_pipeline_pattern(graph)
+        if pipeline_pattern:
+            patterns.append(pipeline_pattern)
+
+        # Detect error handling pattern
+        error_handling_pattern = self._detect_error_handling_pattern(graph)
+        if error_handling_pattern:
+            patterns.append(error_handling_pattern)
+
+        return patterns
+
+    def _detect_map_filter_pattern(self, graph: FlowGraph) -> PatternData | None:
+        """Detect map-filter sequential pattern."""
+        for edge in graph.edges:
+            source_node = graph.nodes.get(edge.source_id)
+            target_node = graph.nodes.get(edge.target_id)
+
+            if (
+                source_node
+                and target_node
+                and source_node.flow_type == "transformation"
+                and target_node.flow_type == "filtering"
+            ):
+                return {
+                    "pattern": "map_filter",
+                    "description": "Transformation followed by filtering",
+                    "nodes": [source_node.id, target_node.id],
+                    "optimization_hint": "Consider combining map and filter operations for efficiency",
+                }
+        return None
+
+    def _detect_fan_out_pattern(self, graph: FlowGraph) -> PatternData | None:
+        """Detect fan-out pattern."""
+        # TODO: Implement fan-out pattern detection
+        return None
+
+    def _detect_pipeline_pattern(self, graph: FlowGraph) -> PatternData | None:
+        """Detect pipeline pattern."""
+        # TODO: Implement pipeline pattern detection
+        return None
+
+    def _detect_error_handling_pattern(self, graph: FlowGraph) -> PatternData | None:
+        """Detect error handling pattern."""
+        # TODO: Implement error handling pattern detection
+        return None
+
 
 # Global analyzer instance
 _flow_analyzer = FlowAnalyzer()

@@ -385,6 +385,56 @@ class TestFlowAnalyzer:
         node = list(graph.nodes.values())[0]
         assert "map" in node.name
 
+    def test_detect_patterns_empty_graph(self):
+        """Test pattern detection with empty graph."""
+        analyzer = FlowAnalyzer()
+        graph = FlowGraph()
+
+        patterns = analyzer.detect_patterns(graph)
+
+        # Should return empty list for empty graph
+        assert patterns == []
+
+    def test_detect_patterns_single_node(self):
+        """Test pattern detection with single node graph."""
+        analyzer = FlowAnalyzer()
+
+        def increment(x: int) -> int:
+            return x + 1
+
+        flow = map_stream(increment)
+        graph = analyzer.analyze_flow(flow)
+
+        patterns = analyzer.detect_patterns(graph)
+
+        # Should not crash and return some result (specific patterns depend on helpers)
+        assert isinstance(patterns, list)
+
+    def test_detect_map_filter_pattern(self):
+        """Test detection of map-filter pattern."""
+        analyzer = FlowAnalyzer()
+        graph = FlowGraph()
+
+        # Create nodes: transformation -> filtering
+        map_node = FlowNode(id="1", name="map_func", flow_type="transformation")
+        filter_node = FlowNode(id="2", name="filter_func", flow_type="filtering")
+
+        graph.nodes["1"] = map_node
+        graph.nodes["2"] = filter_node
+
+        # Create edge connecting them
+        edge = FlowEdge(source_id="1", target_id="2")
+        graph.edges = [edge]
+
+        patterns = analyzer.detect_patterns(graph)
+
+        # Should detect the map-filter pattern
+        assert len(patterns) == 1
+        pattern = patterns[0]
+        assert pattern["pattern"] == "map_filter"
+        assert pattern["nodes"] == ["1", "2"]
+        assert "transformation followed by filtering" in pattern["description"].lower()
+
 
 class TestAnalysisFunctions:
     """Tests for module-level analysis functions."""
