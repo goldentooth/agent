@@ -33,26 +33,6 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 - Can be used standalone
 - Follows the existing clean architecture
 
-### Epic 34: Migrate flow registry functions part 2
-**Unit**: Advanced registry utility functions
-**Source**: `old/goldentooth_agent/flow_engine/registry/main.py` (functions 5-8)
-**Target**: `src/flowengine/registry/main.py`
-
-**Functions to migrate**:
-6. `unregister_flow(name)` - Remove flow from registry
-7. `clear_registry()` - Clear all registered flows
-8. `export_registry(format)` - Export registry contents
-9. `import_registry(data)` - Import registry contents
-
-**Functionality**:
-- Registry management operations
-- Export/import capabilities (JSON, YAML)
-
-**Dependencies**: FlowRegistry class and core functions
-**Coverage**: 100% - advanced registry functions
-
----
-
 ### Epic 35: Migrate flow registry global instance and decorator
 **Unit**: Global registry instance and decorator support
 **Source**: `old/goldentooth_agent/flow_engine/registry/main.py` (global instance and decorator)
