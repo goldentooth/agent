@@ -375,34 +375,28 @@ class TestBenchmarkReporting:
         assert len(result) == 100
 
         # Export performance metrics to temporary file
-        with tempfile.NamedTemporaryFile(
-            mode="w", delete=False, suffix=".json"
-        ) as tmp_file:
-            monitor = get_performance_monitor()
-            monitor.export_metrics(tmp_file.name)
+        tmp_file = tmp_path / "export_test_metrics.json"
+        monitor = get_performance_monitor()
+        monitor.export_metrics(str(tmp_file))
 
-            # Verify export file exists and contains valid JSON
-            assert os.path.exists(tmp_file.name)
+        # Verify export file exists and contains valid JSON
+        assert tmp_file.exists()
 
-            with open(tmp_file.name, "r") as f:
-                exported_data = json.load(f)
+        with tmp_file.open("r") as f:
+            exported_data = json.load(f)
 
-            # Validate export structure and content
-            assert "summary" in exported_data
-            assert "individual_flows" in exported_data
+        # Validate export structure and content
+        assert "summary" in exported_data
+        assert "individual_flows" in exported_data
 
-            # Find flow by name (key includes timestamp)
-            flow_found = False
-            for flow_id, flow_data in exported_data["individual_flows"].items():
-                if flow_data.get("name") == "export_test_flow":
-                    flow_found = True
-                    assert flow_data["items_processed"] == 100
-                    break
-            assert flow_found, "Expected flow 'export_test_flow' not found in export"
-
-            # Clean up
-            os.unlink(tmp_file.name)
-
+        # Find flow by name (key includes timestamp)
+        flow_found = False
+        for flow_id, flow_data in exported_data["individual_flows"].items():
+            if flow_data.get("name") == "export_test_flow":
+                flow_found = True
+                assert flow_data["items_processed"] == 100
+                break
+        assert flow_found, "Expected flow 'export_test_flow' not found in export"
     @pytest.mark.asyncio
     async def test_performance_comparison(self):
         """Test performance comparison analysis between benchmark runs."""
