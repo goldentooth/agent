@@ -567,3 +567,83 @@ class TestFlowRegistryThreadSafety:
 
         assert len(results) == 20  # 4 operations * 5 threads
         assert len(errors) == 0
+
+
+class TestConvenienceFunctions:
+    """Test global convenience functions."""
+
+    def test_register_flow_convenience(self):
+        """Test register_flow convenience function."""
+        from flowengine.registry import register_flow, flow_registry
+        
+        # Clear the global registry
+        flow_registry.clear()
+        
+        flow = Flow.from_sync_fn(add_one)
+        result = register_flow("test_flow", flow, category="math")
+        
+        assert result is flow
+        assert "test_flow" in flow_registry.flows
+        assert flow_registry.flows["test_flow"] is flow
+
+    def test_get_flow_convenience(self):
+        """Test get_flow convenience function."""
+        from flowengine.registry import get_flow, flow_registry
+        
+        # Clear the global registry
+        flow_registry.clear()
+        
+        flow = Flow.from_sync_fn(add_one)
+        flow_registry.register("test_flow", flow)
+        
+        result = get_flow("test_flow")
+        assert result is flow
+        
+        result = get_flow("nonexistent")
+        assert result is None
+
+    def test_list_flows_convenience(self):
+        """Test list_flows convenience function."""
+        from flowengine.registry import list_flows, flow_registry
+        
+        # Clear the global registry
+        flow_registry.clear()
+        
+        flow1 = Flow.from_sync_fn(add_one)
+        flow2 = Flow.from_sync_fn(add_two)
+        
+        flow_registry.register("flow1", flow1, category="math")
+        flow_registry.register("flow2", flow2, category="other")
+        
+        # List all flows
+        all_flows = list_flows()
+        assert len(all_flows) == 2
+        assert "flow1" in all_flows
+        assert "flow2" in all_flows
+        
+        # List flows by category
+        math_flows = list_flows(category="math")
+        assert len(math_flows) == 1
+        assert "flow1" in math_flows
+
+    def test_search_flows_convenience(self):
+        """Test search_flows convenience function."""
+        from flowengine.registry import search_flows, flow_registry
+        
+        # Clear the global registry
+        flow_registry.clear()
+        
+        flow1 = Flow.from_sync_fn(add_one)
+        flow2 = Flow.from_sync_fn(add_two)
+        
+        flow_registry.register("flow1", flow1)
+        flow_registry.register("flow2", flow2)
+        
+        results = search_flows("flow")
+        assert len(results) == 2
+        assert "flow1" in results
+        assert "flow2" in results
+        
+        results = search_flows("flow1")
+        assert len(results) == 1
+        assert "flow1" in results

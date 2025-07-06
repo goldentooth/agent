@@ -221,3 +221,59 @@ class FlowRegistry(object):
         """Get read-only view of all metadata."""
         with self._lock:
             return {k: v.copy() for k, v in self._metadata.items()}
+
+
+# Global flow registry instance
+flow_registry = FlowRegistry()
+
+
+# Convenience functions
+def register_flow(name: str, flow: AnyFlow, category: str | None = None) -> AnyFlow:
+    """Register a flow in the global registry.
+
+    Args:
+        name: Unique name for the flow
+        flow: Flow instance to register
+        category: Optional category for organization
+
+    Returns:
+        The registered flow (for chaining)
+    """
+    flow_registry.register(name, flow, category)
+    return flow
+
+
+def get_flow(name: str) -> AnyFlow | None:
+    """Get a flow from the global registry.
+
+    Args:
+        name: Name of the flow to retrieve
+
+    Returns:
+        Flow instance or None if not found
+    """
+    return flow_registry.get(name, None)
+
+
+def list_flows(category: str | None = None) -> list[str]:
+    """List flows in the global registry.
+
+    Args:
+        category: Optional category to filter by
+
+    Returns:
+        List of flow names
+    """
+    return flow_registry.list(category)
+
+
+def search_flows(query: str) -> list[str]:
+    """Search flows in the global registry.
+
+    Args:
+        query: Search query
+
+    Returns:
+        List of matching flow names
+    """
+    return flow_registry.search(query)

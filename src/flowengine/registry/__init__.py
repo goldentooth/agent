@@ -8,6 +8,22 @@ This module provides a centralized registry for Flow objects with support for:
 - Thread-safe operations
 """
 
-from .main import FlowRegistry, FlowRegistryError
+from .main import (
+    FlowRegistry,
+    FlowRegistryError,
+    flow_registry,
+    register_flow,
+    get_flow,
+    list_flows,
+    search_flows,
+)
 
-__all__ = ["FlowRegistry", "FlowRegistryError"]
+__all__ = [
+    "FlowRegistry",
+    "FlowRegistryError",
+    "flow_registry",
+    "register_flow",
+    "get_flow",
+    "list_flows",
+    "search_flows",
+]
