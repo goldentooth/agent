@@ -3,7 +3,7 @@
 import asyncio
 import time
 from collections.abc import AsyncGenerator
-from typing import Any, List
+from typing import Any, Dict, List
 
 import pytest
 
@@ -16,6 +16,14 @@ from flowengine.combinators import (
     parallel_stream,
 )
 from flowengine.flow import Flow
+from flowengine.observability.performance import (
+    benchmark_stream,
+    enable_memory_tracking,
+    get_performance_monitor,
+    get_performance_summary,
+    memory_profile_stream,
+    monitored_stream,
+)
 
 # pyright: reportUnknownVariableType=false
 # pyright: reportUnknownArgumentType=false
@@ -240,3 +248,107 @@ class TestFlowBenchmarks:
         assert len(result) > 0
         # Should not take too long despite errors
         assert duration < 5.0
+
+
+class TestPerformanceRegression:
+    """Performance regression test class for detecting performance degradation."""
+
+    @pytest.mark.asyncio
+    async def test_performance_doesnt_degrade(self):
+        """Test that performance doesn't degrade compared to baseline."""
+        # Define baseline performance expectations
+        baseline_throughput = 500  # items/second
+        baseline_duration = 1.0  # seconds for 1000 items
+
+        # Test flow performance
+        test_flow = map_stream(lambda x: x * 2)
+
+        # Run performance test
+        benchmark = benchmark_stream(iterations=5)
+
+        def test_stream_factory():
+            return async_large_range(1000)
+
+        stats = await benchmark(test_flow)(test_stream_factory)
+
+        # Assert performance doesn't degrade
+        avg_duration = stats["avg_duration_ms"] / 1000  # Convert to seconds
+        assert avg_duration < baseline_duration * 1.2  # Allow 20% variance
+
+        # Calculate throughput (items processed / time)
+        throughput = 1000 / avg_duration
+        assert throughput > baseline_throughput * 0.8  # Allow 20% variance
+
+    @pytest.mark.asyncio
+    async def test_memory_leaks(self):
+        """Test for memory leaks during repeated flow executions."""
+        try:
+            import psutil  # noqa: F401
+        except ImportError:
+            pytest.skip("psutil not available for memory tracking")
+
+        enable_memory_tracking()
+
+        # Create flow that processes data
+        @monitored_stream("memory_leak_test")
+        def create_test_flow():
+            return map_stream(lambda x: x * 2)
+
+        flow = create_test_flow
+        initial_memory: float | None = None
+        memory_measurements: list[float] = []
+
+        # Run multiple iterations to detect memory leaks
+        for iteration in range(5):
+            input_stream = async_large_range(1000)
+            result = [item async for item in flow(input_stream)]
+            assert len(result) == 1000
+
+            # Get memory usage after each iteration
+            monitor = get_performance_monitor()
+            if monitor.metrics:
+                latest_metric = list(monitor.metrics.values())[-1]
+                if latest_metric.memory_usage_kb is not None:
+                    if initial_memory is None:
+                        initial_memory = latest_metric.memory_usage_kb
+                    memory_measurements.append(latest_metric.memory_usage_kb)
+
+        # Check for memory leak (memory shouldn't grow significantly)
+        if memory_measurements and initial_memory is not None:
+            final_memory = memory_measurements[-1]
+            memory_growth = final_memory - initial_memory
+            # Allow some memory growth but not excessive (< 50% increase)
+            assert memory_growth < initial_memory * 0.5
+
+    @pytest.mark.asyncio
+    async def test_throughput_consistency(self):
+        """Test that throughput remains consistent across multiple runs."""
+        test_flow = map_stream(lambda x: x + 1)
+        benchmark = benchmark_stream(iterations=10)
+
+        def test_stream_factory():
+            return async_large_range(500)
+
+        stats = await benchmark(test_flow)(test_stream_factory)
+        self._validate_throughput_consistency(stats)
+
+    def _validate_throughput_consistency(self, stats: Dict[str, Any]):
+        """Validate throughput consistency from benchmark statistics."""
+        min_duration = stats["min_duration_ms"] / 1000
+        max_duration = stats["max_duration_ms"] / 1000
+        avg_duration = stats["avg_duration_ms"] / 1000
+
+        # Calculate throughput for each duration measurement
+        min_throughput = 500 / max_duration  # Inverse relationship
+        max_throughput = 500 / min_duration
+        avg_throughput = 500 / avg_duration
+
+        # Ensure throughput variance is within acceptable range (±30%)
+        throughput_variance = (max_throughput - min_throughput) / avg_throughput
+        assert throughput_variance < 0.3  # Less than 30% variance
+
+        # Ensure max duration is not an outlier (within 3x average)
+        assert max_duration < avg_duration * 3.0
+
+        # Ensure minimum performance is reasonable
+        assert min_throughput > avg_throughput * 0.5  # Min at least 50% of avg
