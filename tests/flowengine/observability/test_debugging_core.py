@@ -537,3 +537,20 @@ class TestFlowDebugger:
         assert "execution_history" in data
         assert "breakpoints" in data
         assert "test_flow" in data["breakpoints"]
+
+    def test_step_debugger_function(self):
+        """Test step_debugger convenience function."""
+        from flowengine import Flow
+        from flowengine.combinators.basic import map_stream
+        from flowengine.observability.debugging import step_debugger
+
+        def increment(x: int) -> int:
+            return x + 1
+
+        flow = map_stream(increment)
+        stepped_flow = step_debugger(flow)
+
+        # Basic validation - returned flow should be a Flow
+        assert isinstance(stepped_flow, Flow)
+        # Should be a different instance (wrapped with debugging)
+        assert stepped_flow is not flow

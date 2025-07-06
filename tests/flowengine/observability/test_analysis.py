@@ -684,3 +684,155 @@ class TestAnalysisFunctions:
             # Clean up
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
+
+    def test_find_cycles_function(self):
+        """Test find_cycles convenience function."""
+        graph = FlowGraph()
+
+        # Create graph with a cycle
+        nodes = {
+            "1": FlowNode(id="1", name="first", flow_type="utility"),
+            "2": FlowNode(id="2", name="second", flow_type="transformation"),
+            "3": FlowNode(id="3", name="third", flow_type="utility"),
+        }
+        graph.nodes.update(nodes)
+
+        # Create cycle: 1->2->3->1
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="2", target_id="3"),
+            FlowEdge(source_id="3", target_id="1"),
+        ]
+        graph.entry_points = ["1"]
+
+        from flowengine.observability.analysis import find_cycles
+
+        cycles = find_cycles(graph)
+        assert len(cycles) == 1
+        assert (
+            len(cycles[0]) == 4
+        )  # Cycle includes duplicate node: ['1', '2', '3', '1']
+        assert all(node_id in cycles[0] for node_id in ["1", "2", "3"])
+
+    def test_calculate_dependencies_function(self):
+        """Test calculate_dependencies convenience function."""
+        graph = FlowGraph()
+
+        # Create graph with dependencies: 1->2, 1->3, 2->4, 3->4
+        nodes = {
+            "1": FlowNode(id="1", name="source", flow_type="utility"),
+            "2": FlowNode(id="2", name="middle1", flow_type="transformation"),
+            "3": FlowNode(id="3", name="middle2", flow_type="utility"),
+            "4": FlowNode(id="4", name="sink", flow_type="utility"),
+        }
+        graph.nodes.update(nodes)
+
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="1", target_id="3"),
+            FlowEdge(source_id="2", target_id="4"),
+            FlowEdge(source_id="3", target_id="4"),
+        ]
+
+        from flowengine.observability.analysis import calculate_dependencies
+
+        deps = calculate_dependencies(graph)
+
+        # Node 1 depends on nothing
+        assert deps["1"] == []
+        # Node 2 depends on node 1
+        assert deps["2"] == ["1"]
+        # Node 3 depends on node 1
+        assert deps["3"] == ["1"]
+        # Node 4 depends on nodes 2 and 3
+        assert sorted(deps["4"]) == ["2", "3"]
+
+    def test_visualize_flow_graph_dot_format(self):
+        """Test visualize_flow_graph DOT format output."""
+        graph = self._create_simple_test_graph()
+
+        from flowengine.observability.analysis import visualize_flow_graph
+
+        dot_output = visualize_flow_graph(graph)
+        assert isinstance(dot_output, str)
+        assert "digraph FlowGraph" in dot_output
+        assert '"1" [label="start (utility)"]' in dot_output
+        assert '"2" [label="process (transformation)"]' in dot_output
+        assert '"3" [label="end (utility)"]' in dot_output
+        assert '"1" -> "2"' in dot_output
+        assert '"2" -> "3"' in dot_output
+
+    def test_visualize_flow_graph_json_format(self):
+        """Test visualize_flow_graph JSON format output."""
+        graph = self._create_simple_test_graph()
+
+        from flowengine.observability.analysis import visualize_flow_graph
+
+        json_output = visualize_flow_graph(graph, output_format="json")
+        import json
+
+        parsed = json.loads(json_output)
+        assert "nodes" in parsed
+        assert "edges" in parsed
+        assert len(parsed["nodes"]) == 3
+        assert len(parsed["edges"]) == 2
+
+    def _create_simple_test_graph(self) -> FlowGraph:
+        """Create a simple test graph: 1->2->3."""
+        graph = FlowGraph()
+
+        nodes = {
+            "1": FlowNode(id="1", name="start", flow_type="utility"),
+            "2": FlowNode(id="2", name="process", flow_type="transformation"),
+            "3": FlowNode(id="3", name="end", flow_type="utility"),
+        }
+        graph.nodes.update(nodes)
+
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="2", target_id="3"),
+        ]
+        graph.entry_points = ["1"]
+        graph.exit_points = ["3"]
+
+        return graph
+
+    def test_optimize_flow_composition_function(self):
+        """Test optimize_flow_composition convenience function."""
+        graph = FlowGraph()
+
+        # Create graph with potential optimization opportunities
+        nodes = {
+            "1": FlowNode(
+                id="1",
+                name="expensive_transform",
+                flow_type="transformation",
+                complexity_score=5,
+            ),
+            "2": FlowNode(
+                id="2", name="filter", flow_type="filtering", complexity_score=1
+            ),
+            "3": FlowNode(
+                id="3", name="output", flow_type="utility", complexity_score=1
+            ),
+        }
+        graph.nodes.update(nodes)
+
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="2", target_id="3"),
+        ]
+        graph.entry_points = ["1"]
+        graph.exit_points = ["3"]
+
+        from flowengine.observability.analysis import optimize_flow_composition
+
+        optimized_graph = optimize_flow_composition(graph)
+
+        # Basic validation - returned graph should be a FlowGraph
+        assert isinstance(optimized_graph, FlowGraph)
+        # Should have same number of nodes (basic case)
+        assert len(optimized_graph.nodes) == len(graph.nodes)
+        # Should preserve entry and exit points
+        assert optimized_graph.entry_points == graph.entry_points
+        assert optimized_graph.exit_points == graph.exit_points

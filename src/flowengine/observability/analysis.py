@@ -10,7 +10,7 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from ..flow import Flow
 
@@ -550,3 +550,171 @@ def export_flow_analysis(graph: FlowGraph, filepath: str) -> None:
 def get_flow_analyzer() -> FlowAnalyzer:
     """Get the global flow analyzer instance."""
     return _flow_analyzer
+
+
+def find_cycles(graph: FlowGraph) -> list[list[str]]:
+    """Find cycles in a flow graph.
+
+    Args:
+        graph: The flow graph to analyze
+
+    Returns:
+        List of cycles, where each cycle is a list of node IDs
+    """
+    return graph.find_cycles()
+
+
+def calculate_dependencies(graph: FlowGraph) -> dict[str, list[str]]:
+    """Calculate dependency relationships between nodes in the graph.
+
+    Args:
+        graph: The flow graph to analyze
+
+    Returns:
+        Dictionary mapping node_id to list of dependency node_ids
+    """
+    dependencies: dict[str, list[str]] = {}
+
+    # Initialize all nodes with empty dependencies
+    for node_id in graph.nodes:
+        dependencies[node_id] = []
+
+    # For each node, find all nodes that have incoming edges (dependencies)
+    for edge in graph.edges:
+        source_id = edge.source_id
+        target_id = edge.target_id
+
+        # target_id depends on source_id
+        if target_id in dependencies:
+            dependencies[target_id].append(source_id)
+
+    return dependencies
+
+
+def visualize_flow_graph(graph: FlowGraph, output_format: str = "dot") -> str:
+    """Generate a visual representation of the flow graph.
+
+    Args:
+        graph: The flow graph to visualize
+        output_format: Output format ("dot", "json")
+
+    Returns:
+        String representation of the graph in the specified format
+    """
+    if output_format == "dot":
+        return _generate_dot_visualization(graph)
+    elif output_format == "json":
+        return _generate_json_visualization(graph)
+    else:
+        raise ValueError(f"Unsupported output format: {output_format}")
+
+
+def _generate_dot_visualization(graph: FlowGraph) -> str:
+    """Generate DOT format visualization."""
+    lines = ["digraph FlowGraph {", "  rankdir=TB;", "  node [shape=box];", ""]
+
+    # Add nodes
+    for node_id, node in graph.nodes.items():
+        label = f"{node.name} ({node.flow_type})"
+        lines.append(f'  "{node_id}" [label="{label}"];')
+
+    lines.append("")
+
+    # Add edges
+    for edge in graph.edges:
+        lines.append(f'  "{edge.source_id}" -> "{edge.target_id}";')
+
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def _generate_json_visualization(graph: FlowGraph) -> str:
+    """Generate JSON format visualization."""
+    data: dict[str, list[dict[str, str]]] = {
+        "nodes": [],
+        "edges": [],
+    }
+
+    # Add nodes
+    for node_id, node in graph.nodes.items():
+        data["nodes"].append(
+            {
+                "id": node_id,
+                "label": f"{node.name} ({node.flow_type})",
+                "type": node.flow_type,
+            }
+        )
+
+    # Add edges
+    for edge in graph.edges:
+        data["edges"].append({"source": edge.source_id, "target": edge.target_id})
+
+    return json.dumps(data, indent=2)
+
+
+def optimize_flow_composition(graph: FlowGraph) -> FlowGraph:
+    """Apply optimization techniques to improve flow composition.
+
+    Args:
+        graph: The flow graph to optimize
+
+    Returns:
+        Optimized version of the flow graph
+    """
+    # Create a copy of the input graph to avoid modifying the original
+    optimized_graph = _copy_flow_graph(graph)
+
+    # Apply optimization strategies based on analysis
+    analyzer = get_flow_analyzer()
+    optimization_suggestions = analyzer.generate_optimization_suggestions(graph)
+
+    # For now, implement basic optimizations
+    # In a full implementation, this would apply various optimization strategies
+    # such as caching, batching, parallel processing, etc.
+
+    # Example optimization: Mark expensive nodes for potential caching
+    for node_id, node in optimized_graph.nodes.items():
+        if node.complexity_score >= 3:
+            # Add metadata to indicate caching recommendation
+            if "optimizations" not in node.metadata:
+                node.metadata["optimizations"] = []
+            optimizations_list = cast(list[str], node.metadata["optimizations"])
+            optimizations_list.append("caching_recommended")
+
+    return optimized_graph
+
+
+def _copy_flow_graph(graph: FlowGraph) -> FlowGraph:
+    """Create a deep copy of a flow graph."""
+    new_graph = FlowGraph()
+
+    # Copy nodes
+    for node_id, node in graph.nodes.items():
+        new_node = FlowNode(
+            id=node.id,
+            name=node.name,
+            flow_type=node.flow_type,
+            description=node.description,
+            metadata=node.metadata.copy(),
+            inputs=node.inputs.copy(),
+            outputs=node.outputs.copy(),
+            complexity_score=node.complexity_score,
+        )
+        new_graph.nodes[node_id] = new_node
+
+    # Copy edges
+    new_graph.edges = [
+        FlowEdge(
+            source_id=edge.source_id,
+            target_id=edge.target_id,
+            edge_type=edge.edge_type,
+            metadata=edge.metadata.copy() if edge.metadata else {},
+        )
+        for edge in graph.edges
+    ]
+
+    # Copy entry and exit points
+    new_graph.entry_points = graph.entry_points.copy()
+    new_graph.exit_points = graph.exit_points.copy()
+
+    return new_graph
