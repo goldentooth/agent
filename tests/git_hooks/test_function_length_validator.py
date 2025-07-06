@@ -268,3 +268,170 @@ def long_function():
 
         assert validator.warn_threshold == 8
         assert validator.urgent_threshold == 12
+
+    def test_get_all_function_info_multiple_functions(self) -> None:
+        """get_all_function_info should return info for all functions sorted by line count."""
+        validator = FunctionLengthValidator(limit=15)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "test.py"
+            test_file.write_text(
+                '''def short_function():
+    """A short function."""
+    return 42
+
+def medium_function():
+    """A medium function."""
+    x = 1
+    y = 2
+    z = 3
+    return x + y + z
+
+def long_function():
+    """A long function."""
+    x = 1
+    y = 2
+    z = 3
+    a = 4
+    b = 5
+    c = 6
+    d = 7
+    e = 8
+    return x + y + z + a + b + c + d + e
+
+async def async_function():
+    """An async function."""
+    await some_call()
+    return 42
+'''
+            )
+
+            result = validator.get_all_function_info(test_file)
+
+            # Should return 4 functions
+            assert len(result) == 4
+
+            # Should be sorted by line count descending
+            function_names = [func[0] for func in result]
+            line_counts = [func[3] for func in result]
+
+            # Verify sorting (long_function should be first)
+            assert function_names[0] == "long_function"
+            assert line_counts == sorted(line_counts, reverse=True)
+
+            # Verify structure: (name, start_line, end_line, line_count)
+            for name, start_line, end_line, line_count in result:
+                assert isinstance(name, str)
+                assert isinstance(start_line, int)
+                assert isinstance(end_line, int)
+                assert isinstance(line_count, int)
+                assert start_line > 0
+                assert end_line >= start_line
+                assert line_count == end_line - start_line + 1
+
+    def test_get_all_function_info_non_python_file(self) -> None:
+        """get_all_function_info should return empty list for non-Python files."""
+        validator = FunctionLengthValidator(limit=15)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "test.txt"
+            test_file.write_text("This is not Python code")
+
+            result = validator.get_all_function_info(test_file)
+            assert result == []
+
+    def test_get_all_function_info_invalid_python(self) -> None:
+        """get_all_function_info should return empty list for invalid Python."""
+        validator = FunctionLengthValidator(limit=15)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "test.py"
+            test_file.write_text("def invalid_syntax(\n")
+
+            result = validator.get_all_function_info(test_file)
+            assert result == []
+
+    def test_get_all_function_statements_multiple_functions(self) -> None:
+        """get_all_function_statements should return statement counts for all functions."""
+        validator = FunctionLengthValidator(limit=15)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "test.py"
+            test_file.write_text(
+                '''def simple_function():
+    """Simple function with few statements."""
+    return 42
+
+def complex_function():
+    """Function with many statements."""
+    x = 1
+    y = 2
+    z = x + y
+    if z > 2:
+        z = z * 2
+    for i in range(3):
+        z += i
+    while z < 10:
+        z += 1
+    try:
+        result = z / 2
+    except ZeroDivisionError:
+        result = 0
+    return result
+
+async def async_function():
+    """Async function."""
+    await some_call()
+    x = 1
+    return x
+'''
+            )
+
+            result = validator.get_all_function_statements(test_file)
+
+            # Should return 3 functions
+            assert len(result) == 3
+
+            # Should be sorted by statement count descending
+            function_names = [func[0] for func in result]
+            statement_counts = [func[4] for func in result]
+
+            # complex_function should be first (most statements)
+            assert function_names[0] == "complex_function"
+            assert statement_counts == sorted(statement_counts, reverse=True)
+
+            # Verify structure: (name, start_line, end_line, line_count, statement_count)
+            for name, start_line, end_line, line_count, stmt_count in result:
+                assert isinstance(name, str)
+                assert isinstance(start_line, int)
+                assert isinstance(end_line, int)
+                assert isinstance(line_count, int)
+                assert isinstance(stmt_count, int)
+                assert start_line > 0
+                assert end_line >= start_line
+                assert line_count == end_line - start_line + 1
+                assert (
+                    stmt_count > 0
+                )  # All functions should have at least one statement
+
+    def test_get_all_function_statements_non_python_file(self) -> None:
+        """get_all_function_statements should return empty list for non-Python files."""
+        validator = FunctionLengthValidator(limit=15)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "test.txt"
+            test_file.write_text("This is not Python code")
+
+            result = validator.get_all_function_statements(test_file)
+            assert result == []
+
+    def test_get_all_function_statements_invalid_python(self) -> None:
+        """get_all_function_statements should return empty list for invalid Python."""
+        validator = FunctionLengthValidator(limit=15)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            test_file = Path(tmpdir) / "test.py"
+            test_file.write_text("def invalid_syntax(\n")
+
+            result = validator.get_all_function_statements(test_file)
+            assert result == []
