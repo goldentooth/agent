@@ -61,6 +61,7 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
 - Maintain a file in .claude/retros/<initiative-name.md> for each task (i.e. pull request) that you end up performing.
   - Create this along with your first commit, and update it with each subsequent commit.
   - These will be used to create followup issues, so make them detailed!
+- Prefer defining functions (or reusing them!) to using Lambdas, particularly when encountering type-checking issues.
 
 ## The Commandments
 
