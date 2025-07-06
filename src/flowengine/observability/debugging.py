@@ -440,3 +440,18 @@ def get_execution_trace() -> TraceData:
 def export_execution_trace(filepath: str) -> None:
     """Export execution trace to a JSON file."""
     _flow_debugger.export_trace(filepath)
+
+
+def step_debugger(flow: Flow[Input, Output]) -> Flow[Input, Output]:
+    """Create a step-by-step debugger wrapper for a flow.
+
+    Args:
+        flow: The flow to wrap with step debugging capabilities
+
+    Returns:
+        A flow wrapped with step-by-step debugging features
+    """
+    from ..combinators.basic import compose
+
+    debug_flow = debug_stream(log_items=True)
+    return compose(flow, debug_flow)
