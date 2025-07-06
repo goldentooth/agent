@@ -75,3 +75,18 @@ class TestFlowRegistry:
         flows = registry.list()
 
         assert flows == []
+
+    def test_list_flows_all(self):
+        """Test listing all flows."""
+        registry = FlowRegistry()
+        flow1 = map_stream(increment)
+        flow2 = map_stream(double)
+
+        registry.register("flow1", flow1)
+        registry.register("flow2", flow2)
+
+        flows = registry.list()
+
+        assert len(flows) == 2
+        assert "flow1" in flows
+        assert "flow2" in flows
