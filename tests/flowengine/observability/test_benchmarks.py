@@ -327,45 +327,77 @@ class TestPerformanceRegression:
     async def test_throughput_consistency(self):
         """Test that throughput remains consistent across multiple runs."""
         test_flow = map_stream(lambda x: x + 1)
-        benchmark = benchmark_stream(iterations=10)
+        # Use 30 trials with percentile-based outlier removal (trim top/bottom 10%)
+        benchmark = benchmark_stream(
+            iterations=30, warmup_iterations=5, trim_percent=10.0
+        )
 
         def test_stream_factory():
-            return async_large_range(500)
+            # Use larger dataset for more stable timing measurements
+            return async_large_range(2000)
 
         stats = await benchmark(test_flow)(test_stream_factory)
         self._validate_throughput_consistency(stats)
 
     def _validate_throughput_consistency(self, stats: Dict[str, Any]):
         """Validate throughput consistency from benchmark statistics."""
+        throughput_metrics = self._calculate_throughput_metrics(stats)
+        self._assert_variance_within_threshold(throughput_metrics, stats)
+        self._assert_no_extreme_outliers(throughput_metrics)
+        self._assert_minimum_performance(throughput_metrics)
+
+    def _calculate_throughput_metrics(self, stats: Dict[str, Any]) -> Dict[str, Any]:
+        """Calculate throughput metrics from benchmark statistics."""
         min_duration = stats["min_duration_ms"] / 1000
         max_duration = stats["max_duration_ms"] / 1000
         avg_duration = stats["avg_duration_ms"] / 1000
 
-        # Calculate throughput for each duration measurement
-        min_throughput = 500 / max_duration  # Inverse relationship
-        max_throughput = 500 / min_duration
-        avg_throughput = 500 / avg_duration
+        # Calculate throughput for each duration measurement (2000 items per test)
+        dataset_size = 2000
+        min_throughput = dataset_size / max_duration  # Inverse relationship
+        max_throughput = dataset_size / min_duration
+        avg_throughput = dataset_size / avg_duration
 
-        # Ensure throughput variance is within acceptable range
-        # More tolerant for CI environments where performance can vary significantly
-        throughput_variance = (max_throughput - min_throughput) / avg_throughput
-        variance_threshold = 0.8  # Allow up to 80% variance for CI robustness
+        return {
+            "min_duration": min_duration,
+            "max_duration": max_duration,
+            "avg_duration": avg_duration,
+            "min_throughput": min_throughput,
+            "max_throughput": max_throughput,
+            "avg_throughput": avg_throughput,
+        }
+
+    def _assert_variance_within_threshold(
+        self, metrics: Dict[str, Any], stats: Dict[str, Any]
+    ):
+        """Assert throughput variance is within acceptable threshold."""
+        throughput_variance = (
+            metrics["max_throughput"] - metrics["min_throughput"]
+        ) / metrics["avg_throughput"]
+        variance_threshold = 0.25  # Allow up to 25% variance with improved algorithm
         assert throughput_variance < variance_threshold, (
             f"Throughput variance {throughput_variance:.3f} exceeds threshold {variance_threshold}. "
-            f"Stats: min={min_throughput:.2f}, max={max_throughput:.2f}, avg={avg_throughput:.2f} ops/sec"
+            f"Stats: min={metrics['min_throughput']:.2f}, max={metrics['max_throughput']:.2f}, avg={metrics['avg_throughput']:.2f} ops/sec "
+            f"(from {stats['iterations']}/{stats.get('original_iterations', 'unknown')} samples "
+            f"after {stats.get('trim_percent', 0)}% trimming)"
         )
 
-        # Ensure max duration is not an extreme outlier (within 5x average for CI tolerance)
+    def _assert_no_extreme_outliers(self, metrics: Dict[str, Any]):
+        """Assert max duration is not an extreme outlier."""
         outlier_threshold = 5.0
         assert (
-            max_duration < avg_duration * outlier_threshold
-        ), f"Max duration {max_duration:.3f}s exceeds {outlier_threshold}x average {avg_duration:.3f}s"
+            metrics["max_duration"] < metrics["avg_duration"] * outlier_threshold
+        ), f"Max duration {metrics['max_duration']:.3f}s exceeds {outlier_threshold}x average {metrics['avg_duration']:.3f}s"
 
-        # Ensure minimum performance is reasonable (at least 20% of average for CI tolerance)
+    def _assert_minimum_performance(self, metrics: Dict[str, Any]):
+        """Assert minimum performance is reasonable."""
         min_performance_ratio = 0.2
-        assert min_throughput > avg_throughput * min_performance_ratio, (
-            f"Min throughput {min_throughput:.2f} is less than {min_performance_ratio*100}% "
-            f"of average {avg_throughput:.2f} ops/sec"
+        assert (
+            metrics["min_throughput"]
+            > metrics["avg_throughput"] * min_performance_ratio
+        ), (
+            f"Min throughput {metrics['min_throughput']:.2f} is less than {min_performance_ratio*100}% "
+            f"of average {metrics['avg_throughput']:.2f} ops/sec"
         )
 
 
@@ -463,8 +495,22 @@ class TestBenchmarkReporting:
         assert performance_diff >= 0  # Should be non-negative percentage
 
         # Verify both benchmarks produced valid results
-        assert baseline_stats["iterations"] == 5
-        assert comparison_stats["iterations"] == 5
+        original_iterations = 5
+        trim_percent = 10.0
+
+        # Calculate expected trimmed count using same logic as benchmark_stream
+        trim_count = max(1, int(original_iterations * (trim_percent / 100)))
+        if original_iterations > 2 * trim_count:
+            expected_trimmed = original_iterations - 2 * trim_count
+        else:
+            expected_trimmed = max(
+                1, original_iterations - 2
+            )  # Remove most extreme outliers
+
+        assert baseline_stats["original_iterations"] == original_iterations
+        assert comparison_stats["original_iterations"] == original_iterations
+        assert baseline_stats["iterations"] == expected_trimmed
+        assert comparison_stats["iterations"] == expected_trimmed
 
     @pytest.mark.asyncio
     async def test_statistical_analysis(self):
@@ -502,7 +548,17 @@ class TestBenchmarkReporting:
     ):
         """Validate duration relationships and iteration count."""
         assert min_dur <= avg_dur <= max_dur
-        assert iterations == 10
+
+        # Calculate expected trimmed count using same logic as benchmark_stream
+        original_iterations = 10
+        trim_percent = 10.0
+        trim_count = max(1, int(original_iterations * (trim_percent / 100)))
+        if original_iterations > 2 * trim_count:
+            expected_trimmed = original_iterations - 2 * trim_count
+        else:
+            expected_trimmed = max(1, original_iterations - 2)
+
+        assert iterations == expected_trimmed
         assert min_dur > 0  # Should take some time
         assert max_dur > min_dur or min_dur == max_dur  # Allow equal if very fast
 

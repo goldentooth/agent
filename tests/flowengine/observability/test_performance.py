@@ -612,7 +612,20 @@ class TestFlowIntegration:
     def _assert_result_values_are_valid(self, result: Any) -> None:
         """Assert result values are valid."""
         assert result["flow_name"] == "test_flow"
-        assert result["iterations"] == 5
+
+        # Calculate expected trimmed count using same logic as benchmark_stream
+        original_iterations = 5
+        trim_percent = 10.0
+        trim_count = max(1, int(original_iterations * (trim_percent / 100)))
+        if original_iterations > 2 * trim_count:
+            expected_trimmed = original_iterations - 2 * trim_count
+        else:
+            expected_trimmed = max(
+                1, original_iterations - 2
+            )  # Remove most extreme outliers
+
+        assert result["original_iterations"] == original_iterations
+        assert result["iterations"] == expected_trimmed
         assert result["min_duration_ms"] >= 0
         assert result["max_duration_ms"] >= result["min_duration_ms"]
         assert result["avg_duration_ms"] >= result["min_duration_ms"]
