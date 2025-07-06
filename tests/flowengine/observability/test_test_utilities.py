@@ -86,12 +86,12 @@ async def test_generate_test_stream_custom_size() -> None:
 @pytest.mark.asyncio
 async def test_generate_test_stream_with_delay() -> None:
     """Test generate_test_stream with delay."""
-    start_time = time.time()
+    start_time = time.perf_counter()
     result: list[int] = []
     async for item in generate_test_stream(items=[1, 2], delay=0.01):
         result.append(item)
 
-    elapsed = time.time() - start_time
+    elapsed = time.perf_counter() - start_time
     assert result == [1, 2]
     assert elapsed >= 0.01  # At least one delay occurred
 
