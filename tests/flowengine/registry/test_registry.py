@@ -36,3 +36,13 @@ class TestFlowRegistry:
 
         assert len(registry.flows) == 0
         assert len(registry.categories) == 0
+
+    def test_register_flow_basic(self):
+        """Test registering a flow."""
+        registry = FlowRegistry()
+        flow = map_stream(increment)
+
+        registry.register("increment_flow", flow)
+
+        assert "increment_flow" in registry.flows
+        assert registry.flows["increment_flow"] == flow
