@@ -54,7 +54,7 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
   - DO NOT use multiline `cat` commands and HEREDOCs to write commit messages, because then I have to approve it.
   - Instead:
     - create a directory via `mktemp -d`
-    - use the Write tool to write the commit message to the file
+    - use the Write tool to write the commit message to a file within that directory
     - create the commit using that message file with `git commit -F`
 - Each function/method MUST be in its own commit even if the code already exists. No exceptions!
 - Update README.md and relevant files in docs/ before opening a pull request.
