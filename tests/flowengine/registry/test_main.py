@@ -727,3 +727,17 @@ class TestConvenienceFunctions:
         # Verify categories and tags structure imported
         assert "math" in flow_registry.categories
         assert "utility" in flow_registry.tags
+
+    def test_import_registry_error_paths(self):
+        """Test import_registry error handling."""
+        import pytest
+
+        from flowengine.registry import import_registry
+
+        # Test invalid JSON string
+        with pytest.raises(ValueError, match="Invalid JSON data"):
+            import_registry("invalid json")
+
+        # Test missing required keys
+        with pytest.raises(ValueError, match="Missing required keys"):
+            import_registry({"flows": {}})  # Missing categories, tags, metadata

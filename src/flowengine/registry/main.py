@@ -2,7 +2,7 @@
 
 import json
 import threading
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal
 
 from ..exceptions import FlowError
 from ..flow import Flow
@@ -44,9 +44,9 @@ class FlowRegistry(object):
         self,
         name: str,
         flow: AnyFlow,
-        category: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        category: str | None = None,
+        tags: List[str] | None = None,
+        metadata: Dict[str, Any] | None = None,
     ) -> None:
         """Register a flow with the registry."""
         if not name:
@@ -102,7 +102,7 @@ class FlowRegistry(object):
             if name in self._metadata:
                 del self._metadata[name]
 
-    def get(self, name: str, default: Any = _MISSING) -> Optional[AnyFlow]:
+    def get(self, name: str, default: Any = _MISSING) -> AnyFlow | None:
         """Get a flow by name."""
         with self._lock:
             if name in self._flows:
@@ -113,7 +113,7 @@ class FlowRegistry(object):
                 raise FlowRegistryError(f"Flow '{name}' not found")
 
     def list(
-        self, category: Optional[str] = None, tags: Optional[List[str]] = None
+        self, category: str | None = None, tags: List[str] | None = None
     ) -> List[str]:
         """List flow names, optionally filtered by category or tags.
 
@@ -168,7 +168,7 @@ class FlowRegistry(object):
 
             return results
 
-    def clear(self, category: Optional[str] = None) -> None:
+    def clear(self, category: str | None = None) -> None:
         """Clear all flows or flows from a specific category."""
         with self._lock:
             if category is None:
@@ -240,8 +240,8 @@ class FlowRegistry(object):
                     }
                     for name, flow in self._flows.items()
                 },
-                "categories": self._categories.copy(),
-                "tags": self._tags.copy(),
+                "categories": {k: v.copy() for k, v in self._categories.items()},
+                "tags": {k: v.copy() for k, v in self._tags.items()},
                 "metadata": {k: v.copy() for k, v in self._metadata.items()},
                 "stats": {
                     "total_flows": len(self._flows),
@@ -273,11 +273,15 @@ class FlowRegistry(object):
                     self._metadata[name] = metadata.copy()
 
             # Import categories and tags structure (without actual flows)
-            for category in data.get("categories", {}):
-                self._categories[category] = []
+            for category, flow_names in data.get("categories", {}).items():
+                self._categories[category] = [
+                    name for name in flow_names if name in data.get("flows", {})
+                ]
 
-            for tag in data.get("tags", {}):
-                self._tags[tag] = []
+            for tag, flow_names in data.get("tags", {}).items():
+                self._tags[tag] = [
+                    name for name in flow_names if name in data.get("flows", {})
+                ]
 
 
 # Global flow registry instance
@@ -357,23 +361,23 @@ def clear_registry(category: str | None = None) -> None:
     flow_registry.clear(category)
 
 
-def export_registry(format: Literal["json"] = "json") -> str:
+def export_registry(output_format: Literal["json"] = "json") -> str:
     """Export registry contents to a serialized format.
 
     Args:
-        format: Export format, currently only "json" is supported
+        output_format: Export format, currently only "json" is supported
 
     Returns:
         Serialized registry data as string
 
     Raises:
-        ValueError: If format is not supported
+        ValueError: If output_format is not supported
     """
-    if format == "json":
+    if output_format == "json":
         data = flow_registry.to_dict()
         return json.dumps(data, indent=2)
     else:
-        raise ValueError(f"Unsupported export format: {format}")
+        raise ValueError(f"Unsupported export format: {output_format}")
 
 
 def import_registry(data: str | Dict[str, Any]) -> None:
