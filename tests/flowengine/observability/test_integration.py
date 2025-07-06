@@ -115,3 +115,78 @@ class TestPerformanceObservability:
         assert isinstance(metrics_data, dict)
         # Should have collected some performance information
         assert "message" in metrics_data or len(metrics_data) > 0
+
+
+class TestDebuggingCapabilities:
+    """Test debugging and introspection capabilities."""
+
+    def setup_method(self):
+        """Setup debugging for tests."""
+        disable_flow_debugging()  # Start with debugging disabled
+
+    def teardown_method(self):
+        """Cleanup after tests."""
+        disable_flow_debugging()
+
+    @pytest.mark.asyncio
+    async def test_debug_stream_basic(self):
+        """Test basic debug stream functionality."""
+        debug_flow = debug_stream(log_items=False)  # Don't log to avoid output
+
+        input_stream = async_range(5)
+        result = [item async for item in debug_flow(input_stream)]  # type: ignore
+
+        assert result == [0, 1, 2, 3, 4]
+
+    @pytest.mark.asyncio
+    async def test_traced_flow_integration(self):
+        """Test traced flow integration."""
+
+        def triple_value(x: int) -> int:
+            return x * 3
+
+        original_flow = map_stream(triple_value)
+        traced = traced_flow(original_flow)
+
+        input_stream = async_range(3)
+        result = [item async for item in traced(input_stream)]  # type: ignore
+
+        assert result == [0, 3, 6]
+
+    @pytest.mark.asyncio
+    async def test_flow_inspection(self):
+        """Test flow inspection capabilities."""
+
+        def add_one(x: int) -> int:
+            return x + 1
+
+        test_flow = map_stream(add_one)
+
+        inspection = inspect_flow(test_flow)
+
+        assert "name" in inspection
+        assert "type" in inspection
+        assert inspection["name"] == "map(add_one)"
+
+    @pytest.mark.asyncio
+    async def test_execution_trace(self):
+        """Test execution trace collection."""
+        enable_flow_debugging()
+
+        try:
+
+            def double_value(x: int) -> int:
+                return x * 2
+
+            flow = traced_flow(map_stream(double_value))
+            input_stream = async_range(3)
+            result = [item async for item in flow(input_stream)]  # type: ignore
+
+            assert result == [0, 2, 4]
+
+            # Execution trace should be available
+            trace = get_execution_trace()
+            assert isinstance(trace, list)
+
+        finally:
+            disable_flow_debugging()
