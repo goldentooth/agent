@@ -75,7 +75,7 @@ class FlowRegistry(object):
                     self._tags[tag].append(name)
 
             # Store metadata if provided
-            if metadata:
+            if metadata is not None:
                 self._metadata[name] = metadata.copy()
 
     def unregister(self, name: str) -> None:
@@ -114,7 +114,15 @@ class FlowRegistry(object):
     def list(
         self, category: Optional[str] = None, tags: Optional[List[str]] = None
     ) -> List[str]:
-        """List flow names, optionally filtered by category or tags."""
+        """List flow names, optionally filtered by category or tags.
+
+        Args:
+            category: Filter by category name. Takes precedence over tags.
+            tags: Filter by tags (flows must have ALL specified tags).
+
+        Note: If both category and tags are provided, category takes precedence
+        and tags are ignored.
+        """
         with self._lock:
             if category is not None:
                 return self._categories.get(category, []).copy()
@@ -187,8 +195,8 @@ class FlowRegistry(object):
                         if name in self._metadata:
                             del self._metadata[name]
 
-                    # Clear the category
-                    self._categories[category].clear()
+                    # Remove the category entirely
+                    del self._categories[category]
 
     @property
     def flows(self) -> Dict[str, AnyFlow]:

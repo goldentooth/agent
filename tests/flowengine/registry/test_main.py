@@ -1,5 +1,6 @@
 """Tests for FlowRegistry class."""
 
+import _thread
 import threading
 from typing import Any, Dict, List, Optional
 from unittest.mock import Mock, call
@@ -45,7 +46,7 @@ class TestFlowRegistryInitialization:
         """Test that registry has thread synchronization."""
         registry = FlowRegistry()
         assert hasattr(registry, "_lock")
-        assert isinstance(registry._lock, threading.Lock)  # type: ignore
+        assert isinstance(registry._lock, _thread.LockType)  # type: ignore
 
 
 class TestFlowRegistryRegister:
@@ -90,6 +91,17 @@ class TestFlowRegistryRegister:
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
         metadata = {"description": "Adds one to input", "version": "1.0"}
+
+        registry.register("test_flow", flow, metadata=metadata)
+
+        assert "test_flow" in registry.flows
+        assert registry.metadata["test_flow"] == metadata
+
+    def test_register_flow_with_empty_metadata(self):
+        """Test registering a flow with empty metadata dict."""
+        registry = FlowRegistry()
+        flow = Flow.from_sync_fn(add_one)
+        metadata: Dict[str, Any] = {}
 
         registry.register("test_flow", flow, metadata=metadata)
 
@@ -415,7 +427,7 @@ class TestFlowRegistryClear:
         assert "flow1" not in registry.flows
         assert "flow2" not in registry.flows
         assert "flow3" in registry.flows
-        assert len(registry.categories.get("math", [])) == 0
+        assert "math" not in registry.categories  # Category should be deleted
         assert len(registry.categories.get("other", [])) == 1
 
     def test_clear_nonexistent_category(self):
