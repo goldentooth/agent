@@ -12,10 +12,14 @@ from .analysis import (
     FlowNode,
     analyze_flow,
     analyze_flow_composition,
+    calculate_dependencies,
     detect_flow_patterns,
     export_flow_analysis,
+    find_cycles,
     generate_flow_optimizations,
     get_flow_analyzer,
+    optimize_flow_composition,
+    visualize_flow_graph,
 )
 
 # Debugging and introspection
@@ -32,6 +36,7 @@ from .debugging import (
     get_flow_debugger,
     inspect_flow,
     remove_flow_breakpoint,
+    step_debugger,
     traced_flow,
 )
 from .health.checks import (
@@ -74,7 +79,17 @@ from .performance import (
 )
 
 __all__ = [
-    # Analysis (10 exports)
+    # Performance (9 exports)
+    "FlowMetrics",
+    "PerformanceMonitor",
+    "monitored_stream",
+    "performance_stream",
+    "benchmark_stream",
+    "get_performance_monitor",
+    "enable_memory_tracking",
+    "get_performance_summary",
+    "export_performance_metrics",
+    # Analysis (14 exports)
     "FlowNode",
     "FlowEdge",
     "FlowGraph",
@@ -82,10 +97,14 @@ __all__ = [
     "analyze_flow",
     "analyze_flow_composition",
     "detect_flow_patterns",
+    "find_cycles",
+    "calculate_dependencies",
+    "visualize_flow_graph",
     "generate_flow_optimizations",
     "export_flow_analysis",
     "get_flow_analyzer",
-    # Debugging (13 exports)
+    "optimize_flow_composition",
+    # Debugging (14 exports)
     "FlowExecutionContext",
     "FlowDebugger",
     "debug_stream",
@@ -99,25 +118,14 @@ __all__ = [
     "export_execution_trace",
     "inspect_flow",
     "debug_session",
-    # Core health types
+    "step_debugger",
+    # Health (13 exports)
     "HealthStatus",
     "HealthCheck",
     "HealthCheckResult",
     "SystemHealth",
-    # Health monitoring
     "FlowHealthMonitor",
-    # Configuration validation
     "FlowConfigValidator",
-    # Built-in health checks
-    "check_flow_performance",
-    "check_flow_errors",
-    "check_memory_usage",
-    "check_flow_dependencies",
-    "check_flow_configuration",
-    "check_resource_limits",
-    "check_flow_responsiveness",
-    "check_system_resources",
-    # Convenience functions
     "health_check_stream",
     "get_health_monitor",
     "get_config_validator",
@@ -125,15 +133,4 @@ __all__ = [
     "validate_flow_configuration",
     "register_health_check",
     "export_health_report",
-    # Performance monitoring (10 exports)
-    "FlowMetrics",
-    "PerformanceMonitor",
-    "monitored_stream",
-    "performance_stream",
-    "benchmark_stream",
-    "get_performance_monitor",
-    "enable_memory_tracking",
-    "get_performance_summary",
-    "export_performance_metrics",
-    "memory_profile_stream",
 ]
