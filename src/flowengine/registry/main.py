@@ -3,13 +3,17 @@
 import json
 import threading
 from collections.abc import Callable
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, TypeVar, Union, cast
 
 from ..exceptions import FlowError
 from ..flow import Flow
 
 # Type alias for flows with any input/output types
 AnyFlow = Flow[Any, Any]
+
+# Type variables for generic decorator support
+FlowFactory = TypeVar("FlowFactory", bound=Callable[[], AnyFlow])
+DecoratedCallable = TypeVar("DecoratedCallable", bound=Callable[..., Any])
 
 # Sentinel value for optional parameter detection
 _MISSING = object()
@@ -412,7 +416,10 @@ def import_registry(data: str | Dict[str, Any]) -> None:
     flow_registry.from_dict(parsed_data)
 
 
-def registered_flow(name: str, category: str | None = None) -> Callable[[Any], Any]:
+def registered_flow(name: str, category: str | None = None) -> Callable[
+    [Union[AnyFlow, Callable[[], AnyFlow], DecoratedCallable]],
+    Union[AnyFlow, Callable[[], AnyFlow], DecoratedCallable],
+]:
     """Decorator to register a flow in the global registry.
 
     Args:
@@ -433,24 +440,33 @@ def registered_flow(name: str, category: str | None = None) -> Callable[[Any], A
             return Flow.from_sync_fn(lambda x: x + 1)
     """
 
-    def decorator(flow_or_factory: Any) -> Any:
+    def decorator(
+        flow_or_factory: Union[AnyFlow, Callable[[], AnyFlow], DecoratedCallable],
+    ) -> Union[AnyFlow, Callable[[], AnyFlow], DecoratedCallable]:
         # Check if it's a Flow instance
         if isinstance(flow_or_factory, Flow):
-            return register_flow(name, flow_or_factory, category)  # type: ignore[arg-type]
+            # Cast to AnyFlow since we know it's a Flow instance
+            flow_instance = cast(AnyFlow, flow_or_factory)
+            return register_flow(name, flow_instance, category)
 
         # Check if it's a callable that might return a Flow
         if callable(flow_or_factory):
             # Call the factory function to get the Flow
             try:
-                flow = flow_or_factory()
-                if isinstance(flow, Flow):
+                result = flow_or_factory()
+                if isinstance(result, Flow):
+                    # Cast to AnyFlow since we know it's a Flow instance
+                    flow_instance = cast(AnyFlow, result)
                     # Register the Flow and return a function that always returns the same instance
-                    register_flow(name, flow, category)  # type: ignore[arg-type]
+                    register_flow(name, flow_instance, category)
 
                     def cached_factory() -> AnyFlow:
-                        return flow  # type: ignore[return-value]
+                        return flow_instance
 
-                    return cached_factory
+                    return cast(
+                        Union[AnyFlow, Callable[[], AnyFlow], DecoratedCallable],
+                        cached_factory,
+                    )
                 else:
                     # Not a Flow, return the original callable unchanged
                     return flow_or_factory
