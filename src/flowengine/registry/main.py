@@ -2,6 +2,7 @@
 
 import json
 import threading
+from collections.abc import Callable
 from typing import Any, Dict, List, Literal
 
 from ..exceptions import FlowError
@@ -409,3 +410,55 @@ def import_registry(data: str | Dict[str, Any]) -> None:
 
     # Use the registry's from_dict method
     flow_registry.from_dict(parsed_data)
+
+
+def registered_flow(name: str, category: str | None = None) -> Callable[[Any], Any]:
+    """Decorator to register a flow in the global registry.
+
+    Args:
+        name: Unique name for the flow
+        category: Optional category for organization
+
+    Example::
+
+        @registered_flow("text_processor", "nlp")
+        @Flow.from_sync_fn
+        def process_text(text):
+            return text.upper()
+
+    Or with factory functions::
+
+        @registered_flow("my_flow")
+        def create_flow():
+            return Flow.from_sync_fn(lambda x: x + 1)
+    """
+
+    def decorator(flow_or_factory: Any) -> Any:
+        # Check if it's a Flow instance
+        if isinstance(flow_or_factory, Flow):
+            return register_flow(name, flow_or_factory, category)  # type: ignore[arg-type]
+
+        # Check if it's a callable that might return a Flow
+        if callable(flow_or_factory):
+            # Call the factory function to get the Flow
+            try:
+                flow = flow_or_factory()
+                if isinstance(flow, Flow):
+                    # Register the Flow and return a function that always returns the same instance
+                    register_flow(name, flow, category)  # type: ignore[arg-type]
+
+                    def cached_factory() -> AnyFlow:
+                        return flow  # type: ignore[return-value]
+
+                    return cached_factory
+                else:
+                    # Not a Flow, return the original callable unchanged
+                    return flow_or_factory
+            except Exception:
+                # If calling fails, return the original callable unchanged
+                return flow_or_factory
+
+        # For anything else, return unchanged (no registration)
+        return flow_or_factory
+
+    return decorator
