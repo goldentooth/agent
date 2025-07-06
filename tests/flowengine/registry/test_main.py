@@ -741,3 +741,42 @@ class TestConvenienceFunctions:
         # Test missing required keys
         with pytest.raises(ValueError, match="Missing required keys"):
             import_registry({"flows": {}})  # Missing categories, tags, metadata
+
+
+class TestRegisteredFlowDecorator:
+    """Test registered_flow decorator functionality."""
+
+    def setup_method(self):
+        """Setup test with clean registry."""
+        from flowengine.registry import clear_registry
+
+        clear_registry()
+
+    def test_registered_flow_decorator_with_flow_instance(self):
+        """Test registered_flow decorator with Flow instance."""
+        from flowengine.registry import get_flow
+        from flowengine.registry.main import registered_flow
+
+        # Create a flow
+        test_flow = Flow.from_sync_fn(add_one)
+
+        # Decorate it
+        @registered_flow("test_flow_instance")
+        def get_flow_instance():
+            return test_flow
+
+        # The decorator should register the flow and return a cached factory
+        assert callable(get_flow_instance)
+
+        # Should be registered in the global registry
+        registered_flow_obj = get_flow("test_flow_instance")
+        assert registered_flow_obj is not None
+        assert registered_flow_obj == test_flow
+
+    def test_registered_flow_decorator_import_from_init(self):
+        """Test that registered_flow can be imported from registry package."""
+        from flowengine.registry import registered_flow
+
+        # Should be importable
+        assert registered_flow is not None
+        assert callable(registered_flow)

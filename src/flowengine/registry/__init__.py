@@ -18,6 +18,7 @@ from .main import (
     import_registry,
     list_flows,
     register_flow,
+    registered_flow,
     search_flows,
     unregister_flow,
 )
@@ -30,6 +31,7 @@ __all__ = [
     "flow_registry",
     "import_registry",
     "register_flow",
+    "registered_flow",
     "get_flow",
     "list_flows",
     "search_flows",
