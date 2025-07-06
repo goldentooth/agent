@@ -773,3 +773,11 @@ class TestRegisteredFlowDecorator:
         registered_flow_obj = get_flow("test_flow_instance")
         assert registered_flow_obj is not None
         assert registered_flow_obj == test_flow
+
+    def test_registered_flow_decorator_import_from_init(self):
+        """Test that registered_flow can be imported from registry package."""
+        from flowengine.registry import registered_flow
+
+        # Should be importable
+        assert registered_flow is not None
+        assert callable(registered_flow)
