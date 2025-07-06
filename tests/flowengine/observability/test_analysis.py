@@ -796,3 +796,43 @@ class TestAnalysisFunctions:
         graph.exit_points = ["3"]
 
         return graph
+
+    def test_optimize_flow_composition_function(self):
+        """Test optimize_flow_composition convenience function."""
+        graph = FlowGraph()
+
+        # Create graph with potential optimization opportunities
+        nodes = {
+            "1": FlowNode(
+                id="1",
+                name="expensive_transform",
+                flow_type="transformation",
+                complexity_score=5,
+            ),
+            "2": FlowNode(
+                id="2", name="filter", flow_type="filtering", complexity_score=1
+            ),
+            "3": FlowNode(
+                id="3", name="output", flow_type="utility", complexity_score=1
+            ),
+        }
+        graph.nodes.update(nodes)
+
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="2", target_id="3"),
+        ]
+        graph.entry_points = ["1"]
+        graph.exit_points = ["3"]
+
+        from flowengine.observability.analysis import optimize_flow_composition
+
+        optimized_graph = optimize_flow_composition(graph)
+
+        # Basic validation - returned graph should be a FlowGraph
+        assert isinstance(optimized_graph, FlowGraph)
+        # Should have same number of nodes (basic case)
+        assert len(optimized_graph.nodes) == len(graph.nodes)
+        # Should preserve entry and exit points
+        assert optimized_graph.entry_points == graph.entry_points
+        assert optimized_graph.exit_points == graph.exit_points

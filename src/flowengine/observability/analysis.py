@@ -10,7 +10,7 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from ..flow import Flow
 
@@ -650,3 +650,71 @@ def _generate_json_visualization(graph: FlowGraph) -> str:
         data["edges"].append({"source": edge.source_id, "target": edge.target_id})
 
     return json.dumps(data, indent=2)
+
+
+def optimize_flow_composition(graph: FlowGraph) -> FlowGraph:
+    """Apply optimization techniques to improve flow composition.
+
+    Args:
+        graph: The flow graph to optimize
+
+    Returns:
+        Optimized version of the flow graph
+    """
+    # Create a copy of the input graph to avoid modifying the original
+    optimized_graph = _copy_flow_graph(graph)
+
+    # Apply optimization strategies based on analysis
+    analyzer = get_flow_analyzer()
+    optimization_suggestions = analyzer.generate_optimization_suggestions(graph)
+
+    # For now, implement basic optimizations
+    # In a full implementation, this would apply various optimization strategies
+    # such as caching, batching, parallel processing, etc.
+
+    # Example optimization: Mark expensive nodes for potential caching
+    for node_id, node in optimized_graph.nodes.items():
+        if node.complexity_score >= 3:
+            # Add metadata to indicate caching recommendation
+            if "optimizations" not in node.metadata:
+                node.metadata["optimizations"] = []
+            optimizations_list = cast(list[str], node.metadata["optimizations"])
+            optimizations_list.append("caching_recommended")
+
+    return optimized_graph
+
+
+def _copy_flow_graph(graph: FlowGraph) -> FlowGraph:
+    """Create a deep copy of a flow graph."""
+    new_graph = FlowGraph()
+
+    # Copy nodes
+    for node_id, node in graph.nodes.items():
+        new_node = FlowNode(
+            id=node.id,
+            name=node.name,
+            flow_type=node.flow_type,
+            description=node.description,
+            metadata=node.metadata.copy(),
+            inputs=node.inputs.copy(),
+            outputs=node.outputs.copy(),
+            complexity_score=node.complexity_score,
+        )
+        new_graph.nodes[node_id] = new_node
+
+    # Copy edges
+    new_graph.edges = [
+        FlowEdge(
+            source_id=edge.source_id,
+            target_id=edge.target_id,
+            edge_type=edge.edge_type,
+            metadata=edge.metadata.copy() if edge.metadata else {},
+        )
+        for edge in graph.edges
+    ]
+
+    # Copy entry and exit points
+    new_graph.entry_points = graph.entry_points.copy()
+    new_graph.exit_points = graph.exit_points.copy()
+
+    return new_graph
