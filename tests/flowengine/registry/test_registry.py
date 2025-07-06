@@ -29,3 +29,10 @@ def double(x: int) -> int:
 
 class TestFlowRegistry:
     """Tests for FlowRegistry class - core registry functionality."""
+
+    def test_registry_creation(self):
+        """Test basic FlowRegistry creation."""
+        registry = FlowRegistry()
+
+        assert len(registry.flows) == 0
+        assert len(registry.categories) == 0
