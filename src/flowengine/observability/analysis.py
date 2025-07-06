@@ -589,3 +589,64 @@ def calculate_dependencies(graph: FlowGraph) -> dict[str, list[str]]:
             dependencies[target_id].append(source_id)
 
     return dependencies
+
+
+def visualize_flow_graph(graph: FlowGraph, output_format: str = "dot") -> str:
+    """Generate a visual representation of the flow graph.
+
+    Args:
+        graph: The flow graph to visualize
+        output_format: Output format ("dot", "json")
+
+    Returns:
+        String representation of the graph in the specified format
+    """
+    if output_format == "dot":
+        return _generate_dot_visualization(graph)
+    elif output_format == "json":
+        return _generate_json_visualization(graph)
+    else:
+        raise ValueError(f"Unsupported output format: {output_format}")
+
+
+def _generate_dot_visualization(graph: FlowGraph) -> str:
+    """Generate DOT format visualization."""
+    lines = ["digraph FlowGraph {", "  rankdir=TB;", "  node [shape=box];", ""]
+
+    # Add nodes
+    for node_id, node in graph.nodes.items():
+        label = f"{node.name} ({node.flow_type})"
+        lines.append(f'  "{node_id}" [label="{label}"];')
+
+    lines.append("")
+
+    # Add edges
+    for edge in graph.edges:
+        lines.append(f'  "{edge.source_id}" -> "{edge.target_id}";')
+
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def _generate_json_visualization(graph: FlowGraph) -> str:
+    """Generate JSON format visualization."""
+    data: dict[str, list[dict[str, str]]] = {
+        "nodes": [],
+        "edges": [],
+    }
+
+    # Add nodes
+    for node_id, node in graph.nodes.items():
+        data["nodes"].append(
+            {
+                "id": node_id,
+                "label": f"{node.name} ({node.flow_type})",
+                "type": node.flow_type,
+            }
+        )
+
+    # Add edges
+    for edge in graph.edges:
+        data["edges"].append({"source": edge.source_id, "target": edge.target_id})
+
+    return json.dumps(data, indent=2)

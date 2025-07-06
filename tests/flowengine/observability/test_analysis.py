@@ -746,3 +746,53 @@ class TestAnalysisFunctions:
         assert deps["3"] == ["1"]
         # Node 4 depends on nodes 2 and 3
         assert sorted(deps["4"]) == ["2", "3"]
+
+    def test_visualize_flow_graph_dot_format(self):
+        """Test visualize_flow_graph DOT format output."""
+        graph = self._create_simple_test_graph()
+
+        from flowengine.observability.analysis import visualize_flow_graph
+
+        dot_output = visualize_flow_graph(graph)
+        assert isinstance(dot_output, str)
+        assert "digraph FlowGraph" in dot_output
+        assert '"1" [label="start (utility)"]' in dot_output
+        assert '"2" [label="process (transformation)"]' in dot_output
+        assert '"3" [label="end (utility)"]' in dot_output
+        assert '"1" -> "2"' in dot_output
+        assert '"2" -> "3"' in dot_output
+
+    def test_visualize_flow_graph_json_format(self):
+        """Test visualize_flow_graph JSON format output."""
+        graph = self._create_simple_test_graph()
+
+        from flowengine.observability.analysis import visualize_flow_graph
+
+        json_output = visualize_flow_graph(graph, output_format="json")
+        import json
+
+        parsed = json.loads(json_output)
+        assert "nodes" in parsed
+        assert "edges" in parsed
+        assert len(parsed["nodes"]) == 3
+        assert len(parsed["edges"]) == 2
+
+    def _create_simple_test_graph(self) -> FlowGraph:
+        """Create a simple test graph: 1->2->3."""
+        graph = FlowGraph()
+
+        nodes = {
+            "1": FlowNode(id="1", name="start", flow_type="utility"),
+            "2": FlowNode(id="2", name="process", flow_type="transformation"),
+            "3": FlowNode(id="3", name="end", flow_type="utility"),
+        }
+        graph.nodes.update(nodes)
+
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="2", target_id="3"),
+        ]
+        graph.entry_points = ["1"]
+        graph.exit_points = ["3"]
+
+        return graph
