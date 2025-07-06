@@ -550,3 +550,15 @@ def export_flow_analysis(graph: FlowGraph, filepath: str) -> None:
 def get_flow_analyzer() -> FlowAnalyzer:
     """Get the global flow analyzer instance."""
     return _flow_analyzer
+
+
+def find_cycles(graph: FlowGraph) -> list[list[str]]:
+    """Find cycles in a flow graph.
+
+    Args:
+        graph: The flow graph to analyze
+
+    Returns:
+        List of cycles, where each cycle is a list of node IDs
+    """
+    return graph.find_cycles()

@@ -684,3 +684,32 @@ class TestAnalysisFunctions:
             # Clean up
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
+
+    def test_find_cycles_function(self):
+        """Test find_cycles convenience function."""
+        graph = FlowGraph()
+
+        # Create graph with a cycle
+        nodes = {
+            "1": FlowNode(id="1", name="first", flow_type="utility"),
+            "2": FlowNode(id="2", name="second", flow_type="transformation"),
+            "3": FlowNode(id="3", name="third", flow_type="utility"),
+        }
+        graph.nodes.update(nodes)
+
+        # Create cycle: 1->2->3->1
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="2", target_id="3"),
+            FlowEdge(source_id="3", target_id="1"),
+        ]
+        graph.entry_points = ["1"]
+
+        from flowengine.observability.analysis import find_cycles
+
+        cycles = find_cycles(graph)
+        assert len(cycles) == 1
+        assert (
+            len(cycles[0]) == 4
+        )  # Cycle includes duplicate node: ['1', '2', '3', '1']
+        assert all(node_id in cycles[0] for node_id in ["1", "2", "3"])
