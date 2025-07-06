@@ -46,3 +46,14 @@ class TestFlowRegistry:
 
         assert "increment_flow" in registry.flows
         assert registry.flows["increment_flow"] == flow
+
+    def test_register_flow_with_category(self):
+        """Test registering a flow with category."""
+        registry = FlowRegistry()
+        flow = map_stream(increment)
+
+        registry.register("increment_flow", flow, category="math")
+
+        assert "increment_flow" in registry.flows
+        assert "math" in registry.categories
+        assert "increment_flow" in registry.categories["math"]
