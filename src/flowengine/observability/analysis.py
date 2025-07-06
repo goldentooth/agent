@@ -562,3 +562,30 @@ def find_cycles(graph: FlowGraph) -> list[list[str]]:
         List of cycles, where each cycle is a list of node IDs
     """
     return graph.find_cycles()
+
+
+def calculate_dependencies(graph: FlowGraph) -> dict[str, list[str]]:
+    """Calculate dependency relationships between nodes in the graph.
+
+    Args:
+        graph: The flow graph to analyze
+
+    Returns:
+        Dictionary mapping node_id to list of dependency node_ids
+    """
+    dependencies: dict[str, list[str]] = {}
+
+    # Initialize all nodes with empty dependencies
+    for node_id in graph.nodes:
+        dependencies[node_id] = []
+
+    # For each node, find all nodes that have incoming edges (dependencies)
+    for edge in graph.edges:
+        source_id = edge.source_id
+        target_id = edge.target_id
+
+        # target_id depends on source_id
+        if target_id in dependencies:
+            dependencies[target_id].append(source_id)
+
+    return dependencies

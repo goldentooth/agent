@@ -713,3 +713,36 @@ class TestAnalysisFunctions:
             len(cycles[0]) == 4
         )  # Cycle includes duplicate node: ['1', '2', '3', '1']
         assert all(node_id in cycles[0] for node_id in ["1", "2", "3"])
+
+    def test_calculate_dependencies_function(self):
+        """Test calculate_dependencies convenience function."""
+        graph = FlowGraph()
+
+        # Create graph with dependencies: 1->2, 1->3, 2->4, 3->4
+        nodes = {
+            "1": FlowNode(id="1", name="source", flow_type="utility"),
+            "2": FlowNode(id="2", name="middle1", flow_type="transformation"),
+            "3": FlowNode(id="3", name="middle2", flow_type="utility"),
+            "4": FlowNode(id="4", name="sink", flow_type="utility"),
+        }
+        graph.nodes.update(nodes)
+
+        graph.edges = [
+            FlowEdge(source_id="1", target_id="2"),
+            FlowEdge(source_id="1", target_id="3"),
+            FlowEdge(source_id="2", target_id="4"),
+            FlowEdge(source_id="3", target_id="4"),
+        ]
+
+        from flowengine.observability.analysis import calculate_dependencies
+
+        deps = calculate_dependencies(graph)
+
+        # Node 1 depends on nothing
+        assert deps["1"] == []
+        # Node 2 depends on node 1
+        assert deps["2"] == ["1"]
+        # Node 3 depends on node 1
+        assert deps["3"] == ["1"]
+        # Node 4 depends on nodes 2 and 3
+        assert sorted(deps["4"]) == ["2", "3"]
