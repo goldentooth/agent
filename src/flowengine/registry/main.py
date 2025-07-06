@@ -265,3 +265,15 @@ def list_flows(category: str | None = None) -> list[str]:
         List of flow names
     """
     return flow_registry.list_flows(category)
+
+
+def search_flows(query: str) -> list[str]:
+    """Search flows in the global registry.
+
+    Args:
+        query: Search query
+
+    Returns:
+        List of matching flow names
+    """
+    return flow_registry.search(query)
