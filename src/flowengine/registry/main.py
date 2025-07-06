@@ -221,3 +221,23 @@ class FlowRegistry(object):
         """Get read-only view of all metadata."""
         with self._lock:
             return {k: v.copy() for k, v in self._metadata.items()}
+
+
+# Global flow registry instance
+flow_registry = FlowRegistry()
+
+
+# Convenience functions
+def register_flow(name: str, flow: AnyFlow, category: str | None = None) -> AnyFlow:
+    """Register a flow in the global registry.
+
+    Args:
+        name: Unique name for the flow
+        flow: Flow instance to register
+        category: Optional category for organization
+
+    Returns:
+        The registered flow (for chaining)
+    """
+    flow_registry.register(name, flow, category)
+    return flow
