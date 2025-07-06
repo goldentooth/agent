@@ -241,3 +241,15 @@ def register_flow(name: str, flow: AnyFlow, category: str | None = None) -> AnyF
     """
     flow_registry.register(name, flow, category)
     return flow
+
+
+def get_flow(name: str) -> AnyFlow | None:
+    """Get a flow from the global registry.
+
+    Args:
+        name: Name of the flow to retrieve
+
+    Returns:
+        Flow instance or None if not found
+    """
+    return flow_registry.get(name)
