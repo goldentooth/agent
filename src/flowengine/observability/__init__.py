@@ -34,15 +34,8 @@ from .debugging import (
     remove_flow_breakpoint,
     traced_flow,
 )
-
-# Health monitoring exports
-from .health import (  # Core health types; Health monitoring; Configuration validation; Built-in health checks; Convenience functions
-    FlowConfigValidator,
+from .health.checks import (
     FlowHealthMonitor,
-    HealthCheck,
-    HealthCheckResult,
-    HealthStatus,
-    SystemHealth,
     check_flow_configuration,
     check_flow_dependencies,
     check_flow_errors,
@@ -50,8 +43,14 @@ from .health import (  # Core health types; Health monitoring; Configuration val
     check_flow_responsiveness,
     check_memory_usage,
     check_resource_limits,
-    check_system_health,
     check_system_resources,
+)
+
+# Health monitoring
+from .health.core import HealthCheck, HealthCheckResult, HealthStatus, SystemHealth
+from .health.reporting import (
+    FlowConfigValidator,
+    check_system_health,
     export_health_report,
     get_config_validator,
     get_health_monitor,
