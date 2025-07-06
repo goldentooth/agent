@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, AsyncGenerator, Callable
 
 import pytest
 
@@ -84,3 +84,89 @@ def benchmark_data() -> dict[str, Any]:
             "max_cpu_usage_percent": 80,
         },
     }
+
+
+@pytest.fixture
+def observability_config() -> dict[str, Any]:
+    """Test configuration for observability components."""
+    return {
+        "performance": {
+            "enable_monitoring": True,
+            "sample_rate": 1.0,
+            "buffer_size": 1000,
+            "flush_interval": 0.1,
+        },
+        "debugging": {
+            "enable_tracing": True,
+            "max_trace_depth": 10,
+            "capture_locals": False,
+            "trace_exceptions": True,
+        },
+        "health": {
+            "check_interval": 1.0,
+            "failure_threshold": 3,
+            "recovery_threshold": 2,
+            "enable_system_checks": True,
+        },
+        "analysis": {
+            "enable_flow_analysis": True,
+            "max_graph_depth": 20,
+            "analyze_performance": True,
+            "collect_statistics": True,
+        },
+    }
+
+
+def create_test_flow(
+    name: str = "test_flow",
+    transform_fn: Callable[[int], int] | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> Flow[int, int]:
+    """Create a test flow with optional transformation function."""
+    from typing import AsyncGenerator
+
+    if transform_fn is None:
+        transform_fn = lambda x: x  # Identity function
+
+    async def flow_fn(stream: AsyncGenerator[int, None]) -> AsyncGenerator[int, None]:
+        async for item in stream:
+            yield transform_fn(item)
+
+    return Flow(flow_fn, name, metadata or {})
+
+
+async def generate_test_stream(
+    items: list[int] | None = None,
+    size: int = 10,
+    delay: float = 0.0,
+) -> AsyncGenerator[int, None]:
+    """Generate a test data stream."""
+    import asyncio
+
+    if items is None:
+        items = list(range(size))
+
+    for item in items:
+        if delay > 0:
+            await asyncio.sleep(delay)
+        yield item
+
+
+def assert_performance_within_bounds(
+    actual_time: float,
+    expected_max_time: float,
+    tolerance: float = 0.1,
+) -> None:
+    """Assert that performance is within acceptable bounds."""
+    max_allowed = expected_max_time * (1 + tolerance)
+    assert actual_time <= max_allowed, (
+        f"Performance exceeded bounds: {actual_time:.3f}s > {max_allowed:.3f}s "
+        f"(expected max: {expected_max_time:.3f}s, tolerance: {tolerance:.1%})"
+    )
+
+
+def cleanup_observability() -> None:
+    """Clean up observability resources after tests."""
+    # This utility provides a centralized way to clean up observability
+    # state between tests. Currently a no-op but can be extended as needed.
+    pass
