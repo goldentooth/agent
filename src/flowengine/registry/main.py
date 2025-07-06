@@ -277,3 +277,15 @@ def search_flows(query: str) -> list[str]:
         List of matching flow names
     """
     return flow_registry.search(query)
+
+
+def unregister_flow(name: str) -> None:
+    """Remove a flow from the global registry.
+
+    Args:
+        name: Name of the flow to remove
+
+    Raises:
+        FlowRegistryError: If flow is not found
+    """
+    flow_registry.unregister(name)
