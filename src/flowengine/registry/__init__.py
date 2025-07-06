@@ -11,6 +11,7 @@ This module provides a centralized registry for Flow objects with support for:
 from .main import (
     FlowRegistry,
     FlowRegistryError,
+    clear_registry,
     flow_registry,
     get_flow,
     list_flows,
@@ -22,6 +23,7 @@ from .main import (
 __all__ = [
     "FlowRegistry",
     "FlowRegistryError",
+    "clear_registry",
     "flow_registry",
     "register_flow",
     "get_flow",

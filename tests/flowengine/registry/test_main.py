@@ -662,3 +662,22 @@ class TestConvenienceFunctions:
 
         unregister_flow("test_flow")
         assert "test_flow" not in flow_registry.flows
+
+    def test_clear_registry_convenience(self):
+        """Test clear_registry convenience function."""
+        from flowengine.registry import clear_registry, flow_registry
+
+        # Clear the global registry
+        flow_registry.clear()
+
+        flow1 = Flow.from_sync_fn(add_one)
+        flow2 = Flow.from_sync_fn(add_two)
+
+        flow_registry.register("flow1", flow1, category="math")
+        flow_registry.register("flow2", flow2, category="other")
+
+        assert len(flow_registry.flows) == 2
+
+        # Test clearing all flows
+        clear_registry()
+        assert len(flow_registry.flows) == 0

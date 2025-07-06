@@ -289,3 +289,12 @@ def unregister_flow(name: str) -> None:
         FlowRegistryError: If flow is not found
     """
     flow_registry.unregister(name)
+
+
+def clear_registry(category: str | None = None) -> None:
+    """Clear flows from the global registry.
+
+    Args:
+        category: Optional category to clear, or None to clear all flows
+    """
+    flow_registry.clear(category)
