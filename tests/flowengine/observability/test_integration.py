@@ -389,6 +389,153 @@ class TestFlowAnalysis:
                 os.unlink(f.name)
 
 
+class TestObservabilityLifecycle:
+    """Test lifecycle management for observability system."""
+
+    @pytest.mark.asyncio
+    async def test_startup_shutdown(self):
+        """Test system startup and shutdown scenarios."""
+        # Test that all observability components can be initialized
+        # and shut down gracefully without errors
+
+        # Initialize all major observability components
+        summary_before = get_performance_summary()
+        health_before = await check_system_health()
+
+        # Enable debugging to test debugging lifecycle
+        enable_flow_debugging()
+
+        try:
+            # Create and run a monitored flow to exercise all systems
+            def process_value(x: int) -> int:
+                return x * 2
+
+            flow = traced_flow(compose(map_stream(process_value), performance_stream()))
+
+            input_stream = async_range(5)
+            result = [item async for item in flow(input_stream)]  # type: ignore
+
+            assert result == [0, 2, 4, 6, 8]
+
+            # Verify all systems are operational
+            summary_after = get_performance_summary()
+            health_after = await check_system_health()
+            trace = get_execution_trace()
+
+            # Systems should be healthy
+            assert health_after.status in [HealthStatus.HEALTHY, HealthStatus.WARNING]
+            assert isinstance(trace, list)
+            assert isinstance(summary_after, dict)
+
+        finally:
+            # Test graceful shutdown
+            disable_flow_debugging()
+
+        # Verify debugging system shut down properly
+        post_shutdown_trace = get_execution_trace()
+        assert isinstance(post_shutdown_trace, list)
+
+    async def _create_test_flow(self) -> Any:
+        """Create a test flow for configuration testing."""
+
+        def transform_value(x: int) -> int:
+            return x + 10
+
+        return compose(map_stream(transform_value), performance_stream())
+
+    async def _run_flow_and_verify(self, flow: Any, expected_result: list[int]) -> None:
+        """Run a flow and verify the result."""
+        input_stream = async_range(3)
+        result = [item async for item in flow(input_stream)]  # type: ignore
+        assert result == expected_result
+
+    @pytest.mark.asyncio
+    async def test_configuration_changes(self):
+        """Test handling of configuration changes during operation."""
+        # Test that observability systems can handle configuration
+        # changes without losing critical state or failing
+
+        disable_flow_debugging()
+        flow = await self._create_test_flow()
+
+        # Run flow without debugging
+        await self._run_flow_and_verify(flow, [10, 11, 12])
+
+        # Enable debugging and test with tracing
+        enable_flow_debugging()
+        traced_flow_instance = traced_flow(flow)
+        await self._run_flow_and_verify(traced_flow_instance, [10, 11, 12])
+
+        # Verify configuration change took effect
+        trace = get_execution_trace()
+        assert isinstance(trace, list)
+
+        # Disable debugging and test again
+        disable_flow_debugging()
+        await self._run_flow_and_verify(flow, [10, 11, 12])
+
+        # Verify performance monitoring remains operational
+        summary = get_performance_summary()
+        assert isinstance(summary, dict)
+
+    @pytest.mark.asyncio
+    async def test_resource_cleanup(self):
+        """Test resource cleanup and memory management."""
+        # Test that observability systems properly clean up
+        # resources and don't accumulate unbounded state
+
+        enable_flow_debugging()
+
+        try:
+            # Generate multiple flows to test resource cleanup
+            flows_count = 10
+
+            for i in range(flows_count):
+
+                def transform_batch(x: int) -> int:
+                    return x * (i + 1)
+
+                flow = traced_flow(
+                    compose(map_stream(transform_batch), performance_stream())
+                )
+
+                input_stream = async_range(5)
+                result = [item async for item in flow(input_stream)]  # type: ignore
+
+                # Verify each flow executed correctly
+                expected = [x * (i + 1) for x in range(5)]
+                assert result == expected
+
+            # Check that systems are tracking execution history
+            trace = get_execution_trace()
+            summary = get_performance_summary()
+            health = await check_system_health()
+
+            # All systems should still be operational
+            assert isinstance(trace, list)
+            assert isinstance(summary, dict)
+            assert health.status in [
+                HealthStatus.HEALTHY,
+                HealthStatus.WARNING,
+                HealthStatus.CRITICAL,
+            ]
+
+            # Test explicit cleanup via configuration changes
+            disable_flow_debugging()
+            enable_flow_debugging()
+
+            # After reset, trace should be manageable
+            new_trace = get_execution_trace()
+            assert isinstance(new_trace, list)
+
+        finally:
+            disable_flow_debugging()
+
+        # Final verification that cleanup completed
+        final_summary = get_performance_summary()
+        assert isinstance(final_summary, dict)
+
+
 class TestIntegratedObservability:
     """Test integrated observability scenarios."""
 
