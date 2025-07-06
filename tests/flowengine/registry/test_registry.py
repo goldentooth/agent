@@ -90,3 +90,22 @@ class TestFlowRegistry:
         assert len(flows) == 2
         assert "flow1" in flows
         assert "flow2" in flows
+
+    def test_search_by_name(self):
+        """Test searching flows by name."""
+        registry = FlowRegistry()
+        increment_flow = map_stream(increment)
+        double_flow = map_stream(double)
+
+        registry.register("increment_processor", increment_flow)
+        registry.register("double_processor", double_flow)
+
+        # Search for "increment"
+        results = registry.search("increment")
+        assert results == ["increment_processor"]
+
+        # Search for "processor"
+        results = registry.search("processor")
+        assert len(results) == 2
+        assert "increment_processor" in results
+        assert "double_processor" in results
