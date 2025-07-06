@@ -67,3 +67,11 @@ class TestFlowRegistry:
         retrieved = registry.get("test_flow")
 
         assert retrieved == flow
+
+    def test_list_flows_empty(self):
+        """Test listing flows when registry is empty."""
+        registry = FlowRegistry()
+
+        flows = registry.list()
+
+        assert flows == []
