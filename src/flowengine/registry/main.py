@@ -1,7 +1,8 @@
 """FlowRegistry class for managing Flow objects."""
 
+import json
 import threading
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from ..exceptions import FlowError
 from ..flow import Flow
@@ -222,6 +223,33 @@ class FlowRegistry(object):
         with self._lock:
             return {k: v.copy() for k, v in self._metadata.items()}
 
+    def to_dict(self) -> Dict[str, Any]:
+        """Export registry contents to dictionary format.
+
+        Returns:
+            Dictionary containing registry structure and metadata
+        """
+        with self._lock:
+            return {
+                "flows": {
+                    name: {
+                        "name": name,
+                        "flow_name": flow.name,
+                        "function_name": getattr(flow.fn, "__name__", "anonymous"),
+                        "repr": repr(flow),
+                    }
+                    for name, flow in self._flows.items()
+                },
+                "categories": self._categories.copy(),
+                "tags": self._tags.copy(),
+                "metadata": {k: v.copy() for k, v in self._metadata.items()},
+                "stats": {
+                    "total_flows": len(self._flows),
+                    "total_categories": len(self._categories),
+                    "total_tags": len(self._tags),
+                },
+            }
+
 
 # Global flow registry instance
 flow_registry = FlowRegistry()
@@ -298,3 +326,22 @@ def clear_registry(category: str | None = None) -> None:
         category: Optional category to clear, or None to clear all flows
     """
     flow_registry.clear(category)
+
+
+def export_registry(format: Literal["json"] = "json") -> str:
+    """Export registry contents to a serialized format.
+
+    Args:
+        format: Export format, currently only "json" is supported
+
+    Returns:
+        Serialized registry data as string
+
+    Raises:
+        ValueError: If format is not supported
+    """
+    if format == "json":
+        data = flow_registry.to_dict()
+        return json.dumps(data, indent=2)
+    else:
+        raise ValueError(f"Unsupported export format: {format}")

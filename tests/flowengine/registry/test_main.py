@@ -681,3 +681,29 @@ class TestConvenienceFunctions:
         # Test clearing all flows
         clear_registry()
         assert len(flow_registry.flows) == 0
+
+    def test_export_registry_convenience(self):
+        """Test export_registry convenience function."""
+        import json
+
+        from flowengine.registry import export_registry, flow_registry
+
+        # Setup registry with test data
+        flow_registry.clear()
+        flow1 = Flow.from_sync_fn(add_one)
+        flow2 = Flow.from_sync_fn(add_two)
+        flow_registry.register(
+            "flow1", flow1, category="math", metadata={"desc": "adds 1"}
+        )
+        flow_registry.register("flow2", flow2, category="math", tags=["utility"])
+
+        # Test JSON export
+        exported = export_registry("json")
+        data = json.loads(exported)
+
+        # Verify structure and content
+        assert all(
+            key in data for key in ["flows", "categories", "tags", "metadata", "stats"]
+        )
+        assert len(data["flows"]) == 2
+        assert all(name in data["flows"] for name in ["flow1", "flow2"])
