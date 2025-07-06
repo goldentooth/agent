@@ -252,7 +252,7 @@ def get_flow(name: str) -> AnyFlow | None:
     Returns:
         Flow instance or None if not found
     """
-    return flow_registry.get(name)
+    return flow_registry.get(name, None)
 
 
 def list_flows(category: str | None = None) -> list[str]:
@@ -264,7 +264,7 @@ def list_flows(category: str | None = None) -> list[str]:
     Returns:
         List of flow names
     """
-    return flow_registry.list_flows(category)
+    return flow_registry.list(category)
 
 
 def search_flows(query: str) -> list[str]:
