@@ -92,7 +92,7 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 ---
 
-### Epic 31: Create observability test utilities
+### ✅ Epic 31: Create observability test utilities - DONE!
 **Unit**: Observability test utility functions
 **Target**: `tests/flowengine/observability/conftest.py`
 
@@ -107,6 +107,8 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 **Dependencies**: Complete observability system
 **Coverage**: 100% - test utilities and data
+
+**Completion**: ✅ DONE - All observability test utilities created with comprehensive tests. Created sample_flows, benchmark_data, and observability_config fixtures. Added create_test_flow, generate_test_stream, assert_performance_within_bounds, and cleanup_observability utility functions. All utilities tested and meet function length requirements.
 
 ---
 
