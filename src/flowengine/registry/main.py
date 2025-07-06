@@ -253,3 +253,15 @@ def get_flow(name: str) -> AnyFlow | None:
         Flow instance or None if not found
     """
     return flow_registry.get(name)
+
+
+def list_flows(category: str | None = None) -> list[str]:
+    """List flows in the global registry.
+
+    Args:
+        category: Optional category to filter by
+
+    Returns:
+        List of flow names
+    """
+    return flow_registry.list_flows(category)
