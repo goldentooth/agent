@@ -28,6 +28,39 @@ def increment(x: int) -> int:
     return x + 1
 
 
+# Helper functions for switch stream tests
+def categorize_number(x: int) -> str:
+    """Categorize a number as negative, zero, or positive."""
+    if x < 0:
+        return "negative"
+    elif x == 0:
+        return "zero"
+    else:
+        return "positive"
+
+
+def neg_transform(x: int) -> str:
+    """Transform negative numbers."""
+    return f"neg_{x}"
+
+
+def zero_transform(x: int) -> str:
+    """Transform zero."""
+    return "ZERO"
+
+
+def pos_transform(x: int) -> str:
+    """Transform positive numbers."""
+    return f"pos_{x}"
+
+
+async def mixed_number_stream():
+    """Generate a stream with mixed positive, zero, and negative numbers."""
+    yield -2
+    yield 0
+    yield 3
+
+
 def double(x: int) -> int:
     """Double a number."""
     return x * 2
@@ -183,43 +216,14 @@ class TestSwitchStream:
     @pytest.mark.asyncio
     async def test_switch_basic(self):
         """Test basic switch functionality."""
-
-        def categorize(x: int) -> str:
-            if x < 0:
-                return "negative"
-            elif x == 0:
-                return "zero"
-            else:
-                return "positive"
-
-        def neg_transform(x: int) -> str:
-            return f"neg_{x}"
-
-        def zero_transform(x: int) -> str:
-            return "ZERO"
-
-        def pos_transform(x: int) -> str:
-            return f"pos_{x}"
-
-        negative_flow = map_stream(neg_transform)
-        zero_flow = map_stream(zero_transform)
-        positive_flow = map_stream(pos_transform)
-
         cases = {
-            "negative": negative_flow,
-            "zero": zero_flow,
-            "positive": positive_flow,
+            "negative": map_stream(neg_transform),
+            "zero": map_stream(zero_transform),
+            "positive": map_stream(pos_transform),
         }
-
-        switch_flow = switch_stream(categorize, cases)
-        assert "switch(categorize, 3 cases)" in switch_flow.name
-
-        async def mixed_stream():
-            yield -2
-            yield 0
-            yield 3
-
-        result_stream = switch_flow(mixed_stream())
+        switch_flow = switch_stream(categorize_number, cases)
+        assert "switch(categorize_number, 3 cases)" in switch_flow.name
+        result_stream = switch_flow(mixed_number_stream())
         values = [item async for item in result_stream]
         assert values == ["neg_-2", "ZERO", "pos_3"]
 

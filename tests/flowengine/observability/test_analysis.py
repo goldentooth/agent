@@ -276,6 +276,49 @@ class TestFlowGraph:
         assert all(analysis[key] == expected_analysis[key] for key in expected_analysis)
 
 
+# Helper functions for FlowAnalyzer tests
+def build_map_filter_graph():
+    """Build a test graph with map-filter pattern."""
+    graph = FlowGraph()
+    map_node = FlowNode(id="1", name="map_func", flow_type="transformation")
+    filter_node = FlowNode(id="2", name="filter_func", flow_type="filtering")
+    graph.nodes["1"] = map_node
+    graph.nodes["2"] = filter_node
+    edge = FlowEdge(source_id="1", target_id="2")
+    graph.edges = [edge]
+    return graph
+
+
+def assert_map_filter_pattern(pattern: PatternData) -> None:
+    """Assert that pattern matches map-filter expectations."""
+    assert pattern["pattern"] == "map_filter"
+    assert pattern["nodes"] == ["1", "2"]
+    assert "transformation followed by filtering" in pattern["description"].lower()
+
+
+def build_fan_out_graph() -> FlowGraph:
+    """Build a test graph with fan-out pattern."""
+    graph = FlowGraph()
+    source_node = FlowNode(id="1", name="source", flow_type="utility")
+    target1 = FlowNode(id="2", name="target1", flow_type="utility")
+    target2 = FlowNode(id="3", name="target2", flow_type="utility")
+    target3 = FlowNode(id="4", name="target3", flow_type="utility")
+    graph.nodes.update({"1": source_node, "2": target1, "3": target2, "4": target3})
+    graph.edges = [
+        FlowEdge(source_id="1", target_id="2"),
+        FlowEdge(source_id="1", target_id="3"),
+        FlowEdge(source_id="1", target_id="4"),
+    ]
+    return graph
+
+
+def assert_fan_out_pattern(pattern: PatternData) -> None:
+    """Assert that pattern matches fan-out expectations."""
+    assert pattern["pattern"] == "fan_out"
+    assert pattern["nodes"] == ["1", "2", "3", "4"]
+    assert "3 targets" in pattern["description"]
+
+
 class TestFlowAnalyzer:
     """Tests for FlowAnalyzer class."""
 
@@ -416,56 +459,18 @@ class TestFlowAnalyzer:
     def test_detect_map_filter_pattern(self):
         """Test detection of map-filter pattern."""
         analyzer = FlowAnalyzer()
-        graph = FlowGraph()
-
-        # Create nodes: transformation -> filtering
-        map_node = FlowNode(id="1", name="map_func", flow_type="transformation")
-        filter_node = FlowNode(id="2", name="filter_func", flow_type="filtering")
-
-        graph.nodes["1"] = map_node
-        graph.nodes["2"] = filter_node
-
-        # Create edge connecting them
-        edge = FlowEdge(source_id="1", target_id="2")
-        graph.edges = [edge]
-
+        graph = build_map_filter_graph()
         patterns = analyzer.detect_patterns(graph)
-
-        # Should detect the map-filter pattern
         assert len(patterns) == 1
-        pattern = patterns[0]
-        assert pattern["pattern"] == "map_filter"
-        assert pattern["nodes"] == ["1", "2"]
-        assert "transformation followed by filtering" in pattern["description"].lower()
+        assert_map_filter_pattern(patterns[0])
 
     def test_detect_fan_out_pattern(self):
         """Test detection of fan-out pattern."""
         analyzer = FlowAnalyzer()
-        graph = FlowGraph()
-
-        # Create one source node and multiple target nodes
-        source_node = FlowNode(id="1", name="source", flow_type="utility")
-        target1 = FlowNode(id="2", name="target1", flow_type="utility")
-        target2 = FlowNode(id="3", name="target2", flow_type="utility")
-        target3 = FlowNode(id="4", name="target3", flow_type="utility")
-
-        graph.nodes.update({"1": source_node, "2": target1, "3": target2, "4": target3})
-
-        # Create edges for fan-out (1 -> 2, 1 -> 3, 1 -> 4)
-        graph.edges = [
-            FlowEdge(source_id="1", target_id="2"),
-            FlowEdge(source_id="1", target_id="3"),
-            FlowEdge(source_id="1", target_id="4"),
-        ]
-
+        graph = build_fan_out_graph()
         patterns = analyzer.detect_patterns(graph)
-
-        # Should detect the fan-out pattern
         assert len(patterns) == 1
-        pattern = patterns[0]
-        assert pattern["pattern"] == "fan_out"
-        assert pattern["nodes"] == ["1", "2", "3", "4"]
-        assert "3 targets" in pattern["description"]
+        assert_fan_out_pattern(patterns[0])
 
     def test_detect_pipeline_pattern(self):
         """Test detection of linear pipeline pattern."""

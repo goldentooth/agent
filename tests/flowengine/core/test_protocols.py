@@ -7,6 +7,56 @@ import pytest
 from flowengine.protocols import ContextKeyProtocol, ContextProtocol, FlowProtocol
 
 
+# Test helper classes for protocol integration tests
+class StringKey:
+    """Helper class for testing ContextKeyProtocol."""
+
+    @property
+    def name(self) -> str:
+        return "string_value"
+
+    @property
+    def value_type(self) -> type[str]:
+        return str
+
+
+class SimpleContext:
+    """Helper class for testing ContextProtocol."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._data: dict[str, Any] = {}
+
+    def get(self, key: ContextKeyProtocol[Any]) -> Any:
+        return self._data[key.name]
+
+    def set(self, key: ContextKeyProtocol[Any], value: Any) -> None:
+        self._data[key.name] = value
+
+    def contains(self, key: ContextKeyProtocol[Any]) -> bool:
+        return key.name in self._data
+
+
+class ContextAwareFlow:
+    """Helper class for testing FlowProtocol with context awareness."""
+
+    def __init__(self, name: str, context: ContextProtocol) -> None:
+        super().__init__()
+        self._name = name
+        self._context = context
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def __call__(self, stream: Any) -> Any:
+        key = StringKey()
+        if self._context.contains(key):
+            prefix = self._context.get(key)
+            return f"{prefix}: {stream}"
+        return str(stream)
+
+
 class TestContextKeyProtocol:
     """Test the ContextKeyProtocol."""
 
@@ -268,63 +318,23 @@ class TestProtocolInteraction:
 
     def test_protocols_work_together(self) -> None:
         """Test that protocols can work together in a system."""
-
-        class StringKey:
-            @property
-            def name(self) -> str:
-                return "string_value"
-
-            @property
-            def value_type(self) -> type[str]:
-                return str
-
-        class SimpleContext:
-            def __init__(self) -> None:
-                super().__init__()
-                self._data: dict[str, Any] = {}
-
-            def get(self, key: ContextKeyProtocol[Any]) -> Any:
-                return self._data[key.name]
-
-            def set(self, key: ContextKeyProtocol[Any], value: Any) -> None:
-                self._data[key.name] = value
-
-            def contains(self, key: ContextKeyProtocol[Any]) -> bool:
-                return key.name in self._data
-
-        class ContextAwareFlow:
-            def __init__(self, name: str, context: ContextProtocol) -> None:
-                super().__init__()
-                self._name = name
-                self._context = context
-
-            @property
-            def name(self) -> str:
-                return self._name
-
-            def __call__(self, stream: Any) -> Any:
-                # Use context in flow execution
-                key = StringKey()
-                if self._context.contains(key):
-                    prefix = self._context.get(key)
-                    return f"{prefix}: {stream}"
-                return str(stream)
-
-        # Set up the system
         context = SimpleContext()
         key = StringKey()
         flow = ContextAwareFlow("context_flow", context)
 
-        # Verify protocol compliance
         assert isinstance(key, ContextKeyProtocol)
         assert isinstance(context, ContextProtocol)
         assert isinstance(flow, FlowProtocol)
 
-        # Test without context value
+    def test_protocol_functional_behavior(self) -> None:
+        """Test functional behavior of protocols working together."""
+        context = SimpleContext()
+        key = StringKey()
+        flow = ContextAwareFlow("context_flow", context)
+
         result = flow("test")
         assert result == "test"
 
-        # Test with context value
         context.set(key, "PREFIX")
         result = flow("test")
         assert result == "PREFIX: test"
