@@ -250,6 +250,35 @@ class FlowRegistry(object):
                 },
             }
 
+    def from_dict(self, data: Dict[str, Any]) -> None:
+        """Import registry structure from dictionary format.
+
+        Args:
+            data: Dictionary containing registry data
+
+        Note:
+            This function only imports metadata, categories, and tags.
+            Flow objects cannot be deserialized and must be re-registered.
+        """
+        with self._lock:
+            # Clear existing registry (direct access to avoid deadlock)
+            self._flows.clear()
+            self._categories.clear()
+            self._tags.clear()
+            self._metadata.clear()
+
+            # Import metadata only (flows cannot be reconstructed)
+            for name, metadata in data.get("metadata", {}).items():
+                if name in data.get("flows", {}):
+                    self._metadata[name] = metadata.copy()
+
+            # Import categories and tags structure (without actual flows)
+            for category in data.get("categories", {}):
+                self._categories[category] = []
+
+            for tag in data.get("tags", {}):
+                self._tags[tag] = []
+
 
 # Global flow registry instance
 flow_registry = FlowRegistry()
@@ -345,3 +374,34 @@ def export_registry(format: Literal["json"] = "json") -> str:
         return json.dumps(data, indent=2)
     else:
         raise ValueError(f"Unsupported export format: {format}")
+
+
+def import_registry(data: str | Dict[str, Any]) -> None:
+    """Import registry contents from serialized data.
+
+    Args:
+        data: JSON string or dictionary containing registry data
+
+    Raises:
+        ValueError: If data format is invalid
+        FlowRegistryError: If import operation fails
+
+    Note:
+        This function only imports metadata, categories, and tags.
+        Flow objects cannot be deserialized and must be re-registered.
+    """
+    if isinstance(data, str):
+        try:
+            parsed_data = json.loads(data)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON data: {e}")
+    else:
+        parsed_data = data
+
+    # Validate data structure
+    required_keys = ["flows", "categories", "tags", "metadata"]
+    if not all(key in parsed_data for key in required_keys):
+        raise ValueError(f"Missing required keys. Expected: {required_keys}")
+
+    # Use the registry's from_dict method
+    flow_registry.from_dict(parsed_data)

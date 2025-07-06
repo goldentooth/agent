@@ -707,3 +707,23 @@ class TestConvenienceFunctions:
         )
         assert len(data["flows"]) == 2
         assert all(name in data["flows"] for name in ["flow1", "flow2"])
+
+    def test_import_registry_convenience(self):
+        """Test import_registry convenience function."""
+        from flowengine.registry import flow_registry, import_registry
+
+        # Clear registry and create test data
+        flow_registry.clear()
+        test_data = {
+            "flows": {"flow1": {"name": "flow1"}},
+            "categories": {"math": ["flow1"]},
+            "tags": {"utility": ["flow1"]},
+            "metadata": {"flow1": {"desc": "test flow"}},
+        }
+
+        # Test import from dict
+        import_registry(test_data)
+
+        # Verify categories and tags structure imported
+        assert "math" in flow_registry.categories
+        assert "utility" in flow_registry.tags
