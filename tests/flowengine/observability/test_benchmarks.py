@@ -1,6 +1,9 @@
 """Performance benchmarks for Flow operations."""
 
 import asyncio
+import json
+import os
+import tempfile
 import time
 from collections.abc import AsyncGenerator
 from typing import Any, Dict, List
@@ -352,3 +355,153 @@ class TestPerformanceRegression:
 
         # Ensure minimum performance is reasonable
         assert min_throughput > avg_throughput * 0.5  # Min at least 50% of avg
+
+
+class TestBenchmarkReporting:
+    """Benchmark reporting test class for data export and analysis."""
+
+    @pytest.mark.asyncio
+    async def test_benchmark_export(self):
+        """Test benchmark data export functionality."""
+
+        # Create monitored flow and generate performance data
+        @monitored_stream("export_test_flow")
+        def create_test_flow():
+            return map_stream(lambda x: x * 2)
+
+        flow = create_test_flow
+        input_stream = async_large_range(100)
+        result = [item async for item in flow(input_stream)]
+        assert len(result) == 100
+
+        # Export performance metrics to temporary file
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=False, suffix=".json"
+        ) as tmp_file:
+            monitor = get_performance_monitor()
+            monitor.export_metrics(tmp_file.name)
+
+            # Verify export file exists and contains valid JSON
+            assert os.path.exists(tmp_file.name)
+
+            with open(tmp_file.name, "r") as f:
+                exported_data = json.load(f)
+
+            # Validate export structure and content
+            assert "summary" in exported_data
+            assert "individual_flows" in exported_data
+
+            # Find flow by name (key includes timestamp)
+            flow_found = False
+            for flow_id, flow_data in exported_data["individual_flows"].items():
+                if flow_data.get("name") == "export_test_flow":
+                    flow_found = True
+                    assert flow_data["items_processed"] == 100
+                    break
+            assert flow_found, "Expected flow 'export_test_flow' not found in export"
+
+            # Clean up
+            os.unlink(tmp_file.name)
+
+    @pytest.mark.asyncio
+    async def test_performance_comparison(self):
+        """Test performance comparison analysis between benchmark runs."""
+        # Run first benchmark (baseline)
+        baseline_stats = await self._run_baseline_benchmark()
+
+        # Run second benchmark (comparison)
+        comparison_stats = await self._run_comparison_benchmark()
+
+        # Compare performance metrics
+        self._validate_performance_comparison(baseline_stats, comparison_stats)
+
+    async def _run_baseline_benchmark(self) -> Dict[str, Any]:
+        """Run baseline benchmark for comparison testing."""
+        baseline_flow = map_stream(lambda x: x * 2)
+        baseline_benchmark = benchmark_stream(iterations=5)
+
+        def baseline_stream_factory():
+            return async_large_range(500)
+
+        return await baseline_benchmark(baseline_flow)(baseline_stream_factory)
+
+    async def _run_comparison_benchmark(self) -> Dict[str, Any]:
+        """Run comparison benchmark with different operation."""
+        comparison_flow = map_stream(lambda x: x * 3)  # Different operation
+        comparison_benchmark = benchmark_stream(iterations=5)
+
+        def comparison_stream_factory():
+            return async_large_range(500)
+
+        return await comparison_benchmark(comparison_flow)(comparison_stream_factory)
+
+    def _validate_performance_comparison(
+        self, baseline_stats: Dict[str, Any], comparison_stats: Dict[str, Any]
+    ):
+        """Validate performance comparison analysis results."""
+        # Compare performance metrics
+        baseline_avg = baseline_stats["avg_duration_ms"]
+        comparison_avg = comparison_stats["avg_duration_ms"]
+
+        # Calculate performance difference (percentage)
+        performance_diff = abs(comparison_avg - baseline_avg) / baseline_avg
+
+        # Verify comparison analysis works
+        assert isinstance(performance_diff, float)
+        assert performance_diff >= 0  # Should be non-negative percentage
+
+        # Verify both benchmarks produced valid results
+        assert baseline_stats["iterations"] == 5
+        assert comparison_stats["iterations"] == 5
+
+    @pytest.mark.asyncio
+    async def test_statistical_analysis(self):
+        """Test statistical analysis of benchmark results."""
+        # Run benchmark with multiple iterations for statistical analysis
+        test_flow = map_stream(lambda x: x + 1)
+        benchmark = benchmark_stream(iterations=10)
+
+        def test_stream_factory():
+            return async_large_range(300)
+
+        stats = await benchmark(test_flow)(test_stream_factory)
+        self._validate_statistical_metrics(stats)
+
+    def _validate_statistical_metrics(self, stats: Dict[str, Any]):
+        """Validate statistical metrics from benchmark results."""
+        # Verify statistical metrics are present and valid
+        assert "min_duration_ms" in stats
+        assert "max_duration_ms" in stats
+        assert "avg_duration_ms" in stats
+        assert "iterations" in stats
+
+        min_duration = stats["min_duration_ms"]
+        max_duration = stats["max_duration_ms"]
+        avg_duration = stats["avg_duration_ms"]
+        iterations = stats["iterations"]
+
+        self._validate_duration_relationships(
+            min_duration, max_duration, avg_duration, iterations
+        )
+        self._validate_statistical_variation(min_duration, max_duration, avg_duration)
+
+    def _validate_duration_relationships(
+        self, min_dur: float, max_dur: float, avg_dur: float, iterations: int
+    ):
+        """Validate duration relationships and iteration count."""
+        assert min_dur <= avg_dur <= max_dur
+        assert iterations == 10
+        assert min_dur > 0  # Should take some time
+        assert max_dur > min_dur or min_dur == max_dur  # Allow equal if very fast
+
+    def _validate_statistical_variation(
+        self, min_dur: float, max_dur: float, avg_dur: float
+    ):
+        """Validate statistical variation is within reasonable bounds."""
+        # Calculate coefficient of variation (standard deviation approximation)
+        duration_range = max_dur - min_dur
+        cv_approx = duration_range / avg_dur
+
+        # Statistical analysis should show reasonable variation (< 100% CV)
+        assert cv_approx >= 0
+        assert cv_approx < 1.0  # Range shouldn't exceed average (reasonable variation)
