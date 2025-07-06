@@ -292,8 +292,10 @@ def performance_stream() -> AnyFlow:
 
 def benchmark_stream(
     iterations: int = 100,
+    warmup_iterations: int = 5,
+    trim_percent: float = 10.0,
 ) -> Callable[[AnyFlow], Callable[[AnyIteratorFactory], Awaitable[BenchmarkResult]]]:
-    """Benchmarking utilities."""
+    """Benchmarking utilities with percentile-based outlier removal for stable measurements."""
 
     def benchmark_func(
         flow: AnyFlow,
@@ -301,25 +303,51 @@ def benchmark_stream(
         async def run_benchmark(
             test_stream_factory: AnyIteratorFactory,
         ) -> BenchmarkResult:
+            import statistics
+
+            # More warmup iterations to stabilize performance
+            for _ in range(warmup_iterations):
+                test_stream = test_stream_factory()
+                async for _ in flow(test_stream):
+                    pass
+
             durations: list[float] = []
             for _ in range(iterations):
                 test_stream = test_stream_factory()
-                start_time = time.time()
+
+                # Use high-precision timing
+                start_time = time.perf_counter()
                 async for _ in flow(test_stream):
                     pass
-                duration_ms = (time.time() - start_time) * 1000
+                duration_ms = (time.perf_counter() - start_time) * 1000
                 durations.append(duration_ms)
 
-            min_duration = min(durations)
-            max_duration = max(durations)
-            avg_duration = sum(durations) / len(durations)
+            # Sort durations for percentile-based trimming
+            durations.sort()
+
+            # Calculate trim indices (remove top and bottom trim_percent)
+            trim_count = max(1, int(len(durations) * (trim_percent / 100)))
+
+            # Keep middle percentiles, removing outliers from both ends
+            if len(durations) > 2 * trim_count:
+                trimmed_durations = durations[trim_count:-trim_count]
+            else:
+                # If we don't have enough samples, just remove the most extreme outliers
+                trimmed_durations = durations[1:-1] if len(durations) > 2 else durations
+
+            # Calculate statistics from trimmed data
+            min_duration = min(trimmed_durations)
+            max_duration = max(trimmed_durations)
+            avg_duration = statistics.mean(trimmed_durations)
 
             return {
                 "flow_name": flow.name,
-                "iterations": iterations,
+                "iterations": len(trimmed_durations),  # Report actual samples used
                 "min_duration_ms": min_duration,
                 "max_duration_ms": max_duration,
                 "avg_duration_ms": avg_duration,
+                "original_iterations": len(durations),  # Include original count
+                "trim_percent": trim_percent,
             }
 
         return run_benchmark
