@@ -574,53 +574,53 @@ class TestConvenienceFunctions:
 
     def test_register_flow_convenience(self):
         """Test register_flow convenience function."""
-        from flowengine.registry import register_flow, flow_registry
-        
+        from flowengine.registry import flow_registry, register_flow
+
         # Clear the global registry
         flow_registry.clear()
-        
+
         flow = Flow.from_sync_fn(add_one)
         result = register_flow("test_flow", flow, category="math")
-        
+
         assert result is flow
         assert "test_flow" in flow_registry.flows
         assert flow_registry.flows["test_flow"] is flow
 
     def test_get_flow_convenience(self):
         """Test get_flow convenience function."""
-        from flowengine.registry import get_flow, flow_registry
-        
+        from flowengine.registry import flow_registry, get_flow
+
         # Clear the global registry
         flow_registry.clear()
-        
+
         flow = Flow.from_sync_fn(add_one)
         flow_registry.register("test_flow", flow)
-        
+
         result = get_flow("test_flow")
         assert result is flow
-        
+
         result = get_flow("nonexistent")
         assert result is None
 
     def test_list_flows_convenience(self):
         """Test list_flows convenience function."""
-        from flowengine.registry import list_flows, flow_registry
-        
+        from flowengine.registry import flow_registry, list_flows
+
         # Clear the global registry
         flow_registry.clear()
-        
+
         flow1 = Flow.from_sync_fn(add_one)
         flow2 = Flow.from_sync_fn(add_two)
-        
+
         flow_registry.register("flow1", flow1, category="math")
         flow_registry.register("flow2", flow2, category="other")
-        
+
         # List all flows
         all_flows = list_flows()
         assert len(all_flows) == 2
         assert "flow1" in all_flows
         assert "flow2" in all_flows
-        
+
         # List flows by category
         math_flows = list_flows(category="math")
         assert len(math_flows) == 1
@@ -628,22 +628,116 @@ class TestConvenienceFunctions:
 
     def test_search_flows_convenience(self):
         """Test search_flows convenience function."""
-        from flowengine.registry import search_flows, flow_registry
-        
+        from flowengine.registry import flow_registry, search_flows
+
         # Clear the global registry
         flow_registry.clear()
-        
+
         flow1 = Flow.from_sync_fn(add_one)
         flow2 = Flow.from_sync_fn(add_two)
-        
+
         flow_registry.register("flow1", flow1)
         flow_registry.register("flow2", flow2)
-        
+
         results = search_flows("flow")
         assert len(results) == 2
         assert "flow1" in results
         assert "flow2" in results
-        
+
         results = search_flows("flow1")
         assert len(results) == 1
         assert "flow1" in results
+
+    def test_unregister_flow_convenience(self):
+        """Test unregister_flow convenience function."""
+        from flowengine.registry import flow_registry, unregister_flow
+
+        # Clear the global registry
+        flow_registry.clear()
+
+        flow = Flow.from_sync_fn(add_one)
+        flow_registry.register("test_flow", flow)
+
+        assert "test_flow" in flow_registry.flows
+
+        unregister_flow("test_flow")
+        assert "test_flow" not in flow_registry.flows
+
+    def test_clear_registry_convenience(self):
+        """Test clear_registry convenience function."""
+        from flowengine.registry import clear_registry, flow_registry
+
+        # Clear the global registry
+        flow_registry.clear()
+
+        flow1 = Flow.from_sync_fn(add_one)
+        flow2 = Flow.from_sync_fn(add_two)
+
+        flow_registry.register("flow1", flow1, category="math")
+        flow_registry.register("flow2", flow2, category="other")
+
+        assert len(flow_registry.flows) == 2
+
+        # Test clearing all flows
+        clear_registry()
+        assert len(flow_registry.flows) == 0
+
+    def test_export_registry_convenience(self):
+        """Test export_registry convenience function."""
+        import json
+
+        from flowengine.registry import export_registry, flow_registry
+
+        # Setup registry with test data
+        flow_registry.clear()
+        flow1 = Flow.from_sync_fn(add_one)
+        flow2 = Flow.from_sync_fn(add_two)
+        flow_registry.register(
+            "flow1", flow1, category="math", metadata={"desc": "adds 1"}
+        )
+        flow_registry.register("flow2", flow2, category="math", tags=["utility"])
+
+        # Test JSON export
+        exported = export_registry("json")
+        data = json.loads(exported)
+
+        # Verify structure and content
+        assert all(
+            key in data for key in ["flows", "categories", "tags", "metadata", "stats"]
+        )
+        assert len(data["flows"]) == 2
+        assert all(name in data["flows"] for name in ["flow1", "flow2"])
+
+    def test_import_registry_convenience(self):
+        """Test import_registry convenience function."""
+        from flowengine.registry import flow_registry, import_registry
+
+        # Clear registry and create test data
+        flow_registry.clear()
+        test_data = {
+            "flows": {"flow1": {"name": "flow1"}},
+            "categories": {"math": ["flow1"]},
+            "tags": {"utility": ["flow1"]},
+            "metadata": {"flow1": {"desc": "test flow"}},
+        }
+
+        # Test import from dict
+        import_registry(test_data)
+
+        # Verify categories and tags structure imported
+        assert "math" in flow_registry.categories
+        assert "utility" in flow_registry.tags
+
+    def test_import_registry_error_paths(self):
+        """Test import_registry error handling."""
+        import pytest
+
+        from flowengine.registry import import_registry
+
+        # Test invalid JSON string
+        with pytest.raises(ValueError, match="Invalid JSON data"):
+            import_registry("invalid json")
+
+        # Test missing required keys
+        with pytest.raises(ValueError, match="Missing required keys"):
+            import_registry({"flows": {}})  # Missing categories, tags, metadata

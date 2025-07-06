@@ -1,7 +1,8 @@
 """FlowRegistry class for managing Flow objects."""
 
+import json
 import threading
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal
 
 from ..exceptions import FlowError
 from ..flow import Flow
@@ -43,9 +44,9 @@ class FlowRegistry(object):
         self,
         name: str,
         flow: AnyFlow,
-        category: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        category: str | None = None,
+        tags: List[str] | None = None,
+        metadata: Dict[str, Any] | None = None,
     ) -> None:
         """Register a flow with the registry."""
         if not name:
@@ -101,7 +102,7 @@ class FlowRegistry(object):
             if name in self._metadata:
                 del self._metadata[name]
 
-    def get(self, name: str, default: Any = _MISSING) -> Optional[AnyFlow]:
+    def get(self, name: str, default: Any = _MISSING) -> AnyFlow | None:
         """Get a flow by name."""
         with self._lock:
             if name in self._flows:
@@ -112,7 +113,7 @@ class FlowRegistry(object):
                 raise FlowRegistryError(f"Flow '{name}' not found")
 
     def list(
-        self, category: Optional[str] = None, tags: Optional[List[str]] = None
+        self, category: str | None = None, tags: List[str] | None = None
     ) -> List[str]:
         """List flow names, optionally filtered by category or tags.
 
@@ -167,7 +168,7 @@ class FlowRegistry(object):
 
             return results
 
-    def clear(self, category: Optional[str] = None) -> None:
+    def clear(self, category: str | None = None) -> None:
         """Clear all flows or flows from a specific category."""
         with self._lock:
             if category is None:
@@ -221,6 +222,66 @@ class FlowRegistry(object):
         """Get read-only view of all metadata."""
         with self._lock:
             return {k: v.copy() for k, v in self._metadata.items()}
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Export registry contents to dictionary format.
+
+        Returns:
+            Dictionary containing registry structure and metadata
+        """
+        with self._lock:
+            return {
+                "flows": {
+                    name: {
+                        "name": name,
+                        "flow_name": flow.name,
+                        "function_name": getattr(flow.fn, "__name__", "anonymous"),
+                        "repr": repr(flow),
+                    }
+                    for name, flow in self._flows.items()
+                },
+                "categories": {k: v.copy() for k, v in self._categories.items()},
+                "tags": {k: v.copy() for k, v in self._tags.items()},
+                "metadata": {k: v.copy() for k, v in self._metadata.items()},
+                "stats": {
+                    "total_flows": len(self._flows),
+                    "total_categories": len(self._categories),
+                    "total_tags": len(self._tags),
+                },
+            }
+
+    def from_dict(self, data: Dict[str, Any]) -> None:
+        """Import registry structure from dictionary format.
+
+        Args:
+            data: Dictionary containing registry data
+
+        Note:
+            This function only imports metadata, categories, and tags.
+            Flow objects cannot be deserialized and must be re-registered.
+        """
+        with self._lock:
+            # Clear existing registry (direct access to avoid deadlock)
+            self._flows.clear()
+            self._categories.clear()
+            self._tags.clear()
+            self._metadata.clear()
+
+            # Import metadata only (flows cannot be reconstructed)
+            for name, metadata in data.get("metadata", {}).items():
+                if name in data.get("flows", {}):
+                    self._metadata[name] = metadata.copy()
+
+            # Import categories and tags structure (without actual flows)
+            for category, flow_names in data.get("categories", {}).items():
+                self._categories[category] = [
+                    name for name in flow_names if name in data.get("flows", {})
+                ]
+
+            for tag, flow_names in data.get("tags", {}).items():
+                self._tags[tag] = [
+                    name for name in flow_names if name in data.get("flows", {})
+                ]
 
 
 # Global flow registry instance
@@ -277,3 +338,74 @@ def search_flows(query: str) -> list[str]:
         List of matching flow names
     """
     return flow_registry.search(query)
+
+
+def unregister_flow(name: str) -> None:
+    """Remove a flow from the global registry.
+
+    Args:
+        name: Name of the flow to remove
+
+    Raises:
+        FlowRegistryError: If flow is not found
+    """
+    flow_registry.unregister(name)
+
+
+def clear_registry(category: str | None = None) -> None:
+    """Clear flows from the global registry.
+
+    Args:
+        category: Optional category to clear, or None to clear all flows
+    """
+    flow_registry.clear(category)
+
+
+def export_registry(output_format: Literal["json"] = "json") -> str:
+    """Export registry contents to a serialized format.
+
+    Args:
+        output_format: Export format, currently only "json" is supported
+
+    Returns:
+        Serialized registry data as string
+
+    Raises:
+        ValueError: If output_format is not supported
+    """
+    if output_format == "json":
+        data = flow_registry.to_dict()
+        return json.dumps(data, indent=2)
+    else:
+        raise ValueError(f"Unsupported export format: {output_format}")
+
+
+def import_registry(data: str | Dict[str, Any]) -> None:
+    """Import registry contents from serialized data.
+
+    Args:
+        data: JSON string or dictionary containing registry data
+
+    Raises:
+        ValueError: If data format is invalid
+        FlowRegistryError: If import operation fails
+
+    Note:
+        This function only imports metadata, categories, and tags.
+        Flow objects cannot be deserialized and must be re-registered.
+    """
+    if isinstance(data, str):
+        try:
+            parsed_data = json.loads(data)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON data: {e}")
+    else:
+        parsed_data = data
+
+    # Validate data structure
+    required_keys = ["flows", "categories", "tags", "metadata"]
+    if not all(key in parsed_data for key in required_keys):
+        raise ValueError(f"Missing required keys. Expected: {required_keys}")
+
+    # Use the registry's from_dict method
+    flow_registry.from_dict(parsed_data)
