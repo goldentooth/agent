@@ -536,6 +536,217 @@ class TestObservabilityLifecycle:
         assert isinstance(final_summary, dict)
 
 
+class TestObservabilityScenarios:
+    """Test real-world observability scenarios."""
+
+    @pytest.mark.asyncio
+    async def test_production_monitoring(self):
+        """Test production monitoring workflow scenario."""
+        # Simulate a production-like monitoring scenario with multiple flows,
+        # health checks, and performance tracking
+
+        # Start with clean state
+        disable_flow_debugging()
+
+        # Register a custom health check for production monitoring
+        async def production_health_check():
+            # Simulate checking critical system resources
+            yield True  # System is healthy
+
+        register_health_check(
+            name="production_system_check",
+            description="Critical production system health",
+            check_function=production_health_check,
+        )
+
+        try:
+            # Create a production-style data processing pipeline
+            def process_order(order_id: int) -> dict[str, Any]:
+                return {
+                    "order_id": order_id,
+                    "processed_at": "2024-01-01T00:00:00Z",
+                    "status": "completed",
+                }
+
+            def validate_order(order: dict[str, Any]) -> bool:
+                return order.get("order_id", 0) > 0
+
+            # Create monitored production pipeline
+            production_pipeline = compose(
+                Flow.from_iterable(range(1, 101))  # 100 orders
+                .map(process_order)
+                .filter(validate_order),
+                performance_stream(),
+            )
+
+            # Execute production pipeline
+            async def empty_stream():
+                yield None
+
+            results = await production_pipeline.to_list()(empty_stream())
+
+            # Verify production results
+            assert len(results) == 100
+            assert all(isinstance(result, dict) for result in results)
+            assert all(result["status"] == "completed" for result in results)
+
+            # Check production monitoring metrics
+            performance_summary = get_performance_summary()
+            assert isinstance(performance_summary, dict)
+
+            # Verify production health monitoring
+            health_status = await check_system_health()
+            assert health_status.status in [HealthStatus.HEALTHY, HealthStatus.WARNING]
+
+            # Check that our custom production health check is included
+            check_names = [check.name for check in health_status.checks]
+            assert "production_system_check" in check_names
+
+        finally:
+            disable_flow_debugging()
+
+    @pytest.mark.asyncio
+    async def test_development_debugging(self):
+        """Test development debugging workflow scenario."""
+        # Simulate a development scenario with debugging enabled,
+        # trace collection, and issue investigation
+
+        enable_flow_debugging()
+
+        try:
+            # Create a development pipeline with potential issues
+            def transform_data(x: int) -> int:
+                # Simulate some complex business logic
+                if x == 7:
+                    # This could be a problematic edge case during development
+                    pass  # Let it pass through normally for testing
+                return x * 2 + 1
+
+            def filter_valid(x: int) -> bool:
+                # Development filter with debug-friendly logic
+                return x > 5
+
+            # Create traced development pipeline for debugging
+            dev_pipeline = traced_flow(
+                compose(
+                    Flow.from_iterable(range(10))
+                    .map(transform_data)
+                    .filter(filter_valid),
+                    debug_stream(log_items=False),  # Don't spam logs in tests
+                )
+            )
+
+            # Execute development pipeline
+            async def empty_stream():
+                yield None
+
+            results = await dev_pipeline.to_list()(empty_stream())
+
+            # Verify development results
+            expected = [
+                transform_data(x) for x in range(10) if filter_valid(transform_data(x))
+            ]
+            assert results == expected
+
+            # Check debugging capabilities
+            execution_trace = get_execution_trace()
+            assert isinstance(execution_trace, list)
+
+            # Test flow inspection during development
+            inspection = inspect_flow(dev_pipeline)
+            assert "name" in inspection
+            assert "type" in inspection
+
+            # Verify debugging state management
+            assert isinstance(get_execution_trace(), list)
+
+        finally:
+            disable_flow_debugging()
+
+    def _create_optimization_flows(self) -> list[Any]:
+        """Create a complex pipeline for optimization analysis."""
+
+        def step1_transform(x: int) -> int:
+            return x * 2
+
+        def step2_transform(x: int) -> int:
+            return x + 10
+
+        def step3_transform(x: int) -> int:
+            return x * 3
+
+        def step4_filter(x: int) -> bool:
+            return x > 50
+
+        return [
+            map_stream(step1_transform),
+            map_stream(step2_transform),
+            map_stream(step3_transform),
+            filter_stream(step4_filter),
+            batch_stream(5),
+        ]
+
+    async def _verify_analysis_export(self, flow_graph: Any) -> None:
+        """Verify analysis export functionality."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            try:
+                export_flow_analysis(flow_graph, f.name)
+
+                # Verify analysis export for optimization review
+                assert os.path.exists(f.name)
+                assert os.path.getsize(f.name) > 0
+
+                # Validate exported analysis structure
+                import json
+
+                with open(f.name) as read_file:
+                    analysis_data = json.load(read_file)
+                    assert "graph" in analysis_data
+                    assert "patterns" in analysis_data
+                    assert "optimization_suggestions" in analysis_data
+
+            finally:
+                os.unlink(f.name)
+
+    async def _run_optimization_analysis(self) -> tuple[Any, list[Any], list[Any]]:
+        """Run optimization analysis and return results."""
+        optimization_flows = self._create_optimization_flows()
+        flow_graph = analyze_flow_composition(optimization_flows)  # type: ignore
+
+        # Verify analysis results
+        assert len(flow_graph.nodes) == 5
+        assert len(flow_graph.edges) == 4  # 4 connections between 5 flows
+        assert flow_graph.complexity_score > 1
+
+        optimizations = generate_flow_optimizations(flow_graph)
+        patterns = detect_flow_patterns(flow_graph)
+        return flow_graph, optimizations, patterns
+
+    @pytest.mark.asyncio
+    async def test_performance_optimization(self):
+        """Test performance optimization workflow scenario."""
+        # Simulate a performance optimization scenario with analysis,
+        # bottleneck detection, and optimization suggestions
+
+        flow_graph, optimizations, patterns = await self._run_optimization_analysis()
+        assert isinstance(optimizations, list)
+        assert isinstance(patterns, list)
+
+        # Test performance monitoring during optimization analysis
+        test_pipeline = compose(Flow.from_iterable(range(100)), performance_stream())
+
+        async def empty_stream():
+            yield None
+
+        results = await test_pipeline.to_list()(empty_stream())
+        assert len(results) == 100
+
+        # Check performance metrics and export analysis
+        perf_summary = get_performance_summary()
+        assert isinstance(perf_summary, dict)
+        await self._verify_analysis_export(flow_graph)
+
+
 class TestIntegratedObservability:
     """Test integrated observability scenarios."""
 
