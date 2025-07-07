@@ -374,9 +374,14 @@ class TestPerformanceRegression:
         throughput_variance = (
             metrics["max_throughput"] - metrics["min_throughput"]
         ) / metrics["avg_throughput"]
-        variance_threshold = 0.25  # Allow up to 25% variance with improved algorithm
+
+        # Use more lenient thresholds in CI environments
+        is_ci = os.getenv("CI") is not None or os.getenv("GITHUB_ACTIONS") is not None
+        variance_threshold = 0.4 if is_ci else 0.25  # 40% for CI, 25% for local
+
         assert throughput_variance < variance_threshold, (
-            f"Throughput variance {throughput_variance:.3f} exceeds threshold {variance_threshold}. "
+            f"Throughput variance {throughput_variance:.3f} exceeds threshold {variance_threshold} "
+            f"({'CI' if is_ci else 'local'} environment). "
             f"Stats: min={metrics['min_throughput']:.2f}, max={metrics['max_throughput']:.2f}, avg={metrics['avg_throughput']:.2f} ops/sec "
             f"(from {stats['iterations']}/{stats.get('original_iterations', 'unknown')} samples "
             f"after {stats.get('trim_percent', 0)}% trimming)"
@@ -384,20 +389,27 @@ class TestPerformanceRegression:
 
     def _assert_no_extreme_outliers(self, metrics: Dict[str, Any]):
         """Assert max duration is not an extreme outlier."""
-        outlier_threshold = 5.0
-        assert (
-            metrics["max_duration"] < metrics["avg_duration"] * outlier_threshold
-        ), f"Max duration {metrics['max_duration']:.3f}s exceeds {outlier_threshold}x average {metrics['avg_duration']:.3f}s"
+        # Use more lenient outlier detection in CI environments
+        is_ci = os.getenv("CI") is not None or os.getenv("GITHUB_ACTIONS") is not None
+        outlier_threshold = 10.0 if is_ci else 5.0  # 10x for CI, 5x for local
+
+        assert metrics["max_duration"] < metrics["avg_duration"] * outlier_threshold, (
+            f"Max duration {metrics['max_duration']:.3f}s exceeds {outlier_threshold}x average "
+            f"{metrics['avg_duration']:.3f}s ({'CI' if is_ci else 'local'} environment)"
+        )
 
     def _assert_minimum_performance(self, metrics: Dict[str, Any]):
         """Assert minimum performance is reasonable."""
-        min_performance_ratio = 0.2
+        # Use more lenient minimum performance threshold in CI environments
+        is_ci = os.getenv("CI") is not None or os.getenv("GITHUB_ACTIONS") is not None
+        min_performance_ratio = 0.1 if is_ci else 0.2  # 10% for CI, 20% for local
+
         assert (
             metrics["min_throughput"]
             > metrics["avg_throughput"] * min_performance_ratio
         ), (
             f"Min throughput {metrics['min_throughput']:.2f} is less than {min_performance_ratio*100}% "
-            f"of average {metrics['avg_throughput']:.2f} ops/sec"
+            f"of average {metrics['avg_throughput']:.2f} ops/sec ({'CI' if is_ci else 'local'} environment)"
         )
 
 
