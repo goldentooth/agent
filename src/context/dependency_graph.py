@@ -38,3 +38,12 @@ class DependencyGraph:
             # Clean up empty sets
             if not self._graph[source_key]:
                 del self._graph[source_key]
+
+    def remove_all_dependencies(self, source_key: str) -> None:
+        """Remove all dependencies for a source key.
+
+        Args:
+            source_key: The key to remove all dependencies for
+        """
+        if source_key in self._graph:
+            del self._graph[source_key]

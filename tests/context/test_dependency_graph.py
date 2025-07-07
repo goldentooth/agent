@@ -306,3 +306,133 @@ class TestDependencyGraphRemoveDependency:
         result = graph.remove_dependency("source", "dependent")
 
         assert result is None
+
+
+class TestDependencyGraphRemoveAllDependencies:
+    """Test suite for DependencyGraph.remove_all_dependencies method."""
+
+    def test_remove_all_dependencies_basic(self):
+        """Test removing all dependencies for a source key."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+        graph.add_dependency("source", "dep3")
+
+        graph.remove_all_dependencies("source")
+
+        internal_graph = graph.get_internal_graph_for_testing()
+        assert "source" not in internal_graph
+        assert len(internal_graph) == 0
+
+    def test_remove_all_dependencies_preserves_other_sources(self):
+        """Test that removing all dependencies preserves other source keys."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source1", "dep2")
+        graph.add_dependency("source2", "dep3")
+        graph.add_dependency("source3", "dep4")
+
+        graph.remove_all_dependencies("source1")
+
+        internal_graph = graph.get_internal_graph_for_testing()
+        assert "source1" not in internal_graph
+        assert "source2" in internal_graph
+        assert "source3" in internal_graph
+        assert "dep3" in internal_graph["source2"]
+        assert "dep4" in internal_graph["source3"]
+        assert len(internal_graph) == 2
+
+    def test_remove_all_dependencies_nonexistent_source(self):
+        """Test removing all dependencies for a nonexistent source key."""
+        graph = DependencyGraph()
+        graph.add_dependency("existing", "dep")
+
+        # Should not raise an error
+        graph.remove_all_dependencies("nonexistent")
+
+        internal_graph = graph.get_internal_graph_for_testing()
+        assert "existing" in internal_graph
+        assert "nonexistent" not in internal_graph
+        assert len(internal_graph) == 1
+
+    def test_remove_all_dependencies_empty_graph(self):
+        """Test removing all dependencies from an empty graph."""
+        graph = DependencyGraph()
+
+        # Should not raise an error
+        graph.remove_all_dependencies("any_key")
+
+        internal_graph = graph.get_internal_graph_for_testing()
+        assert len(internal_graph) == 0
+
+    def test_remove_all_dependencies_single_dependency(self):
+        """Test removing all dependencies when there's only one."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "single_dep")
+
+        graph.remove_all_dependencies("source")
+
+        internal_graph = graph.get_internal_graph_for_testing()
+        assert "source" not in internal_graph
+        assert len(internal_graph) == 0
+
+    def test_remove_all_dependencies_multiple_calls(self):
+        """Test calling remove_all_dependencies multiple times on same key."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        graph.remove_all_dependencies("source")
+        graph.remove_all_dependencies("source")  # Second call should be safe
+
+        internal_graph = graph.get_internal_graph_for_testing()
+        assert "source" not in internal_graph
+        assert len(internal_graph) == 0
+
+    def test_remove_all_dependencies_empty_string_key(self):
+        """Test removing all dependencies for empty string key."""
+        graph = DependencyGraph()
+        graph.add_dependency("", "dep1")
+        graph.add_dependency("", "dep2")
+        graph.add_dependency("normal", "dep3")
+
+        graph.remove_all_dependencies("")
+
+        internal_graph = graph.get_internal_graph_for_testing()
+        assert "" not in internal_graph
+        assert "normal" in internal_graph
+        assert "dep3" in internal_graph["normal"]
+        assert len(internal_graph) == 1
+
+    def test_remove_all_dependencies_vs_individual_removal(self):
+        """Test that remove_all_dependencies is equivalent to removing each dependency individually."""
+        # Create two identical graphs
+        graph1 = DependencyGraph()
+        graph2 = DependencyGraph()
+
+        # Add same dependencies to both
+        dependencies = ["dep1", "dep2", "dep3", "dep4"]
+        for dep in dependencies:
+            graph1.add_dependency("source", dep)
+            graph2.add_dependency("source", dep)
+
+        # Remove all at once from graph1
+        graph1.remove_all_dependencies("source")
+
+        # Remove individually from graph2
+        for dep in dependencies:
+            graph2.remove_dependency("source", dep)
+
+        # Both should have same result
+        internal1 = graph1.get_internal_graph_for_testing()
+        internal2 = graph2.get_internal_graph_for_testing()
+        assert internal1 == internal2
+        assert len(internal1) == 0
+
+    def test_remove_all_dependencies_return_value(self):
+        """Test that remove_all_dependencies returns None."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        result = graph.remove_all_dependencies("source")
+
+        assert result is None
