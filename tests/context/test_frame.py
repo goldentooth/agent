@@ -123,3 +123,45 @@ def test_context_frame_contains():
     # Test non-existing keys
     assert "missing_key" not in frame
     assert "another_missing" not in frame
+
+
+def _setup_frame_with_nested_data(frame: ContextFrame) -> dict[str, str | list[int]]:
+    """Helper to set up frame with nested test data."""
+    nested_dict = {"inner": "value", "list": [1, 2, 3]}
+    frame.data["string"] = "hello"
+    frame.data["number"] = 42
+    frame.data["nested"] = nested_dict
+    return nested_dict
+
+
+def _verify_copy_independence(frame: ContextFrame, copied_frame: ContextFrame) -> None:
+    """Helper to verify copy independence."""
+    assert copied_frame is not frame
+    assert copied_frame.data is not frame.data
+    assert copied_frame.data == frame.data
+
+
+def _verify_deep_copy_behavior(frame: ContextFrame, copied_frame: ContextFrame) -> None:
+    """Helper to verify deep copy behavior."""
+    assert copied_frame.data["nested"] is not frame.data["nested"]
+    assert copied_frame.data["nested"]["list"] is not frame.data["nested"]["list"]
+
+
+def test_context_frame_copy():
+    """Test that ContextFrame.copy creates an independent copy."""
+    frame = ContextFrame()
+    _setup_frame_with_nested_data(frame)
+
+    # Create copy and verify independence
+    copied_frame = frame.copy()
+    _verify_copy_independence(frame, copied_frame)
+    _verify_deep_copy_behavior(frame, copied_frame)
+
+    # Modify original and verify copy is unaffected
+    frame.data["string"] = "modified"
+    frame.data["nested"]["inner"] = "changed"
+    frame.data["nested"]["list"].append(4)
+
+    assert copied_frame.data["string"] == "hello"
+    assert copied_frame.data["nested"]["inner"] == "value"
+    assert copied_frame.data["nested"]["list"] == [1, 2, 3]

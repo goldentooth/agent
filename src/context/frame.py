@@ -7,6 +7,7 @@ dictionary-like behavior.
 
 from __future__ import annotations
 
+import copy
 from typing import Any
 
 # Type aliases for context data - contexts can store any type of value
@@ -37,3 +38,9 @@ class ContextFrame:
     def __contains__(self, key: str) -> bool:
         """Check if a key exists in this context frame."""
         return key in self.data
+
+    def copy(self) -> "ContextFrame":
+        """Create a copy of this context frame."""
+        frame = ContextFrame()
+        frame.data = copy.deepcopy(self.data)
+        return frame
