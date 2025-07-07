@@ -3,6 +3,7 @@ from typing import Any
 import pytest
 
 from context.key import ContextKey
+from context.symbol import Symbol
 
 
 class TestContextKeyInit:
@@ -165,3 +166,77 @@ class TestContextKeyCreate:
         assert create_doc is not None
         assert "create" in create_doc.lower()
         assert "type" in create_doc.lower()
+
+
+class TestContextKeySymbol:
+    """Test the ContextKey.symbol cached property."""
+
+    def test_symbol_property_returns_symbol(self):
+        """Test that symbol property returns a Symbol instance."""
+        key: ContextKey[str] = ContextKey("agent.intent.task", str, "Current task")
+        symbol = key.symbol
+
+        assert isinstance(symbol, Symbol)
+        assert str(symbol) == "agent.intent.task"
+
+    def test_symbol_property_value_matches_path(self):
+        """Test that symbol value matches the key's path."""
+        key: ContextKey[str] = ContextKey("user.profile.name", str)
+        assert key.symbol == "user.profile.name"
+        assert key.symbol == key.path
+
+    def test_symbol_property_parts(self):
+        """Test that symbol properly splits path into parts."""
+        key: ContextKey[str] = ContextKey("agent.task.execution.status", str)
+        assert key.symbol.parts() == ["agent", "task", "execution", "status"]
+
+    def test_symbol_property_cached(self):
+        """Test that symbol property is cached (same instance returned)."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+
+        # Get symbol twice
+        symbol1 = key.symbol
+        symbol2 = key.symbol
+
+        # Should be the exact same object (cached)
+        assert symbol1 is symbol2
+
+    def test_symbol_property_with_empty_path(self):
+        """Test symbol property with empty path."""
+        key: ContextKey[str] = ContextKey("", str)
+        assert key.symbol == ""
+        assert key.symbol.parts() == [""]
+
+    def test_symbol_property_with_single_part(self):
+        """Test symbol property with single part path."""
+        key: ContextKey[str] = ContextKey("simple", str)
+        assert key.symbol == "simple"
+        assert key.symbol.parts() == ["simple"]
+
+    def test_symbol_property_immutability(self):
+        """Test that symbol property cannot be reassigned."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+
+        with pytest.raises(AttributeError):
+            key.symbol = Symbol("new.symbol")  # type: ignore[misc]
+
+    def test_symbol_property_works_with_all_types(self):
+        """Test that symbol property works regardless of key type."""
+        str_key: ContextKey[str] = ContextKey("str.key", str)
+        int_key: ContextKey[int] = ContextKey("int.key", int)
+        dict_key: ContextKey[dict[str, Any]] = ContextKey("dict.key", dict)
+
+        assert str_key.symbol == "str.key"
+        assert int_key.symbol == "int.key"
+        assert dict_key.symbol == "dict.key"
+
+    def test_symbol_property_string_behavior(self):
+        """Test that symbol behaves like a string."""
+        key: ContextKey[str] = ContextKey("test.path", str)
+        symbol = key.symbol
+
+        # Test string operations
+        assert symbol.upper() == "TEST.PATH"
+        assert symbol.startswith("test")
+        assert "path" in symbol
+        assert len(symbol) == 9

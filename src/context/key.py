@@ -8,7 +8,10 @@ identifiers that combine a hierarchical path with type information.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Generic, TypeVar
+
+from .symbol import Symbol
 
 T = TypeVar("T")
 
@@ -80,6 +83,39 @@ class ContextKey(Generic[T]):
                 <class 'int'>
         """
         return cls(path, type_, description)
+
+    @cached_property
+    def symbol(self) -> Symbol:
+        """Return a Symbol representation of the context key.
+
+        The symbol property provides a Symbol instance based on the key's path,
+        enabling hierarchical navigation and string-based operations. The Symbol
+        is created once and cached for the lifetime of the ContextKey instance.
+
+        Returns:
+            A Symbol instance created from the key's path
+
+        Examples:
+            Basic usage:
+                >>> key = ContextKey("agent.intent.task", str)
+                >>> key.symbol
+                Symbol('agent.intent.task')
+                >>> str(key.symbol)
+                'agent.intent.task'
+
+            Hierarchical navigation:
+                >>> key = ContextKey("user.profile.settings", str)
+                >>> key.symbol.parts()
+                ['user', 'profile', 'settings']
+
+            Cached property:
+                >>> key = ContextKey("test.key", str)
+                >>> symbol1 = key.symbol
+                >>> symbol2 = key.symbol
+                >>> symbol1 is symbol2  # Same instance
+                True
+        """
+        return Symbol(self.path)
 
     def __eq__(self, other: object) -> bool:
         """Check if two context keys are equal by their paths."""
