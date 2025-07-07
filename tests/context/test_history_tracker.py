@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from context.history_tracker import ContextChangeEvent
+from context.history_tracker import ContextChangeEvent, HistoryTracker
 
 
 class TestContextChangeEvent:
@@ -176,3 +176,76 @@ class TestContextChangeEvent:
             event = ContextChangeEvent("key", old_val, new_val, 1)
             repr_str = repr(event)
             assert expected_transition in repr_str
+
+
+class TestHistoryTracker:
+    """Test suite for HistoryTracker class."""
+
+    def test_init_default_max_size(self) -> None:
+        """Test initialization with default max_size."""
+        tracker = HistoryTracker()
+
+        assert tracker._max_history_size == 1000  # type: ignore[reportPrivateUsage]
+        assert tracker._change_history == []  # type: ignore[reportPrivateUsage]
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]
+
+    def test_init_custom_max_size(self) -> None:
+        """Test initialization with custom max_size."""
+        max_size = 500
+        tracker = HistoryTracker(max_size=max_size)
+
+        assert tracker._max_history_size == max_size  # type: ignore[reportPrivateUsage]
+        assert tracker._change_history == []  # type: ignore[reportPrivateUsage]
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]
+
+    def test_init_zero_max_size(self) -> None:
+        """Test initialization with zero max_size."""
+        tracker = HistoryTracker(max_size=0)
+
+        assert tracker._max_history_size == 0  # type: ignore[reportPrivateUsage]
+        assert tracker._change_history == []  # type: ignore[reportPrivateUsage]
+
+    def test_init_small_max_size(self) -> None:
+        """Test initialization with small max_size."""
+        tracker = HistoryTracker(max_size=1)
+
+        assert tracker._max_history_size == 1  # type: ignore[reportPrivateUsage]
+        assert tracker._change_history == []  # type: ignore[reportPrivateUsage]
+
+    def test_init_large_max_size(self) -> None:
+        """Test initialization with large max_size."""
+        tracker = HistoryTracker(max_size=10000)
+
+        assert tracker._max_history_size == 10000  # type: ignore[reportPrivateUsage]
+        assert tracker._change_history == []  # type: ignore[reportPrivateUsage]
+
+    def test_init_negative_max_size(self) -> None:
+        """Test initialization with negative max_size (should accept it)."""
+        tracker = HistoryTracker(max_size=-1)
+
+        assert tracker._max_history_size == -1  # type: ignore[reportPrivateUsage]
+        assert tracker._change_history == []  # type: ignore[reportPrivateUsage]
+
+    def test_init_attributes_types(self) -> None:
+        """Test that initialized attributes have correct types."""
+        tracker = HistoryTracker()
+
+        assert isinstance(tracker._change_history, list)  # type: ignore[reportPrivateUsage]
+        assert isinstance(tracker._max_history_size, int)  # type: ignore[reportPrivateUsage]
+
+        # Verify the list can contain ContextChangeEvent objects
+        assert all(
+            isinstance(item, ContextChangeEvent) for item in tracker._change_history  # type: ignore[reportPrivateUsage]
+        )
+
+    def test_init_isolated_instances(self) -> None:
+        """Test that different instances have isolated state."""
+        tracker1 = HistoryTracker(max_size=100)
+        tracker2 = HistoryTracker(max_size=200)
+
+        assert tracker1._max_history_size != tracker2._max_history_size  # type: ignore[reportPrivateUsage]
+        assert tracker1._change_history is not tracker2._change_history  # type: ignore[reportPrivateUsage]
+
+        # Verify modifying one doesn't affect the other
+        tracker1._max_history_size = 150  # type: ignore[reportPrivateUsage]
+        assert tracker2._max_history_size == 200  # type: ignore[reportPrivateUsage]

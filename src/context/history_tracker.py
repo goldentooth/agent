@@ -40,3 +40,17 @@ class ContextChangeEvent:
     def __repr__(self) -> str:
         """String representation of the change event."""
         return f"ContextChangeEvent(key='{self.key}', {self.old_value} -> {self.new_value}, t={self.timestamp})"
+
+
+class HistoryTracker:
+    """Tracks change history for Context objects."""
+
+    def __init__(self, max_size: int = 1000) -> None:
+        """Initialize the history tracker.
+
+        Args:
+            max_size: Maximum number of change events to keep
+        """
+        super().__init__()
+        self._change_history: list[ContextChangeEvent] = []
+        self._max_history_size = max_size
