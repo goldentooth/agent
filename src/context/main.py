@@ -54,6 +54,35 @@ class ContextSnapshot:
         Args:
             context: The context to restore to
         """
-        # This is a placeholder implementation for commit #48
-        # The full implementation will be added in commit #49
-        pass
+        # Clear current state
+        if hasattr(context, "frames"):
+            context.frames.clear()
+        if hasattr(context, "_computed_properties"):
+            context._computed_properties.clear()  # type: ignore[reportUnknownMemberType]
+        if hasattr(context, "_transformations"):
+            context._transformations.clear()  # type: ignore[reportUnknownMemberType]
+        if hasattr(context, "_dependency_graph"):
+            context._dependency_graph.clear()  # type: ignore[reportUnknownMemberType]
+        if hasattr(context, "_sync_events"):
+            context._sync_events.clear()  # type: ignore[reportUnknownMemberType]
+        if hasattr(context, "_async_events"):
+            context._async_events.clear()  # type: ignore[reportUnknownMemberType]
+
+        # Restore frames
+        if hasattr(context, "frames"):
+            context.frames.extend([frame.copy() for frame in self.frames])  # type: ignore[reportUnknownMemberType]
+
+        # Restore computed properties
+        for key, prop_data in self.computed_properties.items():
+            if hasattr(context, "add_computed_property"):
+                context.add_computed_property(  # type: ignore[reportUnknownMemberType]
+                    key,
+                    prop_data["func"],
+                    prop_data["dependencies"],
+                )
+
+        # Restore transformations
+        for key, funcs in self.transformations.items():
+            for func in funcs:
+                if hasattr(context, "add_transformation"):
+                    context.add_transformation(key, func)  # type: ignore[reportUnknownMemberType]

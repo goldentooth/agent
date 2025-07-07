@@ -1,6 +1,7 @@
 """Tests for threshold calculation logic."""
 
 import pytest
+
 from src.git_hooks.core import ThresholdCalculator
 
 
