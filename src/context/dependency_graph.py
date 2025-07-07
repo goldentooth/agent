@@ -69,3 +69,11 @@ class DependencyGraph:
             True if the key has dependents, False otherwise
         """
         return source_key in self._graph and len(self._graph[source_key]) > 0
+
+    def get_all_source_keys(self) -> set[str]:
+        """Get all source keys that have dependents.
+
+        Returns:
+            Set of all source keys
+        """
+        return set(self._graph.keys())

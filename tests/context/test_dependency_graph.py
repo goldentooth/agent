@@ -722,3 +722,152 @@ class TestDependencyGraphHasDependents:
         assert isinstance(result_false, bool)
         assert result_true is True
         assert result_false is False
+
+
+class TestDependencyGraphGetAllSourceKeys:
+    """Test suite for DependencyGraph.get_all_source_keys method."""
+
+    def test_get_all_source_keys_empty_graph(self):
+        """Test get_all_source_keys returns empty set for empty graph."""
+        graph = DependencyGraph()
+
+        source_keys = graph.get_all_source_keys()
+
+        assert isinstance(source_keys, set)
+        assert len(source_keys) == 0
+
+    def test_get_all_source_keys_single_source(self):
+        """Test get_all_source_keys with single source key."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        source_keys = graph.get_all_source_keys()
+
+        assert isinstance(source_keys, set)
+        assert len(source_keys) == 1
+        assert "source" in source_keys
+
+    def test_get_all_source_keys_multiple_sources(self):
+        """Test get_all_source_keys with multiple source keys."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+        graph.add_dependency("source3", "dep3")
+
+        source_keys = graph.get_all_source_keys()
+
+        assert len(source_keys) == 3
+        assert "source1" in source_keys
+        assert "source2" in source_keys
+        assert "source3" in source_keys
+
+    def test_get_all_source_keys_excludes_removed_sources(self):
+        """Test that removed sources are excluded from result."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+
+        # Remove all dependencies for source1
+        graph.remove_all_dependencies("source1")
+
+        source_keys = graph.get_all_source_keys()
+
+        assert len(source_keys) == 1
+        assert "source1" not in source_keys
+        assert "source2" in source_keys
+
+    def test_get_all_source_keys_after_individual_removal(self):
+        """Test source keys after removing last dependency individually."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        # Remove the only dependency
+        graph.remove_dependency("source", "dep")
+
+        source_keys = graph.get_all_source_keys()
+
+        assert len(source_keys) == 0
+        assert "source" not in source_keys
+
+    def test_get_all_source_keys_returns_copy(self):
+        """Test that get_all_source_keys returns a copy."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+
+        keys1 = graph.get_all_source_keys()
+        keys2 = graph.get_all_source_keys()
+
+        # Should be equal but different objects
+        assert keys1 == keys2
+        assert keys1 is not keys2
+
+        # Modifying one shouldn't affect the other or the graph
+        keys1.add("new_source")
+        assert "new_source" not in keys2
+        assert "new_source" not in graph.get_all_source_keys()
+
+    def test_get_all_source_keys_empty_string(self):
+        """Test get_all_source_keys with empty string source."""
+        graph = DependencyGraph()
+        graph.add_dependency("", "dep")
+        graph.add_dependency("normal", "dep2")
+
+        source_keys = graph.get_all_source_keys()
+
+        assert len(source_keys) == 2
+        assert "" in source_keys
+        assert "normal" in source_keys
+
+    def test_get_all_source_keys_with_empty_dependents(self):
+        """Test that sources with no remaining dependents are excluded."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source1", "dep2")
+        graph.add_dependency("source2", "dep3")
+
+        # Remove all dependents from source1
+        graph.remove_dependency("source1", "dep1")
+        graph.remove_dependency("source1", "dep2")
+
+        source_keys = graph.get_all_source_keys()
+
+        assert len(source_keys) == 1
+        assert "source1" not in source_keys
+        assert "source2" in source_keys
+
+    def test_get_all_source_keys_consistency_with_has_dependents(self):
+        """Test consistency between get_all_source_keys and has_dependents."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+        graph.add_dependency("source3", "dep3")
+
+        source_keys = graph.get_all_source_keys()
+
+        # Every key returned should have dependents
+        for key in source_keys:
+            assert graph.has_dependents(key)
+
+        # Every key with dependents should be in the result
+        all_possible_keys = ["source1", "source2", "source3", "nonexistent"]
+        for key in all_possible_keys:
+            if graph.has_dependents(key):
+                assert key in source_keys
+            else:
+                assert key not in source_keys
+
+    def test_get_all_source_keys_immutability_guarantee(self):
+        """Test that modifying returned set doesn't affect internal state."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        source_keys = graph.get_all_source_keys()
+        source_keys.add("fake_source")
+        source_keys.remove("source")
+
+        # Original state should be preserved
+        original_keys = graph.get_all_source_keys()
+        assert "source" in original_keys
+        assert "fake_source" not in original_keys
+        assert len(original_keys) == 1
