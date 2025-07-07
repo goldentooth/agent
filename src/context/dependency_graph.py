@@ -97,3 +97,7 @@ class DependencyGraph:
     def __contains__(self, source_key: str) -> bool:
         """Check if a source key exists in the graph."""
         return source_key in self._graph
+
+    def __repr__(self) -> str:
+        """String representation of the dependency graph."""
+        return f"DependencyGraph({len(self._graph)} source keys)"

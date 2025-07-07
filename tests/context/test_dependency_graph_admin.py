@@ -628,3 +628,145 @@ class TestDependencyGraphContains:
         assert "Source" in graph
         assert "source" not in graph
         assert "SOURCE" not in graph
+
+
+class TestDependencyGraphRepr:
+    """Test suite for DependencyGraph.__repr__ method."""
+
+    def test_repr_empty_graph(self):
+        """Test __repr__ for empty graph."""
+        graph = DependencyGraph()
+
+        repr_str = repr(graph)
+        assert repr_str == "DependencyGraph(0 source keys)"
+
+    def test_repr_single_source(self):
+        """Test __repr__ for single source."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        repr_str = repr(graph)
+        assert repr_str == "DependencyGraph(1 source keys)"
+
+    def test_repr_multiple_sources(self):
+        """Test __repr__ for multiple sources."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+        graph.add_dependency("source3", "dep3")
+
+        repr_str = repr(graph)
+        assert repr_str == "DependencyGraph(3 source keys)"
+
+    def test_repr_after_adding_dependencies(self):
+        """Test __repr__ changes as dependencies are added."""
+        graph = DependencyGraph()
+
+        assert repr(graph) == "DependencyGraph(0 source keys)"
+
+        graph.add_dependency("source1", "dep1")
+        assert repr(graph) == "DependencyGraph(1 source keys)"
+
+        graph.add_dependency("source2", "dep2")
+        assert repr(graph) == "DependencyGraph(2 source keys)"
+
+        # Adding more deps to existing source shouldn't change count
+        graph.add_dependency("source1", "dep3")
+        assert repr(graph) == "DependencyGraph(2 source keys)"
+
+    def test_repr_after_removing_dependencies(self):
+        """Test __repr__ changes as dependencies are removed."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source1", "dep2")
+        graph.add_dependency("source2", "dep3")
+
+        assert repr(graph) == "DependencyGraph(2 source keys)"
+
+        # Remove one dependency (source still has another)
+        graph.remove_dependency("source1", "dep1")
+        assert repr(graph) == "DependencyGraph(2 source keys)"
+
+        # Remove last dependency from source1
+        graph.remove_dependency("source1", "dep2")
+        assert repr(graph) == "DependencyGraph(1 source keys)"
+
+        # Remove all from source2
+        graph.remove_all_dependencies("source2")
+        assert repr(graph) == "DependencyGraph(0 source keys)"
+
+    def test_repr_after_clear(self):
+        """Test __repr__ after clear."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+        graph.add_dependency("source3", "dep3")
+
+        assert repr(graph) == "DependencyGraph(3 source keys)"
+
+        graph.clear()
+        assert repr(graph) == "DependencyGraph(0 source keys)"
+
+    def test_repr_consistency_with_len(self):
+        """Test __repr__ is consistent with __len__."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+
+        length = len(graph)
+        repr_str = repr(graph)
+        expected = f"DependencyGraph({length} source keys)"
+        assert repr_str == expected
+
+        # Test after modifications
+        graph.remove_dependency("source1", "dep1")
+        length = len(graph)
+        repr_str = repr(graph)
+        expected = f"DependencyGraph({length} source keys)"
+        assert repr_str == expected
+
+    def test_repr_return_type(self):
+        """Test that __repr__ returns string type."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        repr_str = repr(graph)
+        assert isinstance(repr_str, str)
+
+    def test_repr_format_consistency(self):
+        """Test __repr__ format consistency."""
+        graph = DependencyGraph()
+
+        # Test different counts
+        for i in range(5):
+            repr_str = repr(graph)
+            expected_pattern = f"DependencyGraph({i} source keys)"
+            assert repr_str == expected_pattern
+
+            if i < 4:  # Don't add after last iteration
+                graph.add_dependency(f"source{i}", f"dep{i}")
+
+    def test_repr_debugging_utility(self):
+        """Test __repr__ provides useful debugging information."""
+        graph = DependencyGraph()
+        graph.add_dependency("user_session", "ui_state")
+        graph.add_dependency("user_session", "auth_token")
+        graph.add_dependency("current_page", "breadcrumbs")
+
+        repr_str = repr(graph)
+
+        # Should clearly show it's a DependencyGraph
+        assert "DependencyGraph" in repr_str
+        # Should show the count
+        assert "2 source keys" in repr_str
+        # Should be informative for debugging
+        assert repr_str == "DependencyGraph(2 source keys)"
+
+    def test_repr_with_empty_string_keys(self):
+        """Test __repr__ counts empty string keys correctly."""
+        graph = DependencyGraph()
+        graph.add_dependency("", "dep1")
+        graph.add_dependency("normal", "dep2")
+
+        repr_str = repr(graph)
+        assert repr_str == "DependencyGraph(2 source keys)"
