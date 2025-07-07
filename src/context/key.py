@@ -145,8 +145,79 @@ class ContextKey(Generic[T]):
         """
         return self.path
 
+    def __repr__(self) -> str:
+        """Return the detailed string representation of the context key.
+
+        Returns a detailed representation showing both the path and type
+        information, which is useful for debugging, development, and logging.
+        Following Python conventions, this provides more detail than __str__.
+
+        Returns:
+            A formatted string in the form "ContextKey(path<type_name>)"
+
+        Examples:
+            Basic usage:
+                >>> key = ContextKey("agent.intent", str)
+                >>> repr(key)
+                'ContextKey(agent.intent<str>)'
+
+            Different types:
+                >>> int_key = ContextKey("user.age", int)
+                >>> repr(int_key)
+                'ContextKey(user.age<int>)'
+
+            Complex types:
+                >>> list_key = ContextKey("items", list)
+                >>> repr(list_key)
+                'ContextKey(items<list>)'
+
+            Debugging context:
+                >>> key = ContextKey("config.debug", bool, "Debug mode")
+                >>> print(f"Working with {repr(key)}")
+                Working with ContextKey(config.debug<bool>)
+        """
+        return f"ContextKey({self.path}<{self.type_.__name__}>)"
+
     def __eq__(self, other: object) -> bool:
-        """Check if two context keys are equal by their paths."""
+        """Check if two context keys are equal by their paths.
+
+        Two ContextKey instances are considered equal if they have the same path,
+        regardless of their type or description. This enables keys to be used
+        as dictionary keys and in sets, where equality is based solely on the
+        hierarchical path they represent.
+
+        Args:
+            other: The object to compare this ContextKey with
+
+        Returns:
+            True if other is a ContextKey with the same path, False if other
+            is a ContextKey with a different path, or NotImplemented if other
+            is not a ContextKey (letting Python handle the comparison)
+
+        Examples:
+            Same path, different types:
+                >>> key1 = ContextKey("user.name", str)
+                >>> key2 = ContextKey("user.name", int)
+                >>> key1 == key2
+                True
+
+            Same path, different descriptions:
+                >>> key1 = ContextKey("config.debug", bool, "Debug mode")
+                >>> key2 = ContextKey("config.debug", bool, "Debug flag")
+                >>> key1 == key2
+                True
+
+            Different paths:
+                >>> key1 = ContextKey("user.name", str)
+                >>> key2 = ContextKey("user.email", str)
+                >>> key1 == key2
+                False
+
+            Comparison with non-ContextKey:
+                >>> key = ContextKey("test", str)
+                >>> key == "test"
+                False
+        """
         if not isinstance(other, ContextKey):
             return NotImplemented
         return self.path == other.path

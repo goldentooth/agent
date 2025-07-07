@@ -314,3 +314,190 @@ class TestContextKeyStr:
         result3 = str(key)
 
         assert result1 == result2 == result3 == "test.key"
+
+
+class TestContextKeyRepr:
+    """Test the ContextKey.__repr__ method."""
+
+    def test_repr_returns_detailed_format(self):
+        """Test that __repr__ returns detailed ContextKey format."""
+        key: ContextKey[str] = ContextKey("agent.intent", str)
+        assert repr(key) == "ContextKey(agent.intent<str>)"
+
+    def test_repr_with_different_types(self):
+        """Test __repr__ with different type parameters."""
+        str_key: ContextKey[str] = ContextKey("str.key", str)
+        int_key: ContextKey[int] = ContextKey("int.key", int)
+        bool_key: ContextKey[bool] = ContextKey("bool.key", bool)
+        list_key: ContextKey[list[str]] = ContextKey("list.key", list)
+        dict_key: ContextKey[dict[str, Any]] = ContextKey("dict.key", dict)
+
+        assert repr(str_key) == "ContextKey(str.key<str>)"
+        assert repr(int_key) == "ContextKey(int.key<int>)"
+        assert repr(bool_key) == "ContextKey(bool.key<bool>)"
+        assert repr(list_key) == "ContextKey(list.key<list>)"
+        assert repr(dict_key) == "ContextKey(dict.key<dict>)"
+
+    def test_repr_ignores_description(self):
+        """Test that __repr__ doesn't include description."""
+        key: ContextKey[str] = ContextKey(
+            "user.profile", str, "User profile information"
+        )
+        assert repr(key) == "ContextKey(user.profile<str>)"
+
+    def test_repr_with_empty_path(self):
+        """Test __repr__ with empty path."""
+        key: ContextKey[str] = ContextKey("", str)
+        assert repr(key) == "ContextKey(<str>)"
+
+    def test_repr_with_complex_path(self):
+        """Test __repr__ with complex hierarchical path."""
+        key: ContextKey[str] = ContextKey("agent.task.execution.status.current", str)
+        assert repr(key) == "ContextKey(agent.task.execution.status.current<str>)"
+
+    def test_repr_difference_from_str(self):
+        """Test that __repr__ is different from __str__."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+
+        str_result = str(key)
+        repr_result = repr(key)
+
+        assert str_result == "test.key"
+        assert repr_result == "ContextKey(test.key<str>)"
+        assert str_result != repr_result
+
+    def test_repr_with_custom_types(self):
+        """Test __repr__ with custom type names."""
+        # Test with built-in types that have longer names
+        key_float: ContextKey[float] = ContextKey("float.key", float)
+        key_tuple: ContextKey[tuple[str, ...]] = ContextKey("tuple.key", tuple)
+
+        assert repr(key_float) == "ContextKey(float.key<float>)"
+        assert repr(key_tuple) == "ContextKey(tuple.key<tuple>)"
+
+    def test_repr_idempotent(self):
+        """Test that calling repr() multiple times returns same result."""
+        key: ContextKey[int] = ContextKey("test.key", int)
+        result1 = repr(key)
+        result2 = repr(key)
+        result3 = repr(key)
+
+        assert result1 == result2 == result3 == "ContextKey(test.key<int>)"
+
+    def test_repr_eval_roundtrip_concept(self):
+        """Test that repr provides info for reconstruction (conceptual)."""
+        key: ContextKey[str] = ContextKey("test.path", str)
+        repr_str = repr(key)
+
+        # Verify the repr contains the essential information
+        assert "test.path" in repr_str
+        assert "str" in repr_str
+        assert "ContextKey" in repr_str
+
+
+class TestContextKeyEq:
+    """Test the ContextKey.__eq__ method."""
+
+    def test_eq_same_path_different_types(self):
+        """Test that keys with same path but different types are equal."""
+        key1: ContextKey[str] = ContextKey("test.key", str)
+        key2: ContextKey[int] = ContextKey("test.key", int)
+
+        assert key1 == key2
+        assert key2 == key1  # Test symmetry
+
+    def test_eq_same_path_different_descriptions(self):
+        """Test that keys with same path but different descriptions are equal."""
+        key1: ContextKey[str] = ContextKey("test.key", str, "First description")
+        key2: ContextKey[str] = ContextKey("test.key", str, "Second description")
+
+        assert key1 == key2
+        assert key2 == key1
+
+    def test_eq_identical_keys(self):
+        """Test that identical keys are equal."""
+        key1: ContextKey[str] = ContextKey("identical.key", str, "Same description")
+        key2: ContextKey[str] = ContextKey("identical.key", str, "Same description")
+
+        assert key1 == key2
+        assert key2 == key1
+
+    def test_eq_different_paths(self):
+        """Test that keys with different paths are not equal."""
+        key1: ContextKey[str] = ContextKey("first.key", str)
+        key2: ContextKey[str] = ContextKey("second.key", str)
+
+        assert key1 != key2
+        assert key2 != key1
+
+    def test_eq_with_non_context_key(self):
+        """Test equality comparison with non-ContextKey objects."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+
+        # Should return NotImplemented for different types
+        result = key.__eq__("test.key")
+        assert result is NotImplemented
+
+        result = key.__eq__(42)
+        assert result is NotImplemented
+
+        result = key.__eq__(None)
+        assert result is NotImplemented
+
+        result = key.__eq__(["test", "key"])
+        assert result is NotImplemented
+
+    def test_eq_with_string_path_match(self):
+        """Test that ContextKey is not equal to string even if path matches."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+
+        # Should not be equal to string with same value
+        assert key != "test.key"
+        assert "test.key" != key
+
+    def test_eq_empty_paths(self):
+        """Test equality with empty paths."""
+        key1: ContextKey[str] = ContextKey("", str)
+        key2: ContextKey[int] = ContextKey("", int)
+
+        assert key1 == key2
+
+    def test_eq_case_sensitive_paths(self):
+        """Test that path comparison is case sensitive."""
+        key1: ContextKey[str] = ContextKey("Test.Key", str)
+        key2: ContextKey[str] = ContextKey("test.key", str)
+
+        assert key1 != key2
+
+    def test_eq_with_whitespace_paths(self):
+        """Test equality with whitespace in paths."""
+        key1: ContextKey[str] = ContextKey("test.key", str)
+        key2: ContextKey[str] = ContextKey(" test.key", str)
+        key3: ContextKey[str] = ContextKey("test.key ", str)
+
+        assert key1 != key2
+        assert key1 != key3
+        assert key2 != key3
+
+    def test_eq_reflexivity(self):
+        """Test that equality is reflexive (a == a)."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+        assert key == key
+
+    def test_eq_transitivity(self):
+        """Test that equality is transitive (if a == b and b == c, then a == c)."""
+        key1: ContextKey[str] = ContextKey("test.key", str, "desc1")
+        key2: ContextKey[int] = ContextKey("test.key", int, "desc2")
+        key3: ContextKey[bool] = ContextKey("test.key", bool, "desc3")
+
+        assert key1 == key2
+        assert key2 == key3
+        assert key1 == key3  # Transitivity
+
+    def test_eq_with_long_paths(self):
+        """Test equality with long hierarchical paths."""
+        path = "very.long.hierarchical.path.with.many.parts"
+        key1: ContextKey[str] = ContextKey(path, str)
+        key2: ContextKey[int] = ContextKey(path, int)
+
+        assert key1 == key2
