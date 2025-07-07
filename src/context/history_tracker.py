@@ -81,3 +81,30 @@ class HistoryTracker:
                 if self._max_history_size > 0
                 else []
             )
+
+    def get_history(
+        self, limit: int | None = None, since: float | None = None
+    ) -> list[ContextChangeEvent]:
+        """Get the change history.
+
+        Args:
+            limit: Maximum number of events to return (most recent first)
+            since: Only return events after this timestamp
+
+        Returns:
+            List of change events
+        """
+        history = self._change_history
+
+        # Filter by timestamp if specified
+        if since is not None:
+            history = [event for event in history if event.timestamp > since]
+
+        # Reverse to get most recent first
+        history = list(reversed(history))
+
+        # Apply limit if specified
+        if limit is not None:
+            history = history[:limit]
+
+        return history
