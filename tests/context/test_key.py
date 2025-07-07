@@ -101,3 +101,67 @@ class TestContextKeyInit:
         """Test that ContextKey has proper docstring."""
         assert ContextKey.__doc__ is not None
         assert "context keys" in ContextKey.__doc__.lower()
+
+
+class TestContextKeyCreate:
+    """Test the ContextKey.create classmethod."""
+
+    def test_create_basic(self):
+        """Test creating ContextKey with create classmethod."""
+        key = ContextKey[str].create("agent.intent", str, "Agent intent")
+        assert key.path == "agent.intent"
+        assert key.type_ == str
+        assert key.description == "Agent intent"
+
+    def test_create_with_int_type(self):
+        """Test creating ContextKey with int type using create."""
+        key = ContextKey[int].create("user.age", int, "User age")
+        assert key.path == "user.age"
+        assert key.type_ == int
+        assert key.description == "User age"
+
+    def test_create_with_complex_type(self):
+        """Test creating ContextKey with complex type using create."""
+        key = ContextKey[list[str]].create("items.list", list, "List of items")
+        assert key.path == "items.list"
+        assert key.type_ == list
+        assert key.description == "List of items"
+
+    def test_create_equivalent_to_constructor(self):
+        """Test that create method produces equivalent result to constructor."""
+        key1: ContextKey[str] = ContextKey("test.key", str, "Test description")
+        key2 = ContextKey[str].create("test.key", str, "Test description")
+
+        assert key1 == key2
+        assert key1.path == key2.path
+        assert key1.type_ == key2.type_
+        assert key1.description == key2.description
+        assert hash(key1) == hash(key2)
+
+    def test_create_maintains_generic_typing(self):
+        """Test that create method maintains proper generic typing."""
+        str_key = ContextKey[str].create("test.string", str, "String value")
+        int_key = ContextKey[int].create("test.int", int, "Integer value")
+        bool_key = ContextKey[bool].create("test.bool", bool, "Boolean value")
+
+        # Verify type information is preserved
+        assert str_key.type_ == str
+        assert int_key.type_ == int
+        assert bool_key.type_ == bool
+
+    def test_create_with_empty_description(self):
+        """Test creating ContextKey with empty description using create."""
+        key = ContextKey[str].create("test.key", str, "")
+        assert key.path == "test.key"
+        assert key.type_ == str
+        assert key.description == ""
+
+    def test_create_docstring_access(self):
+        """Test that create method has proper docstring."""
+        # Access the method directly from the class
+        assert hasattr(ContextKey, "create")
+        # Access via a concrete type to avoid Pyright issues
+        create_doc = ContextKey[str].create.__doc__
+        assert create_doc is not None
+        assert "create" in create_doc.lower()
+        assert "type" in create_doc.lower()

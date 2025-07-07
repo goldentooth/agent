@@ -52,6 +52,35 @@ class ContextKey(Generic[T]):
     type_: type = str
     description: str = ""
 
+    @classmethod
+    def create(cls, path: str, type_: type[T], description: str) -> ContextKey[T]:
+        """Create a new context key with the specified name, type, and description.
+
+        This classmethod provides an alternative way to create ContextKey instances
+        with explicit type information. It's equivalent to calling the constructor
+        directly but provides better readability and type inference.
+
+        Args:
+            path: The hierarchical path using dot notation (e.g., 'agent.intent.task')
+            type_: The expected type of values stored under this key
+            description: Human-readable description of the key's purpose
+
+        Returns:
+            A new ContextKey instance with the specified path, type, and description
+
+        Examples:
+            Creating typed keys:
+                >>> str_key = ContextKey.create("user.name", str, "User's full name")
+                >>> int_key = ContextKey.create("user.age", int, "User's age in years")
+                >>> bool_key = ContextKey.create("user.active", bool, "User account status")
+
+            Type inference:
+                >>> key = ContextKey.create("items.count", int, "Number of items")
+                >>> key.type_
+                <class 'int'>
+        """
+        return cls(path, type_, description)
+
     def __eq__(self, other: object) -> bool:
         """Check if two context keys are equal by their paths."""
         if not isinstance(other, ContextKey):
