@@ -108,8 +108,15 @@ class TestDebugStream:
 
         debug_flow = debug_stream()
 
-        with pytest.raises(FlowExecutionErrorWithContext) as exc_info:
-            await debug_flow.to_list()(failing_stream())
+        # Use explicit async context manager style to ensure proper cleanup
+        test_gen = failing_stream()
+        try:
+            with pytest.raises(FlowExecutionErrorWithContext) as exc_info:
+                await debug_flow.to_list()(test_gen)
+        finally:
+            # Ensure the generator is properly closed
+            if hasattr(test_gen, "aclose"):
+                await test_gen.aclose()
 
         error = exc_info.value
         assert "Error in debug stream: Test error" in str(error)
@@ -213,8 +220,15 @@ class TestTracedFlow:
             for i in range(3):
                 yield i
 
-        with pytest.raises(FlowExecutionErrorWithContext) as exc_info:
-            await traced.to_list()(test_stream())
+        # Use explicit async context manager style to ensure proper cleanup
+        test_gen = test_stream()
+        try:
+            with pytest.raises(FlowExecutionErrorWithContext) as exc_info:
+                await traced.to_list()(test_gen)
+        finally:
+            # Ensure the generator is properly closed
+            if hasattr(test_gen, "aclose"):
+                await test_gen.aclose()
 
         error = exc_info.value
         assert "Error in flow 'failing_flow': Test error in flow" in str(error)
