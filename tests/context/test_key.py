@@ -501,3 +501,126 @@ class TestContextKeyEq:
         key2: ContextKey[int] = ContextKey(path, int)
 
         assert key1 == key2
+
+
+class TestContextKeyHash:
+    """Test the ContextKey.__hash__ method."""
+
+    def test_hash_based_on_path(self):
+        """Test that hash is based on the path."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+        path_hash = hash("test.key")
+
+        assert hash(key) == path_hash
+
+    def test_hash_same_path_different_types(self):
+        """Test that keys with same path have same hash regardless of type."""
+        key1: ContextKey[str] = ContextKey("test.key", str)
+        key2: ContextKey[int] = ContextKey("test.key", int)
+        key3: ContextKey[bool] = ContextKey("test.key", bool)
+
+        assert hash(key1) == hash(key2)
+        assert hash(key2) == hash(key3)
+        assert hash(key1) == hash(key3)
+
+    def test_hash_same_path_different_descriptions(self):
+        """Test that keys with same path have same hash regardless of description."""
+        key1: ContextKey[str] = ContextKey("test.key", str, "Description 1")
+        key2: ContextKey[str] = ContextKey("test.key", str, "Description 2")
+        key3: ContextKey[str] = ContextKey("test.key", str, "")
+
+        assert hash(key1) == hash(key2)
+        assert hash(key2) == hash(key3)
+        assert hash(key1) == hash(key3)
+
+    def test_hash_different_paths(self):
+        """Test that keys with different paths have different hashes."""
+        key1: ContextKey[str] = ContextKey("first.key", str)
+        key2: ContextKey[str] = ContextKey("second.key", str)
+
+        # While theoretically possible for different strings to have same hash,
+        # it's extremely unlikely for these specific strings
+        assert hash(key1) != hash(key2)
+
+    def test_hash_consistency_with_equality(self):
+        """Test that equal keys have equal hashes (hash consistency requirement)."""
+        key1: ContextKey[str] = ContextKey("test.key", str, "desc1")
+        key2: ContextKey[int] = ContextKey("test.key", int, "desc2")
+
+        # If two objects are equal, they must have the same hash
+        assert key1 == key2
+        assert hash(key1) == hash(key2)
+
+    def test_hash_allows_dict_usage(self):
+        """Test that ContextKey can be used as dictionary keys."""
+        key1: ContextKey[str] = ContextKey("key1", str)
+        key2: ContextKey[str] = ContextKey("key2", str)
+        key3: ContextKey[int] = ContextKey("key1", int)  # Same path as key1
+
+        d: dict[ContextKey[Any], str] = {}
+        d[key1] = "value1"
+        d[key2] = "value2"
+
+        # key3 should access the same slot as key1 (same hash and equality)
+        assert d[key3] == "value1"
+        assert d[key1] == "value1"
+
+        # Modifying through key3 should affect key1's value
+        d[key3] = "modified"
+        assert d[key1] == "modified"
+
+    def test_hash_allows_set_usage(self):
+        """Test that ContextKey can be used in sets."""
+        key1: ContextKey[str] = ContextKey("test.key", str)
+        key2: ContextKey[int] = ContextKey("test.key", int)  # Equal to key1
+        key3: ContextKey[str] = ContextKey("other.key", str)
+
+        s: set[ContextKey[Any]] = {key1, key2, key3}
+
+        # key1 and key2 are equal, so set should only have 2 items
+        assert len(s) == 2
+        assert key1 in s
+        assert key2 in s  # Equal to key1, so should be found
+        assert key3 in s
+
+    def test_hash_with_empty_path(self):
+        """Test hash with empty path."""
+        key: ContextKey[str] = ContextKey("", str)
+        assert hash(key) == hash("")
+
+    def test_hash_with_long_path(self):
+        """Test hash with long hierarchical path."""
+        path = "very.long.hierarchical.path.with.many.parts.and.more.parts"
+        key: ContextKey[str] = ContextKey(path, str)
+        assert hash(key) == hash(path)
+
+    def test_hash_case_sensitive(self):
+        """Test that hash is case sensitive."""
+        key1: ContextKey[str] = ContextKey("Test.Key", str)
+        key2: ContextKey[str] = ContextKey("test.key", str)
+
+        # Should have different hashes (case sensitive)
+        assert hash(key1) != hash(key2)
+
+    def test_hash_idempotent(self):
+        """Test that calling hash() multiple times returns same result."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+
+        hash1 = hash(key)
+        hash2 = hash(key)
+        hash3 = hash(key)
+
+        assert hash1 == hash2 == hash3
+
+    def test_hash_immutable_requirement(self):
+        """Test that hash is consistent for immutable ContextKey."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+        original_hash = hash(key)
+
+        # ContextKey is frozen dataclass, so it's immutable
+        # Hash should remain the same throughout object lifetime
+        assert hash(key) == original_hash
+
+        # Multiple accesses should return same hash
+        for _ in range(5):
+            assert hash(key) == original_hash

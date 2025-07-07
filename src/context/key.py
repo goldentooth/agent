@@ -223,5 +223,39 @@ class ContextKey(Generic[T]):
         return self.path == other.path
 
     def __hash__(self) -> int:
-        """Return the hash of the context key based on its path."""
+        """Return the hash of the context key based on its path.
+
+        The hash value is computed from the path string only, ensuring that
+        ContextKey instances with the same path have the same hash value
+        regardless of their type or description. This enables ContextKey
+        objects to be used as dictionary keys and in sets.
+
+        Returns:
+            The hash value of the path string
+
+        Examples:
+            Same path, same hash:
+                >>> key1 = ContextKey("user.name", str)
+                >>> key2 = ContextKey("user.name", int)
+                >>> hash(key1) == hash(key2)
+                True
+
+            Dictionary usage:
+                >>> key1 = ContextKey("config.debug", bool)
+                >>> key2 = ContextKey("config.debug", str)  # Same path
+                >>> d = {key1: "enabled"}
+                >>> d[key2]  # Can access using equivalent key
+                'enabled'
+
+            Set usage:
+                >>> key1 = ContextKey("item", str)
+                >>> key2 = ContextKey("item", int)  # Same path
+                >>> {key1, key2}  # Only one item in set
+                {ContextKey(item<str>)}
+
+        Note:
+            This method is consistent with __eq__ - if two ContextKey objects
+            are equal (same path), they will have the same hash value, satisfying
+            the hash consistency requirement for Python objects.
+        """
         return hash(self.path)
