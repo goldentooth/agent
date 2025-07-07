@@ -9,24 +9,49 @@ InitializationHook = Callable[[type], None]
 
 
 class FlowExtension(ABC):
-    """Base class for all flow extensions."""
+    """Base class for all flow extensions.
 
-    def __init__(self) -> None:
-        """Initialize extension."""
+    This class provides the foundation for extension metadata and lifecycle management.
+    Extensions can be installed, uninstalled, configured, and queried for information.
+    Subclasses must implement the abstract methods for flow initialization.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        version: str = "1.0.0",
+        description: str = "",
+        enabled: bool = True,
+    ) -> None:
+        """Initialize a FlowExtension.
+
+        Args:
+            name: The name of the extension
+            version: The version of the extension (default: "1.0.0")
+            description: A description of the extension (default: "")
+            enabled: Whether the extension is enabled (default: True)
+        """
         super().__init__()
-        self._enabled = True
+        self._name = name
+        self._version = version
+        self._description = description
+        self._enabled = enabled
         self._config: dict[str, Any] = {}
 
     @property
-    @abstractmethod
     def name(self) -> str:
         """Extension name."""
-        pass
+        return self._name
+
+    @property
+    def version(self) -> str:
+        """Extension version."""
+        return self._version
 
     @property
     def description(self) -> str:
         """Extension description."""
-        return ""
+        return self._description
 
     @property
     def enabled(self) -> bool:
@@ -37,6 +62,47 @@ class FlowExtension(ABC):
     def enabled(self, value: bool) -> None:
         """Set enabled state."""
         self._enabled = value
+
+    def install(self) -> None:
+        """Install the extension.
+
+        This method should be overridden by subclasses to implement
+        installation logic.
+        """
+        pass
+
+    def uninstall(self) -> None:
+        """Uninstall the extension.
+
+        This method should be overridden by subclasses to implement
+        uninstallation logic.
+        """
+        pass
+
+    def configure(self, config: dict[str, Any]) -> None:
+        """Configure the extension.
+
+        Args:
+            config: Configuration dictionary for the extension
+
+        This method should be overridden by subclasses to implement
+        configuration logic.
+        """
+        self.set_config(config)
+
+    def get_info(self) -> dict[str, Any]:
+        """Get information about the extension.
+
+        Returns:
+            Dictionary containing extension information including
+            name, version, description, and enabled status.
+        """
+        return {
+            "name": self.name,
+            "version": self.version,
+            "description": self.description,
+            "enabled": self.enabled,
+        }
 
     @abstractmethod
     def on_flow_init(self, flow_class: type) -> None:
@@ -55,6 +121,13 @@ class FlowExtension(ABC):
     def set_config(self, config: dict[str, Any]) -> None:
         """Set extension configuration."""
         self._config = config.copy()
+
+    def __repr__(self) -> str:
+        """Return string representation of the extension."""
+        return (
+            f"FlowExtension(name='{self.name}', version='{self.version}', "
+            f"enabled={self.enabled})"
+        )
 
 
 class ExtensionRegistry:
@@ -111,6 +184,7 @@ class ExtensionRegistry:
                 "name": name,
                 "enabled": extension.enabled,
                 "description": extension.description,
+                "version": extension.version,
             }
             for name, extension in self.extensions.items()
         ]

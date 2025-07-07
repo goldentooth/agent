@@ -10,22 +10,18 @@ from flowengine.extensions import FlowExtension
 class MockExtension(FlowExtension):
     """Mock extension for testing."""
 
-    def __init__(self, name: str = "mock", description: str = "") -> None:
+    def __init__(
+        self,
+        name: str = "mock",
+        version: str = "1.0.0",
+        description: str = "",
+        enabled: bool = True,
+    ) -> None:
         """Initialize mock extension."""
-        super().__init__()
-        self._name = name
-        self._description = description
+        super().__init__(
+            name=name, version=version, description=description, enabled=enabled
+        )
         self.init_called_with: list[type] = []
-
-    @property
-    def name(self) -> str:
-        """Extension name."""
-        return self._name
-
-    @property
-    def description(self) -> str:
-        """Extension description."""
-        return self._description
 
     def on_flow_init(self, flow_class: type) -> None:
         """Track calls to on_flow_init."""
@@ -46,28 +42,36 @@ class TestFlowExtension:
     def test_flow_extension_is_abstract(self) -> None:
         """Test that FlowExtension cannot be instantiated directly."""
         with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-            FlowExtension()  # type: ignore
-
-    def test_flow_extension_requires_name(self) -> None:
-        """Test that subclasses must implement name property."""
-
-        class IncompleteExtension(FlowExtension):
-            def on_flow_init(self, flow_class: type) -> None:
-                pass
-
-        with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-            IncompleteExtension()  # type: ignore
+            FlowExtension("test")  # type: ignore
 
     def test_flow_extension_requires_on_flow_init(self) -> None:
         """Test that subclasses must implement on_flow_init method."""
 
         class IncompleteExtension(FlowExtension):
-            @property
-            def name(self) -> str:
-                return "incomplete"
+            pass
 
         with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-            IncompleteExtension()  # type: ignore
+            IncompleteExtension("incomplete")  # type: ignore
+
+    def test_flow_extension_creation(self) -> None:
+        """Test FlowExtension can be created with basic properties."""
+        extension = MockExtension(
+            name="test_extension",
+            version="1.0.0",
+            description="Test extension",
+            enabled=True,
+        )
+
+        assert extension.name == "test_extension"
+        assert extension.version == "1.0.0"
+        assert extension.description == "Test extension"
+        assert extension.enabled is True
+
+    def test_flow_extension_enabled_by_default(self) -> None:
+        """Test FlowExtension is enabled by default."""
+        extension = MockExtension(name="test_extension", description="Test extension")
+
+        assert extension.enabled is True
 
     def test_extension_enabled_property(self) -> None:
         """Test enabled property management."""
@@ -145,3 +149,69 @@ class TestFlowExtension:
         # Modifying original should not affect internal config
         config["key4"] = "value4"
         assert ext.get_config() == {"key1": "value1", "key2": 42}
+
+    def test_flow_extension_install_method(self) -> None:
+        """Test FlowExtension install method."""
+        extension = MockExtension(name="test_extension", description="Test extension")
+
+        # Should not raise exception
+        extension.install()
+
+    def test_flow_extension_uninstall_method(self) -> None:
+        """Test FlowExtension uninstall method."""
+        extension = MockExtension(name="test_extension", description="Test extension")
+
+        # Should not raise exception
+        extension.uninstall()
+
+    def test_flow_extension_configure_method(self) -> None:
+        """Test FlowExtension configure method."""
+        extension = MockExtension(name="test_extension", description="Test extension")
+
+        config = {"setting1": "value1", "setting2": 42}
+
+        # Should not raise exception and should set config
+        extension.configure(config)
+        assert extension.get_config() == config
+
+    def test_flow_extension_get_info_method(self) -> None:
+        """Test FlowExtension get_info method."""
+        extension = MockExtension(
+            name="test_extension",
+            version="1.0.0",
+            description="Test extension",
+            enabled=True,
+        )
+
+        info = extension.get_info()
+
+        assert isinstance(info, dict)
+        assert info["name"] == "test_extension"
+        assert info["version"] == "1.0.0"
+        assert info["description"] == "Test extension"
+        assert info["enabled"] is True
+
+    def test_flow_extension_get_info_includes_all_properties(self) -> None:
+        """Test FlowExtension get_info includes all required properties."""
+        extension = MockExtension(
+            name="advanced_extension",
+            version="2.1.0",
+            description="Advanced test extension",
+            enabled=False,
+        )
+
+        info = extension.get_info()
+
+        required_keys = {"name", "version", "description", "enabled"}
+        assert required_keys.issubset(info.keys())
+
+    def test_flow_extension_repr(self) -> None:
+        """Test FlowExtension string representation."""
+        extension = MockExtension(
+            name="repr_test", version="0.1.0", description="Test repr", enabled=True
+        )
+
+        repr_str = repr(extension)
+        assert "FlowExtension" in repr_str
+        assert "repr_test" in repr_str
+        assert "0.1.0" in repr_str

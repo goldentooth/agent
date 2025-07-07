@@ -10,16 +10,18 @@ from flowengine.extensions import ExtensionRegistry, FlowExtension
 class SimpleExtension(FlowExtension):
     """Simple extension for testing."""
 
-    def __init__(self, name: str) -> None:
+    def __init__(
+        self,
+        name: str,
+        version: str = "1.0.0",
+        description: str = "",
+        enabled: bool = True,
+    ) -> None:
         """Initialize simple extension."""
-        super().__init__()
-        self._name = name
+        super().__init__(
+            name=name, version=version, description=description, enabled=enabled
+        )
         self.init_calls = 0
-
-    @property
-    def name(self) -> str:
-        """Extension name."""
-        return self._name
 
     def on_flow_init(self, flow_class: type) -> None:
         """Track initialization calls."""
