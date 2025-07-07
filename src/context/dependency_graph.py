@@ -58,3 +58,14 @@ class DependencyGraph:
             Set of dependent keys
         """
         return self._graph.get(source_key, set()).copy()
+
+    def has_dependents(self, source_key: str) -> bool:
+        """Check if a source key has any dependents.
+
+        Args:
+            source_key: The key to check
+
+        Returns:
+            True if the key has dependents, False otherwise
+        """
+        return source_key in self._graph and len(self._graph[source_key]) > 0

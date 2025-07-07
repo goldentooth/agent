@@ -607,3 +607,118 @@ class TestDependencyGraphGetDependents:
         assert "original" in original_state
         assert "modified" not in original_state
         assert len(original_state) == 1
+
+
+class TestDependencyGraphHasDependents:
+    """Test suite for DependencyGraph.has_dependents method."""
+
+    def test_has_dependents_with_dependencies(self):
+        """Test has_dependents returns True when source has dependencies."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+
+        result = graph.has_dependents("source")
+
+        assert result is True
+
+    def test_has_dependents_single_dependency(self):
+        """Test has_dependents returns True with single dependency."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        result = graph.has_dependents("source")
+
+        assert result is True
+
+    def test_has_dependents_no_dependencies(self):
+        """Test has_dependents returns False for nonexistent source."""
+        graph = DependencyGraph()
+        graph.add_dependency("other", "dep")
+
+        result = graph.has_dependents("source")
+
+        assert result is False
+
+    def test_has_dependents_empty_graph(self):
+        """Test has_dependents returns False in empty graph."""
+        graph = DependencyGraph()
+
+        result = graph.has_dependents("any_key")
+
+        assert result is False
+
+    def test_has_dependents_after_adding(self):
+        """Test has_dependents changes after adding dependencies."""
+        graph = DependencyGraph()
+
+        # Initially false
+        assert graph.has_dependents("source") is False
+
+        # After adding dependency
+        graph.add_dependency("source", "dep")
+        assert graph.has_dependents("source") is True
+
+    def test_has_dependents_after_removing_all(self):
+        """Test has_dependents after removing all dependencies."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+
+        # Initially true
+        assert graph.has_dependents("source") is True
+
+        # After removing all
+        graph.remove_all_dependencies("source")
+        assert graph.has_dependents("source") is False
+
+    def test_has_dependents_after_removing_some(self):
+        """Test has_dependents after removing some but not all dependencies."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+
+        # Initially true
+        assert graph.has_dependents("source") is True
+
+        # After removing one (should still be true)
+        graph.remove_dependency("source", "dep1")
+        assert graph.has_dependents("source") is True
+
+        # After removing last one
+        graph.remove_dependency("source", "dep2")
+        assert graph.has_dependents("source") is False
+
+    def test_has_dependents_empty_string_key(self):
+        """Test has_dependents with empty string key."""
+        graph = DependencyGraph()
+
+        # Initially false
+        assert graph.has_dependents("") is False
+
+        # After adding dependency
+        graph.add_dependency("", "dep")
+        assert graph.has_dependents("") is True
+
+    def test_has_dependents_multiple_sources(self):
+        """Test has_dependents with multiple independent sources."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+
+        assert graph.has_dependents("source1") is True
+        assert graph.has_dependents("source2") is True
+        assert graph.has_dependents("source3") is False
+
+    def test_has_dependents_return_type(self):
+        """Test that has_dependents returns boolean type."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        result_true = graph.has_dependents("source")
+        result_false = graph.has_dependents("nonexistent")
+
+        assert isinstance(result_true, bool)
+        assert isinstance(result_false, bool)
+        assert result_true is True
+        assert result_false is False
