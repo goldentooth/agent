@@ -89,3 +89,7 @@ class DependencyGraph:
             Dictionary mapping source keys to sets of dependent keys
         """
         return {key: deps.copy() for key, deps in self._graph.items()}
+
+    def __len__(self) -> int:
+        """Get the number of source keys in the graph."""
+        return len(self._graph)

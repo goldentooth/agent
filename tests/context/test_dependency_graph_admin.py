@@ -341,3 +341,136 @@ class TestDependencyGraphGetGraphCopy:
         assert len(graph_copy["key"]) == 2
         assert "key" in graph_copy["key"]
         assert "other" in graph_copy["key"]
+
+
+class TestDependencyGraphLen:
+    """Test suite for DependencyGraph.__len__ method."""
+
+    def test_len_empty_graph(self):
+        """Test __len__ returns 0 for empty graph."""
+        graph = DependencyGraph()
+
+        assert len(graph) == 0
+
+    def test_len_single_source(self):
+        """Test __len__ returns 1 for single source."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        assert len(graph) == 1
+
+    def test_len_multiple_sources(self):
+        """Test __len__ with multiple sources."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+        graph.add_dependency("source3", "dep3")
+
+        assert len(graph) == 3
+
+    def test_len_multiple_dependencies_same_source(self):
+        """Test __len__ counts source keys, not individual dependencies."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+        graph.add_dependency("source", "dep3")
+
+        # Should be 1 source, not 3 dependencies
+        assert len(graph) == 1
+
+    def test_len_after_adding_dependencies(self):
+        """Test __len__ changes as dependencies are added."""
+        graph = DependencyGraph()
+
+        assert len(graph) == 0
+
+        graph.add_dependency("source1", "dep1")
+        assert len(graph) == 1
+
+        graph.add_dependency("source2", "dep2")
+        assert len(graph) == 2
+
+        # Adding more deps to existing source shouldn't change len
+        graph.add_dependency("source1", "dep3")
+        assert len(graph) == 2
+
+    def test_len_after_removing_dependencies(self):
+        """Test __len__ changes as dependencies are removed."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source1", "dep2")
+        graph.add_dependency("source2", "dep3")
+
+        assert len(graph) == 2
+
+        # Remove one dependency (source still has another)
+        graph.remove_dependency("source1", "dep1")
+        assert len(graph) == 2
+
+        # Remove last dependency from source1
+        graph.remove_dependency("source1", "dep2")
+        assert len(graph) == 1
+
+        # Remove all from source2
+        graph.remove_all_dependencies("source2")
+        assert len(graph) == 0
+
+    def test_len_after_clear(self):
+        """Test __len__ returns 0 after clear."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+        graph.add_dependency("source3", "dep3")
+
+        assert len(graph) == 3
+
+        graph.clear()
+        assert len(graph) == 0
+
+    def test_len_with_empty_string_keys(self):
+        """Test __len__ with empty string source keys."""
+        graph = DependencyGraph()
+        graph.add_dependency("", "dep1")
+        graph.add_dependency("source", "dep2")
+
+        assert len(graph) == 2
+
+    def test_len_consistency_with_get_all_source_keys(self):
+        """Test __len__ is consistent with get_all_source_keys."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+        graph.add_dependency("source3", "dep3")
+
+        source_keys = graph.get_all_source_keys()
+        assert len(graph) == len(source_keys)
+
+        # Test after modifications
+        graph.remove_dependency("source1", "dep1")
+        source_keys = graph.get_all_source_keys()
+        assert len(graph) == len(source_keys)
+
+    def test_len_return_type(self):
+        """Test that __len__ returns int type."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        length = len(graph)
+        assert isinstance(length, int)
+        assert length == 1
+
+    def test_len_builtin_compatibility(self):
+        """Test that __len__ works with built-in functions."""
+        graph = DependencyGraph()
+
+        # Empty graph
+        assert bool(graph) is False  # __bool__ uses __len__ when not defined
+
+        graph.add_dependency("source", "dep")
+        assert bool(graph) is True
+
+        # Can be used in boolean context
+        if graph:
+            assert len(graph) == 1
+        else:
+            assert False, "Graph should be truthy"
