@@ -215,3 +215,178 @@ class TestFlowExtension:
         assert "FlowExtension" in repr_str
         assert "repr_test" in repr_str
         assert "0.1.0" in repr_str
+
+
+class TestExtensionUtilities:
+    """Test module-level extension utility functions."""
+
+    def test_install_extension_function(self) -> None:
+        """Test install_extension utility function."""
+        # Clear any existing extensions
+        from flowengine.extensions import (
+            get_global_registry,
+            install_extension,
+            list_extensions,
+        )
+
+        registry = get_global_registry()
+        registry.extensions.clear()
+        registry.enabled_extensions.clear()
+
+        ext = MockExtension(name="test_install")
+        install_extension(ext)
+
+        extensions = list_extensions()
+        assert len(extensions) == 1
+        assert extensions[0]["name"] == "test_install"
+        assert extensions[0]["enabled"] is True
+
+    def test_uninstall_extension_function(self) -> None:
+        """Test uninstall_extension utility function."""
+        # Clear any existing extensions
+        from flowengine.extensions import (
+            get_global_registry,
+            install_extension,
+            list_extensions,
+            uninstall_extension,
+        )
+
+        registry = get_global_registry()
+        registry.extensions.clear()
+        registry.enabled_extensions.clear()
+
+        ext = MockExtension(name="test_uninstall")
+        install_extension(ext)
+        assert len(list_extensions()) == 1
+
+        uninstall_extension("test_uninstall")
+        assert len(list_extensions()) == 0
+
+    def test_uninstall_nonexistent_extension_raises_error(self) -> None:
+        """Test uninstall_extension raises error for nonexistent extension."""
+        from flowengine.extensions import uninstall_extension
+
+        with pytest.raises(ValueError, match="Extension 'nonexistent' not found"):
+            uninstall_extension("nonexistent")
+
+    def test_enable_extension_function(self) -> None:
+        """Test enable_extension utility function."""
+        # Clear any existing extensions
+        from flowengine.extensions import (
+            disable_extension,
+            enable_extension,
+            get_global_registry,
+            install_extension,
+        )
+
+        registry = get_global_registry()
+        registry.extensions.clear()
+        registry.enabled_extensions.clear()
+
+        ext = MockExtension(name="test_enable", enabled=False)
+        install_extension(ext)
+        assert ext.enabled is False
+
+        enable_extension("test_enable")
+        assert ext.enabled is True
+
+    def test_enable_nonexistent_extension_raises_error(self) -> None:
+        """Test enable_extension raises error for nonexistent extension."""
+        from flowengine.extensions import enable_extension
+
+        with pytest.raises(ValueError, match="Extension 'nonexistent' not found"):
+            enable_extension("nonexistent")
+
+    def test_disable_extension_function(self) -> None:
+        """Test disable_extension utility function."""
+        # Clear any existing extensions
+        from flowengine.extensions import (
+            disable_extension,
+            get_global_registry,
+            install_extension,
+        )
+
+        registry = get_global_registry()
+        registry.extensions.clear()
+        registry.enabled_extensions.clear()
+
+        ext = MockExtension(name="test_disable", enabled=True)
+        install_extension(ext)
+        assert ext.enabled is True
+
+        disable_extension("test_disable")
+        assert ext.enabled is False
+
+    def test_disable_nonexistent_extension_raises_error(self) -> None:
+        """Test disable_extension raises error for nonexistent extension."""
+        from flowengine.extensions import disable_extension
+
+        with pytest.raises(ValueError, match="Extension 'nonexistent' not found"):
+            disable_extension("nonexistent")
+
+    def test_list_extensions_function(self) -> None:
+        """Test list_extensions utility function."""
+        # Clear any existing extensions
+        from flowengine.extensions import (
+            get_global_registry,
+            install_extension,
+            list_extensions,
+        )
+
+        registry = get_global_registry()
+        registry.extensions.clear()
+        registry.enabled_extensions.clear()
+
+        ext1 = MockExtension(
+            name="ext1", version="1.0.0", description="First extension"
+        )
+        ext2 = MockExtension(
+            name="ext2", version="2.0.0", description="Second extension"
+        )
+
+        install_extension(ext1)
+        install_extension(ext2)
+
+        extensions = list_extensions()
+        assert len(extensions) == 2
+
+        # Check that all expected fields are present
+        for ext_info in extensions:
+            assert "name" in ext_info
+            assert "version" in ext_info
+            assert "description" in ext_info
+            assert "enabled" in ext_info
+
+    def test_get_extension_info_function(self) -> None:
+        """Test get_extension_info utility function."""
+        # Clear any existing extensions
+        from flowengine.extensions import (
+            get_extension_info,
+            get_global_registry,
+            install_extension,
+        )
+
+        registry = get_global_registry()
+        registry.extensions.clear()
+        registry.enabled_extensions.clear()
+
+        ext = MockExtension(
+            name="test_info",
+            version="1.2.3",
+            description="Test extension for info",
+            enabled=True,
+        )
+        install_extension(ext)
+
+        info = get_extension_info("test_info")
+        assert info["name"] == "test_info"
+        assert info["version"] == "1.2.3"
+        assert info["description"] == "Test extension for info"
+        assert info["enabled"] is True
+
+    def test_get_extension_info_nonexistent_raises_error(self) -> None:
+        """Test get_extension_info raises error for nonexistent extension."""
+        from flowengine.extensions import get_extension_info
+
+        with pytest.raises(ValueError, match="Extension 'nonexistent' not found"):
+            get_extension_info("nonexistent")
