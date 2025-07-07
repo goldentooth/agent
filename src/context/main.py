@@ -111,3 +111,20 @@ class ComputedProperty:
         self._cached_value: ContextValue = None
         self._is_cached = False
         self._subscribers: WeakSet[Any] = WeakSet()
+
+    def compute(self, context: Any) -> ContextValue:
+        """Compute the property value for the given context.
+
+        Args:
+            context: The context to compute the value from
+
+        Returns:
+            The computed value (cached if already computed)
+        """
+        if self._is_cached:
+            return self._cached_value
+
+        value = self.func(context)
+        self._cached_value = value
+        self._is_cached = True
+        return value
