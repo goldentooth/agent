@@ -16,10 +16,16 @@ Epic 41 focuses on migrating the extension registry system from the old flow eng
   - Configuration management with `get_config()` and `set_config()`
 - Comprehensive test coverage in `tests/flowengine/test_extensions.py`
 
-### 2. ExtensionRegistry Class (In Progress)
-- Still needs to be implemented
-- Will manage registration, enabling/disabling, and listing of extensions
-- Will support both new FlowExtension instances and legacy function-based extensions
+### 2. ExtensionRegistry Class
+- Created `ExtensionRegistry` class with full functionality:
+  - Extension registration/unregistration
+  - Enable/disable extensions
+  - List all extensions with their status
+  - Legacy support for function-based extensions
+  - Legacy support for method extensions
+  - Legacy support for initialization hooks
+  - `extend_flow_class()` method to apply all extensions to a flow class
+- Comprehensive test coverage in `tests/flowengine/test_extension_registry.py`
 
 ## Key Decisions
 
@@ -78,6 +84,6 @@ The old FlowExtensionRegistry supports raw functions and decorators. Need to ens
 
 ## Success Metrics
 - ✅ FlowExtension base class created with 100% test coverage
-- ⏳ ExtensionRegistry implementation pending
-- ⏳ Integration with flow system pending
-- ⏳ Legacy compatibility layer pending
+- ✅ ExtensionRegistry implementation complete with all required methods
+- ✅ Legacy compatibility layer implemented (function/method extensions, hooks)
+- ⏳ Integration with flow system pending (needs Flow class to integrate with)
