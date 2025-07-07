@@ -117,6 +117,34 @@ class ContextKey(Generic[T]):
         """
         return Symbol(self.path)
 
+    def __str__(self) -> str:
+        """Return the string representation of the context key.
+
+        Returns the path of the context key as a string, providing a clean
+        and readable representation. This makes ContextKey instances easy
+        to use in string contexts like logging, debugging, and formatting.
+
+        Returns:
+            The path string of the context key
+
+        Examples:
+            Basic usage:
+                >>> key = ContextKey("agent.intent", str)
+                >>> str(key)
+                'agent.intent'
+
+            String formatting:
+                >>> key = ContextKey("user.name", str, "User's name")
+                >>> f"Processing key: {key}"
+                'Processing key: user.name'
+
+            Logging and debugging:
+                >>> key = ContextKey("app.config.debug", bool)
+                >>> print(f"Checking {key}")
+                Checking app.config.debug
+        """
+        return self.path
+
     def __eq__(self, other: object) -> bool:
         """Check if two context keys are equal by their paths."""
         if not isinstance(other, ContextKey):

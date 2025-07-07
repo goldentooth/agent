@@ -240,3 +240,77 @@ class TestContextKeySymbol:
         assert symbol.startswith("test")
         assert "path" in symbol
         assert len(symbol) == 9
+
+
+class TestContextKeyStr:
+    """Test the ContextKey.__str__ method."""
+
+    def test_str_returns_path(self):
+        """Test that __str__ returns the key's path."""
+        key: ContextKey[str] = ContextKey("agent.intent.task", str)
+        assert str(key) == "agent.intent.task"
+
+    def test_str_with_different_types(self):
+        """Test __str__ works regardless of type."""
+        str_key: ContextKey[str] = ContextKey("str.key", str)
+        int_key: ContextKey[int] = ContextKey("int.key", int)
+        dict_key: ContextKey[dict[str, Any]] = ContextKey("dict.key", dict)
+
+        assert str(str_key) == "str.key"
+        assert str(int_key) == "int.key"
+        assert str(dict_key) == "dict.key"
+
+    def test_str_with_description(self):
+        """Test __str__ ignores description."""
+        key: ContextKey[str] = ContextKey(
+            "user.profile", str, "User profile information"
+        )
+        assert str(key) == "user.profile"
+
+    def test_str_with_empty_path(self):
+        """Test __str__ with empty path."""
+        key: ContextKey[str] = ContextKey("", str)
+        assert str(key) == ""
+
+    def test_str_in_string_formatting(self):
+        """Test __str__ works in string formatting contexts."""
+        key: ContextKey[str] = ContextKey("agent.status", str)
+
+        # f-string
+        assert f"Key: {key}" == "Key: agent.status"
+
+        # format method
+        assert "Key: {}".format(key) == "Key: agent.status"
+
+        # % formatting
+        assert "Key: %s" % key == "Key: agent.status"
+
+    def test_str_in_string_concatenation(self):
+        """Test __str__ works in string concatenation."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+        assert "prefix." + str(key) == "prefix.test.key"
+        assert str(key) + ".suffix" == "test.key.suffix"
+
+    def test_str_with_print(self):
+        """Test __str__ is used by print function."""
+        key: ContextKey[str] = ContextKey("print.test", str)
+        # We can't easily test print output, but we ensure str() works
+        # which is what print uses internally
+        printable = str(key)
+        assert printable == "print.test"
+
+    def test_str_with_long_path(self):
+        """Test __str__ with long hierarchical path."""
+        key: ContextKey[str] = ContextKey(
+            "very.long.hierarchical.path.with.many.parts", str
+        )
+        assert str(key) == "very.long.hierarchical.path.with.many.parts"
+
+    def test_str_idempotent(self):
+        """Test that calling str() multiple times returns same result."""
+        key: ContextKey[str] = ContextKey("test.key", str)
+        result1 = str(key)
+        result2 = str(key)
+        result3 = str(key)
+
+        assert result1 == result2 == result3 == "test.key"
