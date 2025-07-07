@@ -134,3 +134,14 @@ class HistoryTracker:
         # Trim current history if needed
         if len(self._change_history) > size:
             self._change_history = self._change_history[-size:] if size > 0 else []
+
+    def replay_changes_since(self, timestamp: float) -> list[ContextChangeEvent]:
+        """Get all changes that occurred since a specific timestamp.
+
+        Args:
+            timestamp: Timestamp to get changes since
+
+        Returns:
+            List of change events in chronological order
+        """
+        return [event for event in self._change_history if event.timestamp > timestamp]
