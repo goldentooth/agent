@@ -119,3 +119,7 @@ class SnapshotManager:
             raise KeyError(f"Snapshot '{name}' not found")
 
         return self._snapshots[name]
+
+    def clear_snapshots(self) -> None:
+        """Clear all snapshots."""
+        self._snapshots.clear()
