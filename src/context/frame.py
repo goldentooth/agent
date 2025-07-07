@@ -21,3 +21,7 @@ class ContextFrame:
         """Initialize an empty context frame."""
         super().__init__()
         self.data: ContextData = {}
+
+    def __getitem__(self, key: str) -> ContextValue:
+        """Get the value for a key, raising KeyError if not found."""
+        return self.data[key]
