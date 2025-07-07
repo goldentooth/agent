@@ -93,3 +93,7 @@ class DependencyGraph:
     def __len__(self) -> int:
         """Get the number of source keys in the graph."""
         return len(self._graph)
+
+    def __contains__(self, source_key: str) -> bool:
+        """Check if a source key exists in the graph."""
+        return source_key in self._graph

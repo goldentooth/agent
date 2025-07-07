@@ -474,3 +474,157 @@ class TestDependencyGraphLen:
             assert len(graph) == 1
         else:
             assert False, "Graph should be truthy"
+
+
+class TestDependencyGraphContains:
+    """Test suite for DependencyGraph.__contains__ method."""
+
+    def test_contains_empty_graph(self):
+        """Test __contains__ returns False for empty graph."""
+        graph = DependencyGraph()
+
+        assert "any_key" not in graph
+
+    def test_contains_existing_source(self):
+        """Test __contains__ returns True for existing source."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        assert "source" in graph
+
+    def test_contains_nonexistent_source(self):
+        """Test __contains__ returns False for nonexistent source."""
+        graph = DependencyGraph()
+        graph.add_dependency("existing", "dep")
+
+        assert "nonexistent" not in graph
+        assert "existing" in graph
+
+    def test_contains_multiple_sources(self):
+        """Test __contains__ with multiple sources."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+        graph.add_dependency("source3", "dep3")
+
+        assert "source1" in graph
+        assert "source2" in graph
+        assert "source3" in graph
+        assert "nonexistent" not in graph
+
+    def test_contains_after_adding_dependencies(self):
+        """Test __contains__ changes as dependencies are added."""
+        graph = DependencyGraph()
+
+        assert "source" not in graph
+
+        graph.add_dependency("source", "dep1")
+        assert "source" in graph
+
+        # Adding more deps to same source shouldn't change contains
+        graph.add_dependency("source", "dep2")
+        assert "source" in graph
+
+    def test_contains_after_removing_dependencies(self):
+        """Test __contains__ changes as dependencies are removed."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+
+        assert "source" in graph
+
+        # Remove one dependency (source still has another)
+        graph.remove_dependency("source", "dep1")
+        assert "source" in graph
+
+        # Remove last dependency from source
+        graph.remove_dependency("source", "dep2")
+        assert "source" not in graph
+
+    def test_contains_after_remove_all_dependencies(self):
+        """Test __contains__ after remove_all_dependencies."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+
+        assert "source" in graph
+
+        graph.remove_all_dependencies("source")
+        assert "source" not in graph
+
+    def test_contains_after_clear(self):
+        """Test __contains__ returns False after clear."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+
+        assert "source1" in graph
+        assert "source2" in graph
+
+        graph.clear()
+        assert "source1" not in graph
+        assert "source2" not in graph
+
+    def test_contains_empty_string_key(self):
+        """Test __contains__ with empty string source key."""
+        graph = DependencyGraph()
+        graph.add_dependency("", "dep")
+        graph.add_dependency("normal", "dep2")
+
+        assert "" in graph
+        assert "normal" in graph
+
+    def test_contains_consistency_with_has_dependents(self):
+        """Test __contains__ is consistent with has_dependents."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+
+        # Existing sources
+        assert "source1" in graph
+        assert graph.has_dependents("source1")
+        assert "source2" in graph
+        assert graph.has_dependents("source2")
+
+        # Nonexistent source
+        assert "nonexistent" not in graph
+        assert not graph.has_dependents("nonexistent")
+
+    def test_contains_return_type(self):
+        """Test that __contains__ returns bool type."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep")
+
+        result_true = "source" in graph
+        result_false = "nonexistent" in graph
+
+        assert isinstance(result_true, bool)
+        assert isinstance(result_false, bool)
+        assert result_true is True
+        assert result_false is False
+
+    def test_contains_builtin_compatibility(self):
+        """Test that __contains__ works with built-in functions."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep2")
+
+        # List comprehension
+        sources_in_graph = [
+            key for key in ["source1", "source2", "source3"] if key in graph
+        ]
+        assert sources_in_graph == ["source1", "source2"]
+
+        # Filter function
+        all_keys = ["source1", "source2", "source3", "source4"]
+        existing_keys = list(filter(lambda x: x in graph, all_keys))
+        assert existing_keys == ["source1", "source2"]
+
+    def test_contains_case_sensitivity(self):
+        """Test __contains__ is case sensitive."""
+        graph = DependencyGraph()
+        graph.add_dependency("Source", "dep")
+
+        assert "Source" in graph
+        assert "source" not in graph
+        assert "SOURCE" not in graph
