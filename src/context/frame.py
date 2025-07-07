@@ -29,3 +29,7 @@ class ContextFrame:
     def __setitem__(self, key: str, value: ContextValue) -> None:
         """Set the value for a key in this context frame."""
         self.data[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        """Delete a key from this context frame."""
+        del self.data[key]

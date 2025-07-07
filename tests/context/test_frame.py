@@ -72,3 +72,29 @@ def test_context_frame_setitem():
     # Test that values are accessible via __getitem__
     assert frame["int_key"] == 123
     assert frame["dict_key"] == {"nested": "object"}
+
+
+def test_context_frame_delitem():
+    """Test that ContextFrame.__delitem__ deletes keys correctly."""
+    frame = ContextFrame()
+
+    # Set up test data
+    frame.data["key1"] = "value1"
+    frame.data["key2"] = "value2"
+    frame.data["key3"] = "value3"
+
+    # Test deleting existing keys
+    del frame["key1"]
+    assert "key1" not in frame.data
+    assert frame.data == {"key2": "value2", "key3": "value3"}
+
+    del frame["key2"]
+    assert "key2" not in frame.data
+    assert frame.data == {"key3": "value3"}
+
+    # Test KeyError for missing key
+    try:
+        del frame["missing_key"]
+        assert False, "Should have raised KeyError"
+    except KeyError:
+        pass  # Expected behavior
