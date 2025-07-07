@@ -436,3 +436,174 @@ class TestDependencyGraphRemoveAllDependencies:
         result = graph.remove_all_dependencies("source")
 
         assert result is None
+
+
+class TestDependencyGraphGetDependents:
+    """Test suite for DependencyGraph.get_dependents method."""
+
+    def test_get_dependents_basic(self):
+        """Test getting dependents for a source key with dependencies."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+        graph.add_dependency("source", "dep3")
+
+        dependents = graph.get_dependents("source")
+
+        assert isinstance(dependents, set)
+        assert len(dependents) == 3
+        assert "dep1" in dependents
+        assert "dep2" in dependents
+        assert "dep3" in dependents
+
+    def test_get_dependents_nonexistent_source(self):
+        """Test getting dependents for a nonexistent source key."""
+        graph = DependencyGraph()
+        graph.add_dependency("existing", "dep")
+
+        dependents = graph.get_dependents("nonexistent")
+
+        assert isinstance(dependents, set)
+        assert len(dependents) == 0
+
+    def test_get_dependents_empty_graph(self):
+        """Test getting dependents from an empty graph."""
+        graph = DependencyGraph()
+
+        dependents = graph.get_dependents("any_key")
+
+        assert isinstance(dependents, set)
+        assert len(dependents) == 0
+
+    def test_get_dependents_returns_copy(self):
+        """Test that get_dependents returns a copy, not the original set."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+
+        dependents1 = graph.get_dependents("source")
+        dependents2 = graph.get_dependents("source")
+
+        # Should be equal but not the same object
+        assert dependents1 == dependents2
+        assert dependents1 is not dependents2
+
+        # Modifying one shouldn't affect the other
+        dependents1.add("new_dep")
+        assert "new_dep" not in dependents2
+
+        # Original graph should be unaffected
+        original_dependents = graph.get_dependents("source")
+        assert "new_dep" not in original_dependents
+
+    def test_get_dependents_after_adding(self):
+        """Test getting dependents after adding dependencies."""
+        graph = DependencyGraph()
+
+        # Initially empty
+        dependents = graph.get_dependents("source")
+        assert len(dependents) == 0
+
+        # After adding first
+        graph.add_dependency("source", "dep1")
+        dependents = graph.get_dependents("source")
+        assert len(dependents) == 1
+        assert "dep1" in dependents
+
+        # After adding second
+        graph.add_dependency("source", "dep2")
+        dependents = graph.get_dependents("source")
+        assert len(dependents) == 2
+        assert "dep1" in dependents
+        assert "dep2" in dependents
+
+    def test_get_dependents_after_removing(self):
+        """Test getting dependents after removing dependencies."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "dep1")
+        graph.add_dependency("source", "dep2")
+
+        # After removing one
+        graph.remove_dependency("source", "dep1")
+        dependents = graph.get_dependents("source")
+        assert len(dependents) == 1
+        assert "dep1" not in dependents
+        assert "dep2" in dependents
+
+        # After removing all
+        graph.remove_all_dependencies("source")
+        dependents = graph.get_dependents("source")
+        assert len(dependents) == 0
+
+    def test_get_dependents_multiple_sources(self):
+        """Test getting dependents when multiple sources exist."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source1", "dep2")
+        graph.add_dependency("source2", "dep3")
+        graph.add_dependency("source3", "dep4")
+
+        # Check each source has correct dependents
+        deps1 = graph.get_dependents("source1")
+        assert len(deps1) == 2
+        assert "dep1" in deps1 and "dep2" in deps1
+
+        deps2 = graph.get_dependents("source2")
+        assert len(deps2) == 1
+        assert "dep3" in deps2
+
+        deps3 = graph.get_dependents("source3")
+        assert len(deps3) == 1
+        assert "dep4" in deps3
+
+    def test_get_dependents_isolation(self):
+        """Test that dependents are isolated between sources."""
+        graph = DependencyGraph()
+        graph.add_dependency("source1", "dep1")
+        graph.add_dependency("source2", "dep3")
+
+        deps1 = graph.get_dependents("source1")
+        deps2 = graph.get_dependents("source2")
+
+        # Ensure no cross-contamination
+        assert "dep3" not in deps1
+        assert "dep1" not in deps2
+
+    def test_get_dependents_empty_string_key(self):
+        """Test getting dependents for empty string key."""
+        graph = DependencyGraph()
+        graph.add_dependency("", "dep1")
+        graph.add_dependency("", "dep2")
+
+        dependents = graph.get_dependents("")
+
+        assert len(dependents) == 2
+        assert "dep1" in dependents
+        assert "dep2" in dependents
+
+    def test_get_dependents_self_reference(self):
+        """Test getting dependents when source depends on itself."""
+        graph = DependencyGraph()
+        graph.add_dependency("key", "key")
+        graph.add_dependency("key", "other")
+
+        dependents = graph.get_dependents("key")
+
+        assert len(dependents) == 2
+        assert "key" in dependents
+        assert "other" in dependents
+
+    def test_get_dependents_immutability_guarantee(self):
+        """Test that modifying returned set doesn't affect internal state."""
+        graph = DependencyGraph()
+        graph.add_dependency("source", "original")
+
+        dependents = graph.get_dependents("source")
+        dependents.add("modified")
+        dependents.remove("original")
+
+        # Original state should be preserved
+        original_state = graph.get_dependents("source")
+        assert "original" in original_state
+        assert "modified" not in original_state
+        assert len(original_state) == 1

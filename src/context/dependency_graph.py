@@ -47,3 +47,14 @@ class DependencyGraph:
         """
         if source_key in self._graph:
             del self._graph[source_key]
+
+    def get_dependents(self, source_key: str) -> set[str]:
+        """Get all keys that depend on the given source key.
+
+        Args:
+            source_key: The key to get dependents for
+
+        Returns:
+            Set of dependent keys
+        """
+        return self._graph.get(source_key, set()).copy()
