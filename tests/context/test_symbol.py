@@ -126,3 +126,79 @@ class TestSymbolParts:
         # Original symbol should be unchanged
         assert symbol == "agent.intent"
         assert symbol.parts() == ["agent", "intent"]
+
+
+class TestSymbolDocumentation:
+    """Test the Symbol class documentation examples."""
+
+    def test_basic_usage_examples(self):
+        """Test basic usage examples from class docstring."""
+        symbol = Symbol("agent.intent")
+        assert str(symbol) == "agent.intent"
+        assert symbol == "agent.intent"
+
+    def test_hierarchical_navigation_examples(self):
+        """Test hierarchical navigation examples from class docstring."""
+        symbol = Symbol("agent.task.execution.status")
+        assert symbol.parts() == ["agent", "task", "execution", "status"]
+
+    def test_string_compatibility_examples(self):
+        """Test string compatibility examples from class docstring."""
+        symbol = Symbol("test.key")
+        assert f"Context key: {symbol}" == "Context key: test.key"
+        assert symbol in ["test.key", "other.key"]
+
+    def test_new_method_examples(self):
+        """Test __new__ method examples from docstring."""
+        symbol = Symbol("agent.intent")
+        assert isinstance(symbol, str)
+        assert isinstance(symbol, Symbol)
+
+    def test_parts_method_simple_hierarchy_example(self):
+        """Test parts method simple hierarchy example from docstring."""
+        symbol = Symbol("agent.intent")
+        assert symbol.parts() == ["agent", "intent"]
+
+    def test_parts_method_deep_hierarchy_example(self):
+        """Test parts method deep hierarchy example from docstring."""
+        symbol = Symbol("agent.task.execution.status")
+        assert symbol.parts() == ["agent", "task", "execution", "status"]
+
+    def test_parts_method_edge_cases_examples(self):
+        """Test parts method edge cases examples from docstring."""
+        assert Symbol("").parts() == [""]
+        assert Symbol("single").parts() == ["single"]
+        assert Symbol("agent..intent").parts() == ["agent", "", "intent"]
+
+    def test_docstring_type_hints_consistency(self):
+        """Test that type hints match documented behavior."""
+        # Test that Symbol instances have proper type behavior
+        symbol = Symbol("test.symbol")
+
+        # Type hint verification through behavior
+        assert isinstance(symbol, Symbol)
+        assert isinstance(symbol, str)
+
+        # Test method return types match hints
+        parts = symbol.parts()
+        assert isinstance(parts, list)
+        assert all(isinstance(part, str) for part in parts)
+
+    def test_symbol_as_string_interchangeability(self):
+        """Test that Symbol and str are truly interchangeable."""
+        symbol = Symbol("agent.intent")
+        string_val = "agent.intent"
+
+        # Test equality in both directions
+        assert symbol == string_val
+        assert string_val == symbol
+
+        # Test string operations work the same
+        assert symbol.startswith("agent")
+        assert symbol.endswith("intent")
+        assert symbol.replace(".", "_") == "agent_intent"
+        assert len(symbol) == len(string_val)
+
+        # Test in collections
+        assert symbol in {"agent.intent", "other.key"}
+        assert string_val in {symbol, "other.key"}
