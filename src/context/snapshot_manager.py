@@ -102,3 +102,20 @@ class SnapshotManager:
             raise KeyError(f"Snapshot '{name}' not found")
 
         del self._snapshots[name]
+
+    def get_snapshot(self, name: str) -> ContextSnapshot:
+        """Get a specific snapshot.
+
+        Args:
+            name: Name of the snapshot
+
+        Returns:
+            The snapshot
+
+        Raises:
+            KeyError: If snapshot doesn't exist
+        """
+        if name not in self._snapshots:
+            raise KeyError(f"Snapshot '{name}' not found")
+
+        return self._snapshots[name]
