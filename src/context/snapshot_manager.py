@@ -88,3 +88,17 @@ class SnapshotManager:
             Dictionary mapping snapshot names to their timestamps
         """
         return {name: snapshot.timestamp for name, snapshot in self._snapshots.items()}
+
+    def delete_snapshot(self, name: str) -> None:
+        """Delete a snapshot.
+
+        Args:
+            name: Name of the snapshot to delete
+
+        Raises:
+            KeyError: If snapshot doesn't exist
+        """
+        if name not in self._snapshots:
+            raise KeyError(f"Snapshot '{name}' not found")
+
+        del self._snapshots[name]
