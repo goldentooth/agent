@@ -98,3 +98,28 @@ def test_context_frame_delitem():
         assert False, "Should have raised KeyError"
     except KeyError:
         pass  # Expected behavior
+
+
+def test_context_frame_contains():
+    """Test that ContextFrame.__contains__ checks key existence correctly."""
+    frame = ContextFrame()
+
+    # Test empty frame
+    assert "key1" not in frame
+    assert "missing" not in frame
+
+    # Set up test data
+    frame.data["string_key"] = "value"
+    frame.data["int_key"] = 42
+    frame.data["none_key"] = None
+    frame.data["empty_string"] = ""
+
+    # Test existing keys
+    assert "string_key" in frame
+    assert "int_key" in frame
+    assert "none_key" in frame
+    assert "empty_string" in frame
+
+    # Test non-existing keys
+    assert "missing_key" not in frame
+    assert "another_missing" not in frame
