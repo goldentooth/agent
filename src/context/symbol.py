@@ -10,3 +10,7 @@ class Symbol(str):
     def __new__(cls, value: str) -> Symbol:
         """Create a new Symbol instance."""
         return super().__new__(cls, value)
+
+    def parts(self) -> list[str]:
+        """Split the symbol into its parts based on the '.' delimiter."""
+        return self.split(".")

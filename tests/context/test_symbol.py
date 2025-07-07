@@ -47,3 +47,82 @@ class TestSymbolNew:
         """Test truthiness/falsiness of Symbol."""
         assert Symbol("test")
         assert not Symbol("")
+
+
+class TestSymbolParts:
+    """Test the Symbol.parts method."""
+
+    def test_simple_symbol_parts(self):
+        """Test splitting simple symbol with dots."""
+        symbol = Symbol("agent.intent")
+        parts = symbol.parts()
+        assert parts == ["agent", "intent"]
+        assert isinstance(parts, list)
+        assert all(isinstance(part, str) for part in parts)
+
+    def test_multiple_dots_symbol_parts(self):
+        """Test splitting symbol with multiple dots."""
+        symbol = Symbol("agent.task.execution.status")
+        parts = symbol.parts()
+        assert parts == ["agent", "task", "execution", "status"]
+        assert len(parts) == 4
+
+    def test_single_part_symbol(self):
+        """Test symbol with no dots returns single part."""
+        symbol = Symbol("agent")
+        parts = symbol.parts()
+        assert parts == ["agent"]
+        assert len(parts) == 1
+
+    def test_empty_symbol_parts(self):
+        """Test empty symbol returns empty list."""
+        symbol = Symbol("")
+        parts = symbol.parts()
+        assert parts == [""]
+        assert len(parts) == 1
+
+    def test_symbol_with_empty_parts(self):
+        """Test symbol with empty parts from consecutive dots."""
+        symbol = Symbol("agent..intent")
+        parts = symbol.parts()
+        assert parts == ["agent", "", "intent"]
+        assert len(parts) == 3
+
+    def test_symbol_starting_with_dot(self):
+        """Test symbol starting with dot."""
+        symbol = Symbol(".agent.intent")
+        parts = symbol.parts()
+        assert parts == ["", "agent", "intent"]
+        assert len(parts) == 3
+
+    def test_symbol_ending_with_dot(self):
+        """Test symbol ending with dot."""
+        symbol = Symbol("agent.intent.")
+        parts = symbol.parts()
+        assert parts == ["agent", "intent", ""]
+        assert len(parts) == 3
+
+    def test_symbol_only_dots(self):
+        """Test symbol with only dots."""
+        symbol = Symbol("...")
+        parts = symbol.parts()
+        assert parts == ["", "", "", ""]
+        assert len(parts) == 4
+
+    def test_parts_method_returns_new_list(self):
+        """Test that parts() returns a new list each time."""
+        symbol = Symbol("agent.intent")
+        parts1 = symbol.parts()
+        parts2 = symbol.parts()
+        assert parts1 == parts2
+        assert parts1 is not parts2  # Different list objects
+
+    def test_parts_immutability(self):
+        """Test that modifying returned parts doesn't affect symbol."""
+        symbol = Symbol("agent.intent")
+        parts = symbol.parts()
+        parts.append("modified")
+
+        # Original symbol should be unchanged
+        assert symbol == "agent.intent"
+        assert symbol.parts() == ["agent", "intent"]
