@@ -77,3 +77,7 @@ class DependencyGraph:
             Set of all source keys
         """
         return set(self._graph.keys())
+
+    def clear(self) -> None:
+        """Clear the entire dependency graph."""
+        self._graph.clear()
