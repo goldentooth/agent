@@ -137,3 +137,13 @@ class ComputedProperty:
     def subscribe(self, context: Any) -> None:
         """Subscribe a context to this computed property for dependency tracking."""
         self._subscribers.add(context)
+
+    def notify_change(self) -> None:
+        """Notify all subscribed contexts that this property may have changed."""
+        for context in self._subscribers:
+            try:
+                if hasattr(context, "_handle_computed_property_change"):
+                    context._handle_computed_property_change(self)
+            except Exception:
+                # Continue notifying other contexts even if one fails
+                pass
