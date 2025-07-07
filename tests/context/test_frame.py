@@ -33,3 +33,42 @@ def test_context_frame_getitem():
         assert False, "Should have raised KeyError"
     except KeyError:
         pass  # Expected behavior
+
+
+def _setup_test_values(frame: ContextFrame) -> None:
+    """Helper to set up test values in frame."""
+    frame["string_key"] = "hello"
+    frame["int_key"] = 123
+    frame["float_key"] = 3.14
+    frame["bool_key"] = True
+    frame["list_key"] = [1, 2, 3]
+    frame["dict_key"] = {"nested": "object"}
+    frame["none_key"] = None
+
+
+def _verify_test_values(frame: ContextFrame) -> None:
+    """Helper to verify test values were set correctly."""
+    assert frame.data["string_key"] == "hello"
+    assert frame.data["int_key"] == 123
+    assert frame.data["float_key"] == 3.14
+    assert frame.data["bool_key"] is True
+    assert frame.data["list_key"] == [1, 2, 3]
+    assert frame.data["dict_key"] == {"nested": "object"}
+    assert frame.data["none_key"] is None
+
+
+def test_context_frame_setitem():
+    """Test that ContextFrame.__setitem__ sets values correctly."""
+    frame = ContextFrame()
+
+    # Test setting various types of values
+    _setup_test_values(frame)
+    _verify_test_values(frame)
+
+    # Test overwriting existing values
+    frame["string_key"] = "updated"
+    assert frame.data["string_key"] == "updated"
+
+    # Test that values are accessible via __getitem__
+    assert frame["int_key"] == 123
+    assert frame["dict_key"] == {"nested": "object"}

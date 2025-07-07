@@ -25,3 +25,7 @@ class ContextFrame:
     def __getitem__(self, key: str) -> ContextValue:
         """Get the value for a key, raising KeyError if not found."""
         return self.data[key]
+
+    def __setitem__(self, key: str, value: ContextValue) -> None:
+        """Set the value for a key in this context frame."""
+        self.data[key] = value
