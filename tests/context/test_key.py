@@ -624,3 +624,143 @@ class TestContextKeyHash:
         # Multiple accesses should return same hash
         for _ in range(5):
             assert hash(key) == original_hash
+
+
+class TestContextKeyUtility:
+    """Test the context_key utility function."""
+
+    def test_context_key_function_exists(self):
+        """Test that context_key function can be imported."""
+        from context.key import context_key
+
+        assert callable(context_key)
+
+    def test_context_key_basic_usage(self):
+        """Test basic usage of context_key function."""
+        from context.key import context_key
+
+        key = context_key("test.key", str, "Test description")
+
+        assert isinstance(key, ContextKey)
+        assert key.path == "test.key"
+        assert key.type_ == str
+        assert key.description == "Test description"
+
+    def test_context_key_with_different_types(self):
+        """Test context_key with different type parameters."""
+        from context.key import context_key
+
+        str_key = context_key("str.key", str, "String key")
+        int_key = context_key("int.key", int, "Integer key")
+        bool_key = context_key("bool.key", bool, "Boolean key")
+        list_key: ContextKey[list[Any]] = context_key("list.key", list, "List key")
+
+        assert str_key.type_ == str
+        assert int_key.type_ == int
+        assert bool_key.type_ == bool
+        assert list_key.type_ == list
+
+    def test_context_key_with_default_description(self):
+        """Test context_key with default empty description."""
+        from context.key import context_key
+
+        key = context_key("test.key", str)
+
+        assert key.path == "test.key"
+        assert key.type_ == str
+        assert key.description == ""
+
+    def test_context_key_equivalent_to_create(self):
+        """Test that context_key produces same result as ContextKey.create."""
+        from context.key import context_key
+
+        key1 = context_key("test.key", str, "Test description")
+        key2 = ContextKey[str].create("test.key", str, "Test description")
+
+        assert key1 == key2
+        assert key1.path == key2.path
+        assert key1.type_ == key2.type_
+        assert key1.description == key2.description
+        assert hash(key1) == hash(key2)
+
+    def test_context_key_maintains_generic_typing(self):
+        """Test that context_key maintains proper generic typing."""
+        from context.key import context_key
+
+        str_key = context_key("str.key", str, "String key")
+        int_key = context_key("int.key", int, "Integer key")
+
+        # Type information should be preserved
+        assert str_key.type_ == str
+        assert int_key.type_ == int
+
+    def test_context_key_with_complex_types(self):
+        """Test context_key with complex type annotations."""
+        from context.key import context_key
+
+        dict_key: ContextKey[dict[Any, Any]] = context_key(
+            "dict.key", dict, "Dictionary key"
+        )
+        tuple_key: ContextKey[tuple[Any, ...]] = context_key(
+            "tuple.key", tuple, "Tuple key"
+        )
+
+        assert dict_key.type_ == dict
+        assert tuple_key.type_ == tuple
+
+    def test_context_key_with_empty_description(self):
+        """Test context_key with explicitly empty description."""
+        from context.key import context_key
+
+        key = context_key("test.key", str, "")
+
+        assert key.description == ""
+
+    def test_context_key_with_long_description(self):
+        """Test context_key with long description."""
+        from context.key import context_key
+
+        long_desc = "This is a very long description that explains the purpose of this context key in great detail"
+        key = context_key("test.key", str, long_desc)
+
+        assert key.description == long_desc
+
+    def test_context_key_functional_style(self):
+        """Test that context_key enables functional-style key creation."""
+        from context.key import context_key
+
+        # Can be used in list comprehensions, map, etc.
+        keys = [
+            context_key("user.name", str, "User name"),
+            context_key("user.age", int, "User age"),
+            context_key("user.active", bool, "User active status"),
+        ]
+
+        assert len(keys) == 3
+        assert all(isinstance(k, ContextKey) for k in keys)
+        assert keys[0].type_ == str
+        assert keys[1].type_ == int
+        assert keys[2].type_ == bool
+
+    def test_context_key_with_hierarchical_paths(self):
+        """Test context_key with hierarchical dot-notation paths."""
+        from context.key import context_key
+
+        key = context_key("agent.task.execution.status", str, "Task execution status")
+
+        assert key.path == "agent.task.execution.status"
+        assert key.symbol.parts() == ["agent", "task", "execution", "status"]
+
+    def test_context_key_consistency_with_constructor(self):
+        """Test that context_key is consistent with direct constructor usage."""
+        from context.key import context_key
+
+        # All these should produce equivalent results
+        key1 = context_key("test.key", str, "description")
+        key2: ContextKey[str] = ContextKey("test.key", str, "description")
+        key3 = ContextKey[str].create("test.key", str, "description")
+
+        assert key1 == key2 == key3
+        assert hash(key1) == hash(key2) == hash(key3)
+        assert str(key1) == str(key2) == str(key3)
+        assert repr(key1) == repr(key2) == repr(key3)

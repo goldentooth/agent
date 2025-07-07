@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, cast
 
 from .symbol import Symbol
 
@@ -56,7 +56,7 @@ class ContextKey(Generic[T]):
     description: str = ""
 
     @classmethod
-    def create(cls, path: str, type_: type[T], description: str) -> ContextKey[T]:
+    def create(cls, path: str, type_: type[T], description: str) -> "ContextKey[T]":
         """Create a new context key with the specified name, type, and description.
 
         This classmethod provides an alternative way to create ContextKey instances
@@ -259,3 +259,47 @@ class ContextKey(Generic[T]):
             the hash consistency requirement for Python objects.
         """
         return hash(self.path)
+
+
+def context_key(name: str, type_: type[T], description: str = "") -> "ContextKey[T]":
+    """Create a context key with the specified name and type.
+
+    This is a convenience function that provides a simple way to create
+    ContextKey instances with a clean, functional interface. It delegates
+    to ContextKey.create() internally.
+
+    Args:
+        name: The hierarchical path using dot notation (e.g., 'agent.intent.task')
+        type_: The expected type of values stored under this key
+        description: Optional human-readable description of the key's purpose
+
+    Returns:
+        A new ContextKey instance with the specified name, type, and description
+
+    Examples:
+        Basic usage:
+            >>> key = context_key("user.name", str, "User's full name")
+            >>> key.path
+            'user.name'
+            >>> key.type_
+            <class 'str'>
+
+        Different types:
+            >>> str_key = context_key("user.name", str, "Name")
+            >>> int_key = context_key("user.age", int, "Age")
+            >>> bool_key = context_key("user.active", bool, "Active status")
+
+        With default description:
+            >>> key = context_key("config.debug", bool)
+            >>> key.description
+            ''
+
+        Functional style:
+            >>> keys = [
+            ...     context_key("user.name", str, "User name"),
+            ...     context_key("user.age", int, "User age"),
+            ...     context_key("user.active", bool, "Active status")
+            ... ]
+    """
+    # Create instance directly to avoid type inference issues
+    return ContextKey(name, type_, description)
