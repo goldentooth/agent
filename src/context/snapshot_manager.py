@@ -80,3 +80,11 @@ class SnapshotManager:
 
         snapshot = self._snapshots[name]
         snapshot.restore_to(context)
+
+    def list_snapshots(self) -> dict[str, float]:
+        """List all available snapshots with their timestamps.
+
+        Returns:
+            Dictionary mapping snapshot names to their timestamps
+        """
+        return {name: snapshot.timestamp for name, snapshot in self._snapshots.items()}

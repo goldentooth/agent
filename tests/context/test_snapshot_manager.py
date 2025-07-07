@@ -1,5 +1,7 @@
 """Tests for SnapshotManager class."""
 
+from typing import Any
+
 import pytest
 
 from context.snapshot_manager import SnapshotManager
@@ -546,3 +548,234 @@ class TestSnapshotManagerRestoreSnapshot:
         # Restore first snapshot
         manager.restore_snapshot(target, "snapshot_0")
         assert target.data == {"id": "first"}
+
+
+class TestSnapshotManagerListSnapshots:
+    """Test suite for SnapshotManager.list_snapshots method."""
+
+    def test_list_snapshots_empty_manager(self) -> None:
+        """Test listing snapshots when manager is empty."""
+        manager = SnapshotManager()
+
+        # Should return empty dict when no snapshots exist
+        result = manager.list_snapshots()
+        assert result == {}
+        assert isinstance(result, dict)
+
+    def test_list_snapshots_single_snapshot(self) -> None:
+        """Test listing snapshots with single snapshot."""
+        manager = SnapshotManager()
+        context = MockContext({"key": "value"})
+
+        # Create single snapshot
+        snapshot = manager.create_snapshot(context, "single_snapshot")
+
+        # Should return dict with name->timestamp mapping
+        result = manager.list_snapshots()
+        assert len(result) == 1
+        assert "single_snapshot" in result
+        assert result["single_snapshot"] == snapshot.timestamp
+        assert isinstance(result["single_snapshot"], float)
+
+    def test_list_snapshots_multiple_snapshots(self) -> None:
+        """Test listing snapshots with multiple snapshots."""
+        manager = SnapshotManager()
+        context1 = MockContext({"key1": "value1"})
+        context2 = MockContext({"key2": "value2"})
+        context3 = MockContext({"key3": "value3"})
+
+        # Create multiple snapshots
+        snapshot1 = manager.create_snapshot(context1, "snapshot_a")
+        snapshot2 = manager.create_snapshot(context2, "snapshot_b")
+        snapshot3 = manager.create_snapshot(context3, "snapshot_c")
+
+        # Should return dict with all snapshots
+        result = manager.list_snapshots()
+        assert len(result) == 3
+        assert result["snapshot_a"] == snapshot1.timestamp
+        assert result["snapshot_b"] == snapshot2.timestamp
+        assert result["snapshot_c"] == snapshot3.timestamp
+
+    def test_list_snapshots_return_type(self) -> None:
+        """Test that list_snapshots returns correct type."""
+        manager = SnapshotManager()
+        context = MockContext({"test": "data"})
+
+        # Create snapshot
+        manager.create_snapshot(context, "test_snapshot")
+
+        # Should return dict[str, float]
+        result = manager.list_snapshots()
+        assert isinstance(result, dict)
+
+        # Check key and value types
+        for name, timestamp in result.items():
+            assert isinstance(name, str)
+            assert isinstance(timestamp, float)
+
+    def test_list_snapshots_different_name_formats(self) -> None:
+        """Test listing snapshots with various name formats."""
+        manager = SnapshotManager()
+        context = MockContext({"key": "value"})
+
+        # Create snapshots with different name formats
+        names = [
+            "simple",
+            "with_underscore",
+            "with-dash",
+            "with.dot",
+            "with spaces",
+            "123numeric",
+            "MixedCase",
+            "UPPERCASE",
+            "",  # Empty string
+        ]
+
+        snapshots: dict[str, Any] = {}
+        for name in names:
+            snapshot = manager.create_snapshot(context, name)
+            snapshots[name] = snapshot
+
+        # Should list all snapshots with correct names
+        result = manager.list_snapshots()
+        assert len(result) == len(names)
+        for name in names:
+            assert name in result
+            assert result[name] == snapshots[name].timestamp  # type: ignore[reportUnknownMemberType]
+
+    def test_list_snapshots_independence_from_internal_state(self) -> None:
+        """Test that returned dict is independent from internal state."""
+        manager = SnapshotManager()
+        context = MockContext({"key": "value"})
+
+        # Create snapshot
+        manager.create_snapshot(context, "test_snapshot")
+
+        # Get snapshot list
+        result1 = manager.list_snapshots()
+        result2 = manager.list_snapshots()
+
+        # Should return different dict instances each time
+        assert result1 is not result2
+        assert result1 == result2
+
+        # Modifying result should not affect manager
+        result1["new_key"] = 999.999
+        result3 = manager.list_snapshots()
+        assert "new_key" not in result3
+
+    def test_list_snapshots_consistent_with_create_snapshot(self) -> None:
+        """Test that list_snapshots is consistent with create_snapshot."""
+        manager = SnapshotManager()
+        context = MockContext({"key": "value"})
+
+        # Initially empty
+        assert manager.list_snapshots() == {}
+
+        # Create first snapshot
+        snapshot1 = manager.create_snapshot(context, "first")
+        result = manager.list_snapshots()
+        assert len(result) == 1
+        assert result["first"] == snapshot1.timestamp
+
+        # Create second snapshot
+        snapshot2 = manager.create_snapshot(context, "second")
+        result = manager.list_snapshots()
+        assert len(result) == 2
+        assert result["first"] == snapshot1.timestamp
+        assert result["second"] == snapshot2.timestamp
+
+    def test_list_snapshots_preserves_timestamp_values(self) -> None:
+        """Test that exact timestamp values are preserved."""
+        manager = SnapshotManager()
+        context = MockContext({"key": "value"})
+
+        # Create snapshot and capture timestamp
+        snapshot = manager.create_snapshot(context, "timestamp_test")
+        original_timestamp = snapshot.timestamp
+
+        # List snapshots should preserve exact timestamp
+        result = manager.list_snapshots()
+        assert result["timestamp_test"] == original_timestamp
+
+        # Should be exact match, not approximation
+        assert result["timestamp_test"] is original_timestamp
+
+    def test_list_snapshots_after_snapshot_operations(self) -> None:
+        """Test listing snapshots after various operations."""
+        manager = SnapshotManager()
+        original_context = MockContext({"key": "original"})
+        target_context = MockContext({"key": "target"})
+
+        # Create snapshot
+        snapshot = manager.create_snapshot(original_context, "operation_test")
+
+        # Restore snapshot (should not affect listing)
+        manager.restore_snapshot(target_context, "operation_test")
+
+        # Should still list the snapshot correctly
+        result = manager.list_snapshots()
+        assert len(result) == 1
+        assert result["operation_test"] == snapshot.timestamp
+
+        # Multiple restores should not affect listing
+        manager.restore_snapshot(target_context, "operation_test")
+        result = manager.list_snapshots()
+        assert len(result) == 1
+        assert result["operation_test"] == snapshot.timestamp
+
+    def test_list_snapshots_empty_names_handled(self) -> None:
+        """Test that empty and unusual names are handled correctly."""
+        manager = SnapshotManager()
+        context = MockContext({"key": "value"})
+
+        # Create snapshot with empty name
+        empty_snapshot = manager.create_snapshot(context, "")
+
+        # Should be listed correctly
+        result = manager.list_snapshots()
+        assert "" in result
+        assert result[""] == empty_snapshot.timestamp
+
+    def test_list_snapshots_chronological_information(self) -> None:
+        """Test that timestamp information enables chronological ordering."""
+        manager = SnapshotManager()
+        context = MockContext({"key": "value"})
+
+        # Create snapshots in sequence
+        # (Note: actual timestamps may be very close but should be different)
+        snapshot1 = manager.create_snapshot(context, "first")
+        snapshot2 = manager.create_snapshot(context, "second")
+
+        result = manager.list_snapshots()
+
+        # Should contain both timestamps
+        assert len(result) == 2
+        assert "first" in result
+        assert "second" in result
+
+        # Timestamps should enable ordering (first should be <= second)
+        assert result["first"] <= result["second"]
+
+    def test_list_snapshots_no_side_effects(self) -> None:
+        """Test that list_snapshots has no side effects on manager state."""
+        manager = SnapshotManager()
+        context = MockContext({"key": "value"})
+
+        # Create snapshot
+        snapshot = manager.create_snapshot(context, "side_effect_test")
+
+        # Get internal state before listing
+        internal_count_before = len(manager._snapshots)  # type: ignore[reportPrivateUsage]
+
+        # List snapshots multiple times
+        result1 = manager.list_snapshots()
+        result2 = manager.list_snapshots()
+        result3 = manager.list_snapshots()
+
+        # Internal state should be unchanged
+        internal_count_after = len(manager._snapshots)  # type: ignore[reportPrivateUsage]
+        assert internal_count_before == internal_count_after
+
+        # All results should be identical
+        assert result1 == result2 == result3
