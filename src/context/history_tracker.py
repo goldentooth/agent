@@ -145,3 +145,19 @@ class HistoryTracker:
             List of change events in chronological order
         """
         return [event for event in self._change_history if event.timestamp > timestamp]
+
+    def get_changes_to_reverse(self, timestamp: float) -> list[ContextChangeEvent]:
+        """Get changes that need to be reversed for rollback to a timestamp.
+
+        Args:
+            timestamp: Target timestamp to rollback to
+
+        Returns:
+            List of change events in reverse chronological order (most recent first)
+        """
+        changes_to_reverse = [
+            event
+            for event in reversed(self._change_history)
+            if event.timestamp > timestamp
+        ]
+        return changes_to_reverse
