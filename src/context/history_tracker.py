@@ -161,3 +161,11 @@ class HistoryTracker:
             if event.timestamp > timestamp
         ]
         return changes_to_reverse
+
+    def get_all_history(self) -> list[ContextChangeEvent]:
+        """Get all history without filtering or reversing.
+
+        Returns:
+            List of all change events in chronological order
+        """
+        return self._change_history.copy()

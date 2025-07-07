@@ -202,3 +202,191 @@ class TestHistoryTrackerBasic:
         assert events[0].new_value == "val2"
         assert events[1].new_value == "val3"
         assert events[2].new_value == "val4"
+
+
+class TestHistoryTrackerGetAllHistory:
+    """Test suite for HistoryTracker.get_all_history method."""
+
+    def test_get_all_history_empty(self) -> None:
+        """Test get_all_history with empty history."""
+        tracker = HistoryTracker()
+
+        all_history = tracker.get_all_history()
+
+        assert all_history == []
+        assert isinstance(all_history, list)
+
+    def test_get_all_history_single_event(self) -> None:
+        """Test get_all_history with a single event."""
+        tracker = HistoryTracker()
+
+        tracker.record_change("key1", "old1", "new1", 1)
+
+        all_history = tracker.get_all_history()
+
+        assert len(all_history) == 1
+        assert all_history[0].key == "key1"
+        assert all_history[0].old_value == "old1"
+        assert all_history[0].new_value == "new1"
+        assert all_history[0].context_id == 1
+
+    def test_get_all_history_multiple_events(self) -> None:
+        """Test get_all_history with multiple events."""
+        tracker = HistoryTracker()
+
+        tracker.record_change("key1", "old1", "new1", 1)
+        tracker.record_change("key2", "old2", "new2", 2)
+        tracker.record_change("key3", "old3", "new3", 3)
+
+        all_history = tracker.get_all_history()
+
+        assert len(all_history) == 3
+        assert all_history[0].key == "key1"  # First event in chronological order
+        assert all_history[1].key == "key2"
+        assert all_history[2].key == "key3"  # Last event in chronological order
+
+    def test_get_all_history_chronological_order(self) -> None:
+        """Test that get_all_history returns events in chronological order."""
+        tracker = HistoryTracker()
+
+        # Add events with small delays to ensure different timestamps
+        tracker.record_change("key1", "old1", "new1", 1)
+        time.sleep(0.001)
+        tracker.record_change("key2", "old2", "new2", 2)
+        time.sleep(0.001)
+        tracker.record_change("key3", "old3", "new3", 3)
+
+        all_history = tracker.get_all_history()
+
+        # Verify timestamps are in ascending order (chronological)
+        assert len(all_history) == 3
+        assert all_history[0].timestamp < all_history[1].timestamp
+        assert all_history[1].timestamp < all_history[2].timestamp
+
+    def test_get_all_history_returns_copy(self) -> None:
+        """Test that get_all_history returns a copy, not reference."""
+        tracker = HistoryTracker()
+
+        tracker.record_change("key1", "old1", "new1", 1)
+        tracker.record_change("key2", "old2", "new2", 2)
+
+        # Get history twice
+        all_history1 = tracker.get_all_history()
+        all_history2 = tracker.get_all_history()
+
+        # Should be different list instances
+        assert all_history1 is not all_history2
+
+        # But with same content
+        assert len(all_history1) == len(all_history2)
+        assert all(e1.key == e2.key for e1, e2 in zip(all_history1, all_history2))
+
+        # Modifying the returned list should not affect internal state
+        all_history1.clear()
+        assert len(tracker.get_all_history()) == 2  # Internal state unchanged
+
+    def test_get_all_history_with_max_size_limitation(self) -> None:
+        """Test get_all_history when history is limited by max_size."""
+        tracker = HistoryTracker(max_size=3)
+
+        # Record 5 changes (only last 3 will be kept)
+        for i in range(5):
+            tracker.record_change(f"key{i}", f"old{i}", f"new{i}", i)
+
+        all_history = tracker.get_all_history()
+
+        # Should only get the 3 kept events (key2, key3, key4)
+        assert len(all_history) == 3
+        assert all_history[0].key == "key2"  # Oldest kept
+        assert all_history[1].key == "key3"
+        assert all_history[2].key == "key4"  # Most recent
+
+    def test_get_all_history_zero_max_size(self) -> None:
+        """Test get_all_history with zero max_size."""
+        tracker = HistoryTracker(max_size=0)
+
+        tracker.record_change("key1", "old1", "new1", 1)
+
+        # Should return empty list since no history is kept
+        all_history = tracker.get_all_history()
+        assert all_history == []
+
+    def test_get_all_history_preserves_event_data(self) -> None:
+        """Test that get_all_history preserves all event data."""
+        tracker = HistoryTracker()
+
+        # Complex data in events
+        old_data = {"nested": {"value": 123}}
+        new_data = [1, 2, 3]
+
+        tracker.record_change("complex_key", old_data, new_data, 999)
+
+        all_history = tracker.get_all_history()
+
+        assert len(all_history) == 1
+        event = all_history[0]
+        assert event.key == "complex_key"
+        assert event.old_value == old_data
+        assert event.new_value == new_data
+        assert event.context_id == 999
+        assert isinstance(event.timestamp, float)
+
+    def test_get_all_history_vs_get_history_order(self) -> None:
+        """Test that get_all_history and get_history return opposite orders."""
+        tracker = HistoryTracker()
+
+        tracker.record_change("key1", "old1", "new1", 1)
+        tracker.record_change("key2", "old2", "new2", 2)
+        tracker.record_change("key3", "old3", "new3", 3)
+
+        all_history = tracker.get_all_history()  # Chronological order
+        recent_history = tracker.get_history()  # Most recent first
+
+        # Same events but opposite order
+        assert len(all_history) == len(recent_history)
+        assert len(all_history) == 3
+
+        # Verify opposite ordering
+        assert all_history[0].key == recent_history[2].key  # key1
+        assert all_history[1].key == recent_history[1].key  # key2
+        assert all_history[2].key == recent_history[0].key  # key3
+
+    def test_get_all_history_after_clear(self) -> None:
+        """Test get_all_history after clearing history."""
+        tracker = HistoryTracker()
+
+        tracker.record_change("key1", "old1", "new1", 1)
+        tracker.record_change("key2", "old2", "new2", 2)
+
+        # Clear history and verify get_all_history returns empty
+        tracker.clear_history()
+        all_history = tracker.get_all_history()
+
+        assert all_history == []
+
+    def test_get_all_history_consistency_with_size(self) -> None:
+        """Test that get_all_history length matches get_history_size."""
+        tracker = HistoryTracker()
+
+        # Add various numbers of events
+        for i in range(10):
+            tracker.record_change(f"key{i}", f"old{i}", f"new{i}", i)
+            all_history = tracker.get_all_history()
+            assert len(all_history) == tracker.get_history_size()
+
+    def test_get_all_history_idempotent(self) -> None:
+        """Test that get_all_history is idempotent (no side effects)."""
+        tracker = HistoryTracker()
+
+        tracker.record_change("key1", "old1", "new1", 1)
+
+        # Multiple calls should return identical results
+        history1 = tracker.get_all_history()
+        history2 = tracker.get_all_history()
+        history3 = tracker.get_all_history()
+
+        assert len(history1) == len(history2) == len(history3) == 1
+        assert history1[0].key == history2[0].key == history3[0].key == "key1"
+
+        # Internal state should remain unchanged
+        assert tracker.get_history_size() == 1
