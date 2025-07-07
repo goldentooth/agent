@@ -81,3 +81,11 @@ class DependencyGraph:
     def clear(self) -> None:
         """Clear the entire dependency graph."""
         self._graph.clear()
+
+    def get_graph_copy(self) -> dict[str, set[str]]:
+        """Get a copy of the internal graph structure.
+
+        Returns:
+            Dictionary mapping source keys to sets of dependent keys
+        """
+        return {key: deps.copy() for key, deps in self._graph.items()}
