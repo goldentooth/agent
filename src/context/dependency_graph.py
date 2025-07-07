@@ -25,3 +25,16 @@ class DependencyGraph:
         if source_key not in self._graph:
             self._graph[source_key] = set()
         self._graph[source_key].add(dependent_key)
+
+    def remove_dependency(self, source_key: str, dependent_key: str) -> None:
+        """Remove a specific dependency relationship.
+
+        Args:
+            source_key: The key that is depended upon
+            dependent_key: The key that depends on the source
+        """
+        if source_key in self._graph:
+            self._graph[source_key].discard(dependent_key)
+            # Clean up empty sets
+            if not self._graph[source_key]:
+                del self._graph[source_key]
