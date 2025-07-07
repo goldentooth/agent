@@ -529,3 +529,111 @@ class TestHistoryTracker:
         # Getting history again should return the same data
         new_history = tracker.get_history()
         assert len(new_history) == 2
+
+    def test_clear_history_basic(self) -> None:
+        """Test basic clear_history functionality."""
+        tracker = HistoryTracker()
+
+        # Add some events
+        tracker.record_change("key1", "old1", "new1", 1)
+        tracker.record_change("key2", "old2", "new2", 2)
+        tracker.record_change("key3", "old3", "new3", 3)
+
+        # Verify events exist
+        assert len(tracker._change_history) == 3  # type: ignore[reportPrivateUsage]
+
+        # Clear history
+        tracker.clear_history()
+
+        # Verify history is empty
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]
+        assert tracker.get_history() == []
+
+    def test_clear_history_empty(self) -> None:
+        """Test clearing already empty history."""
+        tracker = HistoryTracker()
+
+        # Verify history is initially empty
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]
+
+        # Clear empty history (should not raise error)
+        tracker.clear_history()
+
+        # Verify history is still empty
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]
+        assert tracker.get_history() == []
+
+    def test_clear_history_then_add_new(self) -> None:
+        """Test adding events after clearing history."""
+        tracker = HistoryTracker()
+
+        # Add initial events
+        tracker.record_change("key1", "old1", "new1", 1)
+        tracker.record_change("key2", "old2", "new2", 2)
+
+        # Clear history
+        tracker.clear_history()
+
+        # Add new events
+        tracker.record_change("key3", "old3", "new3", 3)
+        tracker.record_change("key4", "old4", "new4", 4)
+
+        # Verify only new events exist
+        assert len(tracker._change_history) == 2  # type: ignore[reportPrivateUsage]
+        history = tracker.get_history()
+        assert len(history) == 2
+        assert history[0].key == "key4"  # Most recent
+        assert history[1].key == "key3"
+
+    def test_clear_history_multiple_times(self) -> None:
+        """Test clearing history multiple times."""
+        tracker = HistoryTracker()
+
+        # Add events and clear
+        tracker.record_change("key1", "old1", "new1", 1)
+        tracker.clear_history()
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]
+
+        # Add more events and clear again
+        tracker.record_change("key2", "old2", "new2", 2)
+        tracker.record_change("key3", "old3", "new3", 3)
+        tracker.clear_history()
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]
+
+        # Clear again (empty history)
+        tracker.clear_history()
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]
+
+    def test_clear_history_preserves_max_size(self) -> None:
+        """Test that clear_history preserves the max_size setting."""
+        max_size = 5
+        tracker = HistoryTracker(max_size=max_size)
+
+        # Add events
+        for i in range(3):
+            tracker.record_change(f"key{i}", f"old{i}", f"new{i}", i)
+
+        # Clear history
+        tracker.clear_history()
+
+        # Verify max_size is preserved
+        assert tracker._max_history_size == max_size  # type: ignore[reportPrivateUsage]
+
+        # Add new events to verify max_size still works
+        for i in range(7):  # More than max_size
+            tracker.record_change(f"new_key{i}", f"old{i}", f"new{i}", i)
+
+        # Should only keep the last max_size events
+        assert len(tracker._change_history) == max_size  # type: ignore[reportPrivateUsage]
+
+    def test_clear_history_with_zero_max_size(self) -> None:
+        """Test clear_history with zero max_size tracker."""
+        tracker = HistoryTracker(max_size=0)
+
+        # Try to add an event (should not be kept due to max_size=0)
+        tracker.record_change("key1", "old1", "new1", 1)
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]
+
+        # Clear history (should work even though already empty)
+        tracker.clear_history()
+        assert len(tracker._change_history) == 0  # type: ignore[reportPrivateUsage]

@@ -108,3 +108,7 @@ class HistoryTracker:
             history = history[:limit]
 
         return history
+
+    def clear_history(self) -> None:
+        """Clear the change history."""
+        self._change_history.clear()
