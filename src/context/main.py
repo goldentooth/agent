@@ -4,9 +4,14 @@ from __future__ import annotations
 
 import time
 from typing import TYPE_CHECKING, Any
+from weakref import WeakSet
 
 if TYPE_CHECKING:
     pass
+
+# Type aliases for context system
+ContextValue = Any
+ComputedFunction = Any
 
 
 class ContextSnapshot:
@@ -86,3 +91,23 @@ class ContextSnapshot:
             for func in funcs:
                 if hasattr(context, "add_transformation"):
                     context.add_transformation(key, func)  # type: ignore[reportUnknownMemberType]
+
+
+class ComputedProperty:
+    """Represents a computed property that automatically updates when its dependencies change."""
+
+    def __init__(
+        self, func: ComputedFunction, dependencies: list[str] | None = None
+    ) -> None:
+        """Initialize a computed property.
+
+        Args:
+            func: Function that computes the value, takes Context as parameter
+            dependencies: List of context keys this property depends on. If None, will track automatically.
+        """
+        super().__init__()
+        self.func = func
+        self.dependencies = (dependencies or []).copy()
+        self._cached_value: ContextValue = None
+        self._is_cached = False
+        self._subscribers: WeakSet[Any] = WeakSet()
