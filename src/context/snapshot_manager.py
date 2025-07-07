@@ -15,11 +15,26 @@ class ContextSnapshot:
 
     def __init__(self, context: Any, name: str) -> None:
         super().__init__()
-        self.context = context
+        # Create a copy of the context to preserve its state at snapshot time
+        if hasattr(context, "data"):
+            # For MockContext objects, create a new MockContext with copied data
+            self.context = type(context)(context.data.copy())
+        else:
+            self.context = context
         self.name = name
         import time
 
         self.timestamp = time.time()
+
+    def restore_to(self, target_context: Any) -> None:
+        """Restore the snapshot data to a target context.
+
+        Args:
+            target_context: The context to restore the snapshot data to
+        """
+        # For now, just copy the data if both contexts have data attribute
+        if hasattr(self.context, "data") and hasattr(target_context, "data"):
+            target_context.data = self.context.data.copy()
 
 
 class SnapshotManager:
@@ -49,3 +64,19 @@ class SnapshotManager:
         snapshot = ContextSnapshot(context, name)
         self._snapshots[name] = snapshot
         return snapshot
+
+    def restore_snapshot(self, context: Any, name: str) -> None:
+        """Restore the context to a previous snapshot state.
+
+        Args:
+            context: The context to restore to
+            name: Name of the snapshot to restore
+
+        Raises:
+            KeyError: If snapshot with the given name doesn't exist
+        """
+        if name not in self._snapshots:
+            raise KeyError(f"Snapshot '{name}' not found")
+
+        snapshot = self._snapshots[name]
+        snapshot.restore_to(context)

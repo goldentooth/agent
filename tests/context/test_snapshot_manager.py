@@ -334,3 +334,215 @@ class TestSnapshotManagerCreateSnapshot:
         # Verify correct storage
         assert manager._snapshots["snapshot1"] == snapshot1  # type: ignore[reportPrivateUsage]
         assert manager._snapshots["snapshot2"] == snapshot2  # type: ignore[reportPrivateUsage]
+
+
+class TestSnapshotManagerRestoreSnapshot:
+    """Test suite for SnapshotManager.restore_snapshot method."""
+
+    def test_restore_snapshot_basic(self) -> None:
+        """Test basic snapshot restoration functionality."""
+        manager = SnapshotManager()
+        original_context = MockContext({"key": "original_value"})
+        target_context = MockContext({"key": "current_value"})
+
+        # Create a snapshot
+        snapshot = manager.create_snapshot(original_context, "test_snapshot")
+
+        # Restore the snapshot to target context
+        manager.restore_snapshot(target_context, "test_snapshot")
+
+        # Target context should now have the original data
+        assert target_context.data == {"key": "original_value"}
+
+    def test_restore_snapshot_nonexistent_raises_error(self) -> None:
+        """Test that restoring nonexistent snapshot raises KeyError."""
+        manager = SnapshotManager()
+        context = MockContext({"key": "value"})
+
+        # Attempt to restore nonexistent snapshot should raise KeyError
+        with pytest.raises(KeyError, match="Snapshot 'nonexistent' not found"):
+            manager.restore_snapshot(context, "nonexistent")
+
+    def test_restore_snapshot_preserves_original_snapshot(self) -> None:
+        """Test that restoring doesn't modify the original snapshot."""
+        manager = SnapshotManager()
+        original_context = MockContext({"key": "original"})
+        target_context = MockContext({"key": "current"})
+
+        # Create snapshot
+        snapshot = manager.create_snapshot(original_context, "test_snapshot")
+
+        # Modify original context after snapshot creation
+        original_context.data["key"] = "modified"
+
+        # Restore snapshot
+        manager.restore_snapshot(target_context, "test_snapshot")
+
+        # Target should have snapshot data, not current original data
+        assert target_context.data == {"key": "original"}
+        assert original_context.data == {"key": "modified"}
+
+    def test_restore_snapshot_multiple_contexts(self) -> None:
+        """Test restoring the same snapshot to multiple contexts."""
+        manager = SnapshotManager()
+        original_context = MockContext({"shared": "data", "unique": "original"})
+        target1 = MockContext({"different": "data1"})
+        target2 = MockContext({"different": "data2"})
+
+        # Create snapshot
+        manager.create_snapshot(original_context, "shared_snapshot")
+
+        # Restore to multiple targets
+        manager.restore_snapshot(target1, "shared_snapshot")
+        manager.restore_snapshot(target2, "shared_snapshot")
+
+        # Both targets should have the same restored data
+        expected_data = {"shared": "data", "unique": "original"}
+        assert target1.data == expected_data
+        assert target2.data == expected_data
+
+    def test_restore_snapshot_overwrites_target_data(self) -> None:
+        """Test that restoration completely overwrites target context data."""
+        manager = SnapshotManager()
+        original_context = MockContext({"snapshot": "data"})
+        target_context = MockContext(
+            {"existing": "data", "multiple": "keys", "will_be": "overwritten"}
+        )
+
+        # Create snapshot
+        manager.create_snapshot(original_context, "overwrite_test")
+
+        # Restore snapshot
+        manager.restore_snapshot(target_context, "overwrite_test")
+
+        # Target should only have snapshot data
+        assert target_context.data == {"snapshot": "data"}
+        assert "existing" not in target_context.data
+        assert "multiple" not in target_context.data
+        assert "will_be" not in target_context.data
+
+    def test_restore_snapshot_empty_data(self) -> None:
+        """Test restoring snapshot with empty data."""
+        manager = SnapshotManager()
+        original_context = MockContext({})
+        target_context = MockContext({"will_be": "cleared"})
+
+        # Create snapshot with empty data
+        manager.create_snapshot(original_context, "empty_snapshot")
+
+        # Restore snapshot
+        manager.restore_snapshot(target_context, "empty_snapshot")
+
+        # Target should now be empty
+        assert target_context.data == {}
+
+    def test_restore_snapshot_complex_data(self) -> None:
+        """Test restoring snapshot with complex data structures."""
+        manager = SnapshotManager()
+        complex_data = {"string": "value", "number": "123", "nested": "structure"}
+        original_context = MockContext(complex_data)
+        target_context = MockContext({"simple": "data"})
+
+        # Create snapshot
+        manager.create_snapshot(original_context, "complex_snapshot")
+
+        # Restore snapshot
+        manager.restore_snapshot(target_context, "complex_snapshot")
+
+        # Target should have all complex data
+        assert target_context.data == complex_data
+        assert target_context.data["string"] == "value"
+        assert target_context.data["number"] == "123"
+        assert target_context.data["nested"] == "structure"
+
+    def test_restore_snapshot_independence_after_restore(self) -> None:
+        """Test that restored context is independent from snapshot."""
+        manager = SnapshotManager()
+        original_context = MockContext({"key": "original"})
+        target_context = MockContext({"key": "target"})
+
+        # Create snapshot
+        manager.create_snapshot(original_context, "independence_test")
+
+        # Restore snapshot
+        manager.restore_snapshot(target_context, "independence_test")
+
+        # Modify target after restoration
+        target_context.data["key"] = "modified_after_restore"
+        target_context.data["new"] = "key"
+
+        # Original context and snapshot should be unaffected
+        snapshot = manager._snapshots["independence_test"]  # type: ignore[reportPrivateUsage]
+        assert snapshot.context.data == {"key": "original"}
+        assert original_context.data == {"key": "original"}
+
+    def test_restore_snapshot_multiple_snapshots(self) -> None:
+        """Test restoring different snapshots to the same context."""
+        manager = SnapshotManager()
+        context1 = MockContext({"state": "first"})
+        context2 = MockContext({"state": "second"})
+        target = MockContext({"state": "initial"})
+
+        # Create multiple snapshots
+        manager.create_snapshot(context1, "snapshot1")
+        manager.create_snapshot(context2, "snapshot2")
+
+        # Restore first snapshot
+        manager.restore_snapshot(target, "snapshot1")
+        assert target.data == {"state": "first"}
+
+        # Restore second snapshot
+        manager.restore_snapshot(target, "snapshot2")
+        assert target.data == {"state": "second"}
+
+    def test_restore_snapshot_returns_none(self) -> None:
+        """Test that restore_snapshot returns None."""
+        manager = SnapshotManager()
+        original_context = MockContext({"key": "value"})
+        target_context = MockContext({})
+
+        # Create snapshot
+        manager.create_snapshot(original_context, "test_snapshot")
+
+        # Restore should return None
+        result = manager.restore_snapshot(target_context, "test_snapshot")
+        assert result is None
+
+    def test_restore_snapshot_exact_name_match(self) -> None:
+        """Test that restoration requires exact name match."""
+        manager = SnapshotManager()
+        original_context = MockContext({"key": "value"})
+        target_context = MockContext({})
+
+        # Create snapshot
+        manager.create_snapshot(original_context, "ExactName")
+
+        # Different case should fail
+        with pytest.raises(KeyError, match="Snapshot 'exactname' not found"):
+            manager.restore_snapshot(target_context, "exactname")
+
+        # Exact case should work
+        manager.restore_snapshot(target_context, "ExactName")
+        assert target_context.data == {"key": "value"}
+
+    def test_restore_snapshot_after_multiple_creates(self) -> None:
+        """Test restoring snapshot after creating multiple snapshots."""
+        manager = SnapshotManager()
+        contexts = [
+            MockContext({"id": "first"}),
+            MockContext({"id": "second"}),
+            MockContext({"id": "third"}),
+        ]
+        target = MockContext({})
+
+        # Create multiple snapshots
+        for i, context in enumerate(contexts):
+            manager.create_snapshot(context, f"snapshot_{i}")
+
+        # Restore middle snapshot
+        manager.restore_snapshot(target, "snapshot_1")
+        assert target.data == {"id": "second"}
+
+        # Restore first snapshot
+        manager.restore_snapshot(target, "snapshot_0")
+        assert target.data == {"id": "first"}
