@@ -48,7 +48,9 @@
       "Bash(git commit --no-verify:*)",
       "Bash(git commit -m:*)",
       "Bash(git reset:*)",
-      "Bash(SKIP:*)"
+      "Bash(SKIP:*)",
+      "Edit(pyrightconfig.json)",
+      "Edit(pytest.ini)"
     ]
   }
 }
