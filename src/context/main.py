@@ -128,3 +128,12 @@ class ComputedProperty:
         self._cached_value = value
         self._is_cached = True
         return value
+
+    def invalidate(self) -> None:
+        """Invalidate the cached value, requiring recomputation."""
+        self._is_cached = False
+        self._cached_value = None
+
+    def subscribe(self, context: Any) -> None:
+        """Subscribe a context to this computed property for dependency tracking."""
+        self._subscribers.add(context)
