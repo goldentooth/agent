@@ -116,3 +116,21 @@ class HistoryTracker:
     def get_history_size(self) -> int:
         """Get the current size of the change history."""
         return len(self._change_history)
+
+    def set_max_history_size(self, size: int) -> None:
+        """Set the maximum history size.
+
+        Args:
+            size: Maximum number of change events to keep
+
+        Raises:
+            ValueError: If size is negative
+        """
+        if size < 0:
+            raise ValueError("History size must be non-negative")
+
+        self._max_history_size = size
+
+        # Trim current history if needed
+        if len(self._change_history) > size:
+            self._change_history = self._change_history[-size:] if size > 0 else []
