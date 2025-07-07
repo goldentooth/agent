@@ -103,3 +103,76 @@ class TestContextChangeEvent:
             assert event.old_value == old_val
             assert event.new_value == new_val
             assert event.context_id == 100
+
+    def test_repr_basic(self) -> None:
+        """Test basic string representation of ContextChangeEvent."""
+        event = ContextChangeEvent("test_key", "old_val", "new_val", 123)
+        repr_str = repr(event)
+
+        assert "ContextChangeEvent" in repr_str
+        assert "key='test_key'" in repr_str
+        assert "old_val -> new_val" in repr_str
+        assert f"t={event.timestamp}" in repr_str
+
+    def test_repr_with_none_values(self) -> None:
+        """Test string representation with None values."""
+        event = ContextChangeEvent("key", None, None, 0)
+        repr_str = repr(event)
+
+        assert "ContextChangeEvent" in repr_str
+        assert "key='key'" in repr_str
+        assert "None -> None" in repr_str
+
+    def test_repr_with_complex_values(self) -> None:
+        """Test string representation with complex data types."""
+        old_value = {"nested": {"data": [1, 2, 3]}}
+        new_value = [{"item": 1}, {"item": 2}]
+        event = ContextChangeEvent("complex", old_value, new_value, 456)
+        repr_str = repr(event)
+
+        assert "ContextChangeEvent" in repr_str
+        assert "key='complex'" in repr_str
+        assert str(old_value) in repr_str
+        assert str(new_value) in repr_str
+
+    def test_repr_with_string_containing_quotes(self) -> None:
+        """Test string representation with values containing quotes."""
+        event = ContextChangeEvent("key", "old'value", 'new"value', 789)
+        repr_str = repr(event)
+
+        assert "ContextChangeEvent" in repr_str
+        assert "key='key'" in repr_str
+        assert "old'value" in repr_str
+        assert 'new"value' in repr_str
+
+    def test_repr_format_consistency(self) -> None:
+        """Test that repr format is consistent and parseable."""
+        event = ContextChangeEvent("test", 42, 43, 100)
+        repr_str = repr(event)
+
+        # Check the expected format
+        expected_pattern = r"ContextChangeEvent\(key='test', 42 -> 43, t=\d+\.\d+\)"
+        import re
+
+        assert re.match(expected_pattern, repr_str)
+
+    def test_repr_with_empty_string_key(self) -> None:
+        """Test string representation with empty string key."""
+        event = ContextChangeEvent("", "old", "new", 1)
+        repr_str = repr(event)
+
+        assert "key=''" in repr_str
+        assert "old -> new" in repr_str
+
+    def test_repr_with_numeric_values(self) -> None:
+        """Test string representation with various numeric types."""
+        test_cases = [
+            (42, 43, "42 -> 43"),
+            (3.14, 2.71, "3.14 -> 2.71"),
+            (True, False, "True -> False"),
+        ]
+
+        for old_val, new_val, expected_transition in test_cases:
+            event = ContextChangeEvent("key", old_val, new_val, 1)
+            repr_str = repr(event)
+            assert expected_transition in repr_str

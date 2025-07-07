@@ -36,3 +36,7 @@ class ContextChangeEvent:
         self.new_value = new_value
         self.context_id = context_id
         self.timestamp = time.time()
+
+    def __repr__(self) -> str:
+        """String representation of the change event."""
+        return f"ContextChangeEvent(key='{self.key}', {self.old_value} -> {self.new_value}, t={self.timestamp})"
