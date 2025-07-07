@@ -238,3 +238,87 @@ class ExtensionRegistry:
         # Run initialization hooks
         for hook in self._initialization_hooks:
             hook(flow_class)
+
+
+# Global extension registry instance
+_registry = ExtensionRegistry()
+
+
+def install_extension(extension: FlowExtension) -> None:
+    """Install a flow extension.
+
+    Args:
+        extension: The FlowExtension instance to install
+
+    Raises:
+        ValueError: If extension is already registered
+    """
+    _registry.register_extension(extension)
+
+
+def uninstall_extension(name: str) -> None:
+    """Remove an extension.
+
+    Args:
+        name: Name of the extension to remove
+
+    Raises:
+        ValueError: If extension is not found
+    """
+    _registry.unregister_extension(name)
+
+
+def enable_extension(name: str) -> None:
+    """Enable an extension.
+
+    Args:
+        name: Name of the extension to enable
+
+    Raises:
+        ValueError: If extension is not found
+    """
+    _registry.enable(name)
+
+
+def disable_extension(name: str) -> None:
+    """Disable an extension.
+
+    Args:
+        name: Name of the extension to disable
+
+    Raises:
+        ValueError: If extension is not found
+    """
+    _registry.disable(name)
+
+
+def list_extensions() -> list[dict[str, Any]]:
+    """List available extensions.
+
+    Returns:
+        List of dictionaries containing extension information
+        including name, version, description, and enabled status
+    """
+    return _registry.list_extensions()
+
+
+def get_extension_info(name: str) -> dict[str, Any]:
+    """Get extension details.
+
+    Args:
+        name: Name of the extension
+
+    Returns:
+        Dictionary containing extension information
+
+    Raises:
+        ValueError: If extension is not found
+    """
+    if name not in _registry.extensions:
+        raise ValueError(f"Extension '{name}' not found")
+    return _registry.extensions[name].get_info()
+
+
+def get_global_registry() -> ExtensionRegistry:
+    """Get the global extension registry instance (for testing)."""
+    return _registry
