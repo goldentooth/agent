@@ -112,3 +112,7 @@ class HistoryTracker:
     def clear_history(self) -> None:
         """Clear the change history."""
         self._change_history.clear()
+
+    def get_history_size(self) -> int:
+        """Get the current size of the change history."""
+        return len(self._change_history)
