@@ -168,6 +168,9 @@ def _run_validation(
     hook_type: str, all_files: bool, files: Optional[str], verbose: bool
 ) -> None:
     """Run validation with the specified parameters."""
+    # Create hook config first
+    hook_config = create_hook_config(hook_type)
+
     # Determine target files based on arguments
     target_files: Optional[List[Path]] = None
     if files:
@@ -176,12 +179,15 @@ def _run_validation(
             typer.echo(f"No files found matching pattern: {files}")
             raise typer.Exit(0)
     elif all_files:
-        target_files = get_all_files()
+        # For module validation, don't pass target_files when using --all-files
+        # Let the hook runner discover modules properly using get_modules()
+        if hook_config.discovery_method == "modules":
+            target_files = None  # Let hook runner use get_modules()
+        else:
+            target_files = get_all_files()
 
-    # Create hook config and run validation
-    hook_config = create_hook_config(hook_type)
+    # Run validation
     warning_mode = hook_type.endswith("_warnings")
-
     exit_code = run_hook_with_config(
         hook_config,
         warning_mode=warning_mode,
