@@ -282,3 +282,9 @@ class Context:
     def push_layer(self) -> None:
         """Push a new layer onto the context stack."""
         self.frames.append(ContextFrame())
+
+    def pop_layer(self) -> None:
+        """Pop the top layer from the context stack."""
+        if len(self.frames) <= 1:
+            raise IndexError("Cannot pop root context frame")
+        self.frames.pop()
