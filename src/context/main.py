@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import time
 from typing import TYPE_CHECKING, Any, Dict, Set, cast
+
+if TYPE_CHECKING:
+    from .history_tracker import ContextChangeEvent
 from weakref import WeakSet
 
 from .frame import ContextFrame
@@ -197,6 +200,7 @@ class Context:
 
         # Import here to avoid circular imports
         from .frame import ContextFrame
+        from .history_tracker import HistoryTracker
         from .snapshot_manager import SnapshotManager
 
         if frames is None:
@@ -209,6 +213,9 @@ class Context:
         # Computed properties and transformations
         self._computed_properties: dict[str, ComputedProperty] = {}
         self._transformations: dict[str, list[Transformation]] = {}
+
+        # History tracking for change events
+        self._history_tracker: HistoryTracker = HistoryTracker()
 
         # Snapshots for time-travel debugging
         self._snapshot_manager: SnapshotManager = SnapshotManager()
@@ -264,8 +271,14 @@ class Context:
             key: The key to set
             value: The value to set
         """
+        # Get old value for history tracking
+        old_value = self.get(key, None)
+
         # Set value in the current (last) frame
         self.frames[-1][key] = value
+
+        # Record the change in history
+        self._history_tracker.record_change(key, old_value, value, id(self))
 
     def __setitem__(self, key: str, value: ContextValue) -> None:
         """Set a value for a key in the current frame.
@@ -636,3 +649,17 @@ class Context:
             name: self._snapshot_manager.get_snapshot(name)
             for name in self._snapshot_manager.list_snapshots()
         }
+
+    def get_change_history(
+        self, limit: int | None = None, since: float | None = None
+    ) -> list[ContextChangeEvent]:
+        """Get the change history for this context.
+
+        Args:
+            limit: Maximum number of events to return (most recent first)
+            since: Only return events after this timestamp
+
+        Returns:
+            List of change events
+        """
+        return self._history_tracker.get_history(limit=limit, since=since)
