@@ -248,3 +248,13 @@ class Context:
         """
         # Set value in the current (last) frame
         self.frames[-1][key] = value
+
+    def __setitem__(self, key: str, value: ContextValue) -> None:
+        """Set a value for a key in the current frame.
+
+        Args:
+            key: The key to set
+            value: The value to set
+        """
+        # Delegate to the set method
+        self.set(key, value)
