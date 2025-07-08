@@ -258,3 +258,22 @@ class Context:
         """
         # Delegate to the set method
         self.set(key, value)
+
+    def __contains__(self, key: str) -> bool:
+        """Check if a key exists in any of the frames or as a computed property.
+
+        Args:
+            key: The key to check for
+
+        Returns:
+            True if the key exists in any frame or as a computed property, False otherwise
+        """
+        # Check computed properties first
+        if key in self._computed_properties:
+            return True
+
+        # Check frames
+        for frame in reversed(self.frames):
+            if key in frame:
+                return True
+        return False
