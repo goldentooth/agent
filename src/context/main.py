@@ -6,8 +6,9 @@ import time
 from typing import TYPE_CHECKING, Any
 from weakref import WeakSet
 
+from .frame import ContextFrame
+
 if TYPE_CHECKING:
-    from .frame import ContextFrame
     from .snapshot_manager import SnapshotManager
 
 # Type aliases for context system
@@ -277,3 +278,7 @@ class Context:
             if key in frame:
                 return True
         return False
+
+    def push_layer(self) -> None:
+        """Push a new layer onto the context stack."""
+        self.frames.append(ContextFrame())
