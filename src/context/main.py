@@ -409,3 +409,155 @@ class Context:
                 diff_result["modified"][key] = {"old": self_value, "new": other_value}
 
         return diff_result
+
+    def deep_diff(self, other: "Context", max_depth: int = 10) -> dict[str, Any]:
+        """Compare this context with another context and return deep differences.
+
+        Args:
+            other: The context to compare against
+            max_depth: Maximum depth for recursive comparison to prevent infinite recursion
+
+        Returns:
+            Dictionary with 'added', 'modified', and 'removed' keys containing deep differences
+        """
+        # Start with basic diff
+        basic_diff = self.diff(other)
+
+        # Enhance modified section with deep analysis
+        for key, change in basic_diff["modified"].items():
+            old_value = change["old"]
+            new_value = change["new"]
+
+            # If both values are complex types, perform deep comparison
+            if self._is_complex_type(old_value) and self._is_complex_type(new_value):
+                deep_changes = self._deep_compare(
+                    old_value, new_value, max_depth, set()
+                )
+                if deep_changes:
+                    basic_diff["modified"][key]["deep_changes"] = deep_changes
+
+        return basic_diff
+
+    def _is_complex_type(self, value: Any) -> bool:
+        """Check if a value is a complex type that supports deep comparison."""
+        return isinstance(value, (dict, list))
+
+    def _deep_compare(
+        self, old: Any, new: Any, max_depth: int, visited: set[int]
+    ) -> dict[str, Any]:
+        """Recursively compare two complex values and return deep differences."""
+        if max_depth <= 0:
+            return {}
+
+        # Prevent infinite recursion with circular references
+        old_id = id(old)
+        new_id = id(new)
+        if old_id in visited or new_id in visited:
+            return {}
+
+        visited.add(old_id)
+        visited.add(new_id)
+
+        try:
+            if isinstance(old, dict) and isinstance(new, dict):
+                return self._deep_compare_dicts(
+                    old, new, max_depth - 1, visited  # type: ignore[arg-type]
+                )
+            elif isinstance(old, list) and isinstance(new, list):
+                return self._deep_compare_lists(
+                    old, new, max_depth - 1, visited  # type: ignore[arg-type]
+                )
+            else:
+                return {}
+        finally:
+            visited.discard(old_id)
+            visited.discard(new_id)
+
+    def _deep_compare_dicts(
+        self,
+        old_dict: dict[str, Any],
+        new_dict: dict[str, Any],
+        max_depth: int,
+        visited: set[int],
+    ) -> dict[str, Any]:
+        """Compare two dictionaries deeply."""
+        result: dict[str, Any] = {"added": {}, "modified": {}, "removed": {}}
+
+        old_keys = set(old_dict.keys())
+        new_keys = set(new_dict.keys())
+
+        # Find added keys
+        for key in new_keys - old_keys:
+            result["added"][key] = new_dict[key]
+
+        # Find removed keys
+        for key in old_keys - new_keys:
+            result["removed"][key] = old_dict[key]
+
+        # Find modified keys
+        for key in old_keys & new_keys:
+            old_value = old_dict[key]
+            new_value = new_dict[key]
+
+            if old_value != new_value:
+                if self._is_complex_type(old_value) and self._is_complex_type(
+                    new_value
+                ):
+                    deep_changes = self._deep_compare(
+                        old_value, new_value, max_depth, visited.copy()
+                    )
+                    result["modified"][key] = {
+                        "old": old_value,
+                        "new": new_value,
+                        "deep_changes": deep_changes,
+                    }
+                else:
+                    result["modified"][key] = {"old": old_value, "new": new_value}
+
+        return result
+
+    def _deep_compare_lists(
+        self,
+        old_list: list[Any],
+        new_list: list[Any],
+        max_depth: int,
+        visited: set[int],
+    ) -> dict[str, Any]:
+        """Compare two lists deeply."""
+        result: dict[str, Any] = {"added": {}, "modified": {}, "removed": {}}
+
+        # For lists, we'll do a simple index-based comparison
+        # This is a simplified approach - more sophisticated list diffing could be implemented
+        old_len = len(old_list)
+        new_len = len(new_list)
+        min_len = min(old_len, new_len)
+
+        # Compare items at same indices
+        for i in range(min_len):
+            old_item = old_list[i]
+            new_item = new_list[i]
+
+            if old_item != new_item:
+                if self._is_complex_type(old_item) and self._is_complex_type(new_item):
+                    deep_changes = self._deep_compare(
+                        old_item, new_item, max_depth, visited.copy()
+                    )
+                    result["modified"][f"[{i}]"] = {
+                        "old": old_item,
+                        "new": new_item,
+                        "deep_changes": deep_changes,
+                    }
+                else:
+                    result["modified"][f"[{i}]"] = {"old": old_item, "new": new_item}
+
+        # Handle added items (new list is longer)
+        if new_len > old_len:
+            for i in range(old_len, new_len):
+                result["added"][f"[{i}]"] = new_list[i]
+
+        # Handle removed items (old list is longer)
+        if old_len > new_len:
+            for i in range(new_len, old_len):
+                result["removed"][f"[{i}]"] = old_list[i]
+
+        return result
