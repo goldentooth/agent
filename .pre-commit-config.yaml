@@ -74,6 +74,7 @@ repos:
         exclude: ^old/
       - id: pretty-format-json
         description: Pretty-format JSON files
+        args: ['--autofix']
         exclude: ^old/
       - id: debug-statements
         description: Check for debugger statements

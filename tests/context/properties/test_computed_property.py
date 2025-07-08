@@ -34,9 +34,9 @@ class TestComputedPropertyInit:
         # Verify basic attributes
         assert prop.func is test_func
         assert prop.dependencies == dependencies
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert isinstance(prop._subscribers, WeakSet)  # type: ignore[reportPrivateUsage]
+        assert prop._cached_value is None
+        assert prop._is_cached is False
+        assert isinstance(prop._subscribers, WeakSet)
 
     def test_computed_property_init_with_dependencies_list(self) -> None:
         """Test ComputedProperty initialization with dependencies list."""
@@ -96,7 +96,7 @@ class TestComputedPropertyInit:
 
     def test_computed_property_init_lambda_function(self) -> None:
         """Test ComputedProperty initialization with lambda function."""
-        lambda_func = lambda context: context.get("value", "default")  # type: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownMemberType, reportUnknownVariableType]
+        lambda_func = lambda context: context.get("value", "default")
         dependencies = ["value"]
 
         prop = ComputedProperty(lambda_func, dependencies)
@@ -114,8 +114,8 @@ class TestComputedPropertyInit:
         prop = ComputedProperty(test_func, ["dep"])
 
         # Verify caching attributes
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
+        assert prop._cached_value is None
+        assert prop._is_cached is False
         assert hasattr(prop, "_cached_value")
         assert hasattr(prop, "_is_cached")
 
@@ -128,8 +128,8 @@ class TestComputedPropertyInit:
         prop = ComputedProperty(test_func, ["dep"])
 
         # Verify subscribers is WeakSet
-        assert isinstance(prop._subscribers, WeakSet)  # type: ignore[reportPrivateUsage]
-        assert len(prop._subscribers) == 0  # type: ignore[reportPrivateUsage]
+        assert isinstance(prop._subscribers, WeakSet)
+        assert len(prop._subscribers) == 0
 
     def test_computed_property_init_complex_function(self) -> None:
         """Test ComputedProperty with complex function and dependencies."""
@@ -148,14 +148,14 @@ class TestComputedPropertyInit:
         # Verify all attributes are set correctly
         assert prop.func is complex_func
         assert prop.dependencies == complex_deps
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert isinstance(prop._subscribers, WeakSet)  # type: ignore[reportPrivateUsage]
+        assert prop._cached_value is None
+        assert prop._is_cached is False
+        assert isinstance(prop._subscribers, WeakSet)
 
     def test_computed_property_init_dependencies_independence(self) -> None:
         """Test that dependencies list is independent from original."""
         original_deps = ["dep1", "dep2"]
-        prop = ComputedProperty(lambda c: "value", original_deps)  # type: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+        prop = ComputedProperty(lambda c: "value", original_deps)
 
         # Modify original list
         original_deps.append("dep3")
@@ -180,7 +180,7 @@ class TestComputedPropertyInit:
         # Verify instances are independent
         assert prop1.func is not prop2.func
         assert prop1.dependencies != prop2.dependencies
-        assert prop1._subscribers is not prop2._subscribers  # type: ignore[reportPrivateUsage]
+        assert prop1._subscribers is not prop2._subscribers
         assert prop1.func("test") == "func1"
         assert prop2.func("test") == 42
 
@@ -188,7 +188,7 @@ class TestComputedPropertyInit:
         """Test ComputedProperty with single dependency."""
 
         def single_dep_func(context: Any) -> str:
-            return context.get("single", "default")
+            return str(context.get("single", "default"))
 
         prop = ComputedProperty(single_dep_func, ["single"])
 

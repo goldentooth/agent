@@ -57,7 +57,9 @@ class TestConfigRefactored:
             assert config.function_length_warn_threshold == 16
             assert config.function_length_urgent_threshold == 17
 
-    def test_from_environment_uses_refactored_methods(self, monkeypatch: MonkeyPatch) -> None:
+    def test_from_environment_uses_refactored_methods(
+        self, monkeypatch: MonkeyPatch
+    ) -> None:
         """Test that from_environment uses the new refactored methods."""
         # Clear environment
         for key in ["FILE_LENGTH_LIMIT", "MODULE_SIZE_LIMIT", "FUNCTION_LENGTH_LIMIT"]:

@@ -42,7 +42,7 @@ class TestFlowExtension:
     def test_flow_extension_is_abstract(self) -> None:
         """Test that FlowExtension cannot be instantiated directly."""
         with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-            FlowExtension("test")  # type: ignore
+            FlowExtension("test")  # type: ignore[abstract]
 
     def test_flow_extension_requires_on_flow_init(self) -> None:
         """Test that subclasses must implement on_flow_init method."""
@@ -51,7 +51,7 @@ class TestFlowExtension:
             pass
 
         with pytest.raises(TypeError, match="Can't instantiate abstract class"):
-            IncompleteExtension("incomplete")  # type: ignore
+            IncompleteExtension("incomplete")  # type: ignore[abstract]
 
     def test_flow_extension_creation(self) -> None:
         """Test FlowExtension can be created with basic properties."""

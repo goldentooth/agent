@@ -5,7 +5,7 @@
 import asyncio
 import json
 import tempfile
-from typing import Any
+from typing import Any, AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -252,7 +252,7 @@ class TestHealthReportingFunctions:
         health_stream = health_check_stream()
 
         # Helper function to create async generator from list
-        async def async_data():
+        async def async_data() -> AsyncGenerator[int, None]:
             for item in test_data:
                 yield item
 
@@ -272,7 +272,7 @@ class TestHealthReportingFunctions:
         custom_monitor = FlowHealthMonitor()
 
         # Add a healthy check
-        async def healthy_check():
+        async def healthy_check() -> AsyncGenerator[bool, None]:
             yield True
 
         custom_monitor.register_check(
@@ -287,7 +287,7 @@ class TestHealthReportingFunctions:
         # Process small amount of data
         test_data = list(range(10))
 
-        async def async_data():
+        async def async_data() -> AsyncGenerator[int, None]:
             for item in test_data:
                 yield item
 

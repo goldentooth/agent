@@ -73,7 +73,7 @@ def test_fork_with_history_vs_regular_fork() -> None:
     assert context["test_key"] == "test_value"
 
 
-def _create_layered_context_for_history_fork() -> None:
+def _create_layered_context_for_history_fork() -> Context:
     """Helper function to create a layered context for history fork testing."""
     context = Context()
     context["base_key"] = "base_value"

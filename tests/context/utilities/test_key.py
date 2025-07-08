@@ -218,7 +218,7 @@ class TestContextKeySymbol:
         key: ContextKey[str] = ContextKey("test.key", str)
 
         with pytest.raises(AttributeError):
-            key.symbol = Symbol("new.symbol")  # type: ignore[misc]
+            key.symbol = Symbol("new.symbol")
 
     def test_symbol_property_works_with_all_types(self) -> None:
         """Test that symbol property works regardless of key type."""

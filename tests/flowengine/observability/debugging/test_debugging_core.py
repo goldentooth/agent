@@ -348,7 +348,9 @@ class TestFlowDebugger:
         assert "Value: 'test_string'" in captured.out
         assert "String: test_string" in captured.out
 
-    def test_print_item_inspection_with_attributes(self, capsys: "CaptureFixture[str]") -> None:
+    def test_print_item_inspection_with_attributes(
+        self, capsys: "CaptureFixture[str]"
+    ) -> None:
         """Test item inspection printing for objects with attributes."""
         debugger = FlowDebugger()
 
@@ -470,7 +472,7 @@ class TestFlowDebugger:
         debugger = FlowDebugger()
 
         # Mock input to raise EOFError
-        def mock_input(_):
+        def mock_input(_: str) -> str:
             raise EOFError()
 
         monkeypatch.setattr("builtins.input", mock_input)
@@ -486,7 +488,7 @@ class TestFlowDebugger:
         debugger = FlowDebugger()
 
         # Mock input to raise KeyboardInterrupt
-        def mock_input(_):
+        def mock_input(_: str) -> str:
             raise KeyboardInterrupt()
 
         monkeypatch.setattr("builtins.input", mock_input)

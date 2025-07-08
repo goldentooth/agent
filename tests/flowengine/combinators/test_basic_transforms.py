@@ -51,7 +51,7 @@ class TestMapStream:
     async def test_map_stream_empty_input(self) -> None:
         """Test map_stream with empty input stream."""
 
-        async def empty_source() -> AsyncGenerator[str, None]:
+        async def empty_source() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -67,7 +67,7 @@ class TestMapStream:
     async def test_map_stream_complex_transformation(self) -> None:
         """Test map_stream with complex transformation."""
 
-        async def source() -> AsyncGenerator[int, None]:
+        async def source() -> AsyncGenerator[str, None]:
             for word in ["hello", "world", "test"]:
                 yield word
 
@@ -96,7 +96,7 @@ class TestFlatMapStream:
     async def test_flat_map_stream_basic(self) -> None:
         """Test flat_map_stream with basic character splitting."""
 
-        async def source() -> AsyncGenerator[int, None]:
+        async def source() -> AsyncGenerator[str, None]:
             for word in ["ab", "cd"]:
                 yield word
 
@@ -166,7 +166,7 @@ class TestFlatMapStream:
             for n in [2, 3]:
                 yield n
 
-        async def repeat_number(n: int):
+        async def repeat_number(n: int) -> AsyncGenerator[str, None]:
             for _ in range(n):
                 yield str(n)  # int -> str transformation
 
@@ -181,7 +181,7 @@ class TestFlatMapStream:
     def test_flat_map_stream_name_generation(self) -> None:
         """Test that flat_map_stream generates appropriate names."""
 
-        async def explode_string(s: str):
+        async def explode_string(s: str) -> AsyncGenerator[str, None]:
             for char in s:
                 yield char
 
@@ -196,15 +196,15 @@ class TestFlattenStream:
     async def test_flatten_stream_basic(self) -> None:
         """Test flatten_stream with basic nested generators."""
 
-        async def sub_stream_1():
+        async def sub_stream_1() -> AsyncGenerator[int, None]:
             for i in [1, 2]:
                 yield i
 
-        async def sub_stream_2():
+        async def sub_stream_2() -> AsyncGenerator[int, None]:
             for i in [3, 4]:
                 yield i
 
-        async def source() -> AsyncGenerator[int, None]:
+        async def source() -> AsyncGenerator[AsyncGenerator[int, None], None]:
             yield sub_stream_1()
             yield sub_stream_2()
 
@@ -220,15 +220,15 @@ class TestFlattenStream:
     async def test_flatten_stream_empty_sub_streams(self) -> None:
         """Test flatten_stream with some empty sub-streams."""
 
-        async def empty_stream():
+        async def empty_stream() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
-        async def non_empty_stream():
+        async def non_empty_stream() -> AsyncGenerator[int, None]:
             for i in [1, 2]:
                 yield i
 
-        async def source() -> AsyncGenerator[int, None]:
+        async def source() -> AsyncGenerator[AsyncGenerator[int, None], None]:
             yield empty_stream()
             yield non_empty_stream()
             yield empty_stream()
@@ -245,11 +245,11 @@ class TestFlattenStream:
     async def test_flatten_stream_single_sub_stream(self) -> None:
         """Test flatten_stream with single sub-stream."""
 
-        async def sub_stream():
+        async def sub_stream() -> AsyncGenerator[int, None]:
             for i in [10, 20, 30]:
                 yield i
 
-        async def source() -> AsyncGenerator[int, None]:
+        async def source() -> AsyncGenerator[AsyncGenerator[int, None], None]:
             yield sub_stream()
 
         flattener: Flow[AsyncGenerator[int, None], int] = flatten_stream()
@@ -264,7 +264,7 @@ class TestFlattenStream:
     async def test_flatten_stream_empty_input(self) -> None:
         """Test flatten_stream with empty input stream."""
 
-        async def empty_source() -> AsyncGenerator[str, None]:
+        async def empty_source() -> AsyncGenerator[AsyncGenerator[int, None], None]:
             return
             yield  # pragma: no cover
 

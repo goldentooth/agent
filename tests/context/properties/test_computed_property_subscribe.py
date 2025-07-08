@@ -34,7 +34,7 @@ class TestComputedPropertySubscribe:
         prop.subscribe(context)
 
         # Context should be in subscribers
-        assert context in prop._subscribers  # type: ignore[reportPrivateUsage]
+        assert context in prop._subscribers
 
     def test_subscribe_multiple_contexts(self) -> None:
         """Test subscribing multiple contexts."""
@@ -53,9 +53,9 @@ class TestComputedPropertySubscribe:
         prop.subscribe(context3)
 
         # All contexts should be in subscribers
-        assert context1 in prop._subscribers  # type: ignore[reportPrivateUsage]
-        assert context2 in prop._subscribers  # type: ignore[reportPrivateUsage]
-        assert context3 in prop._subscribers  # type: ignore[reportPrivateUsage]
+        assert context1 in prop._subscribers
+        assert context2 in prop._subscribers
+        assert context3 in prop._subscribers
 
     def test_subscribe_same_context_multiple_times(self) -> None:
         """Test subscribing the same context multiple times."""
@@ -72,8 +72,8 @@ class TestComputedPropertySubscribe:
         prop.subscribe(context)
 
         # Should only appear once in WeakSet
-        assert context in prop._subscribers  # type: ignore[reportPrivateUsage]
-        assert len(prop._subscribers) == 1  # type: ignore[reportPrivateUsage]
+        assert context in prop._subscribers
+        assert len(prop._subscribers) == 1
 
     def test_subscribe_returns_none(self) -> None:
         """Test that subscribe returns None."""
@@ -96,7 +96,7 @@ class TestComputedPropertySubscribe:
         prop = ComputedProperty(test_func, ["dep"])
 
         # Verify _subscribers is a WeakSet
-        assert isinstance(prop._subscribers, WeakSet)  # type: ignore[reportPrivateUsage]
+        assert isinstance(prop._subscribers, WeakSet)
 
     def test_subscribe_weakset_behavior(self) -> None:
         """Test WeakSet behavior for automatic cleanup."""
@@ -138,7 +138,7 @@ class TestComputedPropertySubscribe:
         prop.subscribe(context)
 
         # Should still be subscribed
-        assert context in prop._subscribers  # type: ignore[reportPrivateUsage]
+        assert context in prop._subscribers
 
     def test_subscribe_before_compute(self) -> None:
         """Test subscribing before computing a value."""
@@ -151,14 +151,14 @@ class TestComputedPropertySubscribe:
 
         # Subscribe first
         prop.subscribe(context)
-        assert context in prop._subscribers  # type: ignore[reportPrivateUsage]
+        assert context in prop._subscribers
 
         # Then compute
         result = prop.compute(context)
         assert result == "computed_test"
 
         # Should still be subscribed
-        assert context in prop._subscribers  # type: ignore[reportPrivateUsage]
+        assert context in prop._subscribers
 
     def test_subscribe_preserves_existing_subscribers(self) -> None:
         """Test that subscribing new context preserves existing ones."""
@@ -172,15 +172,15 @@ class TestComputedPropertySubscribe:
 
         # Subscribe first context
         prop.subscribe(context1)
-        assert len(prop._subscribers) == 1  # type: ignore[reportPrivateUsage]
+        assert len(prop._subscribers) == 1
 
         # Subscribe second context
         prop.subscribe(context2)
 
         # Both should be present
-        assert context1 in prop._subscribers  # type: ignore[reportPrivateUsage]
-        assert context2 in prop._subscribers  # type: ignore[reportPrivateUsage]
-        assert len(prop._subscribers) == 2  # type: ignore[reportPrivateUsage]
+        assert context1 in prop._subscribers
+        assert context2 in prop._subscribers
+        assert len(prop._subscribers) == 2
 
     def test_subscribe_after_invalidate(self) -> None:
         """Test subscribing after invalidating cached value."""
@@ -197,7 +197,7 @@ class TestComputedPropertySubscribe:
         prop.subscribe(context)
 
         # Should be subscribed regardless of cache state
-        assert context in prop._subscribers  # type: ignore[reportPrivateUsage]
+        assert context in prop._subscribers
 
     def test_subscribe_with_different_dependencies(self) -> None:
         """Test subscribe works with different dependency configurations."""
@@ -209,19 +209,19 @@ class TestComputedPropertySubscribe:
         prop_with_deps = ComputedProperty(test_func, ["dep1", "dep2"])
         context1 = MockContext()
         prop_with_deps.subscribe(context1)
-        assert context1 in prop_with_deps._subscribers  # type: ignore[reportPrivateUsage]
+        assert context1 in prop_with_deps._subscribers
 
         # Property without dependencies
         prop_no_deps = ComputedProperty(test_func, [])
         context2 = MockContext()
         prop_no_deps.subscribe(context2)
-        assert context2 in prop_no_deps._subscribers  # type: ignore[reportPrivateUsage]
+        assert context2 in prop_no_deps._subscribers
 
         # Property with None dependencies
         prop_none_deps = ComputedProperty(test_func, None)
         context3 = MockContext()
         prop_none_deps.subscribe(context3)
-        assert context3 in prop_none_deps._subscribers  # type: ignore[reportPrivateUsage]
+        assert context3 in prop_none_deps._subscribers
 
     def test_subscribe_doesnt_affect_cache_state(self) -> None:
         """Test that subscribing doesn't affect cache state."""
@@ -233,12 +233,12 @@ class TestComputedPropertySubscribe:
         context = MockContext()
 
         # Initial state
-        initial_cached = prop._is_cached  # type: ignore[reportPrivateUsage]
-        initial_value = prop._cached_value  # type: ignore[reportPrivateUsage]
+        initial_cached = prop._is_cached
+        initial_value = prop._cached_value
 
         # Subscribe
         prop.subscribe(context)
 
         # Cache state should be unchanged
-        assert prop._is_cached == initial_cached  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value == initial_value  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached == initial_cached
+        assert prop._cached_value == initial_value

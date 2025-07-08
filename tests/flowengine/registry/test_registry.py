@@ -515,10 +515,10 @@ class TestRegistryDecorator:
         flow_registry.clear()
 
         @registered_flow("decorated_flow")
-        def create_flow():
+        def create_flow() -> Flow[int, int]:
             return map_stream(increment)
 
-        flow = create_flow()  # type: ignore[misc]
+        flow = create_flow()  # type: ignore[call-arg]
 
         # Flow should be registered
         registered_flow_obj = flow_registry.get("decorated_flow")
@@ -529,12 +529,12 @@ class TestRegistryDecorator:
         flow_registry.clear()
 
         @registered_flow("metadata_flow", category="test")
-        def create_flow_with_metadata():
+        def create_flow_with_metadata() -> Flow[int, int]:
             flow = map_stream(double)
             flow.metadata = {"author": "test_decorator"}
             return flow
 
-        created_flow = create_flow_with_metadata()  # type: ignore[misc]
+        created_flow = create_flow_with_metadata()  # type: ignore[call-arg]
 
         # Flow should be registered with metadata
         registered_flow_obj = flow_registry.get("metadata_flow")
@@ -548,10 +548,10 @@ class TestRegistryDecorator:
         flow_registry.clear()
 
         @registered_flow("categorized_flow", category="decorators")
-        def create_categorized_flow():
+        def create_categorized_flow() -> Flow[int, int]:
             return map_stream(double)
 
-        flow = create_categorized_flow()  # type: ignore[misc]
+        flow = create_categorized_flow()  # type: ignore[call-arg]
 
         # Flow should be registered with category
         registered_flow_obj = flow_registry.get("categorized_flow")

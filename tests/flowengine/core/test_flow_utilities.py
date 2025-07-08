@@ -584,7 +584,7 @@ class TestFlowBatch:
         batched_flow = flow.batch(3)
 
         assert batched_flow.name == "stringify.batch(3)"
-        assert batched_flow is not flow
+        assert batched_flow is not flow  # type: ignore[comparison-overlap]
 
     @pytest.mark.asyncio
     async def test_batch_preserves_item_type_in_lists(self) -> None:

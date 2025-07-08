@@ -25,7 +25,7 @@ async def test_batch_stream() -> None:
     flow: Flow[int, list[int]] = batch_stream(3)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(7):
             yield i
 
@@ -55,7 +55,7 @@ async def test_batch_stream_exact_size() -> None:
     """Test batch_stream with input that exactly fits batch size."""
     flow: Flow[str, list[str]] = batch_stream(2)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "a"
         yield "b"
         yield "c"
@@ -71,7 +71,7 @@ async def test_batch_stream_single_item() -> None:
     """Test batch_stream with single item."""
     flow: Flow[int, list[int]] = batch_stream(5)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         yield 42
 
     result: list[list[int]] = await flow.to_list()(test_stream())
@@ -83,7 +83,7 @@ async def test_chunk_stream() -> None:
     """Test chunk_stream function."""
     flow: Flow[str, list[str]] = chunk_stream(2)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         for char in "hello":
             yield char
 
@@ -110,7 +110,7 @@ async def test_chunk_stream_exact_size() -> None:
     """Test chunk_stream with input that exactly fits chunk size."""
     flow: Flow[int, list[int]] = chunk_stream(3)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(6):
             yield i
 
@@ -124,7 +124,7 @@ async def test_chunk_stream_single_item() -> None:
     """Test chunk_stream with single item."""
     flow: Flow[str, list[str]] = chunk_stream(10)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "test"
 
     result: list[list[str]] = await flow.to_list()(test_stream())
@@ -136,7 +136,7 @@ async def test_window_stream() -> None:
     """Test window_stream function."""
     flow: Flow[int, list[int]] = window_stream(3)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(5):
             yield i
 
@@ -151,7 +151,7 @@ async def test_window_stream_with_step() -> None:
     """Test window_stream with custom step size."""
     flow: Flow[int, list[int]] = window_stream(2, step=2)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(6):
             yield i
 
@@ -166,7 +166,7 @@ async def test_window_stream_insufficient_items() -> None:
     """Test window_stream with fewer items than window size."""
     flow: Flow[str, list[str]] = window_stream(5)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "a"
         yield "b"
 
@@ -193,7 +193,7 @@ async def test_window_stream_exact_size() -> None:
     """Test window_stream with input exactly matching window size."""
     flow: Flow[int, list[int]] = window_stream(3)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(3):
             yield i
 
@@ -207,7 +207,7 @@ async def test_scan_stream() -> None:
     """Test scan_stream function."""
     flow: Flow[int, int] = scan_stream(lambda acc, x: acc + x, 0)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in [1, 2, 3, 4]:
             yield i
 
@@ -222,7 +222,7 @@ async def test_scan_stream_product() -> None:
     """Test scan_stream with multiplication."""
     flow: Flow[int, int] = scan_stream(lambda acc, x: acc * x, 1)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in [2, 3, 4]:
             yield i
 
@@ -237,7 +237,7 @@ async def test_scan_stream_string_concat() -> None:
     """Test scan_stream with string concatenation."""
     flow: Flow[str, str] = scan_stream(lambda acc, x: acc + x, "")
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         for char in ["a", "b", "c"]:
             yield char
 
@@ -267,7 +267,7 @@ async def test_group_by_stream() -> None:
     """Test group_by_stream function."""
     flow: Flow[int, tuple[int, list[int]]] = group_by_stream(lambda x: x % 2)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in [1, 2, 3, 4, 5, 6]:
             yield i
 
@@ -284,7 +284,7 @@ async def test_group_by_stream_strings() -> None:
     """Test group_by_stream with string length grouping."""
     flow: Flow[str, tuple[int, list[str]]] = group_by_stream(len)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         for word in ["a", "bb", "ccc", "dd", "e"]:
             yield word
 
@@ -314,7 +314,7 @@ async def test_group_by_stream_single_group() -> None:
     """Test group_by_stream where all items have same key."""
     flow: Flow[int, tuple[str, list[int]]] = group_by_stream(lambda x: "same")
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in [1, 2, 3]:
             yield i
 
@@ -328,7 +328,7 @@ async def test_distinct_stream() -> None:
     """Test distinct_stream function."""
     flow: Flow[int, int] = distinct_stream()
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in [1, 2, 2, 3, 1, 4, 3]:
             yield i
 
@@ -343,7 +343,7 @@ async def test_distinct_stream_with_key() -> None:
     """Test distinct_stream with key function."""
     flow: Flow[str, str] = distinct_stream(len)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         for word in ["a", "bb", "c", "dd", "eee"]:
             yield word
 
@@ -358,7 +358,7 @@ async def test_distinct_stream_strings() -> None:
     """Test distinct_stream with string values."""
     flow: Flow[str, str] = distinct_stream()
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         for word in ["hello", "world", "hello", "python", "world"]:
             yield word
 
@@ -385,7 +385,7 @@ async def test_distinct_stream_no_duplicates() -> None:
     """Test distinct_stream with no duplicates."""
     flow: Flow[int, int] = distinct_stream()
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in [1, 2, 3, 4]:
             yield i
 
@@ -399,7 +399,7 @@ async def test_pairwise_stream() -> None:
     """Test pairwise_stream function."""
     flow: Flow[int, tuple[int, int]] = pairwise_stream()
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in [1, 2, 3, 4, 5]:
             yield i
 
@@ -413,7 +413,7 @@ async def test_pairwise_stream_strings() -> None:
     """Test pairwise_stream with strings."""
     flow: Flow[str, tuple[str, str]] = pairwise_stream()
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         for char in "abc":
             yield char
 
@@ -427,7 +427,7 @@ async def test_pairwise_stream_single_item() -> None:
     """Test pairwise_stream with single item."""
     flow: Flow[int, tuple[int, int]] = pairwise_stream()
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         yield 42
 
     result: list[tuple[int, int]] = await flow.to_list()(test_stream())
@@ -440,7 +440,7 @@ async def test_pairwise_stream_two_items() -> None:
     """Test pairwise_stream with exactly two items."""
     flow: Flow[str, tuple[str, str]] = pairwise_stream()
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "first"
         yield "second"
 
@@ -469,7 +469,7 @@ async def test_memoize_stream() -> None:
     flow: Flow[int, int] = memoize_stream(lambda x: x % 3)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in [1, 4, 7, 2, 5, 8]:  # 1%3=1, 4%3=1, 7%3=1, 2%3=2, 5%3=2, 8%3=2
             yield i
 
@@ -487,7 +487,7 @@ async def test_memoize_stream_string_keys() -> None:
     """Test memoize_stream with string keys."""
     flow: Flow[str, str] = memoize_stream(lambda s: s[0])  # Cache by first character
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         for word in ["apple", "banana", "apricot", "berry"]:
             yield word
 
@@ -503,7 +503,7 @@ async def test_memoize_stream_no_duplicates() -> None:
     """Test memoize_stream with no duplicate keys."""
     flow: Flow[int, int] = memoize_stream(lambda x: x)
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in [1, 2, 3, 4]:
             yield i
 
@@ -531,7 +531,7 @@ async def test_memoize_stream_single_item() -> None:
     """Test memoize_stream with single item."""
     flow: Flow[str, str] = memoize_stream(lambda x: len(x))
 
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "hello"
 
     result: list[str] = await flow.to_list()(test_stream())

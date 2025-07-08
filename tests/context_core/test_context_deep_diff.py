@@ -32,7 +32,7 @@ def test_deep_diff_basic() -> None:
     assert diff_result["removed"] == {"key1": "value1"}
 
 
-def _create_nested_dict_contexts() -> None:
+def _create_nested_dict_contexts() -> tuple[Context, Context]:
     """Helper function to create contexts with nested dict changes."""
     context1 = Context()
     context1["nested"] = {
@@ -63,7 +63,7 @@ def _verify_top_level_changes(diff_result: dict[str, Any]) -> dict[str, Any]:
     assert "old" in nested_diff
     assert "new" in nested_diff
     assert "deep_changes" in nested_diff
-    return nested_diff["deep_changes"]
+    return dict(nested_diff["deep_changes"])
 
 
 def _verify_level1_changes(deep_changes: dict[str, Any]) -> None:
@@ -258,17 +258,17 @@ def test_deep_diff_with_mixed_types() -> None:
 def test_deep_diff_max_depth_limit() -> None:
     """Test deep_diff with maximum depth limitation."""
     # Create deeply nested structure
-    deep_nested = {"level": 1}
+    deep_nested: dict[str, Any] = {"level": 1}
     current = deep_nested
     for i in range(2, 15):  # Create 14 levels deep
-        current["next"] = {"level": i}  # type: ignore[assignment]
+        current["next"] = {"level": i}
         current = current["next"]
 
     context1 = Context()
-    context1["deep"] = deep_nested  # type: ignore[assignment]
+    context1["deep"] = deep_nested
 
     context2 = Context()
-    context2["deep"] = {"level": 999}  # type: ignore[assignment]
+    context2["deep"] = {"level": 999}
 
     # Should handle deep nesting without infinite recursion
     diff_result = context1.deep_diff(context2, max_depth=5)
@@ -279,14 +279,14 @@ def test_deep_diff_max_depth_limit() -> None:
 def test_deep_diff_circular_reference_protection() -> None:
     """Test deep_diff handles circular references safely."""
     context1 = Context()
-    circular1 = {"name": "circular"}
-    circular1["self"] = circular1  # type: ignore[assignment]
-    context1["circular"] = circular1  # type: ignore[assignment]
+    circular1: dict[str, Any] = {"name": "circular"}
+    circular1["self"] = circular1
+    context1["circular"] = circular1
 
     context2 = Context()
-    circular2 = {"name": "different"}
-    circular2["self"] = circular2  # type: ignore[assignment]
-    context2["circular"] = circular2  # type: ignore[assignment]
+    circular2: dict[str, Any] = {"name": "different"}
+    circular2["self"] = circular2
+    context2["circular"] = circular2
 
     # Should handle circular references without infinite recursion
     diff_result = context1.deep_diff(context2)

@@ -117,7 +117,7 @@ def test_pop_layer_with_one_pushed_layer() -> None:
         context.pop_layer()
 
 
-def _create_complex_layered_context() -> None:
+def _create_complex_layered_context() -> Context:
     """Helper function to create a complex layered context for testing."""
     context = Context()
 
@@ -178,7 +178,7 @@ def test_pop_layer_returns_none() -> None:
     context.push_layer()
 
     # Method should return None
-    result = context.pop_layer()
+    result = context.pop_layer()  # type: ignore[func-returns-value]
     assert result is None
 
 

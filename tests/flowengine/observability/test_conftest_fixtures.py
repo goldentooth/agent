@@ -11,7 +11,9 @@ from flowengine.observability.performance import PerformanceMonitor
 class TestObservabilityFixtures:
     """Test observability test fixtures."""
 
-    def test_performance_monitor_fixture(self, performance_monitor: PerformanceMonitor) -> None:
+    def test_performance_monitor_fixture(
+        self, performance_monitor: PerformanceMonitor
+    ) -> None:
         """Test performance_monitor fixture creates valid instance."""
         assert isinstance(performance_monitor, PerformanceMonitor)
         assert len(performance_monitor.metrics) == 0

@@ -226,7 +226,7 @@ class TestCollectStream:
     async def test_collect_stream_different_types(self) -> None:
         """Test collect_stream with different data types."""
 
-        async def source() -> AsyncGenerator[int, None]:
+        async def source() -> AsyncGenerator[str, None]:
             for item in ["hello", "world", "test"]:
                 yield item
 

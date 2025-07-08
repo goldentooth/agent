@@ -460,9 +460,13 @@ class Context:
 
         try:
             if isinstance(old, dict) and isinstance(new, dict):
-                return self._deep_compare_dicts(old, new, max_depth - 1, visited)
+                return self._deep_compare_dicts(
+                    old, new, max_depth - 1, visited
+                )  # pyright: ignore[reportUnknownArgumentType]
             elif isinstance(old, list) and isinstance(new, list):
-                return self._deep_compare_lists(old, new, max_depth - 1, visited)
+                return self._deep_compare_lists(
+                    old, new, max_depth - 1, visited
+                )  # pyright: ignore[reportUnknownArgumentType]
             else:
                 return {}
         finally:

@@ -173,7 +173,7 @@ class TestExtensionRegistryLegacySupport:
 
         retrieved = registry.get_function_extension("double")
         assert retrieved is test_func
-        assert retrieved(5) == 10  # type: ignore
+        assert retrieved(5) == 10
 
     def test_register_duplicate_function_extension(self) -> None:
         """Test registering duplicate function extension raises error."""
@@ -269,7 +269,7 @@ class TestExtensionRegistryLegacySupport:
 
         # Add initialization hook
         def init_hook(flow_class: type) -> None:
-            flow_class.hook_attribute = "from_hook"  # type: ignore
+            flow_class.hook_attribute = "from_hook"  # type: ignore[attr-defined]
 
         registry.register_initialization_hook(init_hook)
 
@@ -292,6 +292,6 @@ class TestExtensionRegistryLegacySupport:
 
         # Verify methods work
         instance = TestFlow()
-        assert TestFlow.ext_method(instance) == "from_extension"  # type: ignore
-        assert TestFlow.legacy_method(instance) == "from_legacy"  # type: ignore
-        assert TestFlow.hook_attribute == "from_hook"  # type: ignore
+        assert TestFlow.ext_method(instance) == "from_extension"
+        assert TestFlow.legacy_method(instance) == "from_legacy"
+        assert TestFlow.hook_attribute == "from_hook"

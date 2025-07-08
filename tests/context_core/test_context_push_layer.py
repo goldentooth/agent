@@ -121,5 +121,5 @@ def test_push_layer_returns_none() -> None:
     context = Context()
 
     # Method should return None
-    result = context.push_layer()
+    result = context.push_layer()  # type: ignore[func-returns-value]
     assert result is None

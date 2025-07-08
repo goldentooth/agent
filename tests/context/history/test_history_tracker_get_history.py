@@ -54,7 +54,7 @@ class TestHistoryTrackerGetHistory:
 
         # Record first event
         tracker.record_change("key1", "old1", "new1", 1)
-        first_timestamp = tracker._change_history[0].timestamp  # type: ignore[reportPrivateUsage]
+        first_timestamp = tracker._change_history[0].timestamp
 
         time.sleep(0.01)  # Ensure different timestamps
 
@@ -80,7 +80,7 @@ class TestHistoryTrackerGetHistory:
             time.sleep(0.001)
 
         # Get timestamp after key2
-        since_timestamp = tracker._change_history[1].timestamp  # type: ignore[reportPrivateUsage]
+        since_timestamp = tracker._change_history[1].timestamp
 
         # Get max 2 events since key2's timestamp
         history = tracker.get_history(limit=2, since=since_timestamp)
@@ -156,12 +156,12 @@ class TestHistoryTrackerGetHistory:
 
         # Get history and modify the returned list
         history = tracker.get_history()
-        original_length = len(tracker._change_history)  # type: ignore[reportPrivateUsage]
+        original_length = len(tracker._change_history)
 
         history.clear()  # Modify the returned list
 
         # Original history should be unchanged
-        assert len(tracker._change_history) == original_length  # type: ignore[reportPrivateUsage]
+        assert len(tracker._change_history) == original_length
 
         # Getting history again should return the same data
         new_history = tracker.get_history()

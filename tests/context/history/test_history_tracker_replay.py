@@ -105,7 +105,7 @@ class TestHistoryTrackerReplay:
 
         # Record a change and capture its exact timestamp
         tracker.record_change("key1", "old1", "new1", 1)
-        event1_timestamp = tracker._change_history[0].timestamp  # type: ignore[reportPrivateUsage]
+        event1_timestamp = tracker._change_history[0].timestamp
 
         time.sleep(0.001)
         tracker.record_change("key2", "old2", "new2", 2)
@@ -312,7 +312,7 @@ class TestHistoryTrackerReplay:
 
         # Record a change and capture its exact timestamp
         tracker.record_change("key1", "old1", "new1", 1)
-        event1_timestamp = tracker._change_history[0].timestamp  # type: ignore[reportPrivateUsage]
+        event1_timestamp = tracker._change_history[0].timestamp
 
         time.sleep(0.001)
         tracker.record_change("key2", "old2", "new2", 2)

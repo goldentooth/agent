@@ -115,7 +115,9 @@ class TestFlowExecutionErrorWithContext:
         assert "Original Exception:" in captured.out
         assert "ValueError: Original error" in captured.out
 
-    def test_print_debug_info_with_execution_stack(self, capsys: "CaptureFixture[str]") -> None:
+    def test_print_debug_info_with_execution_stack(
+        self, capsys: "CaptureFixture[str]"
+    ) -> None:
         """Test printing debug info with execution stack."""
         debugger = get_flow_debugger()
 

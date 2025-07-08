@@ -82,8 +82,8 @@ class TestContextInit:
         context = Context()
 
         assert hasattr(context, "_computed_properties")
-        assert isinstance(context._computed_properties, dict)  # type: ignore[reportPrivateUsage]
-        assert len(context._computed_properties) == 0  # type: ignore[reportPrivateUsage]
+        assert isinstance(context._computed_properties, dict)
+        assert len(context._computed_properties) == 0
 
     def test_init_transformations_dict(self) -> None:
         """Test initialization creates transformations dict."""
@@ -91,8 +91,8 @@ class TestContextInit:
         context = Context()
 
         assert hasattr(context, "_transformations")
-        assert isinstance(context._transformations, dict)  # type: ignore[reportPrivateUsage]
-        assert len(context._transformations) == 0  # type: ignore[reportPrivateUsage]
+        assert isinstance(context._transformations, dict)
+        assert len(context._transformations) == 0
 
     def test_init_snapshot_manager(self) -> None:
         """Test initialization creates snapshot manager."""
@@ -103,7 +103,7 @@ class TestContextInit:
         # Should be a SnapshotManager instance
         from context.snapshot_manager import SnapshotManager
 
-        assert isinstance(context._snapshot_manager, SnapshotManager)  # type: ignore[reportPrivateUsage]
+        assert isinstance(context._snapshot_manager, SnapshotManager)
 
     def test_init_multiple_contexts_independent(self) -> None:
         """Test that multiple contexts are independent."""
@@ -115,13 +115,13 @@ class TestContextInit:
         assert context1.frames is not context2.frames
 
         # Should have different computed properties dicts
-        assert context1._computed_properties is not context2._computed_properties  # type: ignore[reportPrivateUsage]
+        assert context1._computed_properties is not context2._computed_properties
 
         # Should have different transformations dicts
-        assert context1._transformations is not context2._transformations  # type: ignore[reportPrivateUsage]
+        assert context1._transformations is not context2._transformations
 
         # Should have different snapshot managers
-        assert context1._snapshot_manager is not context2._snapshot_manager  # type: ignore[reportPrivateUsage]
+        assert context1._snapshot_manager is not context2._snapshot_manager
 
     def test_init_frames_reference_preservation(self) -> None:
         """Test that provided frames list reference is preserved."""

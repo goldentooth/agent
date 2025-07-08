@@ -6,11 +6,7 @@ from pathlib import Path
 from typing import Any, List, Optional
 
 # Import validators to trigger registration
-from . import (  # noqa: F401  # type: ignore[reportUnusedImport]
-    file_validator,
-    function_validator,
-    module_validator,
-)
+from . import file_validator, function_validator, module_validator  # noqa: F401
 from .config import ValidationConfig
 from .core import ValidationResult, ValidationSeverity, Validator
 from .utils import (

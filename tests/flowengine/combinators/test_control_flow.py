@@ -20,6 +20,7 @@ from flowengine.combinators.control_flow import (
     while_condition_stream,
 )
 from flowengine.exceptions import FlowExecutionError
+from flowengine.flow import Flow
 
 
 # Helper functions
@@ -193,7 +194,7 @@ class TestRecoverStream:
     async def test_recover_basic(self) -> None:
         """Test basic recovery functionality."""
 
-        async def handler(error: Exception, item: int) -> int:
+        async def handler(error: Exception, item: int | None) -> int:
             return -1  # Return -1 for any error
 
         recover_flow = recover_stream(handler)
@@ -443,7 +444,7 @@ class TestCatchAndContinueStream:
         def error_handler(e: Exception) -> None:
             errors.append(str(e))
 
-        catch_flow = catch_and_continue_stream(error_handler)  # type: ignore
+        catch_flow: Flow[int, int] = catch_and_continue_stream(error_handler)
         assert "catch_and_continue(error_handler)" in catch_flow.name
 
         async def flaky_stream() -> AsyncGenerator[int, None]:
@@ -453,24 +454,24 @@ class TestCatchAndContinueStream:
 
         # Note: The current implementation catches exceptions during yielding,
         # not exceptions from the stream itself
-        result_stream = catch_flow(flaky_stream())  # type: ignore
+        result_stream = catch_flow(flaky_stream())
         values: list[int] = []
 
         with pytest.raises(ValueError):
-            async for item in result_stream:  # type: ignore
-                values.append(item)  # type: ignore
+            async for item in result_stream:
+                values.append(item)
 
         assert values == [1]
 
     @pytest.mark.asyncio
     async def test_catch_and_continue_no_handler(self) -> None:
         """Test catch and continue without handler."""
-        catch_flow = catch_and_continue_stream()  # type: ignore
+        catch_flow: Flow[int, int] = catch_and_continue_stream()
         assert catch_flow.name == "catch_and_continue"
 
         input_stream = async_range(3)
-        result_stream = catch_flow(input_stream)  # type: ignore
-        values = [item async for item in result_stream]  # type: ignore
+        result_stream = catch_flow(input_stream)
+        values = [item async for item in result_stream]
         assert values == [0, 1, 2]
 
 
@@ -480,18 +481,20 @@ class TestCircuitBreakerStream:
     @pytest.mark.asyncio
     async def test_circuit_breaker_normal_operation(self) -> None:
         """Test circuit breaker under normal conditions."""
-        breaker_flow = circuit_breaker_stream(failure_threshold=3, recovery_timeout=0.1)  # type: ignore
+        breaker_flow: Flow[int, int] = circuit_breaker_stream(
+            failure_threshold=3, recovery_timeout=0.1
+        )
         assert "circuit_breaker(3, 0.1)" in breaker_flow.name
 
         input_stream = async_range(5)
-        result_stream = breaker_flow(input_stream)  # type: ignore
-        values = [item async for item in result_stream]  # type: ignore
+        result_stream = breaker_flow(input_stream)
+        values = [item async for item in result_stream]
         assert values == [0, 1, 2, 3, 4]
 
     @pytest.mark.asyncio
     async def test_circuit_breaker_opens_on_failures(self) -> None:
         """Test circuit breaker opening after failures."""
-        breaker_flow = circuit_breaker_stream(  # type: ignore
+        breaker_flow: Flow[int, int] = circuit_breaker_stream(
             failure_threshold=2, recovery_timeout=0.05
         )
 
@@ -509,22 +512,22 @@ class TestCircuitBreakerStream:
         # Circuit breaker tracks failures internally but our test
         # needs to handle the exceptions from the stream
         with pytest.raises(ValueError):
-            result_stream = breaker_flow(failing_stream())  # type: ignore
-            _ = [item async for item in result_stream]  # type: ignore
+            result_stream = breaker_flow(failing_stream())
+            _ = [item async for item in result_stream]
 
     @pytest.mark.asyncio
     async def test_circuit_breaker_recovery_and_open_state(self) -> None:
         """Test circuit breaker recovery after timeout and open state behavior."""
         # Note: The circuit breaker implementation has shared state,
         # so this test documents current behavior rather than testing isolation
-        breaker_flow = circuit_breaker_stream(  # type: ignore
+        breaker_flow: Flow[int, int] = circuit_breaker_stream(
             failure_threshold=1, recovery_timeout=0.01
         )
 
         # Just test that the breaker works normally without triggering failures
         # since the shared state makes it hard to test the open/recovery paths reliably
-        result_stream = breaker_flow(async_range(2))  # type: ignore
-        values = [item async for item in result_stream]  # type: ignore
+        result_stream = breaker_flow(async_range(2))
+        values = [item async for item in result_stream]
         assert values == [0, 1]
 
 
@@ -542,15 +545,15 @@ class TestChainFlows:
 
         str_flow = map_stream(str_transform)
 
-        chained = chain_flows(increment_flow, double_flow, str_flow)  # type: ignore
+        chained: Flow[int, Any] = chain_flows(increment_flow, double_flow, str_flow)
         assert (
             "chain_flows(map(increment), map(double), map(str_transform))"
             in chained.name
         )
 
         input_stream = async_range(3)
-        result_stream = chained(input_stream)  # type: ignore
-        values = [item async for item in result_stream]  # type: ignore
+        result_stream = chained(input_stream)
+        values = [item async for item in result_stream]
 
         # Each flow processes original stream: [0,1,2]
         # increment: [1,2,3]
@@ -562,11 +565,11 @@ class TestChainFlows:
     async def test_chain_flows_single(self) -> None:
         """Test chaining single flow."""
         single_flow = map_stream(double)
-        chained = chain_flows(single_flow)  # type: ignore
+        chained = chain_flows(single_flow)
 
         input_stream = async_range(2)
-        result_stream = chained(input_stream)  # type: ignore
-        values = [item async for item in result_stream]  # type: ignore
+        result_stream = chained(input_stream)
+        values = [item async for item in result_stream]
         assert values == [0, 2]
 
 

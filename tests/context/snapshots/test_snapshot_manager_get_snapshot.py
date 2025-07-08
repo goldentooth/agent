@@ -180,7 +180,7 @@ class TestSnapshotManagerGetSnapshot:
 
         # Get internal state before retrieval
         snapshots_before = manager.list_snapshots()
-        internal_count_before = len(manager._snapshots)  # type: ignore[reportPrivateUsage]
+        internal_count_before = len(manager._snapshots)
 
         # Get snapshot multiple times
         retrieved1 = manager.get_snapshot("side_effect_test")
@@ -189,7 +189,7 @@ class TestSnapshotManagerGetSnapshot:
 
         # Internal state should be unchanged
         snapshots_after = manager.list_snapshots()
-        internal_count_after = len(manager._snapshots)  # type: ignore[reportPrivateUsage]
+        internal_count_after = len(manager._snapshots)
         assert snapshots_before == snapshots_after
         assert internal_count_before == internal_count_after
 

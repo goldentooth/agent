@@ -111,13 +111,13 @@ class TestContextSnapshotRestoreTo:
         # Create target context with existing state
         target_context = MockContext({"target": "data"})
         target_context.frames = [MockFrame({"existing": "frame"})]
-        target_context._computed_properties = {  # type: ignore[reportPrivateUsage]
+        target_context._computed_properties = {
             "existing": {"func": lambda: "test", "dependencies": set()}
         }
-        target_context._transformations = {"existing": [lambda x: x]}  # type: ignore[reportPrivateUsage]
-        target_context._dependency_graph = {"existing": "data"}  # type: ignore[reportPrivateUsage]
-        target_context._sync_events = {"existing": "event"}  # type: ignore[reportPrivateUsage]
-        target_context._async_events = {"existing": "async_event"}  # type: ignore[reportPrivateUsage]
+        target_context._transformations = {"existing": [lambda x: x]}
+        target_context._dependency_graph = {"existing": "data"}
+        target_context._sync_events = {"existing": "event"}
+        target_context._async_events = {"existing": "async_event"}
 
         # Restore snapshot
         snapshot.restore_to(target_context)
@@ -125,11 +125,11 @@ class TestContextSnapshotRestoreTo:
         # Verify all existing state cleared
         assert len(target_context.frames) == 0  # Source had no frames
         collections_to_check = [
-            target_context._computed_properties,  # type: ignore[reportPrivateUsage]
-            target_context._transformations,  # type: ignore[reportPrivateUsage]
-            target_context._dependency_graph,  # type: ignore[reportPrivateUsage]
-            target_context._sync_events,  # type: ignore[reportPrivateUsage]
-            target_context._async_events,  # type: ignore[reportPrivateUsage]
+            target_context._computed_properties,
+            target_context._transformations,
+            target_context._dependency_graph,
+            target_context._sync_events,
+            target_context._async_events,
         ]
         assert all(len(collection) == 0 for collection in collections_to_check)
 
@@ -179,13 +179,13 @@ class TestContextSnapshotRestoreTo:
             "prop1": MockComputedProperty(compute_func1, {"dep1", "dep2"}),
             "prop2": MockComputedProperty(compute_func2, {"dep3"}),
         }
-        source_context._computed_properties = props  # type: ignore[reportPrivateUsage]
+        source_context._computed_properties = props
         snapshot = ContextSnapshot(source_context, "computed_test")
 
         # Create target context, restore, and verify
         target_context = MockContext({"target": "data"})
         snapshot.restore_to(target_context)
-        props_data = target_context._computed_properties  # type: ignore[reportPrivateUsage]
+        props_data = target_context._computed_properties
         assert len(props_data) == 2 and list(props_data.keys()) == ["prop1", "prop2"]
         assert props_data["prop1"]["func"] is compute_func1 and props_data["prop1"][
             "dependencies"
@@ -207,7 +207,7 @@ class TestContextSnapshotRestoreTo:
 
         # Setup transformations and create snapshot
         trans1, trans2 = MockTransformation(transform1), MockTransformation(transform2)
-        source_context._transformations = {"key1": [trans1], "key2": [trans1, trans2]}  # type: ignore[reportPrivateUsage]
+        source_context._transformations = {"key1": [trans1], "key2": [trans1, trans2]}
         snapshot = ContextSnapshot(source_context, "transform_test")
 
         # Create target context and restore
@@ -216,11 +216,16 @@ class TestContextSnapshotRestoreTo:
 
         # Verify transformations structure
         expected_structure = {"key1": 1, "key2": 2}  # key -> length mapping
-        actual_structure = {k: len(v) for k, v in target_context._transformations.items()}  # type: ignore[reportPrivateUsage]
-        assert len(target_context._transformations) == 2 and actual_structure == expected_structure  # type: ignore[reportPrivateUsage]
+        actual_structure = {
+            k: len(v) for k, v in target_context._transformations.items()
+        }
+        assert (
+            len(target_context._transformations) == 2
+            and actual_structure == expected_structure
+        )
 
         # Verify function references
-        transforms = target_context._transformations  # type: ignore[reportPrivateUsage]
+        transforms = target_context._transformations
         assert transforms["key1"][0] is transform1 and transforms["key2"] == [
             transform1,
             transform2,
@@ -237,18 +242,18 @@ class TestContextSnapshotRestoreTo:
         # Create target context with existing state
         target_context = MockContext({"target": "data"})
         target_context.frames = [MockFrame({"existing": "data"})]
-        target_context._computed_properties = {  # type: ignore[reportPrivateUsage]
+        target_context._computed_properties = {
             "existing": {"func": lambda: "test", "dependencies": set()}
         }
-        target_context._transformations = {"existing": [lambda x: x]}  # type: ignore[reportPrivateUsage]
+        target_context._transformations = {"existing": [lambda x: x]}
 
         # Restore snapshot
         snapshot.restore_to(target_context)
 
         # Target should be empty
         assert len(target_context.frames) == 0
-        assert len(target_context._computed_properties) == 0  # type: ignore[reportPrivateUsage]
-        assert len(target_context._transformations) == 0  # type: ignore[reportPrivateUsage]
+        assert len(target_context._computed_properties) == 0
+        assert len(target_context._transformations) == 0
 
     def test_restore_to_returns_none(self) -> None:
         """Test that restore_to returns None."""
@@ -300,8 +305,8 @@ class TestContextSnapshotRestoreTo:
 
         # Basic state should be restored
         assert len(target_context.frames) == 0
-        assert len(target_context._computed_properties) == 0  # type: ignore[reportPrivateUsage]
-        assert len(target_context._transformations) == 0  # type: ignore[reportPrivateUsage]
+        assert len(target_context._computed_properties) == 0
+        assert len(target_context._transformations) == 0
 
     def test_restore_to_complex_snapshot(self) -> None:
         """Test restoring complex snapshot with all components."""
@@ -319,8 +324,12 @@ class TestContextSnapshotRestoreTo:
             return x
 
         # Setup source context properties and create snapshot
-        source_context._computed_properties = {"computed": MockComputedProperty(compute_func, {"dependency"})}  # type: ignore[reportPrivateUsage]
-        source_context._transformations = {"transform": [MockTransformation(transform_func)]}  # type: ignore[reportPrivateUsage]
+        source_context._computed_properties = {
+            "computed": MockComputedProperty(compute_func, {"dependency"})
+        }
+        source_context._transformations = {
+            "transform": [MockTransformation(transform_func)]
+        }
         snapshot = ContextSnapshot(source_context, "complex_test")
 
         # Create target context, restore, and verify all components
@@ -332,10 +341,10 @@ class TestContextSnapshotRestoreTo:
             len(target_context.frames) == 2 and actual_frame_data == expected_frame_data
         )
         assert (
-            len(target_context._computed_properties) == 1  # type: ignore[reportPrivateUsage]
-            and "computed" in target_context._computed_properties  # type: ignore[reportPrivateUsage]
-            and len(target_context._transformations) == 1  # type: ignore[reportPrivateUsage]
-            and "transform" in target_context._transformations  # type: ignore[reportPrivateUsage]
+            len(target_context._computed_properties) == 1
+            and "computed" in target_context._computed_properties
+            and len(target_context._transformations) == 1
+            and "transform" in target_context._transformations
         )
 
     def test_restore_to_multiple_restorations(self) -> None:

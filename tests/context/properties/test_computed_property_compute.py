@@ -85,11 +85,11 @@ class TestComputedPropertyCompute:
         context = MockContext()
 
         # Initially not cached
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
 
         # After compute, should be cached
         prop.compute(context)
-        assert prop._is_cached is True  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is True
 
     def test_compute_stores_cached_value(self) -> None:
         """Test that compute stores the cached value."""
@@ -101,11 +101,11 @@ class TestComputedPropertyCompute:
         context = MockContext()
 
         # Initially no cached value
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._cached_value is None
 
         # After compute, should store value
         result = prop.compute(context)
-        assert prop._cached_value == "cached_result"  # type: ignore[reportPrivateUsage]
+        assert prop._cached_value == "cached_result"
         assert result == "cached_result"
 
     def test_compute_with_complex_function(self) -> None:
@@ -139,8 +139,8 @@ class TestComputedPropertyCompute:
         context = MockContext()
 
         # Manually set cached state
-        prop._cached_value = "cached_result"  # type: ignore[reportPrivateUsage]
-        prop._is_cached = True  # type: ignore[reportPrivateUsage]
+        prop._cached_value = "cached_result"
+        prop._is_cached = True
 
         # Should return cached value, not compute new one
         result = prop.compute(context)
@@ -159,8 +159,8 @@ class TestComputedPropertyCompute:
 
         # Verify None is handled correctly
         assert result is None
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
-        assert prop._is_cached is True  # type: ignore[reportPrivateUsage]
+        assert prop._cached_value is None
+        assert prop._is_cached is True
 
     def test_compute_with_different_contexts(self) -> None:
         """Test compute with different context objects."""
@@ -199,12 +199,12 @@ class TestComputedPropertyCompute:
             assert str(e) == "Computation failed"
 
         # Should not be cached after exception
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
 
     def test_compute_with_lambda_function(self) -> None:
         """Test compute with lambda function."""
         prop = ComputedProperty(
-            lambda ctx: ctx.get("x", 0) * 2,  # type: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+            lambda ctx: ctx.get("x", 0) * 2,
             ["x"],
         )
         context = MockContext({"x": 21})

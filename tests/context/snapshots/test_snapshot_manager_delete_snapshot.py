@@ -197,8 +197,8 @@ class TestSnapshotManagerDeleteSnapshot:
         manager.delete_snapshot("delete_me")
         remaining = manager.list_snapshots()
         assert len(remaining) == 2
-        assert remaining["keep1"] == snapshots["keep1"].timestamp  # type: ignore[reportUnknownMemberType]
-        assert remaining["keep2"] == snapshots["keep2"].timestamp  # type: ignore[reportUnknownMemberType]
+        assert remaining["keep1"] == snapshots["keep1"].timestamp
+        assert remaining["keep2"] == snapshots["keep2"].timestamp
         assert "delete_me" not in remaining
 
         # Verify restore still works for preserved snapshots
@@ -215,15 +215,15 @@ class TestSnapshotManagerDeleteSnapshot:
         manager.create_snapshot(context, "state_test")
 
         # Verify internal state before deletion
-        assert len(manager._snapshots) == 1  # type: ignore[reportPrivateUsage]
-        assert "state_test" in manager._snapshots  # type: ignore[reportPrivateUsage]
+        assert len(manager._snapshots) == 1
+        assert "state_test" in manager._snapshots
 
         # Delete snapshot
         manager.delete_snapshot("state_test")
 
         # Verify internal state after deletion
-        assert len(manager._snapshots) == 0  # type: ignore[reportPrivateUsage]
-        assert "state_test" not in manager._snapshots  # type: ignore[reportPrivateUsage]
+        assert len(manager._snapshots) == 0
+        assert "state_test" not in manager._snapshots
 
     def test_delete_snapshot_consistent_with_list_snapshots(self) -> None:
         """Test that delete_snapshot is consistent with list_snapshots."""

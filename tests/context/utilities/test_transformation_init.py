@@ -195,5 +195,5 @@ class TestTransformationInit:
 
         # Function attributes should be preserved
         assert transformation.func.__doc__ == "This function has documentation."
-        assert transformation.func.custom_attr == "custom_value"  # type: ignore[attr-defined]
+        assert transformation.func.custom_attr == "custom_value"
         assert transformation.func.__name__ == "documented_func"

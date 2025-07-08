@@ -30,7 +30,7 @@ class TestDebugStream:
         debugger = get_flow_debugger()
         debugger.debug_enabled = False  # Disable output for test
 
-        async def test_stream() -> None:
+        async def test_stream() -> AsyncGenerator[int, None]:
             for i in range(3):
                 yield i
 
@@ -40,14 +40,16 @@ class TestDebugStream:
         assert result == [0, 1, 2]
 
     @pytest.mark.asyncio
-    async def test_debug_stream_with_logging(self, capsys: "CaptureFixture[str]") -> None:
+    async def test_debug_stream_with_logging(
+        self, capsys: "CaptureFixture[str]"
+    ) -> None:
         """Test debug stream with logging enabled."""
         debugger = get_flow_debugger()
         debugger.debug_enabled = True
 
         try:
 
-            async def test_stream() -> None:
+            async def test_stream() -> AsyncGenerator[int, None]:
                 for i in range(2):
                     yield i
 
@@ -70,7 +72,7 @@ class TestDebugStream:
 
         try:
 
-            async def test_stream() -> None:
+            async def test_stream() -> AsyncGenerator[int, None]:
                 for i in range(5):
                     yield i
 
@@ -83,7 +85,7 @@ class TestDebugStream:
                 # Just record that breakpoint was hit
                 context.metadata["breakpoint_hit"] = True
 
-            debugger.check_breakpoint = mock_check_breakpoint
+            debugger.check_breakpoint = mock_check_breakpoint  # type: ignore[method-assign]
 
             debug_flow = debug_stream(breakpoint_condition=lambda x: x == 2)
             result = await debug_flow.to_list()(test_stream())
@@ -93,7 +95,7 @@ class TestDebugStream:
             assert len(debugger.execution_history) > 0
 
             # Restore original method
-            debugger.check_breakpoint = original_check
+            debugger.check_breakpoint = original_check  # type: ignore[method-assign]
         finally:
             debugger.debug_enabled = False
             debugger.execution_history.clear()
@@ -143,7 +145,7 @@ class TestTracedFlow:
         simple_flow = Flow(simple_flow_fn, name="simple_flow")
         traced = traced_flow(simple_flow)
 
-        async def test_stream() -> None:
+        async def test_stream() -> AsyncGenerator[int, None]:
             for i in range(3):
                 yield i
 
@@ -178,11 +180,11 @@ class TestTracedFlow:
             ) -> None:
                 breakpoint_hits.append((item, context.flow_name))
 
-            debugger.check_breakpoint = mock_check_breakpoint
+            debugger.check_breakpoint = mock_check_breakpoint  # type: ignore[method-assign]
 
             traced = traced_flow(multiply_flow)
 
-            async def test_stream() -> None:
+            async def test_stream() -> AsyncGenerator[int, None]:
                 for i in range(2):
                     yield i
 
@@ -194,7 +196,7 @@ class TestTracedFlow:
             assert breakpoint_hits[1] == (3, "multiply_flow")
 
             # Restore original
-            debugger.check_breakpoint = original_check
+            debugger.check_breakpoint = original_check  # type: ignore[method-assign]
         finally:
             debugger.debug_enabled = False
             debugger.execution_history.clear()
@@ -216,7 +218,7 @@ class TestTracedFlow:
         failing_flow = Flow(failing_flow_fn, name="failing_flow")
         traced = traced_flow(failing_flow)
 
-        async def test_stream() -> None:
+        async def test_stream() -> AsyncGenerator[int, None]:
             for i in range(3):
                 yield i
 
@@ -257,7 +259,7 @@ class TestTracedFlow:
         enhanced_error_flow = Flow(enhanced_error_flow_fn, name="enhanced_error_flow")
         traced = traced_flow(enhanced_error_flow)
 
-        async def test_stream() -> None:
+        async def test_stream() -> AsyncGenerator[int, None]:
             for i in range(3):
                 yield i
 
@@ -300,11 +302,11 @@ class TestTracedFlow:
     async def _execute_traced_flow_test(self, traced_flow: Any) -> list[int]:
         """Helper to execute traced flow test."""
 
-        async def test_stream() -> None:
+        async def test_stream() -> AsyncGenerator[int, None]:
             for i in range(2):
                 yield i
 
-        return await traced_flow.to_list()(test_stream())
+        return await traced_flow.to_list()(test_stream())  # type: ignore[no-any-return]
 
     def _verify_execution_tracking(
         self, debugger: FlowDebugger, result: list[int]

@@ -121,7 +121,7 @@ class TestContextGetitem:
 
         from context.main import ComputedProperty
 
-        context._computed_properties["key"] = ComputedProperty(compute_func)  # type: ignore[reportPrivateUsage]
+        context._computed_properties["key"] = ComputedProperty(compute_func)
 
         # Should return computed value, not frame value
         result = context["key"]
@@ -137,7 +137,7 @@ class TestContextGetitem:
 
         from context.main import ComputedProperty
 
-        context._computed_properties["computed_key"] = ComputedProperty(compute_func)  # type: ignore[reportPrivateUsage]
+        context._computed_properties["computed_key"] = ComputedProperty(compute_func)
 
         result = context["computed_key"]
         assert result == 100
@@ -247,7 +247,7 @@ class TestContextGetitem:
         from context.main import ComputedProperty
 
         computed_prop = ComputedProperty(counting_compute)
-        context._computed_properties["computed"] = computed_prop  # type: ignore[reportPrivateUsage]
+        context._computed_properties["computed"] = computed_prop
 
         # First call should compute
         result1 = context["computed"]

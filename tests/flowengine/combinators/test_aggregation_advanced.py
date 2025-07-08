@@ -51,13 +51,13 @@ async def test_buffer_stream_immediate_trigger() -> None:
     """Test buffer_stream with immediate trigger."""
 
     # Create trigger that fires immediately
-    async def trigger_stream():
+    async def trigger_stream() -> AsyncGenerator[str, None]:
         yield "trigger"
 
     flow: Flow[str, list[str]] = buffer_stream(trigger_stream())
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "a"
         yield "b"
 
@@ -75,14 +75,14 @@ async def test_buffer_stream_no_trigger() -> None:
     """Test buffer_stream with no triggers."""
 
     # Create empty trigger stream
-    async def trigger_stream():
+    async def trigger_stream() -> AsyncGenerator[int, None]:
         return
         yield  # unreachable
 
     flow: Flow[int, list[int]] = buffer_stream(trigger_stream())
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(3):
             yield i
 
@@ -99,13 +99,13 @@ async def test_buffer_stream_empty_input() -> None:
     """Test buffer_stream with empty input stream."""
 
     # Create trigger stream
-    async def trigger_stream():
+    async def trigger_stream() -> AsyncGenerator[str, None]:
         yield "trigger"
 
     flow: Flow[int, list[int]] = buffer_stream(trigger_stream())
 
     # Create empty input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         return
         yield  # unreachable
 
@@ -121,7 +121,7 @@ async def test_expand_stream_basic() -> None:
     """Test expand_stream with basic recursive expansion."""
 
     # Create expander that generates children for each item
-    async def expander(x: int):
+    async def expander(x: int) -> AsyncGenerator[int, None]:
         if x < 10:  # Only expand small numbers
             yield x * 2
             yield x * 2 + 1
@@ -129,7 +129,7 @@ async def test_expand_stream_basic() -> None:
     flow: Flow[int, int] = expand_stream(expander, max_depth=2)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         yield 1
 
     # Execute the flow
@@ -146,14 +146,14 @@ async def test_expand_stream_max_depth() -> None:
     """Test expand_stream respects max_depth limit."""
 
     # Create expander that always generates two children
-    async def expander(x: str):
+    async def expander(x: str) -> AsyncGenerator[str, None]:
         yield f"{x}a"
         yield f"{x}b"
 
     flow: Flow[str, str] = expand_stream(expander, max_depth=1)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "x"
 
     # Execute the flow
@@ -170,7 +170,7 @@ async def test_expand_stream_no_expansion() -> None:
     """Test expand_stream when expander returns no items."""
 
     # Create expander that never expands
-    async def expander(x: int):
+    async def expander(x: int) -> AsyncGenerator[int, None]:
         # No yields - empty expansion
         return
         yield  # unreachable
@@ -178,7 +178,7 @@ async def test_expand_stream_no_expansion() -> None:
     flow: Flow[int, int] = expand_stream(expander)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(3):
             yield i
 
@@ -194,13 +194,13 @@ async def test_expand_stream_empty_input() -> None:
     """Test expand_stream with empty input stream."""
 
     # Create simple expander
-    async def expander(x: int):
+    async def expander(x: int) -> AsyncGenerator[int, None]:
         yield x + 1
 
     flow: Flow[int, int] = expand_stream(expander)
 
     # Create empty input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         return
         yield  # unreachable
 
@@ -216,13 +216,13 @@ async def test_expand_stream_zero_depth() -> None:
     """Test expand_stream with max_depth=0."""
 
     # Create expander that would generate children
-    async def expander(x: int):
+    async def expander(x: int) -> AsyncGenerator[int, None]:
         yield x * 10
 
     flow: Flow[int, int] = expand_stream(expander, max_depth=0)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         yield 1
         yield 2
 
@@ -238,13 +238,13 @@ async def test_expand_stream_multiple_inputs() -> None:
     """Test expand_stream with multiple input items."""
 
     # Create expander that generates one child per item
-    async def expander(x: str):
+    async def expander(x: str) -> AsyncGenerator[str, None]:
         yield f"{x}_child"
 
     flow: Flow[str, str] = expand_stream(expander, max_depth=1)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "a"
         yield "b"
 
@@ -262,7 +262,7 @@ async def test_expand_stream_complex_expansion() -> None:
     """Test expand_stream with complex expansion logic."""
 
     # Create expander that generates factorial-like expansion
-    async def expander(x: int):
+    async def expander(x: int) -> AsyncGenerator[int, None]:
         if x > 1:
             for i in range(2, x):
                 yield i
@@ -270,7 +270,7 @@ async def test_expand_stream_complex_expansion() -> None:
     flow: Flow[int, int] = expand_stream(expander, max_depth=3)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         yield 5
 
     # Execute the flow
@@ -288,14 +288,14 @@ async def test_finalize_stream_sync_finalizer() -> None:
     """Test finalize_stream with synchronous finalizer function."""
     call_count = 0
 
-    def finalizer():
+    def finalizer() -> None:
         nonlocal call_count
         call_count += 1
 
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(3):
             yield i
 
@@ -313,14 +313,14 @@ async def test_finalize_stream_async_finalizer() -> None:
     """Test finalize_stream with asynchronous finalizer function."""
     call_count = 0
 
-    async def finalizer():
+    async def finalizer() -> None:
         nonlocal call_count
         call_count += 1
 
     flow: Flow[str, str] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "a"
         yield "b"
 
@@ -338,14 +338,14 @@ async def test_finalize_stream_empty_input() -> None:
     """Test finalize_stream with empty input stream."""
     call_count = 0
 
-    def finalizer():
+    def finalizer() -> None:
         nonlocal call_count
         call_count += 1
 
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create empty input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         return
         yield  # unreachable
 
@@ -363,14 +363,14 @@ async def test_finalize_stream_with_exception() -> None:
     """Test finalize_stream still calls finalizer when stream raises exception."""
     call_count = 0
 
-    def finalizer():
+    def finalizer() -> None:
         nonlocal call_count
         call_count += 1
 
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create stream that raises exception
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         yield 1
         yield 2
         raise ValueError("Test exception")
@@ -388,14 +388,14 @@ async def test_finalize_stream_multiple_calls() -> None:
     """Test finalize_stream finalizer is called for each flow execution."""
     call_count = 0
 
-    def finalizer():
+    def finalizer() -> None:
         nonlocal call_count
         call_count += 1
 
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         yield 1
 
     # Execute the flow multiple times
@@ -412,13 +412,13 @@ async def test_finalize_stream_finalizer_with_side_effects() -> None:
     """Test finalize_stream finalizer can perform side effects."""
     cleanup_items: list[str] = []
 
-    def finalizer():
+    def finalizer() -> None:
         cleanup_items.append("cleaned_up")
 
     flow: Flow[str, str] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[str, None]:
         yield "item1"
         yield "item2"
 
@@ -438,14 +438,14 @@ async def test_finalize_stream_async_finalizer_with_delay() -> None:
 
     call_times: list[str] = []
 
-    async def finalizer():
+    async def finalizer() -> None:
         await asyncio.sleep(0.01)  # Small delay
         call_times.append("finalized")
 
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream() -> None:
+    async def test_stream() -> AsyncGenerator[int, None]:
         yield 1
         yield 2
 

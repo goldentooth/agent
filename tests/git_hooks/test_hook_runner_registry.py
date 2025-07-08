@@ -29,7 +29,7 @@ class TestHookRunnerWithRegistry:
     def setup_method(self) -> None:
         """Setup for each test."""
         # Import actual validators to trigger registration FIRST
-        from git_hooks import (  # noqa: F401  # type: ignore[reportUnusedImport]
+        from git_hooks import (  # noqa: F401
             file_validator,
             function_validator,
             module_validator,

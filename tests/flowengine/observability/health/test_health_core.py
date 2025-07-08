@@ -2,6 +2,7 @@
 
 import asyncio
 from datetime import datetime
+from typing import AsyncGenerator
 
 import pytest
 
@@ -371,7 +372,7 @@ class TestHealthCheck:
     async def test_health_check_with_async_generator(self) -> None:
         """Test health check with async generator."""
 
-        async def check_function():
+        async def check_function() -> AsyncGenerator[bool, None]:
             await asyncio.sleep(0.05)
             yield True
 
@@ -390,7 +391,7 @@ class TestHealthCheck:
     async def test_health_check_async_generator_empty(self) -> None:
         """Test health check with empty async generator."""
 
-        async def check_function():
+        async def check_function() -> AsyncGenerator[bool, None]:
             return
             yield  # This makes it a generator but never yields
 

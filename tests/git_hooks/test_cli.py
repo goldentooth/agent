@@ -608,7 +608,7 @@ class TestCLI:
                 "src.git_hooks.cli.run_hook_with_config", return_value=0
             ) as mock_run:
                 try:
-                    cli._run_validation("file_length", False, "*.py", False)  # type: ignore[reportPrivateUsage]
+                    cli._run_validation("file_length", False, "*.py", False)
                 except typer.Exit:
                     pass  # Expected
                 mock_run.assert_called_once()
@@ -618,7 +618,7 @@ class TestCLI:
         with patch("src.git_hooks.cli.get_files_by_glob", return_value=[]):
             with patch("typer.echo") as mock_echo:
                 try:
-                    cli._run_validation("file_length", False, "*.nonexistent", False)  # type: ignore[reportPrivateUsage]
+                    cli._run_validation("file_length", False, "*.nonexistent", False)
                 except typer.Exit:
                     pass  # Expected
                 mock_echo.assert_called_once_with(
@@ -634,7 +634,7 @@ class TestCLI:
                 "src.git_hooks.cli.run_hook_with_config", return_value=0
             ) as mock_run:
                 try:
-                    cli._run_validation("file_length", True, None, False)  # type: ignore[reportPrivateUsage]
+                    cli._run_validation("file_length", True, None, False)
                 except typer.Exit:
                     pass  # Expected
                 mock_run.assert_called_once()
@@ -652,7 +652,7 @@ class TestCLI:
             "src.git_hooks.cli.run_hook_with_config", return_value=1
         ) as mock_run:
             try:
-                cli._run_validation("module_size_warnings", False, None, True)  # type: ignore[reportPrivateUsage]
+                cli._run_validation("module_size_warnings", False, None, True)
             except typer.Exit:
                 pass  # Expected
             mock_run.assert_called_once()

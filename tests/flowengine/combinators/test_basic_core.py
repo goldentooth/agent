@@ -219,7 +219,7 @@ class TestIdentityStream:
     async def test_identity_stream_preserves_types(self) -> None:
         """Test identity_stream preserves different types."""
 
-        async def source() -> AsyncGenerator[int, None]:
+        async def source() -> AsyncGenerator[str, None]:
             for item in ["hello", "world", "test"]:
                 yield item
 
@@ -252,7 +252,7 @@ class TestIdentityStream:
         """Test identity_stream with complex objects."""
         from typing import Any
 
-        async def source() -> AsyncGenerator[int, None]:
+        async def source() -> AsyncGenerator[Any, None]:
             for item in [{"key": "value"}, [1, 2, 3], ("a", "b")]:
                 yield item
 

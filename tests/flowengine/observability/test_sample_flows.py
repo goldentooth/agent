@@ -1,8 +1,9 @@
-from collections.abc import AsyncGenerator
-from typing import Any
 """Test the sample_flows fixture."""
 
 from __future__ import annotations
+
+from collections.abc import AsyncGenerator
+from typing import Any
 
 import pytest
 

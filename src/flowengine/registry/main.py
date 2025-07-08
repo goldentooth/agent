@@ -57,7 +57,7 @@ class FlowRegistry(object):
         if not name:
             raise FlowRegistryError("Flow name cannot be empty")
 
-        if not isinstance(flow, Flow):
+        if not isinstance(flow, Flow):  # pyright: ignore[reportUnnecessaryIsInstance]
             raise FlowRegistryError("Flow must be an instance of Flow")
 
         with self._lock:
@@ -446,7 +446,9 @@ def registered_flow(name: str, category: str | None = None) -> Callable[
         # Check if it's a Flow instance
         if isinstance(flow_or_factory, Flow):
             # Type narrowing confirms it's already a Flow instance
-            flow_instance = flow_or_factory
+            flow_instance: AnyFlow = (
+                flow_or_factory  # pyright: ignore[reportUnknownVariableType]
+            )
             return register_flow(name, flow_instance, category)
 
         # Check if it's a callable that might return a Flow
@@ -456,12 +458,14 @@ def registered_flow(name: str, category: str | None = None) -> Callable[
                 result = flow_or_factory()
                 if isinstance(result, Flow):
                     # Type narrowing confirms it's already a Flow instance
-                    flow_instance = result
+                    flow_result: AnyFlow = (
+                        result  # pyright: ignore[reportUnknownVariableType]
+                    )
                     # Register the Flow and return a function that always returns the same instance
-                    register_flow(name, flow_instance, category)
+                    register_flow(name, flow_result, category)
 
                     def cached_factory() -> AnyFlow:
-                        return flow_instance
+                        return flow_result
 
                     return cast(
                         Union[AnyFlow, Callable[[], AnyFlow], DecoratedCallable],

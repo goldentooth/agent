@@ -107,7 +107,7 @@ class TestContextSnapshotInit:
 
         prop1 = MockComputedProperty(test_func, {"dep1", "dep2"})
         prop2 = MockComputedProperty(lambda: "lambda", {"dep3"})
-        context._computed_properties = {"prop1": prop1, "prop2": prop2}  # type: ignore[reportPrivateUsage]
+        context._computed_properties = {"prop1": prop1, "prop2": prop2}
         name = "computed_snapshot"
 
         # Create snapshot
@@ -145,7 +145,7 @@ class TestContextSnapshotInit:
             return x.lower()
 
         trans1, trans2 = MockTransformation(transform1), MockTransformation(transform2)
-        context._transformations = {"key1": [trans1], "key2": [trans1, trans2]}  # type: ignore[reportPrivateUsage]
+        context._transformations = {"key1": [trans1], "key2": [trans1, trans2]}
 
         # Create snapshot
         snapshot = ContextSnapshot(context, "transformations_snapshot")
@@ -232,8 +232,10 @@ class TestContextSnapshotInit:
         def transform_func(x: Any) -> Any:
             return x
 
-        context._computed_properties = {"computed": MockComputedProperty(compute_func, {"dependency"})}  # type: ignore[reportPrivateUsage]
-        context._transformations = {"transform": [MockTransformation(transform_func)]}  # type: ignore[reportPrivateUsage]
+        context._computed_properties = {
+            "computed": MockComputedProperty(compute_func, {"dependency"})
+        }
+        context._transformations = {"transform": [MockTransformation(transform_func)]}
 
         # Create snapshot
         snapshot = ContextSnapshot(context, "complex_snapshot")

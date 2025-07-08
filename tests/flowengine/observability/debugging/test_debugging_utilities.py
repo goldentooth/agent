@@ -61,9 +61,9 @@ class TestInspectFlow:
         from flowengine.flow import Flow
 
         # Create anonymous lambda (though this wouldn't work in practice for async)
-        flow = Flow(lambda stream: stream, name="lambda_flow")  # type: ignore
+        flow: Flow[Any, Any] = Flow(lambda stream: stream, name="lambda_flow")
 
-        inspection = inspect_flow(flow)  # type: ignore
+        inspection = inspect_flow(flow)
 
         assert inspection["name"] == "lambda_flow"
         assert inspection["type"] == "Flow"
@@ -138,7 +138,7 @@ class TestInspectFlow:
         from flowengine.flow import Flow
 
         # Test with a raw async function (not wrapped by Flow)
-        async def async_fn():
+        async def async_fn() -> None:
             pass
 
         # Test direct inspection of the function
@@ -147,7 +147,7 @@ class TestInspectFlow:
         assert asyncio.iscoroutinefunction(async_fn) is True
 
         # Test with sync function
-        def sync_fn():
+        def sync_fn() -> None:
             pass
 
         assert asyncio.iscoroutinefunction(sync_fn) is False
@@ -278,7 +278,7 @@ class TestDebugSession:
 
             test_flow = Flow(test_flow_fn, name="test_flow")
 
-            async def test_stream() -> None:
+            async def test_stream() -> AsyncGenerator[int, None]:
                 for i in range(3):
                     yield i
 
@@ -394,7 +394,7 @@ class TestEnableFlowDebugging:
 
             # Add a breakpoint with custom condition
             def custom_condition(item: Any, ctx: FlowExecutionContext) -> bool:
-                return item == "test"
+                return bool(item == "test")
 
             add_flow_breakpoint("test_flow_2", custom_condition)
             assert "test_flow_2" in debugger.breakpoints

@@ -15,7 +15,7 @@ class TestHistoryTrackerSetMaxSize:
         # Change to smaller size
         tracker.set_max_history_size(5)
 
-        assert tracker._max_history_size == 5  # type: ignore[reportPrivateUsage]
+        assert tracker._max_history_size == 5
 
     def test_set_max_history_size_trims_existing_history(self) -> None:
         """Test set_max_history_size trims existing history when reduced."""
@@ -51,7 +51,7 @@ class TestHistoryTrackerSetMaxSize:
         tracker.set_max_history_size(0)
 
         assert tracker.get_history_size() == 0
-        assert tracker._max_history_size == 0  # type: ignore[reportPrivateUsage]
+        assert tracker._max_history_size == 0
 
     def test_set_max_history_size_larger_than_current(self) -> None:
         """Test set_max_history_size larger than current history preserves all."""
@@ -68,7 +68,7 @@ class TestHistoryTrackerSetMaxSize:
 
         # Should preserve all existing events
         assert tracker.get_history_size() == 3
-        assert tracker._max_history_size == 10  # type: ignore[reportPrivateUsage]
+        assert tracker._max_history_size == 10
 
         # Should still accept new events up to the new limit
         for i in range(3, 7):
@@ -139,7 +139,7 @@ class TestHistoryTrackerSetMaxSize:
         tracker.set_max_history_size(5)
 
         assert tracker.get_history_size() == 0
-        assert tracker._max_history_size == 5  # type: ignore[reportPrivateUsage]
+        assert tracker._max_history_size == 5
 
     def test_set_max_history_size_preserves_event_order(self) -> None:
         """Test set_max_history_size preserves chronological order of kept events."""
@@ -202,4 +202,4 @@ class TestHistoryTrackerSetMaxSize:
 
         # Should not affect existing history
         assert tracker.get_history_size() == 3
-        assert tracker._max_history_size == 5  # type: ignore[reportPrivateUsage]
+        assert tracker._max_history_size == 5

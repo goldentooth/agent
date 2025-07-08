@@ -5,29 +5,30 @@
 from pathlib import Path
 from unittest.mock import Mock
 
-import pytest  # type: ignore[reportMissingTypeStubs]
+import pytest
+from _pytest.capture import CaptureFixture
 
 from git_hooks.core import ValidationResult, ValidationSeverity
-from git_hooks.utils import _is_urgent_warning  # type: ignore[reportPrivateUsage]
-from git_hooks.utils import _print_error_results  # type: ignore[reportPrivateUsage]
-from git_hooks.utils import _print_single_warning  # type: ignore[reportPrivateUsage]
-from git_hooks.utils import _print_warning_results  # type: ignore[reportPrivateUsage]
 from git_hooks.utils import (
-    _separate_results_by_severity,  # type: ignore[reportPrivateUsage]
+    _is_urgent_warning,
+    _print_error_results,
+    _print_single_warning,
+    _print_warning_results,
+    _separate_results_by_severity,
+    print_results,
 )
-from git_hooks.utils import print_results
 
 
 class TestPrintResults:
     """Test suite for print_results function."""
 
-    def test_print_results_empty_list(self, capsys) -> None:
+    def test_print_results_empty_list(self, capsys: CaptureFixture[str]) -> None:
         """Test print_results with empty results list."""
         print_results([], "Test Hook")
         captured = capsys.readouterr()
         assert "✅ Test Hook: All files within healthy limits" in captured.out
 
-    def test_print_results_with_errors_only(self, capsys) -> None:
+    def test_print_results_with_errors_only(self, capsys: CaptureFixture[str]) -> None:
         """Test print_results with only error results."""
         error_result = ValidationResult(
             file_path=Path("test_file.py"),
@@ -44,7 +45,9 @@ class TestPrintResults:
         assert "test_file.py: Test error" in captured.out
         assert "Please refactor large files/modules before committing." in captured.out
 
-    def test_print_results_with_warnings_only(self, capsys) -> None:
+    def test_print_results_with_warnings_only(
+        self, capsys: CaptureFixture[str]
+    ) -> None:
         """Test print_results with only warning results."""
         warning_result = ValidationResult(
             file_path=Path("test_file.py"),
@@ -61,7 +64,9 @@ class TestPrintResults:
         assert "⚠️  WARNING: test_file.py (Test warning)" in captured.out
         assert "Test guidance" in captured.out
 
-    def test_print_results_with_mixed_results(self, capsys) -> None:
+    def test_print_results_with_mixed_results(
+        self, capsys: CaptureFixture[str]
+    ) -> None:
         """Test print_results with both errors and warnings."""
         error_result, warning_result = self._create_mixed_results()
 
@@ -142,13 +147,13 @@ class TestSeparateResultsBySeverity:
 class TestPrintErrorResults:
     """Test suite for _print_error_results function."""
 
-    def test_print_empty_errors(self, capsys) -> None:
+    def test_print_empty_errors(self, capsys: CaptureFixture[str]) -> None:
         """Test printing empty error list."""
         _print_error_results([], "Test Hook")
         captured = capsys.readouterr()
         assert captured.out == ""
 
-    def test_print_single_error(self, capsys) -> None:
+    def test_print_single_error(self, capsys: CaptureFixture[str]) -> None:
         """Test printing single error result."""
         error_result = ValidationResult(
             file_path=Path("./test_file.py"),
@@ -165,7 +170,7 @@ class TestPrintErrorResults:
         assert "test_file.py: Test error" in captured.out
         assert "Please refactor large files/modules before committing." in captured.out
 
-    def test_print_multiple_errors(self, capsys) -> None:
+    def test_print_multiple_errors(self, capsys: CaptureFixture[str]) -> None:
         """Test printing multiple error results."""
         error1 = ValidationResult(
             file_path=Path("file1.py"),
@@ -192,13 +197,13 @@ class TestPrintErrorResults:
 class TestPrintWarningResults:
     """Test suite for _print_warning_results function."""
 
-    def test_print_empty_warnings(self, capsys) -> None:
+    def test_print_empty_warnings(self, capsys: CaptureFixture[str]) -> None:
         """Test printing empty warning list."""
         _print_warning_results([])
         captured = capsys.readouterr()
         assert captured.out == ""
 
-    def test_print_single_warning(self, capsys) -> None:
+    def test_print_single_warning(self, capsys: CaptureFixture[str]) -> None:
         """Test printing single warning result."""
         warning_result = ValidationResult(
             file_path=Path("test_file.py"),
@@ -215,7 +220,9 @@ class TestPrintWarningResults:
         assert "⚠️  WARNING: test_file.py (Test warning)" in captured.out
         assert "Test guidance" in captured.out
 
-    def test_print_multiple_warnings_same_guidance(self, capsys) -> None:
+    def test_print_multiple_warnings_same_guidance(
+        self, capsys: CaptureFixture[str]
+    ) -> None:
         """Test printing multiple warnings with same guidance only prints guidance once."""
         warning1 = ValidationResult(
             file_path=Path("file1.py"),
@@ -248,7 +255,7 @@ class TestPrintWarningResults:
 class TestPrintSingleWarning:
     """Test suite for _print_single_warning function."""
 
-    def test_print_regular_warning(self, capsys) -> None:
+    def test_print_regular_warning(self, capsys: CaptureFixture[str]) -> None:
         """Test printing regular warning."""
         warning_result = ValidationResult(
             file_path=Path("./test_file.py"),
@@ -265,7 +272,7 @@ class TestPrintSingleWarning:
         assert "⚠️  WARNING: test_file.py (Test warning)" in captured.out
         assert "Test guidance" in captured.out
 
-    def test_print_urgent_warning(self, capsys) -> None:
+    def test_print_urgent_warning(self, capsys: CaptureFixture[str]) -> None:
         """Test printing urgent warning."""
         warning_result = ValidationResult(
             file_path=Path("test_file.py"),

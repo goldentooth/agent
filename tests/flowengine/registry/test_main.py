@@ -46,7 +46,7 @@ class TestFlowRegistryInitialization:
         """Test that registry has thread synchronization."""
         registry = FlowRegistry()
         assert hasattr(registry, "_lock")
-        assert isinstance(registry._lock, _thread.LockType)  # type: ignore
+        assert isinstance(registry._lock, _thread.LockType)
 
 
 class TestFlowRegistryRegister:
@@ -124,7 +124,7 @@ class TestFlowRegistryRegister:
         registry = FlowRegistry()
 
         with pytest.raises(FlowRegistryError, match="Flow must be an instance of Flow"):
-            registry.register("test_flow", "not a flow")  # type: ignore
+            registry.register("test_flow", "not a flow")  # type: ignore[arg-type]
 
     def test_register_empty_name_raises_error(self) -> None:
         """Test that registering with empty name raises an error."""
@@ -762,7 +762,7 @@ class TestRegisteredFlowDecorator:
 
         # Decorate it
         @registered_flow("test_flow_instance")
-        def get_flow_instance():
+        def get_flow_instance() -> Flow[int, int]:
             return test_flow
 
         # The decorator should register the flow and return a cached factory

@@ -164,5 +164,10 @@ class HealthCheck:
             return False
         else:
             # It's a regular coroutine - safe to cast since not a generator
-            coro = cast(Awaitable[bool], check_result)
-            return bool(await coro)
+            coro = check_result
+            result = (
+                await coro
+            )  # pyright: ignore[reportGeneralTypeIssues, reportUnknownVariableType]
+            return bool(
+                result
+            )  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]

@@ -62,7 +62,7 @@ class TestPerformanceObservability:
 
         flow = create_monitored_flow
         input_stream = async_range(100)
-        result = [item async for item in flow(input_stream)]  # type: ignore
+        result = [item async for item in flow(input_stream)]
 
         assert len(result) == 100
         assert result[:3] == [0, 2, 4]
@@ -88,7 +88,7 @@ class TestPerformanceObservability:
         )
 
         # Create empty input for from_iterable
-        async def empty_stream():
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = await pipeline.to_list()(empty_stream())
@@ -104,7 +104,7 @@ class TestPerformanceObservability:
         """Test exporting performance metrics."""
         flow = performance_stream()
         input_stream = async_range(10)
-        result = [item async for item in flow(input_stream)]  # type: ignore
+        result = [item async for item in flow(input_stream)]
 
         assert result == list(range(10))
 
@@ -134,7 +134,7 @@ class TestDebuggingCapabilities:
         debug_flow = debug_stream(log_items=False)  # Don't log to avoid output
 
         input_stream = async_range(5)
-        result = [item async for item in debug_flow(input_stream)]  # type: ignore
+        result = [item async for item in debug_flow(input_stream)]
 
         assert result == [0, 1, 2, 3, 4]
 
@@ -149,7 +149,7 @@ class TestDebuggingCapabilities:
         traced = traced_flow(original_flow)
 
         input_stream = async_range(3)
-        result = [item async for item in traced(input_stream)]  # type: ignore
+        result = [item async for item in traced(input_stream)]
 
         assert result == [0, 3, 6]
 
@@ -180,7 +180,7 @@ class TestDebuggingCapabilities:
 
             flow = traced_flow(map_stream(double_value))
             input_stream = async_range(3)
-            result = [item async for item in flow(input_stream)]  # type: ignore
+            result = [item async for item in flow(input_stream)]
 
             assert result == [0, 2, 4]
 
@@ -212,7 +212,7 @@ class TestHealthMonitoring:
     async def test_custom_health_check(self) -> None:
         """Test registering custom health checks."""
 
-        async def custom_check():
+        async def custom_check() -> AsyncGenerator[bool, None]:
             # Simple check that always passes
             yield True
 
@@ -278,13 +278,13 @@ class TestFlowAnalysis:
         def is_positive(x: int) -> bool:
             return x > 0
 
-        flows = [  # type: ignore
+        flows: list[Flow[Any, Any]] = [
             map_stream(double_value),
             filter_stream(is_positive),
             batch_stream(5),
         ]
 
-        graph = analyze_flow_composition(flows)  # type: ignore
+        graph = analyze_flow_composition(flows)
 
         assert len(graph.nodes) == 3
         assert len(graph.edges) == 2  # Connections between flows
@@ -302,7 +302,7 @@ class TestFlowAnalysis:
             return x > 5
 
         # Create a map-filter pattern
-        flows = [
+        flows: list[Flow[Any, Any]] = [
             map_stream(double_value),  # transformation
             filter_stream(greater_than_five),  # filtering
         ]
@@ -335,7 +335,7 @@ class TestFlowAnalysis:
             return x > 10
 
         # Create a complex flow composition
-        flows = [  # type: ignore
+        flows: list[Flow[Any, Any]] = [
             map_stream(double_value),
             map_stream(add_one),
             map_stream(triple_value),  # Multiple transformations
@@ -343,7 +343,7 @@ class TestFlowAnalysis:
             batch_stream(5),
         ]
 
-        graph = analyze_flow_composition(flows)  # type: ignore
+        graph = analyze_flow_composition(flows)
         optimizations = generate_flow_optimizations(graph)
 
         assert isinstance(optimizations, list)
@@ -362,7 +362,7 @@ class TestFlowAnalysis:
         def is_even(x: int) -> bool:
             return x % 2 == 0
 
-        flows = [map_stream(double_value), filter_stream(is_even)]
+        flows: list[Flow[Any, Any]] = [map_stream(double_value), filter_stream(is_even)]
 
         graph = analyze_flow_composition(flows)
 
@@ -413,7 +413,7 @@ class TestObservabilityLifecycle:
             flow = traced_flow(compose(map_stream(process_value), performance_stream()))
 
             input_stream = async_range(5)
-            result = [item async for item in flow(input_stream)]  # type: ignore
+            result = [item async for item in flow(input_stream)]
 
             assert result == [0, 2, 4, 6, 8]
 
@@ -446,7 +446,7 @@ class TestObservabilityLifecycle:
     async def _run_flow_and_verify(self, flow: Any, expected_result: list[int]) -> None:
         """Run a flow and verify the result."""
         input_stream = async_range(3)
-        result = [item async for item in flow(input_stream)]  # type: ignore
+        result = [item async for item in flow(input_stream)]
         assert result == expected_result
 
     @pytest.mark.asyncio
@@ -500,7 +500,7 @@ class TestObservabilityLifecycle:
                 )
 
                 input_stream = async_range(5)
-                result = [item async for item in flow(input_stream)]  # type: ignore
+                result = [item async for item in flow(input_stream)]
 
                 # Verify each flow executed correctly
                 expected = [x * (i + 1) for x in range(5)]
@@ -549,7 +549,7 @@ class TestObservabilityScenarios:
         disable_flow_debugging()
 
         # Register a custom health check for production monitoring
-        async def production_health_check():
+        async def production_health_check() -> AsyncGenerator[bool, None]:
             # Simulate checking critical system resources
             yield True  # System is healthy
 
@@ -569,7 +569,7 @@ class TestObservabilityScenarios:
                 }
 
             def validate_order(order: dict[str, Any]) -> bool:
-                return order.get("order_id", 0) > 0
+                return bool(order.get("order_id", 0) > 0)
 
             # Create monitored production pipeline
             production_pipeline = compose(
@@ -580,7 +580,7 @@ class TestObservabilityScenarios:
             )
 
             # Execute production pipeline
-            async def empty_stream():
+            async def empty_stream() -> AsyncGenerator[None, None]:
                 yield None
 
             results = await production_pipeline.to_list()(empty_stream())
@@ -637,7 +637,7 @@ class TestObservabilityScenarios:
             )
 
             # Execute development pipeline
-            async def empty_stream():
+            async def empty_stream() -> AsyncGenerator[None, None]:
                 yield None
 
             results = await dev_pipeline.to_list()(empty_stream())
@@ -663,7 +663,7 @@ class TestObservabilityScenarios:
         finally:
             disable_flow_debugging()
 
-    def _create_optimization_flows(self) -> list[Any]:
+    def _create_optimization_flows(self) -> list[Flow[Any, Any]]:
         """Create a complex pipeline for optimization analysis."""
 
         def step1_transform(x: int) -> int:
@@ -711,7 +711,7 @@ class TestObservabilityScenarios:
     async def _run_optimization_analysis(self) -> tuple[Any, list[Any], list[Any]]:
         """Run optimization analysis and return results."""
         optimization_flows = self._create_optimization_flows()
-        flow_graph = analyze_flow_composition(optimization_flows)  # type: ignore
+        flow_graph = analyze_flow_composition(optimization_flows)
 
         # Verify analysis results
         assert len(flow_graph.nodes) == 5
@@ -735,7 +735,7 @@ class TestObservabilityScenarios:
         # Test performance monitoring during optimization analysis
         test_pipeline = compose(Flow.from_iterable(range(100)), performance_stream())
 
-        async def empty_stream():
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         results = await test_pipeline.to_list()(empty_stream())
@@ -774,7 +774,7 @@ class TestIntegratedObservability:
         )
 
         # Create empty input for from_iterable
-        async def empty_stream():
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = await pipeline.to_list()(empty_stream())
@@ -811,7 +811,7 @@ class TestIntegratedObservability:
         )
 
         # Create empty input for from_iterable
-        async def empty_stream():
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         result = await error_tolerant_flow.to_list()(empty_stream())
@@ -851,7 +851,7 @@ class TestIntegratedObservability:
 
             # Run the flow
             # Create empty input for from_iterable
-            async def empty_stream():
+            async def empty_stream() -> AsyncGenerator[None, None]:
                 yield None
 
             result = await monitored_flow.to_list()(empty_stream())

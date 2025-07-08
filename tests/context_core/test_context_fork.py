@@ -143,7 +143,7 @@ def test_fork_empty_context() -> None:
         _ = forked["original_key"]
 
 
-def _create_complex_layered_context_for_fork() -> None:
+def _create_complex_layered_context_for_fork() -> Context:
     """Helper function to create a complex layered context for fork testing."""
     context = Context()
 

@@ -307,17 +307,17 @@ class TestBackgroundEventLoopShutdown:
     def test_mark_shutdown_started(self) -> None:
         """Test _mark_shutdown_started sets running to False."""
         loop = BackgroundEventLoop()
-        assert loop._running is True  # type: ignore[reportPrivateUsage]
+        assert loop._running is True
 
-        loop._mark_shutdown_started()  # type: ignore[reportPrivateUsage]
-        assert loop._running is False  # type: ignore[reportPrivateUsage]
+        loop._mark_shutdown_started()
+        assert loop._running is False
 
     def test_stop_event_loop_when_running(self) -> None:
         """Test _stop_event_loop stops a running loop."""
         loop = BackgroundEventLoop()
         assert loop.loop.is_running()
 
-        loop._stop_event_loop()  # type: ignore[reportPrivateUsage]
+        loop._stop_event_loop()
         # Give time for the stop to take effect
         import time
 
@@ -331,18 +331,18 @@ class TestBackgroundEventLoopShutdown:
         loop.shutdown(timeout=1.0)
 
         # Should not raise error even if loop already stopped
-        loop._stop_event_loop()  # type: ignore[reportPrivateUsage]
+        loop._stop_event_loop()
 
     def test_wait_for_shutdown_completion(self) -> None:
         """Test _wait_for_shutdown_completion waits for completion."""
         loop = BackgroundEventLoop()
 
         # Start shutdown process
-        loop._mark_shutdown_started()  # type: ignore[reportPrivateUsage]
-        loop._stop_event_loop()  # type: ignore[reportPrivateUsage]
+        loop._mark_shutdown_started()
+        loop._stop_event_loop()
 
         # Should complete within timeout
-        loop._wait_for_shutdown_completion(2.0)  # type: ignore[reportPrivateUsage]
+        loop._wait_for_shutdown_completion(2.0)
 
     def test_check_shutdown_success_when_alive(self) -> None:
         """Test _check_shutdown_success logs warning when thread alive."""
@@ -350,7 +350,7 @@ class TestBackgroundEventLoopShutdown:
 
         # Since thread is still alive, this should not raise an error
         # The warning will be logged but we can't easily capture it here
-        loop._check_shutdown_success()  # type: ignore[reportPrivateUsage]
+        loop._check_shutdown_success()
 
     def test_check_shutdown_success_when_dead(self) -> None:
         """Test _check_shutdown_success is quiet when thread dead."""
@@ -358,7 +358,7 @@ class TestBackgroundEventLoopShutdown:
         loop.shutdown(timeout=2.0)
 
         # Thread should be dead now, no warning expected
-        loop._check_shutdown_success()  # type: ignore[reportPrivateUsage]
+        loop._check_shutdown_success()
 
     def test_submit_after_shutdown_raises_error(self) -> None:
         """Submit should raise RuntimeError after shutdown."""

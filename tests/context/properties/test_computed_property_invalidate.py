@@ -32,8 +32,8 @@ class TestComputedPropertyInvalidate:
         prop.invalidate()
 
         # Verify state after invalidation
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
+        assert prop._cached_value is None
 
     def test_invalidate_after_compute(self) -> None:
         """Test invalidate after computing a value."""
@@ -46,15 +46,15 @@ class TestComputedPropertyInvalidate:
 
         # Compute value first
         prop.compute(context)
-        assert prop._is_cached is True  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value == "computed_value"  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is True
+        assert prop._cached_value == "computed_value"
 
         # Invalidate
         prop.invalidate()
 
         # Should clear cached state
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
+        assert prop._cached_value is None
 
     def test_invalidate_allows_recomputation(self) -> None:
         """Test that invalidate allows recomputation of value."""
@@ -132,15 +132,15 @@ class TestComputedPropertyInvalidate:
         # Compute None value
         result = prop.compute(context)
         assert result is None
-        assert prop._is_cached is True  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is True
+        assert prop._cached_value is None
 
         # Invalidate
         prop.invalidate()
 
         # Should clear cached flag even though value is None
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
+        assert prop._cached_value is None
 
     def test_invalidate_compute_cycle(self) -> None:
         """Test multiple compute-invalidate cycles."""
@@ -169,8 +169,8 @@ class TestComputedPropertyInvalidate:
         prop.invalidate()
 
         # Verify final state
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
+        assert prop._cached_value is None
 
     def test_invalidate_returns_none(self) -> None:
         """Test that invalidate returns None."""
@@ -219,14 +219,14 @@ class TestComputedPropertyInvalidate:
         # Compute complex value
         result = prop.compute(context)
         assert isinstance(result, dict)
-        assert prop._is_cached is True  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is True
 
         # Invalidate
         prop.invalidate()
 
         # Should clear everything
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
+        assert prop._cached_value is None
 
     def test_invalidate_enables_different_computation(self) -> None:
         """Test that invalidate allows different computation results."""

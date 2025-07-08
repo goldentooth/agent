@@ -40,7 +40,7 @@ def _create_race_tasks(
     return [asyncio.create_task(_run_single_flow(flow, item)) for flow in flows]
 
 
-async def _get_first_successful_result(done_tasks: set[AnyTask]) -> Any:
+async def _get_first_successful_result(done_tasks: set[AnyTask]) -> object:
     """Get the first successful result from completed tasks."""
     for task in done_tasks:
         try:
@@ -70,7 +70,7 @@ async def _race_flows_for_item(
     done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
 
     try:
-        return await _get_first_successful_result(done)
+        return cast(Output, await _get_first_successful_result(done))
     finally:
         await _cancel_pending_tasks(pending)
 
