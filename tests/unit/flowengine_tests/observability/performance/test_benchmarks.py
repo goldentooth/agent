@@ -337,7 +337,7 @@ class TestPerformanceRegression:
             gc.collect()  # Second pass for thorough cleanup
 
             test_flow: Any = map_stream(lambda x: x + 1)
-            # Increase iterations and warmup for better stability
+            # Use settings that provide consistent results
             benchmark = benchmark_stream(
                 iterations=50, warmup_iterations=10, trim_percent=20.0
             )
@@ -393,7 +393,6 @@ class TestPerformanceRegression:
 
         # Use more lenient thresholds in CI environments
         is_ci = os.getenv("CI") is not None or os.getenv("GITHUB_ACTIONS") is not None
-        # Increase thresholds slightly for better stability
         variance_threshold = 0.5 if is_ci else 0.35  # 50% for CI, 35% for local
 
         assert throughput_variance < variance_threshold, (
