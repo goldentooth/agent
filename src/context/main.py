@@ -625,3 +625,14 @@ class Context:
             KeyError: If snapshot with the given name doesn't exist
         """
         self._snapshot_manager.delete_snapshot(name)
+
+    def get_snapshots(self) -> dict[str, ContextSnapshot]:
+        """Get all snapshots (returns a copy).
+
+        Returns:
+            Dictionary of snapshot names to snapshot objects
+        """
+        return {
+            name: self._snapshot_manager.get_snapshot(name)
+            for name in self._snapshot_manager.list_snapshots()
+        }
