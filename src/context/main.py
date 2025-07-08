@@ -310,3 +310,37 @@ class Context:
         #         forked.add_transformation(key, transformation.func)
 
         return forked
+
+    def fork_with_history(self) -> "Context":
+        """Create a fork of the current context that includes history and snapshots.
+
+        Returns:
+            A new Context instance that is an independent copy with preserved history and snapshots
+        """
+        # Start with a basic fork
+        forked = self.fork()
+
+        # TODO: Copy history when history tracking is fully implemented
+        # all_history = self._history_tracker.get_all_history()
+        # for event in all_history:
+        #     # Create a deep copy of the event
+        #     copied_event = ContextChangeEvent(
+        #         event.key,
+        #         copy.deepcopy(event.old_value),
+        #         copy.deepcopy(event.new_value),
+        #         id(forked),  # Update context_id to the forked context
+        #     )
+        #     copied_event.timestamp = event.timestamp  # Preserve original timestamp
+        #     forked._history_tracker._change_history.append(copied_event)
+
+        # TODO: Copy snapshots when snapshot system is fully implemented
+        # for name in self._snapshot_manager.list_snapshots():
+        #     snapshot = self._snapshot_manager.get_snapshot(name)
+        #     forked_snapshot = ContextSnapshot(forked, name)
+        #     forked_snapshot.timestamp = snapshot.timestamp
+        #     forked_snapshot.frames = [frame.copy() for frame in snapshot.frames]
+        #     forked_snapshot.computed_properties = copy.deepcopy(snapshot.computed_properties)
+        #     forked_snapshot.transformations = copy.deepcopy(snapshot.transformations)
+        #     forked._snapshot_manager._snapshots[name] = forked_snapshot
+
+        return forked
