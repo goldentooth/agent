@@ -5,7 +5,7 @@ import pytest
 from context.main import Context
 
 
-def test_merge_basic():
+def test_merge_basic() -> None:
     """Test basic merge functionality."""
     context = Context()
     context["base_key"] = "base_value"
@@ -21,7 +21,7 @@ def test_merge_basic():
     assert context["other_key"] == "other_value"
 
 
-def test_merge_key_overwrite():
+def test_merge_key_overwrite() -> None:
     """Test that merge overwrites existing keys."""
     context = Context()
     context["shared_key"] = "original_value"
@@ -40,7 +40,7 @@ def test_merge_key_overwrite():
     assert context["other_key"] == "other_value"
 
 
-def test_merge_empty_context():
+def test_merge_empty_context() -> None:
     """Test merging with an empty context."""
     context = Context()
     context["existing_key"] = "existing_value"
@@ -54,7 +54,7 @@ def test_merge_empty_context():
     assert len(context.frames) == 1
 
 
-def test_merge_into_empty_context():
+def test_merge_into_empty_context() -> None:
     """Test merging into an empty context."""
     context = Context()
 
@@ -67,7 +67,7 @@ def test_merge_into_empty_context():
     assert context["test_key"] == "test_value"
 
 
-def test_merge_with_multiple_frames():
+def test_merge_with_multiple_frames() -> None:
     """Test merging contexts with multiple frames."""
     context = Context()
     context["base_key"] = "base_value"
@@ -89,7 +89,7 @@ def test_merge_with_multiple_frames():
     assert context["other_layer"] == "other_layer_value"
 
 
-def test_merge_preserves_original_context():
+def test_merge_preserves_original_context() -> None:
     """Test that merge does not modify the source context."""
     context = Context()
     context["context_key"] = "context_value"
@@ -112,7 +112,7 @@ def test_merge_preserves_original_context():
         _ = other_context["context_key"]
 
 
-def test_merge_with_none_values():
+def test_merge_with_none_values() -> None:
     """Test merging contexts with None values."""
     context = Context()
     context["existing_key"] = "existing_value"
@@ -129,7 +129,7 @@ def test_merge_with_none_values():
     assert context["value_key"] == "value"
 
 
-def test_merge_returns_self():
+def test_merge_returns_self() -> None:
     """Test that merge returns the context for chaining."""
     context = Context()
     context["key1"] = "value1"
@@ -145,7 +145,7 @@ def test_merge_returns_self():
     assert result["key2"] == "value2"
 
 
-def test_merge_with_layered_shadowing():
+def test_merge_with_layered_shadowing() -> None:
     """Test merge behavior with layered key shadowing."""
     context = Context()
     context["base_key"] = "base_value"
@@ -164,7 +164,7 @@ def test_merge_with_layered_shadowing():
     assert context["base_key"] == "other_shadowed_value"
 
 
-def test_merge_complex_data_types():
+def test_merge_complex_data_types() -> None:
     """Test merging with complex data types."""
     context = Context()
     context["list_key"] = ["original", "list"]

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import AsyncGenerator
+
 import pytest
 
 from flowengine.combinators.aggregation import (
@@ -13,12 +15,12 @@ from flowengine.flow import Flow
 
 
 @pytest.mark.asyncio
-async def test_buffer_stream_basic():
+async def test_buffer_stream_basic() -> None:
     """Test buffer_stream with basic trigger functionality."""
     import asyncio
 
     # Create trigger stream that fires twice
-    async def trigger_stream():
+    async def trigger_stream() -> AsyncGenerator[str, None]:
         await asyncio.sleep(0.01)  # Let some items accumulate
         yield "trigger1"
         await asyncio.sleep(0.01)  # Let more items accumulate
@@ -27,7 +29,7 @@ async def test_buffer_stream_basic():
     flow: Flow[int, list[int]] = buffer_stream(trigger_stream())
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(6):
             yield i
             await asyncio.sleep(0.005)  # Small delay between items
@@ -45,7 +47,7 @@ async def test_buffer_stream_basic():
 
 
 @pytest.mark.asyncio
-async def test_buffer_stream_immediate_trigger():
+async def test_buffer_stream_immediate_trigger() -> None:
     """Test buffer_stream with immediate trigger."""
 
     # Create trigger that fires immediately
@@ -55,7 +57,7 @@ async def test_buffer_stream_immediate_trigger():
     flow: Flow[str, list[str]] = buffer_stream(trigger_stream())
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield "a"
         yield "b"
 
@@ -69,7 +71,7 @@ async def test_buffer_stream_immediate_trigger():
 
 
 @pytest.mark.asyncio
-async def test_buffer_stream_no_trigger():
+async def test_buffer_stream_no_trigger() -> None:
     """Test buffer_stream with no triggers."""
 
     # Create empty trigger stream
@@ -80,7 +82,7 @@ async def test_buffer_stream_no_trigger():
     flow: Flow[int, list[int]] = buffer_stream(trigger_stream())
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         for i in range(3):
             yield i
 
@@ -93,7 +95,7 @@ async def test_buffer_stream_no_trigger():
 
 
 @pytest.mark.asyncio
-async def test_buffer_stream_empty_input():
+async def test_buffer_stream_empty_input() -> None:
     """Test buffer_stream with empty input stream."""
 
     # Create trigger stream
@@ -103,7 +105,7 @@ async def test_buffer_stream_empty_input():
     flow: Flow[int, list[int]] = buffer_stream(trigger_stream())
 
     # Create empty input stream
-    async def test_stream():
+    async def test_stream() -> None:
         return
         yield  # unreachable
 
@@ -115,7 +117,7 @@ async def test_buffer_stream_empty_input():
 
 
 @pytest.mark.asyncio
-async def test_expand_stream_basic():
+async def test_expand_stream_basic() -> None:
     """Test expand_stream with basic recursive expansion."""
 
     # Create expander that generates children for each item
@@ -127,7 +129,7 @@ async def test_expand_stream_basic():
     flow: Flow[int, int] = expand_stream(expander, max_depth=2)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield 1
 
     # Execute the flow
@@ -140,7 +142,7 @@ async def test_expand_stream_basic():
 
 
 @pytest.mark.asyncio
-async def test_expand_stream_max_depth():
+async def test_expand_stream_max_depth() -> None:
     """Test expand_stream respects max_depth limit."""
 
     # Create expander that always generates two children
@@ -151,7 +153,7 @@ async def test_expand_stream_max_depth():
     flow: Flow[str, str] = expand_stream(expander, max_depth=1)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield "x"
 
     # Execute the flow
@@ -164,7 +166,7 @@ async def test_expand_stream_max_depth():
 
 
 @pytest.mark.asyncio
-async def test_expand_stream_no_expansion():
+async def test_expand_stream_no_expansion() -> None:
     """Test expand_stream when expander returns no items."""
 
     # Create expander that never expands
@@ -176,7 +178,7 @@ async def test_expand_stream_no_expansion():
     flow: Flow[int, int] = expand_stream(expander)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         for i in range(3):
             yield i
 
@@ -188,7 +190,7 @@ async def test_expand_stream_no_expansion():
 
 
 @pytest.mark.asyncio
-async def test_expand_stream_empty_input():
+async def test_expand_stream_empty_input() -> None:
     """Test expand_stream with empty input stream."""
 
     # Create simple expander
@@ -198,7 +200,7 @@ async def test_expand_stream_empty_input():
     flow: Flow[int, int] = expand_stream(expander)
 
     # Create empty input stream
-    async def test_stream():
+    async def test_stream() -> None:
         return
         yield  # unreachable
 
@@ -210,7 +212,7 @@ async def test_expand_stream_empty_input():
 
 
 @pytest.mark.asyncio
-async def test_expand_stream_zero_depth():
+async def test_expand_stream_zero_depth() -> None:
     """Test expand_stream with max_depth=0."""
 
     # Create expander that would generate children
@@ -220,7 +222,7 @@ async def test_expand_stream_zero_depth():
     flow: Flow[int, int] = expand_stream(expander, max_depth=0)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield 1
         yield 2
 
@@ -232,7 +234,7 @@ async def test_expand_stream_zero_depth():
 
 
 @pytest.mark.asyncio
-async def test_expand_stream_multiple_inputs():
+async def test_expand_stream_multiple_inputs() -> None:
     """Test expand_stream with multiple input items."""
 
     # Create expander that generates one child per item
@@ -242,7 +244,7 @@ async def test_expand_stream_multiple_inputs():
     flow: Flow[str, str] = expand_stream(expander, max_depth=1)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield "a"
         yield "b"
 
@@ -256,7 +258,7 @@ async def test_expand_stream_multiple_inputs():
 
 
 @pytest.mark.asyncio
-async def test_expand_stream_complex_expansion():
+async def test_expand_stream_complex_expansion() -> None:
     """Test expand_stream with complex expansion logic."""
 
     # Create expander that generates factorial-like expansion
@@ -268,7 +270,7 @@ async def test_expand_stream_complex_expansion():
     flow: Flow[int, int] = expand_stream(expander, max_depth=3)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield 5
 
     # Execute the flow
@@ -282,7 +284,7 @@ async def test_expand_stream_complex_expansion():
 
 
 @pytest.mark.asyncio
-async def test_finalize_stream_sync_finalizer():
+async def test_finalize_stream_sync_finalizer() -> None:
     """Test finalize_stream with synchronous finalizer function."""
     call_count = 0
 
@@ -293,7 +295,7 @@ async def test_finalize_stream_sync_finalizer():
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         for i in range(3):
             yield i
 
@@ -307,7 +309,7 @@ async def test_finalize_stream_sync_finalizer():
 
 
 @pytest.mark.asyncio
-async def test_finalize_stream_async_finalizer():
+async def test_finalize_stream_async_finalizer() -> None:
     """Test finalize_stream with asynchronous finalizer function."""
     call_count = 0
 
@@ -318,7 +320,7 @@ async def test_finalize_stream_async_finalizer():
     flow: Flow[str, str] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield "a"
         yield "b"
 
@@ -332,7 +334,7 @@ async def test_finalize_stream_async_finalizer():
 
 
 @pytest.mark.asyncio
-async def test_finalize_stream_empty_input():
+async def test_finalize_stream_empty_input() -> None:
     """Test finalize_stream with empty input stream."""
     call_count = 0
 
@@ -343,7 +345,7 @@ async def test_finalize_stream_empty_input():
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create empty input stream
-    async def test_stream():
+    async def test_stream() -> None:
         return
         yield  # unreachable
 
@@ -357,7 +359,7 @@ async def test_finalize_stream_empty_input():
 
 
 @pytest.mark.asyncio
-async def test_finalize_stream_with_exception():
+async def test_finalize_stream_with_exception() -> None:
     """Test finalize_stream still calls finalizer when stream raises exception."""
     call_count = 0
 
@@ -368,7 +370,7 @@ async def test_finalize_stream_with_exception():
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create stream that raises exception
-    async def test_stream():
+    async def test_stream() -> None:
         yield 1
         yield 2
         raise ValueError("Test exception")
@@ -382,7 +384,7 @@ async def test_finalize_stream_with_exception():
 
 
 @pytest.mark.asyncio
-async def test_finalize_stream_multiple_calls():
+async def test_finalize_stream_multiple_calls() -> None:
     """Test finalize_stream finalizer is called for each flow execution."""
     call_count = 0
 
@@ -393,7 +395,7 @@ async def test_finalize_stream_multiple_calls():
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield 1
 
     # Execute the flow multiple times
@@ -406,7 +408,7 @@ async def test_finalize_stream_multiple_calls():
 
 
 @pytest.mark.asyncio
-async def test_finalize_stream_finalizer_with_side_effects():
+async def test_finalize_stream_finalizer_with_side_effects() -> None:
     """Test finalize_stream finalizer can perform side effects."""
     cleanup_items: list[str] = []
 
@@ -416,7 +418,7 @@ async def test_finalize_stream_finalizer_with_side_effects():
     flow: Flow[str, str] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield "item1"
         yield "item2"
 
@@ -430,7 +432,7 @@ async def test_finalize_stream_finalizer_with_side_effects():
 
 
 @pytest.mark.asyncio
-async def test_finalize_stream_async_finalizer_with_delay():
+async def test_finalize_stream_async_finalizer_with_delay() -> None:
     """Test finalize_stream with async finalizer that has delay."""
     import asyncio
 
@@ -443,7 +445,7 @@ async def test_finalize_stream_async_finalizer_with_delay():
     flow: Flow[int, int] = finalize_stream(finalizer)
 
     # Create test input stream
-    async def test_stream():
+    async def test_stream() -> None:
         yield 1
         yield 2
 

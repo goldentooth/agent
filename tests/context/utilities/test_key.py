@@ -9,28 +9,28 @@ from context.symbol import Symbol
 class TestContextKeyInit:
     """Test the ContextKey.__init__ method and class structure."""
 
-    def test_context_key_creation_basic(self):
+    def test_context_key_creation_basic(self) -> None:
         """Test creating ContextKey with path only."""
         key: ContextKey[str] = ContextKey("agent.intent")
         assert key.path == "agent.intent"
         assert key.type_ == str  # Default type
         assert key.description == ""  # Default description
 
-    def test_context_key_creation_with_type(self):
+    def test_context_key_creation_with_type(self) -> None:
         """Test creating ContextKey with path and type."""
         key: ContextKey[int] = ContextKey("user.age", int)
         assert key.path == "user.age"
         assert key.type_ == int
         assert key.description == ""
 
-    def test_context_key_creation_with_description(self):
+    def test_context_key_creation_with_description(self) -> None:
         """Test creating ContextKey with path and description."""
         key: ContextKey[str] = ContextKey("agent.status", str, "Current agent status")
         assert key.path == "agent.status"
         assert key.type_ == str
         assert key.description == "Current agent status"
 
-    def test_context_key_creation_full(self):
+    def test_context_key_creation_full(self) -> None:
         """Test creating ContextKey with all parameters."""
         key: ContextKey[dict[str, Any]] = ContextKey(
             "user.profile", dict, "User profile information"
@@ -39,7 +39,7 @@ class TestContextKeyInit:
         assert key.type_ == dict
         assert key.description == "User profile information"
 
-    def test_context_key_is_dataclass(self):
+    def test_context_key_is_dataclass(self) -> None:
         """Test that ContextKey behaves as a frozen dataclass."""
         key: ContextKey[str] = ContextKey("test.key")
 
@@ -53,7 +53,7 @@ class TestContextKeyInit:
         with pytest.raises(AttributeError):
             key.description = "modified"  # type: ignore[misc]
 
-    def test_context_key_generic_typing(self):
+    def test_context_key_generic_typing(self) -> None:
         """Test that ContextKey supports generic typing."""
         # Test that we can create instances with proper typing
         str_key = ContextKey[str]("test.string", str)
@@ -64,7 +64,7 @@ class TestContextKeyInit:
         assert int_key.path == "test.int"
         assert int_key.type_ == int
 
-    def test_context_key_equality_by_path(self):
+    def test_context_key_equality_by_path(self) -> None:
         """Test that ContextKey instances are equal if they have the same path."""
         key1: ContextKey[str] = ContextKey("agent.intent", str, "description1")
         key2: ContextKey[int] = ContextKey("agent.intent", int, "description2")
@@ -72,14 +72,14 @@ class TestContextKeyInit:
         # Keys should be equal despite different type and description
         assert key1 == key2
 
-    def test_context_key_inequality(self):
+    def test_context_key_inequality(self) -> None:
         """Test that ContextKey instances with different paths are not equal."""
         key1: ContextKey[str] = ContextKey("agent.intent")
         key2: ContextKey[str] = ContextKey("agent.status")
 
         assert key1 != key2
 
-    def test_context_key_hash_consistency(self):
+    def test_context_key_hash_consistency(self) -> None:
         """Test that ContextKey instances hash consistently based on path."""
         key1: ContextKey[str] = ContextKey("agent.intent", str, "description1")
         key2: ContextKey[int] = ContextKey("agent.intent", int, "description2")
@@ -91,14 +91,14 @@ class TestContextKeyInit:
         d: dict[ContextKey[Any], str] = {key1: "value1"}
         assert d[key2] == "value1"  # key2 should find key1's value
 
-    def test_context_key_with_empty_path(self):
+    def test_context_key_with_empty_path(self) -> None:
         """Test ContextKey with empty path."""
         key: ContextKey[str] = ContextKey("")
         assert key.path == ""
         assert key.type_ == str
         assert key.description == ""
 
-    def test_context_key_docstring_access(self):
+    def test_context_key_docstring_access(self) -> None:
         """Test that ContextKey has proper docstring."""
         assert ContextKey.__doc__ is not None
         assert "context keys" in ContextKey.__doc__.lower()
@@ -107,28 +107,28 @@ class TestContextKeyInit:
 class TestContextKeyCreate:
     """Test the ContextKey.create classmethod."""
 
-    def test_create_basic(self):
+    def test_create_basic(self) -> None:
         """Test creating ContextKey with create classmethod."""
         key = ContextKey[str].create("agent.intent", str, "Agent intent")
         assert key.path == "agent.intent"
         assert key.type_ == str
         assert key.description == "Agent intent"
 
-    def test_create_with_int_type(self):
+    def test_create_with_int_type(self) -> None:
         """Test creating ContextKey with int type using create."""
         key = ContextKey[int].create("user.age", int, "User age")
         assert key.path == "user.age"
         assert key.type_ == int
         assert key.description == "User age"
 
-    def test_create_with_complex_type(self):
+    def test_create_with_complex_type(self) -> None:
         """Test creating ContextKey with complex type using create."""
         key = ContextKey[list[str]].create("items.list", list, "List of items")
         assert key.path == "items.list"
         assert key.type_ == list
         assert key.description == "List of items"
 
-    def test_create_equivalent_to_constructor(self):
+    def test_create_equivalent_to_constructor(self) -> None:
         """Test that create method produces equivalent result to constructor."""
         key1: ContextKey[str] = ContextKey("test.key", str, "Test description")
         key2 = ContextKey[str].create("test.key", str, "Test description")
@@ -139,7 +139,7 @@ class TestContextKeyCreate:
         assert key1.description == key2.description
         assert hash(key1) == hash(key2)
 
-    def test_create_maintains_generic_typing(self):
+    def test_create_maintains_generic_typing(self) -> None:
         """Test that create method maintains proper generic typing."""
         str_key = ContextKey[str].create("test.string", str, "String value")
         int_key = ContextKey[int].create("test.int", int, "Integer value")
@@ -150,14 +150,14 @@ class TestContextKeyCreate:
         assert int_key.type_ == int
         assert bool_key.type_ == bool
 
-    def test_create_with_empty_description(self):
+    def test_create_with_empty_description(self) -> None:
         """Test creating ContextKey with empty description using create."""
         key = ContextKey[str].create("test.key", str, "")
         assert key.path == "test.key"
         assert key.type_ == str
         assert key.description == ""
 
-    def test_create_docstring_access(self):
+    def test_create_docstring_access(self) -> None:
         """Test that create method has proper docstring."""
         # Access the method directly from the class
         assert hasattr(ContextKey, "create")
@@ -171,7 +171,7 @@ class TestContextKeyCreate:
 class TestContextKeySymbol:
     """Test the ContextKey.symbol cached property."""
 
-    def test_symbol_property_returns_symbol(self):
+    def test_symbol_property_returns_symbol(self) -> None:
         """Test that symbol property returns a Symbol instance."""
         key: ContextKey[str] = ContextKey("agent.intent.task", str, "Current task")
         symbol = key.symbol
@@ -179,18 +179,18 @@ class TestContextKeySymbol:
         assert isinstance(symbol, Symbol)
         assert str(symbol) == "agent.intent.task"
 
-    def test_symbol_property_value_matches_path(self):
+    def test_symbol_property_value_matches_path(self) -> None:
         """Test that symbol value matches the key's path."""
         key: ContextKey[str] = ContextKey("user.profile.name", str)
         assert key.symbol == "user.profile.name"
         assert key.symbol == key.path
 
-    def test_symbol_property_parts(self):
+    def test_symbol_property_parts(self) -> None:
         """Test that symbol properly splits path into parts."""
         key: ContextKey[str] = ContextKey("agent.task.execution.status", str)
         assert key.symbol.parts() == ["agent", "task", "execution", "status"]
 
-    def test_symbol_property_cached(self):
+    def test_symbol_property_cached(self) -> None:
         """Test that symbol property is cached (same instance returned)."""
         key: ContextKey[str] = ContextKey("test.key", str)
 
@@ -201,26 +201,26 @@ class TestContextKeySymbol:
         # Should be the exact same object (cached)
         assert symbol1 is symbol2
 
-    def test_symbol_property_with_empty_path(self):
+    def test_symbol_property_with_empty_path(self) -> None:
         """Test symbol property with empty path."""
         key: ContextKey[str] = ContextKey("", str)
         assert key.symbol == ""
         assert key.symbol.parts() == [""]
 
-    def test_symbol_property_with_single_part(self):
+    def test_symbol_property_with_single_part(self) -> None:
         """Test symbol property with single part path."""
         key: ContextKey[str] = ContextKey("simple", str)
         assert key.symbol == "simple"
         assert key.symbol.parts() == ["simple"]
 
-    def test_symbol_property_immutability(self):
+    def test_symbol_property_immutability(self) -> None:
         """Test that symbol property cannot be reassigned."""
         key: ContextKey[str] = ContextKey("test.key", str)
 
         with pytest.raises(AttributeError):
             key.symbol = Symbol("new.symbol")  # type: ignore[misc]
 
-    def test_symbol_property_works_with_all_types(self):
+    def test_symbol_property_works_with_all_types(self) -> None:
         """Test that symbol property works regardless of key type."""
         str_key: ContextKey[str] = ContextKey("str.key", str)
         int_key: ContextKey[int] = ContextKey("int.key", int)
@@ -230,7 +230,7 @@ class TestContextKeySymbol:
         assert int_key.symbol == "int.key"
         assert dict_key.symbol == "dict.key"
 
-    def test_symbol_property_string_behavior(self):
+    def test_symbol_property_string_behavior(self) -> None:
         """Test that symbol behaves like a string."""
         key: ContextKey[str] = ContextKey("test.path", str)
         symbol = key.symbol
@@ -245,12 +245,12 @@ class TestContextKeySymbol:
 class TestContextKeyStr:
     """Test the ContextKey.__str__ method."""
 
-    def test_str_returns_path(self):
+    def test_str_returns_path(self) -> None:
         """Test that __str__ returns the key's path."""
         key: ContextKey[str] = ContextKey("agent.intent.task", str)
         assert str(key) == "agent.intent.task"
 
-    def test_str_with_different_types(self):
+    def test_str_with_different_types(self) -> None:
         """Test __str__ works regardless of type."""
         str_key: ContextKey[str] = ContextKey("str.key", str)
         int_key: ContextKey[int] = ContextKey("int.key", int)
@@ -260,19 +260,19 @@ class TestContextKeyStr:
         assert str(int_key) == "int.key"
         assert str(dict_key) == "dict.key"
 
-    def test_str_with_description(self):
+    def test_str_with_description(self) -> None:
         """Test __str__ ignores description."""
         key: ContextKey[str] = ContextKey(
             "user.profile", str, "User profile information"
         )
         assert str(key) == "user.profile"
 
-    def test_str_with_empty_path(self):
+    def test_str_with_empty_path(self) -> None:
         """Test __str__ with empty path."""
         key: ContextKey[str] = ContextKey("", str)
         assert str(key) == ""
 
-    def test_str_in_string_formatting(self):
+    def test_str_in_string_formatting(self) -> None:
         """Test __str__ works in string formatting contexts."""
         key: ContextKey[str] = ContextKey("agent.status", str)
 
@@ -285,13 +285,13 @@ class TestContextKeyStr:
         # % formatting
         assert "Key: %s" % key == "Key: agent.status"
 
-    def test_str_in_string_concatenation(self):
+    def test_str_in_string_concatenation(self) -> None:
         """Test __str__ works in string concatenation."""
         key: ContextKey[str] = ContextKey("test.key", str)
         assert "prefix." + str(key) == "prefix.test.key"
         assert str(key) + ".suffix" == "test.key.suffix"
 
-    def test_str_with_print(self):
+    def test_str_with_print(self) -> None:
         """Test __str__ is used by print function."""
         key: ContextKey[str] = ContextKey("print.test", str)
         # We can't easily test print output, but we ensure str() works
@@ -299,14 +299,14 @@ class TestContextKeyStr:
         printable = str(key)
         assert printable == "print.test"
 
-    def test_str_with_long_path(self):
+    def test_str_with_long_path(self) -> None:
         """Test __str__ with long hierarchical path."""
         key: ContextKey[str] = ContextKey(
             "very.long.hierarchical.path.with.many.parts", str
         )
         assert str(key) == "very.long.hierarchical.path.with.many.parts"
 
-    def test_str_idempotent(self):
+    def test_str_idempotent(self) -> None:
         """Test that calling str() multiple times returns same result."""
         key: ContextKey[str] = ContextKey("test.key", str)
         result1 = str(key)
@@ -319,12 +319,12 @@ class TestContextKeyStr:
 class TestContextKeyRepr:
     """Test the ContextKey.__repr__ method."""
 
-    def test_repr_returns_detailed_format(self):
+    def test_repr_returns_detailed_format(self) -> None:
         """Test that __repr__ returns detailed ContextKey format."""
         key: ContextKey[str] = ContextKey("agent.intent", str)
         assert repr(key) == "ContextKey(agent.intent<str>)"
 
-    def test_repr_with_different_types(self):
+    def test_repr_with_different_types(self) -> None:
         """Test __repr__ with different type parameters."""
         str_key: ContextKey[str] = ContextKey("str.key", str)
         int_key: ContextKey[int] = ContextKey("int.key", int)
@@ -338,24 +338,24 @@ class TestContextKeyRepr:
         assert repr(list_key) == "ContextKey(list.key<list>)"
         assert repr(dict_key) == "ContextKey(dict.key<dict>)"
 
-    def test_repr_ignores_description(self):
+    def test_repr_ignores_description(self) -> None:
         """Test that __repr__ doesn't include description."""
         key: ContextKey[str] = ContextKey(
             "user.profile", str, "User profile information"
         )
         assert repr(key) == "ContextKey(user.profile<str>)"
 
-    def test_repr_with_empty_path(self):
+    def test_repr_with_empty_path(self) -> None:
         """Test __repr__ with empty path."""
         key: ContextKey[str] = ContextKey("", str)
         assert repr(key) == "ContextKey(<str>)"
 
-    def test_repr_with_complex_path(self):
+    def test_repr_with_complex_path(self) -> None:
         """Test __repr__ with complex hierarchical path."""
         key: ContextKey[str] = ContextKey("agent.task.execution.status.current", str)
         assert repr(key) == "ContextKey(agent.task.execution.status.current<str>)"
 
-    def test_repr_difference_from_str(self):
+    def test_repr_difference_from_str(self) -> None:
         """Test that __repr__ is different from __str__."""
         key: ContextKey[str] = ContextKey("test.key", str)
 
@@ -366,7 +366,7 @@ class TestContextKeyRepr:
         assert repr_result == "ContextKey(test.key<str>)"
         assert str_result != repr_result
 
-    def test_repr_with_custom_types(self):
+    def test_repr_with_custom_types(self) -> None:
         """Test __repr__ with custom type names."""
         # Test with built-in types that have longer names
         key_float: ContextKey[float] = ContextKey("float.key", float)
@@ -375,7 +375,7 @@ class TestContextKeyRepr:
         assert repr(key_float) == "ContextKey(float.key<float>)"
         assert repr(key_tuple) == "ContextKey(tuple.key<tuple>)"
 
-    def test_repr_idempotent(self):
+    def test_repr_idempotent(self) -> None:
         """Test that calling repr() multiple times returns same result."""
         key: ContextKey[int] = ContextKey("test.key", int)
         result1 = repr(key)
@@ -384,7 +384,7 @@ class TestContextKeyRepr:
 
         assert result1 == result2 == result3 == "ContextKey(test.key<int>)"
 
-    def test_repr_eval_roundtrip_concept(self):
+    def test_repr_eval_roundtrip_concept(self) -> None:
         """Test that repr provides info for reconstruction (conceptual)."""
         key: ContextKey[str] = ContextKey("test.path", str)
         repr_str = repr(key)
@@ -398,7 +398,7 @@ class TestContextKeyRepr:
 class TestContextKeyEq:
     """Test the ContextKey.__eq__ method."""
 
-    def test_eq_same_path_different_types(self):
+    def test_eq_same_path_different_types(self) -> None:
         """Test that keys with same path but different types are equal."""
         key1: ContextKey[str] = ContextKey("test.key", str)
         key2: ContextKey[int] = ContextKey("test.key", int)
@@ -406,7 +406,7 @@ class TestContextKeyEq:
         assert key1 == key2
         assert key2 == key1  # Test symmetry
 
-    def test_eq_same_path_different_descriptions(self):
+    def test_eq_same_path_different_descriptions(self) -> None:
         """Test that keys with same path but different descriptions are equal."""
         key1: ContextKey[str] = ContextKey("test.key", str, "First description")
         key2: ContextKey[str] = ContextKey("test.key", str, "Second description")
@@ -414,7 +414,7 @@ class TestContextKeyEq:
         assert key1 == key2
         assert key2 == key1
 
-    def test_eq_identical_keys(self):
+    def test_eq_identical_keys(self) -> None:
         """Test that identical keys are equal."""
         key1: ContextKey[str] = ContextKey("identical.key", str, "Same description")
         key2: ContextKey[str] = ContextKey("identical.key", str, "Same description")
@@ -422,7 +422,7 @@ class TestContextKeyEq:
         assert key1 == key2
         assert key2 == key1
 
-    def test_eq_different_paths(self):
+    def test_eq_different_paths(self) -> None:
         """Test that keys with different paths are not equal."""
         key1: ContextKey[str] = ContextKey("first.key", str)
         key2: ContextKey[str] = ContextKey("second.key", str)
@@ -430,7 +430,7 @@ class TestContextKeyEq:
         assert key1 != key2
         assert key2 != key1
 
-    def test_eq_with_non_context_key(self):
+    def test_eq_with_non_context_key(self) -> None:
         """Test equality comparison with non-ContextKey objects."""
         key: ContextKey[str] = ContextKey("test.key", str)
 
@@ -447,7 +447,7 @@ class TestContextKeyEq:
         result = key.__eq__(["test", "key"])
         assert result is NotImplemented
 
-    def test_eq_with_string_path_match(self):
+    def test_eq_with_string_path_match(self) -> None:
         """Test that ContextKey is not equal to string even if path matches."""
         key: ContextKey[str] = ContextKey("test.key", str)
 
@@ -455,21 +455,21 @@ class TestContextKeyEq:
         assert key != "test.key"
         assert "test.key" != key
 
-    def test_eq_empty_paths(self):
+    def test_eq_empty_paths(self) -> None:
         """Test equality with empty paths."""
         key1: ContextKey[str] = ContextKey("", str)
         key2: ContextKey[int] = ContextKey("", int)
 
         assert key1 == key2
 
-    def test_eq_case_sensitive_paths(self):
+    def test_eq_case_sensitive_paths(self) -> None:
         """Test that path comparison is case sensitive."""
         key1: ContextKey[str] = ContextKey("Test.Key", str)
         key2: ContextKey[str] = ContextKey("test.key", str)
 
         assert key1 != key2
 
-    def test_eq_with_whitespace_paths(self):
+    def test_eq_with_whitespace_paths(self) -> None:
         """Test equality with whitespace in paths."""
         key1: ContextKey[str] = ContextKey("test.key", str)
         key2: ContextKey[str] = ContextKey(" test.key", str)
@@ -479,12 +479,12 @@ class TestContextKeyEq:
         assert key1 != key3
         assert key2 != key3
 
-    def test_eq_reflexivity(self):
+    def test_eq_reflexivity(self) -> None:
         """Test that equality is reflexive (a == a)."""
         key: ContextKey[str] = ContextKey("test.key", str)
         assert key == key
 
-    def test_eq_transitivity(self):
+    def test_eq_transitivity(self) -> None:
         """Test that equality is transitive (if a == b and b == c, then a == c)."""
         key1: ContextKey[str] = ContextKey("test.key", str, "desc1")
         key2: ContextKey[int] = ContextKey("test.key", int, "desc2")
@@ -494,7 +494,7 @@ class TestContextKeyEq:
         assert key2 == key3
         assert key1 == key3  # Transitivity
 
-    def test_eq_with_long_paths(self):
+    def test_eq_with_long_paths(self) -> None:
         """Test equality with long hierarchical paths."""
         path = "very.long.hierarchical.path.with.many.parts"
         key1: ContextKey[str] = ContextKey(path, str)
@@ -506,14 +506,14 @@ class TestContextKeyEq:
 class TestContextKeyHash:
     """Test the ContextKey.__hash__ method."""
 
-    def test_hash_based_on_path(self):
+    def test_hash_based_on_path(self) -> None:
         """Test that hash is based on the path."""
         key: ContextKey[str] = ContextKey("test.key", str)
         path_hash = hash("test.key")
 
         assert hash(key) == path_hash
 
-    def test_hash_same_path_different_types(self):
+    def test_hash_same_path_different_types(self) -> None:
         """Test that keys with same path have same hash regardless of type."""
         key1: ContextKey[str] = ContextKey("test.key", str)
         key2: ContextKey[int] = ContextKey("test.key", int)
@@ -523,7 +523,7 @@ class TestContextKeyHash:
         assert hash(key2) == hash(key3)
         assert hash(key1) == hash(key3)
 
-    def test_hash_same_path_different_descriptions(self):
+    def test_hash_same_path_different_descriptions(self) -> None:
         """Test that keys with same path have same hash regardless of description."""
         key1: ContextKey[str] = ContextKey("test.key", str, "Description 1")
         key2: ContextKey[str] = ContextKey("test.key", str, "Description 2")
@@ -533,7 +533,7 @@ class TestContextKeyHash:
         assert hash(key2) == hash(key3)
         assert hash(key1) == hash(key3)
 
-    def test_hash_different_paths(self):
+    def test_hash_different_paths(self) -> None:
         """Test that keys with different paths have different hashes."""
         key1: ContextKey[str] = ContextKey("first.key", str)
         key2: ContextKey[str] = ContextKey("second.key", str)
@@ -542,7 +542,7 @@ class TestContextKeyHash:
         # it's extremely unlikely for these specific strings
         assert hash(key1) != hash(key2)
 
-    def test_hash_consistency_with_equality(self):
+    def test_hash_consistency_with_equality(self) -> None:
         """Test that equal keys have equal hashes (hash consistency requirement)."""
         key1: ContextKey[str] = ContextKey("test.key", str, "desc1")
         key2: ContextKey[int] = ContextKey("test.key", int, "desc2")
@@ -551,7 +551,7 @@ class TestContextKeyHash:
         assert key1 == key2
         assert hash(key1) == hash(key2)
 
-    def test_hash_allows_dict_usage(self):
+    def test_hash_allows_dict_usage(self) -> None:
         """Test that ContextKey can be used as dictionary keys."""
         key1: ContextKey[str] = ContextKey("key1", str)
         key2: ContextKey[str] = ContextKey("key2", str)
@@ -569,7 +569,7 @@ class TestContextKeyHash:
         d[key3] = "modified"
         assert d[key1] == "modified"
 
-    def test_hash_allows_set_usage(self):
+    def test_hash_allows_set_usage(self) -> None:
         """Test that ContextKey can be used in sets."""
         key1: ContextKey[str] = ContextKey("test.key", str)
         key2: ContextKey[int] = ContextKey("test.key", int)  # Equal to key1
@@ -583,18 +583,18 @@ class TestContextKeyHash:
         assert key2 in s  # Equal to key1, so should be found
         assert key3 in s
 
-    def test_hash_with_empty_path(self):
+    def test_hash_with_empty_path(self) -> None:
         """Test hash with empty path."""
         key: ContextKey[str] = ContextKey("", str)
         assert hash(key) == hash("")
 
-    def test_hash_with_long_path(self):
+    def test_hash_with_long_path(self) -> None:
         """Test hash with long hierarchical path."""
         path = "very.long.hierarchical.path.with.many.parts.and.more.parts"
         key: ContextKey[str] = ContextKey(path, str)
         assert hash(key) == hash(path)
 
-    def test_hash_case_sensitive(self):
+    def test_hash_case_sensitive(self) -> None:
         """Test that hash is case sensitive."""
         key1: ContextKey[str] = ContextKey("Test.Key", str)
         key2: ContextKey[str] = ContextKey("test.key", str)
@@ -602,7 +602,7 @@ class TestContextKeyHash:
         # Should have different hashes (case sensitive)
         assert hash(key1) != hash(key2)
 
-    def test_hash_idempotent(self):
+    def test_hash_idempotent(self) -> None:
         """Test that calling hash() multiple times returns same result."""
         key: ContextKey[str] = ContextKey("test.key", str)
 
@@ -612,7 +612,7 @@ class TestContextKeyHash:
 
         assert hash1 == hash2 == hash3
 
-    def test_hash_immutable_requirement(self):
+    def test_hash_immutable_requirement(self) -> None:
         """Test that hash is consistent for immutable ContextKey."""
         key: ContextKey[str] = ContextKey("test.key", str)
         original_hash = hash(key)
@@ -629,13 +629,13 @@ class TestContextKeyHash:
 class TestContextKeyUtility:
     """Test the context_key utility function."""
 
-    def test_context_key_function_exists(self):
+    def test_context_key_function_exists(self) -> None:
         """Test that context_key function can be imported."""
         from context.key import context_key
 
         assert callable(context_key)
 
-    def test_context_key_basic_usage(self):
+    def test_context_key_basic_usage(self) -> None:
         """Test basic usage of context_key function."""
         from context.key import context_key
 
@@ -646,7 +646,7 @@ class TestContextKeyUtility:
         assert key.type_ == str
         assert key.description == "Test description"
 
-    def test_context_key_with_different_types(self):
+    def test_context_key_with_different_types(self) -> None:
         """Test context_key with different type parameters."""
         from context.key import context_key
 
@@ -660,7 +660,7 @@ class TestContextKeyUtility:
         assert bool_key.type_ == bool
         assert list_key.type_ == list
 
-    def test_context_key_with_default_description(self):
+    def test_context_key_with_default_description(self) -> None:
         """Test context_key with default empty description."""
         from context.key import context_key
 
@@ -670,7 +670,7 @@ class TestContextKeyUtility:
         assert key.type_ == str
         assert key.description == ""
 
-    def test_context_key_equivalent_to_create(self):
+    def test_context_key_equivalent_to_create(self) -> None:
         """Test that context_key produces same result as ContextKey.create."""
         from context.key import context_key
 
@@ -683,7 +683,7 @@ class TestContextKeyUtility:
         assert key1.description == key2.description
         assert hash(key1) == hash(key2)
 
-    def test_context_key_maintains_generic_typing(self):
+    def test_context_key_maintains_generic_typing(self) -> None:
         """Test that context_key maintains proper generic typing."""
         from context.key import context_key
 
@@ -694,7 +694,7 @@ class TestContextKeyUtility:
         assert str_key.type_ == str
         assert int_key.type_ == int
 
-    def test_context_key_with_complex_types(self):
+    def test_context_key_with_complex_types(self) -> None:
         """Test context_key with complex type annotations."""
         from context.key import context_key
 
@@ -708,7 +708,7 @@ class TestContextKeyUtility:
         assert dict_key.type_ == dict
         assert tuple_key.type_ == tuple
 
-    def test_context_key_with_empty_description(self):
+    def test_context_key_with_empty_description(self) -> None:
         """Test context_key with explicitly empty description."""
         from context.key import context_key
 
@@ -716,7 +716,7 @@ class TestContextKeyUtility:
 
         assert key.description == ""
 
-    def test_context_key_with_long_description(self):
+    def test_context_key_with_long_description(self) -> None:
         """Test context_key with long description."""
         from context.key import context_key
 
@@ -725,12 +725,12 @@ class TestContextKeyUtility:
 
         assert key.description == long_desc
 
-    def test_context_key_functional_style(self):
+    def test_context_key_functional_style(self) -> None:
         """Test that context_key enables functional-style key creation."""
         from context.key import context_key
 
         # Can be used in list comprehensions, map, etc.
-        keys = [
+        keys: list[ContextKey[Any]] = [
             context_key("user.name", str, "User name"),
             context_key("user.age", int, "User age"),
             context_key("user.active", bool, "User active status"),
@@ -742,7 +742,7 @@ class TestContextKeyUtility:
         assert keys[1].type_ == int
         assert keys[2].type_ == bool
 
-    def test_context_key_with_hierarchical_paths(self):
+    def test_context_key_with_hierarchical_paths(self) -> None:
         """Test context_key with hierarchical dot-notation paths."""
         from context.key import context_key
 
@@ -751,7 +751,7 @@ class TestContextKeyUtility:
         assert key.path == "agent.task.execution.status"
         assert key.symbol.parts() == ["agent", "task", "execution", "status"]
 
-    def test_context_key_consistency_with_constructor(self):
+    def test_context_key_consistency_with_constructor(self) -> None:
         """Test that context_key is consistent with direct constructor usage."""
         from context.key import context_key
 

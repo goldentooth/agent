@@ -5,7 +5,7 @@ import pytest
 from context.main import Context
 
 
-def test_create_snapshot_basic():
+def test_create_snapshot_basic() -> None:
     """Test basic create_snapshot functionality."""
     context = Context()
     context["key1"] = "value1"
@@ -22,7 +22,7 @@ def test_create_snapshot_basic():
     assert snapshot.frames[0]["key2"] == "value2"
 
 
-def test_create_snapshot_with_multiple_frames():
+def test_create_snapshot_with_multiple_frames() -> None:
     """Test create_snapshot with multiple context frames."""
     context = Context()
     context["base_key"] = "base_value"
@@ -46,7 +46,7 @@ def test_create_snapshot_with_multiple_frames():
     assert snapshot.frames[2]["layer2_key"] == "layer2_value"
 
 
-def test_create_snapshot_independence():
+def test_create_snapshot_independence() -> None:
     """Test that snapshot is independent of original context."""
     context = Context()
     context["mutable_data"] = ["original", "list"]
@@ -63,7 +63,7 @@ def test_create_snapshot_independence():
     assert "new_key" not in snapshot.frames[0]
 
 
-def test_create_snapshot_empty_context():
+def test_create_snapshot_empty_context() -> None:
     """Test create_snapshot with empty context."""
     context = Context()
 
@@ -75,7 +75,7 @@ def test_create_snapshot_empty_context():
     assert len(snapshot.frames[0].data) == 0
 
 
-def test_create_snapshot_returns_snapshot_object():
+def test_create_snapshot_returns_snapshot_object() -> None:
     """Test that create_snapshot returns proper ContextSnapshot object."""
     context = Context()
     context["test_key"] = "test_value"
@@ -89,7 +89,7 @@ def test_create_snapshot_returns_snapshot_object():
     assert hasattr(snapshot, "restore_to")
 
 
-def test_create_snapshot_preserves_original_context():
+def test_create_snapshot_preserves_original_context() -> None:
     """Test that create_snapshot does not modify original context."""
     context = Context()
     context["key1"] = "value1"
@@ -107,7 +107,7 @@ def test_create_snapshot_preserves_original_context():
     assert context["key2"] == "value2"
 
 
-def test_create_snapshot_with_none_values():
+def test_create_snapshot_with_none_values() -> None:
     """Test create_snapshot with None values."""
     context = Context()
     context["none_key"] = None
@@ -120,7 +120,7 @@ def test_create_snapshot_with_none_values():
     assert snapshot.frames[0]["value_key"] == "value"
 
 
-def test_create_snapshot_with_complex_data():
+def test_create_snapshot_with_complex_data() -> None:
     """Test create_snapshot with complex data types."""
     context = Context()
     context["dict_data"] = {"nested": {"deep": "value"}}
@@ -133,7 +133,7 @@ def test_create_snapshot_with_complex_data():
     assert snapshot.frames[0]["list_data"] == [1, 2, {"item": "value"}]
 
 
-def test_create_snapshot_timestamp():
+def test_create_snapshot_timestamp() -> None:
     """Test that snapshot has a valid timestamp."""
     context = Context()
     context["test_key"] = "test_value"
@@ -148,7 +148,7 @@ def test_create_snapshot_timestamp():
     assert before_time <= snapshot.timestamp <= after_time
 
 
-def test_create_snapshot_with_computed_properties():
+def test_create_snapshot_with_computed_properties() -> None:
     """Test create_snapshot behavior with computed properties."""
     context = Context()
     context["base_value"] = 10
@@ -160,7 +160,7 @@ def test_create_snapshot_with_computed_properties():
     assert snapshot.frames[0]["base_value"] == 10
 
 
-def test_create_snapshot_multiple_snapshots():
+def test_create_snapshot_multiple_snapshots() -> None:
     """Test creating multiple snapshots with different names."""
     context = Context()
     context["shared_key"] = "shared_value"
@@ -181,7 +181,7 @@ def test_create_snapshot_multiple_snapshots():
     assert snapshot2.frames[0]["new_key"] == "new_value"
 
 
-def test_create_snapshot_frame_deep_copy():
+def test_create_snapshot_frame_deep_copy() -> None:
     """Test that snapshot creates deep copies of frames."""
     context = Context()
     nested_dict = {"level1": {"level2": "value"}}

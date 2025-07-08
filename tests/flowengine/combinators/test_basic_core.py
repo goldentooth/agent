@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import AsyncGenerator
+
 import pytest
 
 from flowengine.combinators.basic import compose, identity_stream, run_fold
@@ -17,7 +19,7 @@ class TestRunFold:
     async def test_run_fold_empty_steps(self) -> None:
         """Test run_fold with empty steps list."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield 1
             yield 2
             yield 3
@@ -33,7 +35,7 @@ class TestRunFold:
     async def test_run_fold_single_step(self) -> None:
         """Test run_fold with a single step."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield 1
             yield 2
             yield 3
@@ -50,7 +52,7 @@ class TestRunFold:
     async def test_run_fold_multiple_steps(self) -> None:
         """Test run_fold with multiple steps."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield 1
             yield 2
             yield 3
@@ -68,7 +70,7 @@ class TestRunFold:
     async def test_run_fold_empty_stream(self) -> None:
         """Test run_fold with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -84,7 +86,7 @@ class TestRunFold:
     async def test_run_fold_identity_steps(self) -> None:
         """Test run_fold with identity flows."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield 1
             yield 2
             yield 3
@@ -105,7 +107,7 @@ class TestCompose:
     async def test_compose_two_flows(self) -> None:
         """Test composing two flows."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield 1
             yield 2
             yield 3
@@ -140,7 +142,7 @@ class TestCompose:
     async def test_compose_empty_stream(self) -> None:
         """Test compose with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -158,7 +160,7 @@ class TestCompose:
     async def test_compose_identity_flows(self) -> None:
         """Test compose with identity flows."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield 1
             yield 2
             yield 3
@@ -176,7 +178,7 @@ class TestCompose:
     async def test_compose_type_transformation(self) -> None:
         """Test compose with type transformation."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield 1
             yield 2
             yield 3
@@ -201,7 +203,7 @@ class TestIdentityStream:
     async def test_identity_stream_basic(self) -> None:
         """Test identity_stream passes through all items unchanged."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
 
@@ -217,7 +219,7 @@ class TestIdentityStream:
     async def test_identity_stream_preserves_types(self) -> None:
         """Test identity_stream preserves different types."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for item in ["hello", "world", "test"]:
                 yield item
 
@@ -233,7 +235,7 @@ class TestIdentityStream:
     async def test_identity_stream_empty_input(self) -> None:
         """Test identity_stream with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -250,7 +252,7 @@ class TestIdentityStream:
         """Test identity_stream with complex objects."""
         from typing import Any
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for item in [{"key": "value"}, [1, 2, 3], ("a", "b")]:
                 yield item
 

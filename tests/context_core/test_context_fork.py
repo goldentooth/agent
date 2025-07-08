@@ -5,7 +5,7 @@ import pytest
 from context.main import Context
 
 
-def test_fork_basic():
+def test_fork_basic() -> None:
     """Test basic fork functionality."""
     context = Context()
     context["key1"] = "value1"
@@ -23,7 +23,7 @@ def test_fork_basic():
     assert forked["key2"] == "value2"
 
 
-def test_fork_independence():
+def test_fork_independence() -> None:
     """Test that fork creates independent contexts."""
     context = Context()
     context["shared_key"] = "original_value"
@@ -53,7 +53,7 @@ def test_fork_independence():
         _ = context["fork_key"]
 
 
-def test_fork_with_multiple_frames():
+def test_fork_with_multiple_frames() -> None:
     """Test forking with multiple frames (layers)."""
     context = Context()
     context["base_key"] = "base_value"
@@ -77,7 +77,7 @@ def test_fork_with_multiple_frames():
     assert forked["layer2_key"] == "layer2_value"
 
 
-def test_fork_with_multiple_frames_independence():
+def test_fork_with_multiple_frames_independence() -> None:
     """Test fork independence with multiple frames after modifications."""
     context = Context()
     context["base_key"] = "base_value"
@@ -101,7 +101,7 @@ def test_fork_with_multiple_frames_independence():
     assert forked["layer2_key"] == "layer2_value"
 
 
-def test_fork_frame_independence():
+def test_fork_frame_independence() -> None:
     """Test that forked frames are independent copies."""
     context = Context()
     context["key"] = ["original", "list"]
@@ -117,7 +117,7 @@ def test_fork_frame_independence():
     assert forked["key"] == ["original", "list"]
 
 
-def test_fork_empty_context():
+def test_fork_empty_context() -> None:
     """Test forking an empty context."""
     context = Context()
 
@@ -143,7 +143,7 @@ def test_fork_empty_context():
         _ = forked["original_key"]
 
 
-def _create_complex_layered_context_for_fork():
+def _create_complex_layered_context_for_fork() -> None:
     """Helper function to create a complex layered context for fork testing."""
     context = Context()
 
@@ -162,7 +162,7 @@ def _create_complex_layered_context_for_fork():
     return context
 
 
-def test_fork_preserves_frame_layering():
+def test_fork_preserves_frame_layering() -> None:
     """Test that fork preserves the exact frame layering behavior."""
     context = _create_complex_layered_context_for_fork()
 
@@ -176,7 +176,7 @@ def test_fork_preserves_frame_layering():
     assert context["d"] == forked["d"] == "layer2_d"
 
 
-def test_fork_independence_after_layer_changes():
+def test_fork_independence_after_layer_changes() -> None:
     """Test fork independence when original context layers are modified."""
     context = _create_complex_layered_context_for_fork()
     forked = context.fork()
@@ -199,7 +199,7 @@ def test_fork_independence_after_layer_changes():
     assert forked["d"] == "layer2_d"
 
 
-def test_fork_with_none_values():
+def test_fork_with_none_values() -> None:
     """Test forking with None values."""
     context = Context()
     context["none_key"] = None
@@ -224,7 +224,7 @@ def test_fork_with_none_values():
     assert context["none_key"] == "no_longer_none"
 
 
-def test_fork_returns_context_instance():
+def test_fork_returns_context_instance() -> None:
     """Test that fork returns a proper Context instance."""
     context = Context()
     context["test_key"] = "test_value"

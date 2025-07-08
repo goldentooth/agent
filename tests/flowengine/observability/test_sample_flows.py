@@ -1,3 +1,5 @@
+from collections.abc import AsyncGenerator
+from typing import Any
 """Test the sample_flows fixture."""
 
 from __future__ import annotations
@@ -24,7 +26,7 @@ async def test_sample_flows_fixture(sample_flows: dict[str, Flow[int, int]]) -> 
 async def test_sample_flows_execution(sample_flows: dict[str, Flow[int, int]]) -> None:
     """Test sample flows execute correctly."""
 
-    async def test_stream():
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(5):
             yield i
 

@@ -15,7 +15,7 @@ from git_hooks.validator_registry import ValidatorNotFoundError, ValidatorRegist
 class MockRegistryValidator(Validator):
     """Mock validator for registry testing."""
 
-    def __init__(self, limit: int, **kwargs: Any):
+    def __init__(self, limit: int, **kwargs: Any) -> None:
         super().__init__(limit)
         self.config: Dict[str, Any] = kwargs
 
@@ -26,7 +26,7 @@ class MockRegistryValidator(Validator):
 class TestHookRunnerWithRegistry:
     """Test hook runner integration with validator registry."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Setup for each test."""
         # Import actual validators to trigger registration FIRST
         from git_hooks import (  # noqa: F401  # type: ignore[reportUnusedImport]
@@ -38,12 +38,12 @@ class TestHookRunnerWithRegistry:
         # Then add our mock validator
         ValidatorRegistry.register("mock_validator", MockRegistryValidator)
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """Cleanup after each test."""
         # Only remove the mock validator, keep the real validators
         ValidatorRegistry.unregister("mock_validator")
 
-    def test_creates_validator_from_registry(self):
+    def test_creates_validator_from_registry(self) -> None:
         """Should create validator using registry instead of factory function."""
         assert ValidatorRegistry.is_registered(
             "file_length"
@@ -63,7 +63,7 @@ class TestHookRunnerWithRegistry:
 
         assert result == 0
 
-    def test_unknown_validator_raises_error(self):
+    def test_unknown_validator_raises_error(self) -> None:
         """Should raise error for unknown validator type."""
         config = ValidationConfig()
         # Mock get_validator_config to avoid the config error and test registry error
@@ -80,7 +80,7 @@ class TestHookRunnerWithRegistry:
             with pytest.raises(ValidatorNotFoundError):
                 runner.run_hook(hook_config)
 
-    def test_passes_configuration_to_validator(self):
+    def test_passes_configuration_to_validator(self) -> None:
         """Should pass validator configuration through to registry."""
         config = ValidationConfig()
         runner = HookRunner(config)

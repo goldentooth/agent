@@ -20,7 +20,7 @@ async def empty_none_stream() -> AsyncGenerator[None, None]:
 
 
 @pytest.mark.asyncio
-async def test_range_flow_basic():
+async def test_range_flow_basic() -> None:
     """Test basic range generation."""
     flow = range_flow(0, 5)
     assert "range(0, 5, 1)" in flow.name
@@ -32,7 +32,7 @@ async def test_range_flow_basic():
 
 
 @pytest.mark.asyncio
-async def test_range_flow_with_step():
+async def test_range_flow_with_step() -> None:
     """Test range with custom step."""
     flow = range_flow(0, 10, 2)
     assert "range(0, 10, 2)" in flow.name
@@ -43,7 +43,7 @@ async def test_range_flow_with_step():
 
 
 @pytest.mark.asyncio
-async def test_range_flow_negative_step():
+async def test_range_flow_negative_step() -> None:
     """Test range with negative step."""
     flow = range_flow(5, 0, -1)
     result_stream = flow(empty_none_stream())
@@ -52,7 +52,7 @@ async def test_range_flow_negative_step():
 
 
 @pytest.mark.asyncio
-async def test_range_flow_empty():
+async def test_range_flow_empty() -> None:
     """Test range that produces no values."""
     flow = range_flow(5, 5)
     result_stream = flow(empty_none_stream())
@@ -61,7 +61,7 @@ async def test_range_flow_empty():
 
 
 @pytest.mark.asyncio
-async def test_repeat_flow_finite():
+async def test_repeat_flow_finite() -> None:
     """Test repeating a value finite times."""
     flow = repeat_flow("hello", 3)
     assert "repeat(hello, 3)" in flow.name
@@ -72,7 +72,7 @@ async def test_repeat_flow_finite():
 
 
 @pytest.mark.asyncio
-async def test_repeat_flow_zero_times():
+async def test_repeat_flow_zero_times() -> None:
     """Test repeating zero times."""
     flow = repeat_flow("test", 0)
     result_stream = flow(empty_none_stream())
@@ -81,7 +81,7 @@ async def test_repeat_flow_zero_times():
 
 
 @pytest.mark.asyncio
-async def test_repeat_flow_infinite():
+async def test_repeat_flow_infinite() -> None:
     """Test infinite repeat (limited by take)."""
     flow = repeat_flow(42, None)
     assert "repeat(42, ∞)" in flow.name
@@ -101,7 +101,7 @@ async def test_repeat_flow_infinite():
 
 
 @pytest.mark.asyncio
-async def test_repeat_flow_complex_object():
+async def test_repeat_flow_complex_object() -> None:
     """Test repeating complex objects."""
     obj = {"key": "value", "number": 123}
     flow = repeat_flow(obj, 2)
@@ -114,7 +114,7 @@ async def test_repeat_flow_complex_object():
 
 
 @pytest.mark.asyncio
-async def test_empty_flow_basic():
+async def test_empty_flow_basic() -> None:
     """Test empty flow produces no items."""
     flow = empty_flow()
     assert flow.name == "empty"
@@ -125,7 +125,7 @@ async def test_empty_flow_basic():
 
 
 @pytest.mark.asyncio
-async def test_empty_flow_is_valid_generator():
+async def test_empty_flow_is_valid_generator() -> None:
     """Test empty flow is a valid async generator."""
     flow = empty_flow()
     result_stream = flow(empty_none_stream())
@@ -138,12 +138,12 @@ async def test_empty_flow_is_valid_generator():
 
 
 @pytest.mark.asyncio
-async def test_start_with_stream_single_item():
+async def test_start_with_stream_single_item() -> None:
     """Test prepending a single item."""
     flow = start_with_stream("START")
     assert "start_with(1 items)" in flow.name
 
-    async def input_stream():
+    async def input_stream() -> AsyncGenerator[str, None]:
         yield "A"
         yield "B"
         yield "C"
@@ -154,12 +154,12 @@ async def test_start_with_stream_single_item():
 
 
 @pytest.mark.asyncio
-async def test_start_with_stream_multiple_items():
+async def test_start_with_stream_multiple_items() -> None:
     """Test prepending multiple items."""
     flow = start_with_stream(1, 2, 3)
     assert "start_with(3 items)" in flow.name
 
-    async def input_stream():
+    async def input_stream() -> AsyncGenerator[int, None]:
         yield 4
         yield 5
 
@@ -169,7 +169,7 @@ async def test_start_with_stream_multiple_items():
 
 
 @pytest.mark.asyncio
-async def test_start_with_stream_no_items():
+async def test_start_with_stream_no_items() -> None:
     """Test start_with with no items (identity)."""
     # Create a properly typed flow by providing an explicit empty tuple with type annotation
     from typing import cast
@@ -177,7 +177,7 @@ async def test_start_with_stream_no_items():
     flow = start_with_stream(*cast(tuple[str, ...], ()))
     assert "start_with(0 items)" in flow.name
 
-    async def input_stream():
+    async def input_stream() -> AsyncGenerator[str, None]:
         yield "A"
         yield "B"
 
@@ -189,11 +189,11 @@ async def test_start_with_stream_no_items():
 
 
 @pytest.mark.asyncio
-async def test_start_with_stream_empty_stream():
+async def test_start_with_stream_empty_stream() -> None:
     """Test start_with on empty input stream."""
     flow = start_with_stream("ONLY")
 
-    async def empty_stream():
+    async def empty_stream() -> AsyncGenerator[str, None]:
         if False:
             yield "never"
 
@@ -203,11 +203,11 @@ async def test_start_with_stream_empty_stream():
 
 
 @pytest.mark.asyncio
-async def test_start_with_stream_mixed_types():
+async def test_start_with_stream_mixed_types() -> None:
     """Test start_with with mixed types."""
     flow = start_with_stream("header", 0, None, {"meta": "data"})
 
-    async def input_stream():
+    async def input_stream() -> AsyncGenerator[str, None]:
         yield "body"
 
     result_stream = flow(input_stream())

@@ -1,7 +1,7 @@
 """Tests for control flow combinators."""
 
 import asyncio
-from typing import Any, Union
+from typing import Any, AsyncGenerator, Union
 
 import pytest
 
@@ -54,7 +54,7 @@ def pos_transform(x: int) -> str:
     return f"pos_{x}"
 
 
-async def mixed_number_stream():
+async def mixed_number_stream() -> AsyncGenerator[int, None]:
     """Generate a stream with mixed positive, zero, and negative numbers."""
     yield -2
     yield 0
@@ -71,7 +71,7 @@ def is_even(x: int) -> bool:
     return x % 2 == 0
 
 
-async def async_range(n: int):
+async def async_range(n: int) -> AsyncGenerator[int, None]:
     """Generate an async range of integers."""
     for i in range(n):
         yield i
@@ -87,7 +87,7 @@ class TestIfThenStream:
     """Tests for if_then_stream function."""
 
     @pytest.mark.asyncio
-    async def test_if_then_basic(self):
+    async def test_if_then_basic(self) -> None:
         """Test basic if-then functionality."""
         increment_flow = map_stream(increment)
         double_flow = map_stream(double)
@@ -102,7 +102,7 @@ class TestIfThenStream:
         assert values == [1, 2, 3, 6]
 
     @pytest.mark.asyncio
-    async def test_if_then_no_else(self):
+    async def test_if_then_no_else(self) -> None:
         """Test if-then without else clause."""
         increment_flow = map_stream(increment)
         if_then_flow = if_then_stream(is_even, increment_flow)
@@ -120,7 +120,7 @@ class TestRetryStream:
     """Tests for retry_stream function."""
 
     @pytest.mark.asyncio
-    async def test_retry_success_first_try(self):
+    async def test_retry_success_first_try(self) -> None:
         """Test retry when first attempt succeeds."""
         attempt_count = 0
 
@@ -142,7 +142,7 @@ class TestRetryStream:
         assert attempt_count == 2  # One per item, no retries
 
     @pytest.mark.asyncio
-    async def test_retry_with_eventual_success(self):
+    async def test_retry_with_eventual_success(self) -> None:
         """Test retry with failures then success."""
         attempts = {}
 
@@ -167,7 +167,7 @@ class TestRetryStream:
         assert attempts == {0: 3, 1: 3}  # 3 attempts each
 
     @pytest.mark.asyncio
-    async def test_retry_all_attempts_fail(self):
+    async def test_retry_all_attempts_fail(self) -> None:
         """Test retry when all attempts fail."""
 
         def always_fail(x: int) -> int:
@@ -190,7 +190,7 @@ class TestRecoverStream:
     """Tests for recover_stream function."""
 
     @pytest.mark.asyncio
-    async def test_recover_basic(self):
+    async def test_recover_basic(self) -> None:
         """Test basic recovery functionality."""
 
         async def handler(error: Exception, item: int) -> int:
@@ -199,7 +199,7 @@ class TestRecoverStream:
         recover_flow = recover_stream(handler)
         assert "recover(handler)" in recover_flow.name
 
-        async def failing_stream():
+        async def failing_stream() -> AsyncGenerator[int, None]:
             yield 1
             raise ValueError("Test error")
 
@@ -214,7 +214,7 @@ class TestSwitchStream:
     """Tests for switch_stream function."""
 
     @pytest.mark.asyncio
-    async def test_switch_basic(self):
+    async def test_switch_basic(self) -> None:
         """Test basic switch functionality."""
         cases = {
             "negative": map_stream(neg_transform),
@@ -228,7 +228,7 @@ class TestSwitchStream:
         assert values == ["neg_-2", "ZERO", "pos_3"]
 
     @pytest.mark.asyncio
-    async def test_switch_with_default(self):
+    async def test_switch_with_default(self) -> None:
         """Test switch with default case."""
 
         def size_category(x: int) -> str:
@@ -258,7 +258,7 @@ class TestSwitchStream:
         }
         switch_flow = switch_stream(size_category, cases, default=default_flow)
 
-        async def number_stream():
+        async def number_stream() -> AsyncGenerator[int, None]:
             yield 5  # small: 5 * 2 = 10
             yield 50  # medium: 50 + 10 = 60
             yield 500  # large (default): 500 // 10 = 50
@@ -268,7 +268,7 @@ class TestSwitchStream:
         assert values == [10, 60, 50]
 
     @pytest.mark.asyncio
-    async def test_switch_no_case_no_default(self):
+    async def test_switch_no_case_no_default(self) -> None:
         """Test switch with unmatched case and no default."""
 
         def always_unknown(x: Any) -> str:
@@ -287,7 +287,7 @@ class TestTapStream:
     """Tests for tap_stream function."""
 
     @pytest.mark.asyncio
-    async def test_tap_basic(self):
+    async def test_tap_basic(self) -> None:
         """Test basic tap functionality."""
         side_effects: list[int] = []
 
@@ -305,7 +305,7 @@ class TestTapStream:
         assert side_effects == [0, 1, 2]
 
     @pytest.mark.asyncio
-    async def test_tap_with_async_function(self):
+    async def test_tap_with_async_function(self) -> None:
         """Test tap with async side effect."""
         side_effects: list[int] = []
 
@@ -323,7 +323,7 @@ class TestTapStream:
         assert side_effects == [0, 1, 2]
 
     @pytest.mark.asyncio
-    async def test_tap_empty_stream(self):
+    async def test_tap_empty_stream(self) -> None:
         """Test tap on empty stream."""
         side_effects: list[int] = []
 
@@ -332,7 +332,7 @@ class TestTapStream:
 
         tap_flow = tap_stream(append_effect)
 
-        async def empty_stream():
+        async def empty_stream() -> AsyncGenerator[int, None]:
             if False:
                 yield 0
 
@@ -347,7 +347,7 @@ class TestWhileConditionStream:
     """Tests for while_condition_stream function."""
 
     @pytest.mark.asyncio
-    async def test_while_condition_basic(self):
+    async def test_while_condition_basic(self) -> None:
         """Test basic while condition functionality."""
 
         def less_than_3(x: int) -> bool:
@@ -366,7 +366,7 @@ class TestWhileConditionStream:
         assert values == [0, 2, 4]
 
     @pytest.mark.asyncio
-    async def test_while_condition_immediate_false(self):
+    async def test_while_condition_immediate_false(self) -> None:
         """Test while condition that's false immediately."""
 
         def always_false(x: int) -> bool:
@@ -385,7 +385,7 @@ class TestThenStream:
     """Tests for then_stream function."""
 
     @pytest.mark.asyncio
-    async def test_then_basic(self):
+    async def test_then_basic(self) -> None:
         """Test basic then functionality."""
         side_effects: list[str] = []
 
@@ -414,7 +414,7 @@ class TestThenStream:
         assert side_effects == ["after_0", "after_1", "after_2"]
 
     @pytest.mark.asyncio
-    async def test_then_with_async_function(self):
+    async def test_then_with_async_function(self) -> None:
         """Test then with async side effect."""
         side_effects: list[int] = []
 
@@ -436,7 +436,7 @@ class TestCatchAndContinueStream:
     """Tests for catch_and_continue_stream function."""
 
     @pytest.mark.asyncio
-    async def test_catch_and_continue_basic(self):
+    async def test_catch_and_continue_basic(self) -> None:
         """Test basic catch and continue functionality."""
         errors: list[str] = []
 
@@ -446,7 +446,7 @@ class TestCatchAndContinueStream:
         catch_flow = catch_and_continue_stream(error_handler)  # type: ignore
         assert "catch_and_continue(error_handler)" in catch_flow.name
 
-        async def flaky_stream():
+        async def flaky_stream() -> AsyncGenerator[int, None]:
             for i in [1]:
                 yield i
             raise ValueError("Error 1")
@@ -463,7 +463,7 @@ class TestCatchAndContinueStream:
         assert values == [1]
 
     @pytest.mark.asyncio
-    async def test_catch_and_continue_no_handler(self):
+    async def test_catch_and_continue_no_handler(self) -> None:
         """Test catch and continue without handler."""
         catch_flow = catch_and_continue_stream()  # type: ignore
         assert catch_flow.name == "catch_and_continue"
@@ -478,7 +478,7 @@ class TestCircuitBreakerStream:
     """Tests for circuit_breaker_stream function."""
 
     @pytest.mark.asyncio
-    async def test_circuit_breaker_normal_operation(self):
+    async def test_circuit_breaker_normal_operation(self) -> None:
         """Test circuit breaker under normal conditions."""
         breaker_flow = circuit_breaker_stream(failure_threshold=3, recovery_timeout=0.1)  # type: ignore
         assert "circuit_breaker(3, 0.1)" in breaker_flow.name
@@ -489,7 +489,7 @@ class TestCircuitBreakerStream:
         assert values == [0, 1, 2, 3, 4]
 
     @pytest.mark.asyncio
-    async def test_circuit_breaker_opens_on_failures(self):
+    async def test_circuit_breaker_opens_on_failures(self) -> None:
         """Test circuit breaker opening after failures."""
         breaker_flow = circuit_breaker_stream(  # type: ignore
             failure_threshold=2, recovery_timeout=0.05
@@ -497,7 +497,7 @@ class TestCircuitBreakerStream:
 
         failure_count = 0
 
-        async def failing_stream():
+        async def failing_stream() -> AsyncGenerator[int, None]:
             nonlocal failure_count
             for i in range(5):
                 yield i
@@ -513,7 +513,7 @@ class TestCircuitBreakerStream:
             _ = [item async for item in result_stream]  # type: ignore
 
     @pytest.mark.asyncio
-    async def test_circuit_breaker_recovery_and_open_state(self):
+    async def test_circuit_breaker_recovery_and_open_state(self) -> None:
         """Test circuit breaker recovery after timeout and open state behavior."""
         # Note: The circuit breaker implementation has shared state,
         # so this test documents current behavior rather than testing isolation
@@ -532,7 +532,7 @@ class TestChainFlows:
     """Tests for chain_flows function."""
 
     @pytest.mark.asyncio
-    async def test_chain_flows_basic(self):
+    async def test_chain_flows_basic(self) -> None:
         """Test basic flow chaining."""
         increment_flow = map_stream(increment)
         double_flow = map_stream(double)
@@ -559,7 +559,7 @@ class TestChainFlows:
         assert values == [1, 2, 3, 0, 2, 4, "0", "1", "2"]
 
     @pytest.mark.asyncio
-    async def test_chain_flows_single(self):
+    async def test_chain_flows_single(self) -> None:
         """Test chaining single flow."""
         single_flow = map_stream(double)
         chained = chain_flows(single_flow)  # type: ignore
@@ -574,7 +574,7 @@ class TestBranchFlows:
     """Tests for branch_flows function."""
 
     @pytest.mark.asyncio
-    async def test_branch_flows_basic(self):
+    async def test_branch_flows_basic(self) -> None:
         """Test basic branch functionality."""
         increment_flow = map_stream(increment)
         double_flow = map_stream(double)
@@ -595,7 +595,7 @@ class TestBranchFlows:
         assert values == [1, 3, 2, 6]
 
     @pytest.mark.asyncio
-    async def test_branch_flows_no_false_branch(self):
+    async def test_branch_flows_no_false_branch(self) -> None:
         """Test branch with no false branch."""
         increment_flow = map_stream(increment)
 
@@ -611,7 +611,7 @@ class TestBranchFlows:
         assert values == [1, 3]
 
     @pytest.mark.asyncio
-    async def test_branch_flows_all_true(self):
+    async def test_branch_flows_all_true(self) -> None:
         """Test branch where all items go to true branch."""
 
         def always_true(x: int) -> bool:
@@ -630,7 +630,7 @@ class TestBranchFlows:
         assert values == [1, 2, 3]
 
     @pytest.mark.asyncio
-    async def test_branch_flows_all_false(self):
+    async def test_branch_flows_all_false(self) -> None:
         """Test branch where all items go to false branch."""
 
         def always_false(x: int) -> bool:
@@ -649,14 +649,14 @@ class TestBranchFlows:
         assert values == [0, 2, 4]
 
     @pytest.mark.asyncio
-    async def test_branch_flows_empty_stream(self):
+    async def test_branch_flows_empty_stream(self) -> None:
         """Test branch with empty stream."""
         increment_flow = map_stream(increment)
         double_flow = map_stream(double)
 
         branch_flow = branch_flows(is_even, increment_flow, double_flow)
 
-        async def empty_stream():
+        async def empty_stream() -> AsyncGenerator[int, None]:
             if False:
                 yield 0
 
@@ -666,7 +666,7 @@ class TestBranchFlows:
         assert values == []
 
     @pytest.mark.asyncio
-    async def test_branch_flows_preserves_order_within_branch(self):
+    async def test_branch_flows_preserves_order_within_branch(self) -> None:
         """Test that branch preserves order within each branch."""
 
         def is_multiple_of_3(x: int) -> bool:
@@ -693,7 +693,7 @@ class TestBranchFlows:
         assert values == expected
 
     @pytest.mark.asyncio
-    async def test_branch_flows_with_async_predicate(self):
+    async def test_branch_flows_with_async_predicate(self) -> None:
         """Test branch with async predicate handled via sync wrapper."""
 
         # Since the predicate needs to be synchronous, we test with a regular function

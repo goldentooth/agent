@@ -5,7 +5,7 @@ import pytest
 from context.main import Context
 
 
-def test_pop_layer_basic():
+def test_pop_layer_basic() -> None:
     """Test basic pop_layer functionality."""
     context = Context()
     initial_frame_count = len(context.frames)
@@ -18,7 +18,7 @@ def test_pop_layer_basic():
     assert len(context.frames) == initial_frame_count
 
 
-def test_pop_layer_multiple():
+def test_pop_layer_multiple() -> None:
     """Test popping multiple layers."""
     context = Context()
     initial_frame_count = len(context.frames)
@@ -40,7 +40,7 @@ def test_pop_layer_multiple():
     assert len(context.frames) == initial_frame_count
 
 
-def test_pop_layer_restores_shadowed_values():
+def test_pop_layer_restores_shadowed_values() -> None:
     """Test that popping layers restores shadowed values."""
     context = Context()
     context["shared_key"] = "original_value"
@@ -55,7 +55,7 @@ def test_pop_layer_restores_shadowed_values():
     assert context["shared_key"] == "original_value"
 
 
-def test_pop_layer_removes_layer_specific_values():
+def test_pop_layer_removes_layer_specific_values() -> None:
     """Test that popping layers removes values specific to that layer."""
     context = Context()
     context["base_key"] = "base_value"
@@ -76,7 +76,7 @@ def test_pop_layer_removes_layer_specific_values():
         _ = context["layer_key"]
 
 
-def test_pop_layer_cannot_pop_root_frame():
+def test_pop_layer_cannot_pop_root_frame() -> None:
     """Test that popping the root frame raises IndexError."""
     context = Context()
 
@@ -91,7 +91,7 @@ def test_pop_layer_cannot_pop_root_frame():
     assert len(context.frames) == 1
 
 
-def test_pop_layer_with_one_pushed_layer():
+def test_pop_layer_with_one_pushed_layer() -> None:
     """Test popping when there's only one pushed layer above root."""
     context = Context()
     context["root_key"] = "root_value"
@@ -117,7 +117,7 @@ def test_pop_layer_with_one_pushed_layer():
         context.pop_layer()
 
 
-def _create_complex_layered_context():
+def _create_complex_layered_context() -> None:
     """Helper function to create a complex layered context for testing."""
     context = Context()
 
@@ -139,7 +139,7 @@ def _create_complex_layered_context():
     return context
 
 
-def test_pop_layer_complex_layering_setup():
+def test_pop_layer_complex_layering_setup() -> None:
     """Test complex layering setup and verification."""
     context = _create_complex_layered_context()
 
@@ -150,7 +150,7 @@ def test_pop_layer_complex_layering_setup():
     assert context["d"] == "layer2_d"
 
 
-def test_pop_layer_complex_layering_pop_sequence():
+def test_pop_layer_complex_layering_pop_sequence() -> None:
     """Test complex layering pop sequence and value restoration."""
     context = _create_complex_layered_context()
 
@@ -172,7 +172,7 @@ def test_pop_layer_complex_layering_pop_sequence():
         _ = context["c"]  # Gone with layer 1
 
 
-def test_pop_layer_returns_none():
+def test_pop_layer_returns_none() -> None:
     """Test that pop_layer returns None."""
     context = Context()
     context.push_layer()
@@ -182,7 +182,7 @@ def test_pop_layer_returns_none():
     assert result is None
 
 
-def test_pop_layer_preserves_base_data_integrity():
+def test_pop_layer_preserves_base_data_integrity() -> None:
     """Test that popping layers doesn't affect base data integrity."""
     context = Context()
 

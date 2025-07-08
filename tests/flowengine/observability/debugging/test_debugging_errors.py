@@ -22,7 +22,7 @@ from flowengine.observability.debugging import (
 class TestFlowExecutionErrorWithContext:
     """Tests for FlowExecutionErrorWithContext class."""
 
-    def test_error_creation(self):
+    def test_error_creation(self) -> None:
         """Test error creation with context."""
         context = FlowExecutionContext("test_flow", datetime.now())
         original_error = ValueError("Original error")
@@ -39,7 +39,7 @@ class TestFlowExecutionErrorWithContext:
         assert error.execution_context == context
         assert error.original_exception == original_error
 
-    def test_error_captures_execution_stack(self):
+    def test_error_captures_execution_stack(self) -> None:
         """Test that error captures current execution stack."""
         debugger = get_flow_debugger()
 
@@ -58,7 +58,7 @@ class TestFlowExecutionErrorWithContext:
             # Clean up
             debugger.execution_stack.clear()
 
-    def test_get_debug_info(self):
+    def test_get_debug_info(self) -> None:
         """Test getting comprehensive debug information."""
         context = FlowExecutionContext("test_flow", datetime.now())
         original_error = ValueError("Original error")
@@ -79,7 +79,7 @@ class TestFlowExecutionErrorWithContext:
         assert isinstance(debug_info["execution_stack"], list)
         assert "traceback" in debug_info
 
-    def test_get_debug_info_with_none_values(self):
+    def test_get_debug_info_with_none_values(self) -> None:
         """Test debug info with None values."""
         error = FlowExecutionErrorWithContext("Test error")
         debug_info = error.get_debug_info()
@@ -91,7 +91,7 @@ class TestFlowExecutionErrorWithContext:
         assert debug_info["traceback"] is None
         assert debug_info["execution_stack"] == []
 
-    def test_print_debug_info(self, capsys: "CaptureFixture[str]"):
+    def test_print_debug_info(self, capsys: "CaptureFixture[str]") -> None:
         """Test printing debug information."""
         context = FlowExecutionContext("test_flow", datetime.now())
         context.current_item = "test_item"
@@ -115,7 +115,7 @@ class TestFlowExecutionErrorWithContext:
         assert "Original Exception:" in captured.out
         assert "ValueError: Original error" in captured.out
 
-    def test_print_debug_info_with_execution_stack(self, capsys: "CaptureFixture[str]"):
+    def test_print_debug_info_with_execution_stack(self, capsys: "CaptureFixture[str]") -> None:
         """Test printing debug info with execution stack."""
         debugger = get_flow_debugger()
 
@@ -138,7 +138,7 @@ class TestFlowExecutionErrorWithContext:
         finally:
             debugger.execution_stack.clear()
 
-    def test_print_debug_info_minimal(self, capsys: "CaptureFixture[str]"):
+    def test_print_debug_info_minimal(self, capsys: "CaptureFixture[str]") -> None:
         """Test printing debug info with minimal information."""
         error = FlowExecutionErrorWithContext("Test error")
         error.print_debug_info()

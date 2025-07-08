@@ -34,7 +34,7 @@ def identity(x: int) -> int:
 class TestFlowRegistryInitialization:
     """Test FlowRegistry initialization."""
 
-    def test_registry_initializes_with_empty_state(self):
+    def test_registry_initializes_with_empty_state(self) -> None:
         """Test that registry initializes with empty flows and categories."""
         registry = FlowRegistry()
         assert registry.flows == {}
@@ -42,7 +42,7 @@ class TestFlowRegistryInitialization:
         assert registry.tags == {}
         assert registry.metadata == {}
 
-    def test_registry_has_thread_lock(self):
+    def test_registry_has_thread_lock(self) -> None:
         """Test that registry has thread synchronization."""
         registry = FlowRegistry()
         assert hasattr(registry, "_lock")
@@ -52,7 +52,7 @@ class TestFlowRegistryInitialization:
 class TestFlowRegistryRegister:
     """Test FlowRegistry.register method."""
 
-    def test_register_flow_with_name_only(self):
+    def test_register_flow_with_name_only(self) -> None:
         """Test registering a flow with just a name."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -62,7 +62,7 @@ class TestFlowRegistryRegister:
         assert "test_flow" in registry.flows
         assert registry.flows["test_flow"] is flow
 
-    def test_register_flow_with_category(self):
+    def test_register_flow_with_category(self) -> None:
         """Test registering a flow with a category."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -73,7 +73,7 @@ class TestFlowRegistryRegister:
         assert "math" in registry.categories
         assert "test_flow" in registry.categories["math"]
 
-    def test_register_flow_with_tags(self):
+    def test_register_flow_with_tags(self) -> None:
         """Test registering a flow with tags."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -86,7 +86,7 @@ class TestFlowRegistryRegister:
         assert "test_flow" in registry.tags["utility"]
         assert "test_flow" in registry.tags["math"]
 
-    def test_register_flow_with_metadata(self):
+    def test_register_flow_with_metadata(self) -> None:
         """Test registering a flow with metadata."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -97,7 +97,7 @@ class TestFlowRegistryRegister:
         assert "test_flow" in registry.flows
         assert registry.metadata["test_flow"] == metadata
 
-    def test_register_flow_with_empty_metadata(self):
+    def test_register_flow_with_empty_metadata(self) -> None:
         """Test registering a flow with empty metadata dict."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -108,7 +108,7 @@ class TestFlowRegistryRegister:
         assert "test_flow" in registry.flows
         assert registry.metadata["test_flow"] == metadata
 
-    def test_register_duplicate_name_raises_error(self):
+    def test_register_duplicate_name_raises_error(self) -> None:
         """Test that registering duplicate names raises an error."""
         registry = FlowRegistry()
         flow1 = Flow.from_sync_fn(add_one)
@@ -119,14 +119,14 @@ class TestFlowRegistryRegister:
         with pytest.raises(FlowRegistryError, match="Flow 'test_flow' already exists"):
             registry.register("test_flow", flow2)
 
-    def test_register_invalid_flow_type_raises_error(self):
+    def test_register_invalid_flow_type_raises_error(self) -> None:
         """Test that registering invalid flow type raises an error."""
         registry = FlowRegistry()
 
         with pytest.raises(FlowRegistryError, match="Flow must be an instance of Flow"):
             registry.register("test_flow", "not a flow")  # type: ignore
 
-    def test_register_empty_name_raises_error(self):
+    def test_register_empty_name_raises_error(self) -> None:
         """Test that registering with empty name raises an error."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -134,7 +134,7 @@ class TestFlowRegistryRegister:
         with pytest.raises(FlowRegistryError, match="Flow name cannot be empty"):
             registry.register("", flow)
 
-    def test_register_is_thread_safe(self):
+    def test_register_is_thread_safe(self) -> None:
         """Test that registration is thread-safe."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -167,7 +167,7 @@ class TestFlowRegistryRegister:
 class TestFlowRegistryUnregister:
     """Test FlowRegistry.unregister method."""
 
-    def test_unregister_existing_flow(self):
+    def test_unregister_existing_flow(self) -> None:
         """Test unregistering an existing flow."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -178,7 +178,7 @@ class TestFlowRegistryUnregister:
         registry.unregister("test_flow")
         assert "test_flow" not in registry.flows
 
-    def test_unregister_removes_from_categories(self):
+    def test_unregister_removes_from_categories(self) -> None:
         """Test that unregistering removes flow from categories."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -189,7 +189,7 @@ class TestFlowRegistryUnregister:
         registry.unregister("test_flow")
         assert "test_flow" not in registry.categories["math"]
 
-    def test_unregister_removes_from_tags(self):
+    def test_unregister_removes_from_tags(self) -> None:
         """Test that unregistering removes flow from tags."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -202,7 +202,7 @@ class TestFlowRegistryUnregister:
         assert "test_flow" not in registry.tags["utility"]
         assert "test_flow" not in registry.tags["math"]
 
-    def test_unregister_removes_metadata(self):
+    def test_unregister_removes_metadata(self) -> None:
         """Test that unregistering removes flow metadata."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -214,7 +214,7 @@ class TestFlowRegistryUnregister:
         registry.unregister("test_flow")
         assert "test_flow" not in registry.metadata
 
-    def test_unregister_nonexistent_flow_raises_error(self):
+    def test_unregister_nonexistent_flow_raises_error(self) -> None:
         """Test that unregistering nonexistent flow raises an error."""
         registry = FlowRegistry()
 
@@ -225,7 +225,7 @@ class TestFlowRegistryUnregister:
 class TestFlowRegistryGet:
     """Test FlowRegistry.get method."""
 
-    def test_get_existing_flow(self):
+    def test_get_existing_flow(self) -> None:
         """Test getting an existing flow."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -235,14 +235,14 @@ class TestFlowRegistryGet:
 
         assert retrieved is flow
 
-    def test_get_nonexistent_flow_raises_error(self):
+    def test_get_nonexistent_flow_raises_error(self) -> None:
         """Test that getting nonexistent flow raises an error."""
         registry = FlowRegistry()
 
         with pytest.raises(FlowRegistryError, match="Flow 'nonexistent' not found"):
             registry.get("nonexistent")
 
-    def test_get_with_default_returns_default(self):
+    def test_get_with_default_returns_default(self) -> None:
         """Test that get with default returns default for nonexistent flow."""
         registry = FlowRegistry()
         default_flow = Flow.from_sync_fn(identity)
@@ -251,7 +251,7 @@ class TestFlowRegistryGet:
 
         assert retrieved is default_flow
 
-    def test_get_with_default_none_returns_none(self):
+    def test_get_with_default_none_returns_none(self) -> None:
         """Test that get with default None returns None for nonexistent flow."""
         registry = FlowRegistry()
 
@@ -263,7 +263,7 @@ class TestFlowRegistryGet:
 class TestFlowRegistryList:
     """Test FlowRegistry.list method."""
 
-    def test_list_all_flows(self):
+    def test_list_all_flows(self) -> None:
         """Test listing all flows."""
         registry = FlowRegistry()
         flow1 = Flow.from_sync_fn(add_one)
@@ -278,7 +278,7 @@ class TestFlowRegistryList:
         assert "flow1" in flows
         assert "flow2" in flows
 
-    def test_list_flows_by_category(self):
+    def test_list_flows_by_category(self) -> None:
         """Test listing flows by category."""
         registry = FlowRegistry()
         flow1 = Flow.from_sync_fn(add_one)
@@ -296,7 +296,7 @@ class TestFlowRegistryList:
         assert "flow2" in math_flows
         assert "flow3" not in math_flows
 
-    def test_list_flows_empty_category(self):
+    def test_list_flows_empty_category(self) -> None:
         """Test listing flows for empty category."""
         registry = FlowRegistry()
 
@@ -304,7 +304,7 @@ class TestFlowRegistryList:
 
         assert flows == []
 
-    def test_list_flows_with_tags(self):
+    def test_list_flows_with_tags(self) -> None:
         """Test listing flows with specific tags."""
         registry = FlowRegistry()
         flow1 = Flow.from_sync_fn(add_one)
@@ -326,7 +326,7 @@ class TestFlowRegistryList:
 class TestFlowRegistrySearch:
     """Test FlowRegistry.search method."""
 
-    def test_search_by_name(self):
+    def test_search_by_name(self) -> None:
         """Test searching flows by name."""
         registry = FlowRegistry()
         flow1 = Flow.from_sync_fn(add_one)
@@ -340,7 +340,7 @@ class TestFlowRegistrySearch:
         assert len(results) == 1
         assert "math_add" in results
 
-    def test_search_case_insensitive(self):
+    def test_search_case_insensitive(self) -> None:
         """Test that search is case insensitive."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -352,7 +352,7 @@ class TestFlowRegistrySearch:
         assert len(results) == 1
         assert "MathAdd" in results
 
-    def test_search_in_metadata(self):
+    def test_search_in_metadata(self) -> None:
         """Test searching in flow metadata."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -365,7 +365,7 @@ class TestFlowRegistrySearch:
         assert len(results) == 1
         assert "add_one" in results
 
-    def test_search_no_results(self):
+    def test_search_no_results(self) -> None:
         """Test search with no matching results."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -376,7 +376,7 @@ class TestFlowRegistrySearch:
 
         assert results == []
 
-    def test_search_empty_query(self):
+    def test_search_empty_query(self) -> None:
         """Test search with empty query returns all flows."""
         registry = FlowRegistry()
         flow1 = Flow.from_sync_fn(add_one)
@@ -395,7 +395,7 @@ class TestFlowRegistrySearch:
 class TestFlowRegistryClear:
     """Test FlowRegistry.clear method."""
 
-    def test_clear_all_flows(self):
+    def test_clear_all_flows(self) -> None:
         """Test clearing all flows."""
         registry = FlowRegistry()
         flow1 = Flow.from_sync_fn(add_one)
@@ -411,7 +411,7 @@ class TestFlowRegistryClear:
         assert len(registry.tags) == 0
         assert len(registry.metadata) == 0
 
-    def test_clear_specific_category(self):
+    def test_clear_specific_category(self) -> None:
         """Test clearing flows from a specific category."""
         registry = FlowRegistry()
         flow1 = Flow.from_sync_fn(add_one)
@@ -430,7 +430,7 @@ class TestFlowRegistryClear:
         assert "math" not in registry.categories  # Category should be deleted
         assert len(registry.categories.get("other", [])) == 1
 
-    def test_clear_nonexistent_category(self):
+    def test_clear_nonexistent_category(self) -> None:
         """Test clearing nonexistent category does nothing."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -446,7 +446,7 @@ class TestFlowRegistryClear:
 class TestFlowRegistryProperties:
     """Test FlowRegistry properties."""
 
-    def test_flows_property(self):
+    def test_flows_property(self) -> None:
         """Test that flows property returns read-only view."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -457,7 +457,7 @@ class TestFlowRegistryProperties:
         assert "test_flow" in flows
         assert flows["test_flow"] is flow
 
-    def test_categories_property(self):
+    def test_categories_property(self) -> None:
         """Test that categories property returns read-only view."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -468,7 +468,7 @@ class TestFlowRegistryProperties:
         assert "math" in categories
         assert "test_flow" in categories["math"]
 
-    def test_tags_property(self):
+    def test_tags_property(self) -> None:
         """Test that tags property returns read-only view."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -479,7 +479,7 @@ class TestFlowRegistryProperties:
         assert "utility" in tags
         assert "test_flow" in tags["utility"]
 
-    def test_metadata_property(self):
+    def test_metadata_property(self) -> None:
         """Test that metadata property returns read-only view."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -495,7 +495,7 @@ class TestFlowRegistryProperties:
 class TestFlowRegistryThreadSafety:
     """Test FlowRegistry thread safety."""
 
-    def test_concurrent_register_operations(self):
+    def test_concurrent_register_operations(self) -> None:
         """Test concurrent register operations."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -524,7 +524,7 @@ class TestFlowRegistryThreadSafety:
         assert len(errors) == 0
         assert len(registry.flows) == 50
 
-    def test_concurrent_mixed_operations(self):
+    def test_concurrent_mixed_operations(self) -> None:
         """Test concurrent mixed operations (register, get, list, search)."""
         registry = FlowRegistry()
         flow = Flow.from_sync_fn(add_one)
@@ -572,7 +572,7 @@ class TestFlowRegistryThreadSafety:
 class TestConvenienceFunctions:
     """Test global convenience functions."""
 
-    def test_register_flow_convenience(self):
+    def test_register_flow_convenience(self) -> None:
         """Test register_flow convenience function."""
         from flowengine.registry import flow_registry, register_flow
 
@@ -586,7 +586,7 @@ class TestConvenienceFunctions:
         assert "test_flow" in flow_registry.flows
         assert flow_registry.flows["test_flow"] is flow
 
-    def test_get_flow_convenience(self):
+    def test_get_flow_convenience(self) -> None:
         """Test get_flow convenience function."""
         from flowengine.registry import flow_registry, get_flow
 
@@ -602,7 +602,7 @@ class TestConvenienceFunctions:
         result = get_flow("nonexistent")
         assert result is None
 
-    def test_list_flows_convenience(self):
+    def test_list_flows_convenience(self) -> None:
         """Test list_flows convenience function."""
         from flowengine.registry import flow_registry, list_flows
 
@@ -626,7 +626,7 @@ class TestConvenienceFunctions:
         assert len(math_flows) == 1
         assert "flow1" in math_flows
 
-    def test_search_flows_convenience(self):
+    def test_search_flows_convenience(self) -> None:
         """Test search_flows convenience function."""
         from flowengine.registry import flow_registry, search_flows
 
@@ -648,7 +648,7 @@ class TestConvenienceFunctions:
         assert len(results) == 1
         assert "flow1" in results
 
-    def test_unregister_flow_convenience(self):
+    def test_unregister_flow_convenience(self) -> None:
         """Test unregister_flow convenience function."""
         from flowengine.registry import flow_registry, unregister_flow
 
@@ -663,7 +663,7 @@ class TestConvenienceFunctions:
         unregister_flow("test_flow")
         assert "test_flow" not in flow_registry.flows
 
-    def test_clear_registry_convenience(self):
+    def test_clear_registry_convenience(self) -> None:
         """Test clear_registry convenience function."""
         from flowengine.registry import clear_registry, flow_registry
 
@@ -682,7 +682,7 @@ class TestConvenienceFunctions:
         clear_registry()
         assert len(flow_registry.flows) == 0
 
-    def test_export_registry_convenience(self):
+    def test_export_registry_convenience(self) -> None:
         """Test export_registry convenience function."""
         import json
 
@@ -708,7 +708,7 @@ class TestConvenienceFunctions:
         assert len(data["flows"]) == 2
         assert all(name in data["flows"] for name in ["flow1", "flow2"])
 
-    def test_import_registry_convenience(self):
+    def test_import_registry_convenience(self) -> None:
         """Test import_registry convenience function."""
         from flowengine.registry import flow_registry, import_registry
 
@@ -728,7 +728,7 @@ class TestConvenienceFunctions:
         assert "math" in flow_registry.categories
         assert "utility" in flow_registry.tags
 
-    def test_import_registry_error_paths(self):
+    def test_import_registry_error_paths(self) -> None:
         """Test import_registry error handling."""
         import pytest
 
@@ -746,13 +746,13 @@ class TestConvenienceFunctions:
 class TestRegisteredFlowDecorator:
     """Test registered_flow decorator functionality."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Setup test with clean registry."""
         from flowengine.registry import clear_registry
 
         clear_registry()
 
-    def test_registered_flow_decorator_with_flow_instance(self):
+    def test_registered_flow_decorator_with_flow_instance(self) -> None:
         """Test registered_flow decorator with Flow instance."""
         from flowengine.registry import get_flow
         from flowengine.registry.main import registered_flow
@@ -773,7 +773,7 @@ class TestRegisteredFlowDecorator:
         assert registered_flow_obj is not None
         assert registered_flow_obj == test_flow
 
-    def test_registered_flow_decorator_import_from_init(self):
+    def test_registered_flow_decorator_import_from_init(self) -> None:
         """Test that registered_flow can be imported from registry package."""
         from flowengine.registry import registered_flow
 

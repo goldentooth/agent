@@ -12,7 +12,7 @@ from git_hooks.config import ValidationConfig
 class TestConfigRefactored:
     """Test the refactored config methods."""
 
-    def test_load_file_length_config(self):
+    def test_load_file_length_config(self) -> None:
         """Test loading file length configuration."""
         with patch.dict(
             os.environ,
@@ -27,7 +27,7 @@ class TestConfigRefactored:
             assert config.file_length_warn_threshold == 400
             assert config.file_length_urgent_threshold == 450
 
-    def test_load_module_size_config(self):
+    def test_load_module_size_config(self) -> None:
         """Test loading module size configuration."""
         with patch.dict(
             os.environ,
@@ -42,7 +42,7 @@ class TestConfigRefactored:
             assert config.module_size_warn_threshold == 2400
             assert config.module_size_urgent_threshold == 2700
 
-    def test_load_function_length_config(self):
+    def test_load_function_length_config(self) -> None:
         """Test loading function length configuration."""
         with patch.dict(
             os.environ,
@@ -57,7 +57,7 @@ class TestConfigRefactored:
             assert config.function_length_warn_threshold == 16
             assert config.function_length_urgent_threshold == 17
 
-    def test_from_environment_uses_refactored_methods(self, monkeypatch: MonkeyPatch):
+    def test_from_environment_uses_refactored_methods(self, monkeypatch: MonkeyPatch) -> None:
         """Test that from_environment uses the new refactored methods."""
         # Clear environment
         for key in ["FILE_LENGTH_LIMIT", "MODULE_SIZE_LIMIT", "FUNCTION_LENGTH_LIMIT"]:

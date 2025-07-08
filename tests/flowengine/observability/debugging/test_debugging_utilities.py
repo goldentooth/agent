@@ -29,7 +29,7 @@ from flowengine.observability.debugging import (
 class TestInspectFlow:
     """Tests for inspect_flow function."""
 
-    def test_inspect_flow_basic(self):
+    def test_inspect_flow_basic(self) -> None:
         """Test basic flow inspection."""
         from flowengine.flow import Flow
 
@@ -56,7 +56,7 @@ class TestInspectFlow:
         assert inspection["docstring"] == "Convert integers to strings."
         assert inspection["module"] == __name__
 
-    def test_inspect_flow_anonymous_function(self):
+    def test_inspect_flow_anonymous_function(self) -> None:
         """Test inspection of flow with anonymous function."""
         from flowengine.flow import Flow
 
@@ -72,7 +72,7 @@ class TestInspectFlow:
         assert inspection["is_async"] is False
         assert inspection["docstring"] is None
 
-    def test_inspect_flow_no_metadata(self):
+    def test_inspect_flow_no_metadata(self) -> None:
         """Test inspection of flow without metadata."""
         from flowengine.flow import Flow
 
@@ -90,7 +90,7 @@ class TestInspectFlow:
         assert inspection["metadata"] == {}
         assert inspection["function_name"] == "simple_fn"
 
-    def test_inspect_flow_no_docstring(self):
+    def test_inspect_flow_no_docstring(self) -> None:
         """Test inspection of flow without docstring."""
         from flowengine.flow import Flow
 
@@ -107,7 +107,7 @@ class TestInspectFlow:
         assert inspection["docstring"] is None
         assert inspection["function_name"] == "undocumented_fn"
 
-    def test_inspect_flow_with_complex_metadata(self):
+    def test_inspect_flow_with_complex_metadata(self) -> None:
         """Test inspection with complex metadata."""
         from flowengine.flow import Flow
 
@@ -133,7 +133,7 @@ class TestInspectFlow:
         assert inspection["metadata"]["config"]["multiplier"] == 2
         assert inspection["metadata"]["nested"]["deep"]["value"] == 42
 
-    def test_inspect_flow_async_detection(self):
+    def test_inspect_flow_async_detection(self) -> None:
         """Test async function detection."""
         from flowengine.flow import Flow
 
@@ -160,7 +160,7 @@ class TestDebugSession:
     """Tests for debug_session context manager."""
 
     @pytest.mark.asyncio
-    async def test_debug_session_enables_debugging(self):
+    async def test_debug_session_enables_debugging(self) -> None:
         """Test that debug session enables debugging."""
         debugger = get_flow_debugger()
         original_state = debugger.debug_enabled
@@ -181,7 +181,7 @@ class TestDebugSession:
             debugger.debug_enabled = original_state
 
     @pytest.mark.asyncio
-    async def test_debug_session_disables_debugging(self):
+    async def test_debug_session_disables_debugging(self) -> None:
         """Test that debug session can disable debugging."""
         debugger = get_flow_debugger()
         original_state = debugger.debug_enabled
@@ -202,7 +202,7 @@ class TestDebugSession:
             debugger.debug_enabled = original_state
 
     @pytest.mark.asyncio
-    async def test_debug_session_restores_state_on_exception(self):
+    async def test_debug_session_restores_state_on_exception(self) -> None:
         """Test that debug session restores state even when exception occurs."""
         debugger = get_flow_debugger()
         original_state = debugger.debug_enabled
@@ -223,7 +223,7 @@ class TestDebugSession:
             debugger.debug_enabled = original_state
 
     @pytest.mark.asyncio
-    async def test_debug_session_nested_sessions(self):
+    async def test_debug_session_nested_sessions(self) -> None:
         """Test nested debug sessions."""
         debugger = get_flow_debugger()
         original_state = debugger.debug_enabled
@@ -249,7 +249,7 @@ class TestDebugSession:
             debugger.debug_enabled = original_state
 
     @pytest.mark.asyncio
-    async def test_debug_session_yields_debugger_instance(self):
+    async def test_debug_session_yields_debugger_instance(self) -> None:
         """Test that debug session yields the debugger instance."""
         debugger = get_flow_debugger()
 
@@ -261,7 +261,7 @@ class TestDebugSession:
             assert hasattr(session_debugger, "execution_history")
 
     @pytest.mark.asyncio
-    async def test_debug_session_with_actual_flow_execution(self):
+    async def test_debug_session_with_actual_flow_execution(self) -> None:
         """Test debug session with actual flow execution."""
         from flowengine.flow import Flow
 
@@ -278,7 +278,7 @@ class TestDebugSession:
 
             test_flow = Flow(test_flow_fn, name="test_flow")
 
-            async def test_stream():
+            async def test_stream() -> None:
                 for i in range(3):
                     yield i
 
@@ -306,7 +306,7 @@ class TestDebugSession:
 class TestEnableFlowDebugging:
     """Tests for enable_flow_debugging function."""
 
-    def test_enable_flow_debugging(self):
+    def test_enable_flow_debugging(self) -> None:
         """Test enabling flow debugging globally."""
         debugger = get_flow_debugger()
         original_state = debugger.debug_enabled
@@ -325,7 +325,7 @@ class TestEnableFlowDebugging:
         finally:
             debugger.debug_enabled = original_state
 
-    def test_enable_flow_debugging_when_already_enabled(self):
+    def test_enable_flow_debugging_when_already_enabled(self) -> None:
         """Test enabling debugging when it's already enabled."""
         debugger = get_flow_debugger()
         original_state = debugger.debug_enabled
@@ -344,7 +344,7 @@ class TestEnableFlowDebugging:
         finally:
             debugger.debug_enabled = original_state
 
-    def test_enable_flow_debugging_affects_global_debugger(self):
+    def test_enable_flow_debugging_affects_global_debugger(self) -> None:
         """Test that enable_flow_debugging affects the global debugger instance."""
         debugger = get_flow_debugger()
         original_state = debugger.debug_enabled
@@ -365,7 +365,7 @@ class TestEnableFlowDebugging:
         finally:
             debugger.debug_enabled = original_state
 
-    def test_disable_flow_debugging(self):
+    def test_disable_flow_debugging(self) -> None:
         """Test that disable_flow_debugging disables the global debugger."""
         debugger = get_flow_debugger()
         original_state = debugger.debug_enabled
@@ -382,7 +382,7 @@ class TestEnableFlowDebugging:
         finally:
             debugger.debug_enabled = original_state
 
-    def test_add_flow_breakpoint(self):
+    def test_add_flow_breakpoint(self) -> None:
         """Test that add_flow_breakpoint adds a breakpoint to the global debugger."""
         debugger = get_flow_debugger()
         original_breakpoints = debugger.breakpoints.copy()
@@ -403,7 +403,7 @@ class TestEnableFlowDebugging:
         finally:
             debugger.breakpoints = original_breakpoints
 
-    def test_remove_flow_breakpoint(self):
+    def test_remove_flow_breakpoint(self) -> None:
         """Test that remove_flow_breakpoint removes a breakpoint from the global debugger."""
         debugger = get_flow_debugger()
         original_breakpoints = debugger.breakpoints.copy()
@@ -420,7 +420,7 @@ class TestEnableFlowDebugging:
         finally:
             debugger.breakpoints = original_breakpoints
 
-    def test_get_execution_trace(self):
+    def test_get_execution_trace(self) -> None:
         """Test that get_execution_trace returns the global debugger's trace."""
         debugger = get_flow_debugger()
         original_history = debugger.execution_history.copy()
@@ -448,7 +448,7 @@ class TestEnableFlowDebugging:
             debugger.execution_history.clear()
             debugger.execution_history.extend(original_history)
 
-    def test_export_execution_trace(self, tmp_path: Path):
+    def test_export_execution_trace(self, tmp_path: Path) -> None:
         """Test that export_execution_trace exports the global debugger's trace."""
         debugger = get_flow_debugger()
         original_history = debugger.execution_history.copy()

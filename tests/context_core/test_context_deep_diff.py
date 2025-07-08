@@ -7,7 +7,7 @@ import pytest
 from context.main import Context
 
 
-def test_deep_diff_basic():
+def test_deep_diff_basic() -> None:
     """Test basic deep_diff functionality."""
     context1 = Context()
     context1["key1"] = "value1"
@@ -32,7 +32,7 @@ def test_deep_diff_basic():
     assert diff_result["removed"] == {"key1": "value1"}
 
 
-def _create_nested_dict_contexts():
+def _create_nested_dict_contexts() -> None:
     """Helper function to create contexts with nested dict changes."""
     context1 = Context()
     context1["nested"] = {
@@ -86,14 +86,14 @@ def _verify_nested_dict_changes(diff_result: dict[str, Any]) -> None:
     _verify_level1_changes(deep_changes)
 
 
-def test_deep_diff_nested_dict_changes():
+def test_deep_diff_nested_dict_changes() -> None:
     """Test deep_diff with nested dictionary changes."""
     context1, context2 = _create_nested_dict_contexts()
     diff_result = context1.deep_diff(context2)
     _verify_nested_dict_changes(diff_result)
 
 
-def test_deep_diff_nested_list_changes():
+def test_deep_diff_nested_list_changes() -> None:
     """Test deep_diff with nested list changes."""
     context1 = Context()
     context1["list_data"] = [
@@ -117,7 +117,7 @@ def test_deep_diff_nested_list_changes():
     assert "deep_changes" in list_diff
 
 
-def test_deep_diff_identical_contexts():
+def test_deep_diff_identical_contexts() -> None:
     """Test deep_diff with identical contexts."""
     context1 = Context()
     context1["simple"] = "value"
@@ -135,7 +135,7 @@ def test_deep_diff_identical_contexts():
     assert diff_result["removed"] == {}
 
 
-def test_deep_diff_complex_nested_structures():
+def test_deep_diff_complex_nested_structures() -> None:
     """Test deep_diff with complex nested structures."""
     context1 = Context()
     context1["complex"] = {
@@ -169,7 +169,7 @@ def test_deep_diff_complex_nested_structures():
     assert "deep_changes" in complex_diff
 
 
-def test_deep_diff_with_none_values():
+def test_deep_diff_with_none_values() -> None:
     """Test deep_diff with None values in nested structures."""
     context1 = Context()
     context1["data"] = {"nullable": None, "nested": {"inner": None, "value": "text"}}
@@ -188,7 +188,7 @@ def test_deep_diff_with_none_values():
     assert "deep_changes" in data_diff
 
 
-def test_deep_diff_preserves_original_contexts():
+def test_deep_diff_preserves_original_contexts() -> None:
     """Test that deep_diff does not modify the original contexts."""
     context1 = Context()
     context1["nested"] = {"inner": {"value": "original"}}
@@ -208,7 +208,7 @@ def test_deep_diff_preserves_original_contexts():
     assert context2["nested"]["inner"]["value"] == original_value2
 
 
-def test_deep_diff_returns_proper_structure():
+def test_deep_diff_returns_proper_structure() -> None:
     """Test that deep_diff returns the expected data structure."""
     context1 = Context()
     context2 = Context()
@@ -227,7 +227,7 @@ def test_deep_diff_returns_proper_structure():
     assert isinstance(diff_result["removed"], dict)
 
 
-def test_deep_diff_with_mixed_types():
+def test_deep_diff_with_mixed_types() -> None:
     """Test deep_diff with mixed data types."""
     context1 = Context()
     context1["mixed"] = {
@@ -255,7 +255,7 @@ def test_deep_diff_with_mixed_types():
     assert "deep_changes" in mixed_diff
 
 
-def test_deep_diff_max_depth_limit():
+def test_deep_diff_max_depth_limit() -> None:
     """Test deep_diff with maximum depth limitation."""
     # Create deeply nested structure
     deep_nested = {"level": 1}
@@ -276,7 +276,7 @@ def test_deep_diff_max_depth_limit():
     assert "deep" in diff_result["modified"]
 
 
-def test_deep_diff_circular_reference_protection():
+def test_deep_diff_circular_reference_protection() -> None:
     """Test deep_diff handles circular references safely."""
     context1 = Context()
     circular1 = {"name": "circular"}
@@ -294,7 +294,7 @@ def test_deep_diff_circular_reference_protection():
     assert "circular" in diff_result["modified"]
 
 
-def test_deep_diff_with_custom_objects():
+def test_deep_diff_with_custom_objects() -> None:
     """Test deep_diff with custom objects."""
 
     class CustomObj:

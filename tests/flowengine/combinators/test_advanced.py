@@ -56,7 +56,7 @@ class TestRaceStream:
     """Tests for race_stream function."""
 
     @pytest.mark.asyncio
-    async def test_race_first_succeeds(self):
+    async def test_race_first_succeeds(self) -> None:
         """Test racing when first flow succeeds."""
         fast_flow: Flow[int, str] = map_stream(lambda x: f"fast_{x}")
         slow_flow: Flow[int, str] = Flow(lambda s: self._slow_process(s, 0.1))
@@ -72,7 +72,7 @@ class TestRaceStream:
         assert values == ["fast_0", "fast_1"]
 
     @pytest.mark.asyncio
-    async def test_race_first_fails_second_succeeds(self):
+    async def test_race_first_fails_second_succeeds(self) -> None:
         """Test racing when first flow fails but second succeeds."""
         failing_flow: Flow[int, int] = map_stream(lambda x: 1 // 0)  # Always fails
         working_flow: Flow[int, int] = map_stream(double)
@@ -87,7 +87,7 @@ class TestRaceStream:
         assert values == [0, 2]
 
     @pytest.mark.asyncio
-    async def test_race_all_fail(self):
+    async def test_race_all_fail(self) -> None:
         """Test racing when all flows fail."""
         fail1_flow: Flow[int, int] = map_stream(lambda x: 1 // 0)
         fail2_flow: Flow[int, int] = map_stream(lambda x: x // 0)
@@ -103,7 +103,7 @@ class TestRaceStream:
         assert "All racing flows failed" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_race_empty_list(self):
+    async def test_race_empty_list(self) -> None:
         """Test racing with no flows."""
         race_flow: Flow[int, int] = race_stream()
 
@@ -115,7 +115,7 @@ class TestRaceStream:
         assert values == []
 
     @pytest.mark.asyncio
-    async def test_race_no_results(self):
+    async def test_race_no_results(self) -> None:
         """Test racing when a flow produces no results."""
 
         async def empty_flow_fn(
@@ -150,7 +150,7 @@ class TestParallelStream:
     """Tests for parallel_stream function."""
 
     @pytest.mark.asyncio
-    async def test_parallel_all_succeed(self):
+    async def test_parallel_all_succeed(self) -> None:
         """Test parallel execution when all flows succeed."""
         increment_flow: Flow[int, int] = map_stream(increment)
         double_flow: Flow[int, int] = map_stream(double)
@@ -173,7 +173,7 @@ class TestParallelStream:
         assert sorted(results[1]) == [2, 2, 3]
 
     @pytest.mark.asyncio
-    async def test_parallel_some_fail(self):
+    async def test_parallel_some_fail(self) -> None:
         """Test parallel execution when some flows fail."""
         working_flow: Flow[int, int] = map_stream(double)
         failing_flow: Flow[int, int] = map_stream(lambda x: 1 // 0)
@@ -189,7 +189,7 @@ class TestParallelStream:
         assert "Parallel execution failed" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_parallel_empty_list(self):
+    async def test_parallel_empty_list(self) -> None:
         """Test parallel execution with no flows."""
         parallel_flow: Flow[int, list[int]] = parallel_stream()
 
@@ -205,7 +205,7 @@ class TestParallelStreamSuccessful:
     """Tests for parallel_stream_successful function."""
 
     @pytest.mark.asyncio
-    async def test_parallel_successful_all_succeed(self):
+    async def test_parallel_successful_all_succeed(self) -> None:
         """Test parallel successful when all flows succeed."""
         increment_flow: Flow[int, int] = map_stream(increment)
         double_flow: Flow[int, int] = map_stream(double)
@@ -222,7 +222,7 @@ class TestParallelStreamSuccessful:
         assert sorted(results[1]) == [2, 2]  # double(1)=2, increment(1)=2
 
     @pytest.mark.asyncio
-    async def test_parallel_successful_some_fail(self):
+    async def test_parallel_successful_some_fail(self) -> None:
         """Test parallel successful when some flows fail."""
         working_flow: Flow[int, int] = map_stream(double)
         failing_flow: Flow[int, int] = map_stream(lambda x: 1 // x)  # Fails on 0
@@ -242,7 +242,7 @@ class TestParallelStreamSuccessful:
         assert sorted(results[1]) == [1, 2, 2]  # 1//1=1, double(1)=2, increment(1)=2
 
     @pytest.mark.asyncio
-    async def test_parallel_successful_all_fail(self):
+    async def test_parallel_successful_all_fail(self) -> None:
         """Test parallel successful when all flows fail."""
         fail1: Flow[int, int] = map_stream(lambda x: 1 // 0)
         fail2: Flow[int, int] = map_stream(lambda x: x // 0)
@@ -257,7 +257,7 @@ class TestParallelStreamSuccessful:
         assert results == [[]]
 
     @pytest.mark.asyncio
-    async def test_parallel_successful_empty_list(self):
+    async def test_parallel_successful_empty_list(self) -> None:
         """Test parallel successful with no flows."""
         parallel_flow: Flow[int, list[int]] = parallel_stream_successful()
 
@@ -272,7 +272,7 @@ class TestZipStream:
     """Tests for zip_stream function."""
 
     @pytest.mark.asyncio
-    async def test_zip_basic(self):
+    async def test_zip_basic(self) -> None:
         """Test basic zipping functionality."""
 
         async def letters() -> AsyncGenerator[str, None]:
@@ -289,7 +289,7 @@ class TestZipStream:
         assert values == [(0, "a"), (1, "b"), (2, "c")]
 
     @pytest.mark.asyncio
-    async def test_zip_different_lengths_first_shorter(self):
+    async def test_zip_different_lengths_first_shorter(self) -> None:
         """Test zipping when first stream is shorter."""
 
         async def short_stream() -> AsyncGenerator[str, None]:
@@ -306,7 +306,7 @@ class TestZipStream:
         assert values == [(0, "x"), (1, "y")]
 
     @pytest.mark.asyncio
-    async def test_zip_different_lengths_second_shorter(self):
+    async def test_zip_different_lengths_second_shorter(self) -> None:
         """Test zipping when second stream is shorter."""
 
         async def short_other() -> AsyncGenerator[str, None]:
@@ -322,7 +322,7 @@ class TestZipStream:
         assert values == [(0, "only")]
 
     @pytest.mark.asyncio
-    async def test_zip_empty_streams(self):
+    async def test_zip_empty_streams(self) -> None:
         """Test zipping with empty streams."""
 
         async def empty() -> AsyncGenerator[str, None]:
@@ -342,7 +342,7 @@ class TestChainStream:
     """Tests for chain_stream function."""
 
     @pytest.mark.asyncio
-    async def test_chain_basic(self):
+    async def test_chain_basic(self) -> None:
         """Test basic stream chaining."""
 
         async def first() -> AsyncGenerator[int, None]:
@@ -370,7 +370,7 @@ class TestChainStream:
         assert values == [1, 2, 3, 4, 5]
 
     @pytest.mark.asyncio
-    async def test_chain_empty_streams(self):
+    async def test_chain_empty_streams(self) -> None:
         """Test chaining with empty streams."""
 
         async def empty() -> AsyncGenerator[str, None]:
@@ -392,7 +392,7 @@ class TestChainStream:
         assert values == ["middle"]
 
     @pytest.mark.asyncio
-    async def test_chain_single_stream(self):
+    async def test_chain_single_stream(self) -> None:
         """Test chaining single stream."""
 
         async def single() -> AsyncGenerator[str, None]:
@@ -411,7 +411,7 @@ class TestChainStream:
         assert values == ["a", "b"]
 
     @pytest.mark.asyncio
-    async def test_chain_no_streams(self):
+    async def test_chain_no_streams(self) -> None:
         """Test chaining with no streams."""
         chain_flow: Flow[None, int] = chain_stream()
 
@@ -429,7 +429,7 @@ class TestMergeStream:
     """Tests for merge_stream function."""
 
     @pytest.mark.asyncio
-    async def test_merge_basic(self):
+    async def test_merge_basic(self) -> None:
         """Test basic stream merging."""
         increment_flow: Flow[int, int] = map_stream(increment)
         double_flow: Flow[int, int] = map_stream(double)
@@ -447,7 +447,7 @@ class TestMergeStream:
         # Double: [0, 2, 4]
 
     @pytest.mark.asyncio
-    async def test_merge_with_delays(self):
+    async def test_merge_with_delays(self) -> None:
         """Test merging with different processing speeds."""
         fast_flow: Flow[int, str] = map_stream(lambda x: f"fast_{x}")
         slow_flow: Flow[int, str] = Flow(
@@ -468,7 +468,7 @@ class TestMergeStream:
         assert slow_values == ["slow_0", "slow_1"]
 
     @pytest.mark.asyncio
-    async def test_merge_empty_input(self):
+    async def test_merge_empty_input(self) -> None:
         """Test merging with empty input."""
         flow1: Flow[int, int] = map_stream(increment)
         flow2: Flow[int, int] = map_stream(double)
@@ -485,7 +485,7 @@ class TestMergeStream:
         assert values == []
 
     @pytest.mark.asyncio
-    async def test_merge_with_flow_error(self):
+    async def test_merge_with_flow_error(self) -> None:
         """Test merge stream when one flow raises an error."""
 
         def working_fn(x: int) -> str:
@@ -522,7 +522,7 @@ class TestMergeFlows:
     """Tests for merge_flows function."""
 
     @pytest.mark.asyncio
-    async def test_merge_flows_basic(self):
+    async def test_merge_flows_basic(self) -> None:
         """Test basic merge_flows functionality."""
         increment_flow: Flow[int, int] = Flow.from_sync_fn(increment)
         double_flow: Flow[int, int] = Flow.from_sync_fn(double)
@@ -541,7 +541,7 @@ class TestCombineLatestStream:
     """Tests for combine_latest_stream function."""
 
     @pytest.mark.asyncio
-    async def test_combine_latest_basic(self):
+    async def test_combine_latest_basic(self) -> None:
         """Test basic combine latest functionality."""
 
         async def slow_other() -> AsyncGenerator[str, None]:
@@ -572,7 +572,7 @@ class TestCombineLatestStream:
         assert all(isinstance(v, tuple) and len(v) == 2 for v in values)
 
     @pytest.mark.asyncio
-    async def test_combine_latest_empty_other(self):
+    async def test_combine_latest_empty_other(self) -> None:
         """Test combine latest when other stream is empty."""
 
         async def empty() -> AsyncGenerator[str, None]:
@@ -589,7 +589,7 @@ class TestCombineLatestStream:
         assert values == []
 
     @pytest.mark.asyncio
-    async def test_combine_latest_other_stream_error(self):
+    async def test_combine_latest_other_stream_error(self) -> None:
         """Test combine latest when other stream raises an error."""
 
         async def error_stream() -> AsyncGenerator[str, None]:
@@ -619,7 +619,7 @@ class TestFlatMapCtxStream:
     """Tests for flat_map_ctx_stream function."""
 
     @pytest.mark.asyncio
-    async def test_flat_map_ctx_basic(self):
+    async def test_flat_map_ctx_basic(self) -> None:
         """Test basic context-aware flat mapping."""
 
         async def expand_with_context(
@@ -650,7 +650,7 @@ class TestMergeAsyncGenerators:
     """Tests for merge_async_generators utility function."""
 
     @pytest.mark.asyncio
-    async def test_merge_basic(self):
+    async def test_merge_basic(self) -> None:
         """Test basic merging of async generators."""
 
         async def gen1() -> AsyncGenerator[str, None]:
@@ -671,7 +671,7 @@ class TestMergeAsyncGenerators:
         assert sorted(values) == ["1", "2", "a", "b"]
 
     @pytest.mark.asyncio
-    async def test_merge_empty_generators(self):
+    async def test_merge_empty_generators(self) -> None:
         """Test merging with empty generators."""
 
         async def empty1() -> AsyncGenerator[int, None]:
@@ -691,7 +691,7 @@ class TestMergeAsyncGenerators:
         assert values == [42]
 
     @pytest.mark.asyncio
-    async def test_merge_no_generators(self):
+    async def test_merge_no_generators(self) -> None:
         """Test merging with no generators."""
         merged: AsyncGenerator[int, None] = merge_async_generators()
         values: list[int] = [item async for item in merged]
@@ -699,7 +699,7 @@ class TestMergeAsyncGenerators:
         assert values == []
 
     @pytest.mark.asyncio
-    async def test_merge_single_generator(self):
+    async def test_merge_single_generator(self) -> None:
         """Test merging with single generator."""
 
         async def single() -> AsyncGenerator[str, None]:
@@ -712,7 +712,7 @@ class TestMergeAsyncGenerators:
         assert values == ["only", "item"]
 
     @pytest.mark.asyncio
-    async def test_merge_with_error(self):
+    async def test_merge_with_error(self) -> None:
         """Test merging when one generator raises an error."""
 
         async def working() -> AsyncGenerator[str, None]:
@@ -730,7 +730,7 @@ class TestMergeAsyncGenerators:
         assert "Generator error" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_merge_different_speeds(self):
+    async def test_merge_different_speeds(self) -> None:
         """Test merging generators with different speeds."""
 
         async def fast() -> AsyncGenerator[str, None]:

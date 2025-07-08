@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import AsyncGenerator
+
 import pytest
 
 from flowengine.combinators.basic import filter_stream, guard_stream, until_stream
@@ -18,7 +20,7 @@ class TestFilterStream:
     async def test_filter_stream_basic(self) -> None:
         """Test filter_stream with basic predicate."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5, 6]:
                 yield i
 
@@ -34,7 +36,7 @@ class TestFilterStream:
     async def test_filter_stream_empty_result(self) -> None:
         """Test filter_stream when no items match predicate."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 3, 5]:
                 yield i
 
@@ -50,7 +52,7 @@ class TestFilterStream:
     async def test_filter_stream_all_match(self) -> None:
         """Test filter_stream when all items match predicate."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [2, 4, 6]:
                 yield i
 
@@ -66,7 +68,7 @@ class TestFilterStream:
     async def test_filter_stream_empty_input(self) -> None:
         """Test filter_stream with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -95,7 +97,7 @@ class TestGuardStream:
     async def test_guard_stream_all_pass(self) -> None:
         """Test guard_stream when all items pass validation."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
 
@@ -111,7 +113,7 @@ class TestGuardStream:
     async def test_guard_stream_validation_failure(self) -> None:
         """Test guard_stream when validation fails."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, -1, 4]:
                 yield i
 
@@ -130,7 +132,7 @@ class TestGuardStream:
     async def test_guard_stream_first_item_fails(self) -> None:
         """Test guard_stream when first item fails validation."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [-5, 1, 2, 3]:
                 yield i
 
@@ -149,7 +151,7 @@ class TestGuardStream:
     async def test_guard_stream_empty_input(self) -> None:
         """Test guard_stream with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -178,7 +180,7 @@ class TestUntilStream:
     async def test_until_stream_stops_at_match(self) -> None:
         """Test until_stream stops when predicate matches."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 5, 6, 7]:
                 yield i
 
@@ -194,7 +196,7 @@ class TestUntilStream:
     async def test_until_stream_no_match(self) -> None:
         """Test until_stream when predicate never matches."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4]:
                 yield i
 
@@ -210,7 +212,7 @@ class TestUntilStream:
     async def test_until_stream_first_item_matches(self) -> None:
         """Test until_stream when first item matches."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [5, 1, 2, 3]:
                 yield i
 

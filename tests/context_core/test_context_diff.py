@@ -5,7 +5,7 @@ import pytest
 from context.main import Context
 
 
-def test_diff_basic():
+def test_diff_basic() -> None:
     """Test basic diff functionality."""
     context1 = Context()
     context1["key1"] = "value1"
@@ -30,7 +30,7 @@ def test_diff_basic():
     assert diff_result["removed"] == {"key1": "value1"}
 
 
-def test_diff_identical_contexts():
+def test_diff_identical_contexts() -> None:
     """Test diff with identical contexts."""
     context1 = Context()
     context1["key1"] = "value1"
@@ -49,7 +49,7 @@ def test_diff_identical_contexts():
     assert diff_result["removed"] == {}
 
 
-def test_diff_empty_contexts():
+def test_diff_empty_contexts() -> None:
     """Test diff with empty contexts."""
     context1 = Context()
     context2 = Context()
@@ -63,7 +63,7 @@ def test_diff_empty_contexts():
     assert diff_result["removed"] == {}
 
 
-def test_diff_one_empty_context():
+def test_diff_one_empty_context() -> None:
     """Test diff where one context is empty."""
     context1 = Context()
     context1["key1"] = "value1"
@@ -86,7 +86,7 @@ def test_diff_one_empty_context():
     assert diff_result["removed"] == {}
 
 
-def test_diff_with_none_values():
+def test_diff_with_none_values() -> None:
     """Test diff with None values."""
     context1 = Context()
     context1["none_key"] = None
@@ -107,7 +107,7 @@ def test_diff_with_none_values():
     assert diff_result["removed"] == {}
 
 
-def test_diff_with_complex_data_types():
+def test_diff_with_complex_data_types() -> None:
     """Test diff with complex data types."""
     context1 = Context()
     context1["list_key"] = ["original", "list"]
@@ -128,7 +128,7 @@ def test_diff_with_complex_data_types():
     assert diff_result["removed"] == {}
 
 
-def test_diff_with_multiple_frames():
+def test_diff_with_multiple_frames() -> None:
     """Test diff with contexts that have multiple frames."""
     context1 = Context()
     context1["base_key"] = "base_value"
@@ -154,7 +154,7 @@ def test_diff_with_multiple_frames():
     assert diff_result["removed"] == {}
 
 
-def test_diff_preserves_original_contexts():
+def test_diff_preserves_original_contexts() -> None:
     """Test that diff does not modify the original contexts."""
     context1 = Context()
     context1["key1"] = "value1"
@@ -180,7 +180,7 @@ def test_diff_preserves_original_contexts():
         _ = context2["key1"]
 
 
-def test_diff_returns_proper_structure():
+def test_diff_returns_proper_structure() -> None:
     """Test that diff returns the expected data structure."""
     context1 = Context()
     context2 = Context()
@@ -199,7 +199,7 @@ def test_diff_returns_proper_structure():
     assert isinstance(diff_result["removed"], dict)
 
 
-def test_diff_asymmetric():
+def test_diff_asymmetric() -> None:
     """Test that diff is asymmetric (order matters)."""
     context1 = Context()
     context1["key1"] = "value1"
@@ -222,7 +222,7 @@ def test_diff_asymmetric():
     assert diff_2_to_1["modified"] == {}
 
 
-def test_diff_only_additions():
+def test_diff_only_additions() -> None:
     """Test diff when only additions are present."""
     context1 = Context()
     context1["existing_key"] = "existing_value"
@@ -238,7 +238,7 @@ def test_diff_only_additions():
     assert diff_result["removed"] == {}
 
 
-def test_diff_only_removals():
+def test_diff_only_removals() -> None:
     """Test diff when only removals are present."""
     context1 = Context()
     context1["existing_key"] = "existing_value"
@@ -254,7 +254,7 @@ def test_diff_only_removals():
     assert diff_result["removed"] == {"removed_key": "removed_value"}
 
 
-def test_diff_only_modifications():
+def test_diff_only_modifications() -> None:
     """Test diff when only modifications are present."""
     context1 = Context()
     context1["modified_key"] = "original_value"

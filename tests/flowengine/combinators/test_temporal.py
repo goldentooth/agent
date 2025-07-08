@@ -34,7 +34,7 @@ class TestDelayStream:
     """Tests for delay_stream function."""
 
     @pytest.mark.asyncio
-    async def test_delay_basic(self):
+    async def test_delay_basic(self) -> None:
         """Test basic delay functionality."""
         delay_flow: Flow[int, int] = delay_stream(0.01)  # 10ms delay
         assert "delay(0.01)" in delay_flow.name
@@ -53,7 +53,7 @@ class TestDelayStream:
         assert elapsed >= 0.03
 
     @pytest.mark.asyncio
-    async def test_delay_zero(self):
+    async def test_delay_zero(self) -> None:
         """Test delay with zero seconds (no delay)."""
         delay_flow: Flow[int, int] = delay_stream(0)
 
@@ -68,7 +68,7 @@ class TestDelayStream:
         assert elapsed < 0.1
 
     @pytest.mark.asyncio
-    async def test_delay_empty_stream(self):
+    async def test_delay_empty_stream(self) -> None:
         """Test delay on empty stream."""
         delay_flow: Flow[int, int] = delay_stream(0.01)
 
@@ -85,7 +85,7 @@ class TestDebounceStream:
     """Tests for debounce_stream function."""
 
     @pytest.mark.asyncio
-    async def test_debounce_basic(self):
+    async def test_debounce_basic(self) -> None:
         """Test basic debounce functionality."""
         debounce_flow: Flow[int, int] = debounce_stream(0.05)  # 50ms debounce
         assert "debounce" in debounce_flow.name and "0.05" in debounce_flow.name
@@ -105,7 +105,7 @@ class TestDebounceStream:
         assert values == [0]
 
     @pytest.mark.asyncio
-    async def test_debounce_spaced_items(self):
+    async def test_debounce_spaced_items(self) -> None:
         """Test debounce with well-spaced items."""
         debounce_flow: Flow[int, int] = debounce_stream(0.02)  # 20ms debounce
 
@@ -123,7 +123,7 @@ class TestDebounceStream:
         assert values == [0, 1, 2]  # All items emitted since properly spaced
 
     @pytest.mark.asyncio
-    async def test_debounce_single_item(self):
+    async def test_debounce_single_item(self) -> None:
         """Test debounce with single item."""
         debounce_flow: Flow[str, str] = debounce_stream(0.02)
 
@@ -135,7 +135,7 @@ class TestDebounceStream:
         assert values == ["only"]
 
     @pytest.mark.asyncio
-    async def test_debounce_true_behavior(self):
+    async def test_debounce_true_behavior(self) -> None:
         """Test true debouncing behavior - emit first, suppress until interval expires."""
         debounce_flow: Flow[int, int] = debounce_stream(0.03)  # 30ms debounce
 
@@ -165,7 +165,7 @@ class TestDebounceStream:
         assert values == [0, 10]  # First item from each burst
 
     @pytest.mark.asyncio
-    async def test_debounce_mode_leading_edge(self):
+    async def test_debounce_mode_leading_edge(self) -> None:
         """Test debounce_stream with explicit leading edge mode."""
         debounce_flow: Flow[int, int] = debounce_stream(0.05, DebounceMode.LEADING_EDGE)
 
@@ -178,7 +178,7 @@ class TestDebounceStream:
         assert values == [0]  # Leading edge: emit first, suppress rest
 
     @pytest.mark.asyncio
-    async def test_debounce_mode_trailing_edge(self):
+    async def test_debounce_mode_trailing_edge(self) -> None:
         """Test debounce_stream with trailing edge mode."""
         debounce_flow: Flow[int, int] = debounce_stream(
             0.05, DebounceMode.TRAILING_EDGE
@@ -193,7 +193,7 @@ class TestDebounceStream:
         assert values == [2]  # Trailing edge: emit last after quiet period
 
     @pytest.mark.asyncio
-    async def test_debounce_specific_functions(self):
+    async def test_debounce_specific_functions(self) -> None:
         """Test specific debounce function variants."""
         # Leading edge function
         leading_flow: Flow[int, int] = debounce_stream_leading_edge(0.05)
@@ -223,7 +223,7 @@ class TestThrottleStream:
     """Tests for throttle_stream function."""
 
     @pytest.mark.asyncio
-    async def test_throttle_basic(self):
+    async def test_throttle_basic(self) -> None:
         """Test basic throttle functionality."""
         throttle_flow: Flow[int, int] = throttle_stream(20.0)  # 20 items per second max
         assert "throttle(20.0/s)" in throttle_flow.name
@@ -243,7 +243,7 @@ class TestThrottleStream:
         assert elapsed >= 0.2
 
     @pytest.mark.asyncio
-    async def test_throttle_slow_input(self):
+    async def test_throttle_slow_input(self) -> None:
         """Test throttle with naturally slow input."""
         throttle_flow: Flow[int, int] = throttle_stream(
             100.0
@@ -261,7 +261,7 @@ class TestThrottleStream:
         assert 0.25 <= elapsed <= 0.4
 
     @pytest.mark.asyncio
-    async def test_throttle_empty_stream(self):
+    async def test_throttle_empty_stream(self) -> None:
         """Test throttle on empty stream."""
         throttle_flow: Flow[int, int] = throttle_stream(10.0)
 
@@ -274,7 +274,7 @@ class TestThrottleStream:
         assert values == []
 
     @pytest.mark.asyncio
-    async def test_throttle_persistence_across_streams(self):
+    async def test_throttle_persistence_across_streams(self) -> None:
         """Test that throttle state persists across multiple stream uses."""
         throttle_flow: Flow[int, int] = throttle_stream(10.0)  # 10 items per second
 
@@ -309,7 +309,7 @@ class TestTimeoutStream:
     """Tests for timeout_stream function."""
 
     @pytest.mark.asyncio
-    async def test_timeout_basic(self):
+    async def test_timeout_basic(self) -> None:
         """Test basic timeout functionality."""
         timeout_flow: Flow[int, int] = timeout_stream(0.1)  # 100ms timeout
         assert "timeout(0.1)" in timeout_flow.name
@@ -321,7 +321,7 @@ class TestTimeoutStream:
         assert values == [0, 1, 2]
 
     @pytest.mark.asyncio
-    async def test_timeout_exceeded(self):
+    async def test_timeout_exceeded(self) -> None:
         """Test timeout when processing takes too long."""
         timeout_flow: Flow[int, int] = timeout_stream(0.01)  # 10ms timeout
 
@@ -342,7 +342,7 @@ class TestTimeoutStream:
         assert values == [1]
 
     @pytest.mark.asyncio
-    async def test_timeout_empty_stream(self):
+    async def test_timeout_empty_stream(self) -> None:
         """Test timeout on empty stream."""
         timeout_flow: Flow[int, int] = timeout_stream(0.1)
 
@@ -355,7 +355,7 @@ class TestTimeoutStream:
         assert values == []
 
     @pytest.mark.asyncio
-    async def test_timeout_actual_timeout(self):
+    async def test_timeout_actual_timeout(self) -> None:
         """Test timeout when actual timeout occurs."""
         timeout_flow: Flow[int, int] = timeout_stream(0.001)  # Very short timeout
 
@@ -375,7 +375,7 @@ class TestSampleStream:
     """Tests for sample_stream function."""
 
     @pytest.mark.asyncio
-    async def test_sample_basic(self):
+    async def test_sample_basic(self) -> None:
         """Test basic sampling functionality."""
         sample_flow: Flow[int, int] = sample_stream(0.05)  # Sample every 50ms
         assert "sample(0.05)" in sample_flow.name
@@ -403,7 +403,7 @@ class TestSampleStream:
             assert values[i] > values[i - 1]
 
     @pytest.mark.asyncio
-    async def test_sample_slow_input(self):
+    async def test_sample_slow_input(self) -> None:
         """Test sampling with slow input stream."""
         sample_flow: Flow[int, int] = sample_stream(0.02)  # Sample every 20ms
 
@@ -427,7 +427,7 @@ class TestSampleStream:
         assert len(values) >= 2
 
     @pytest.mark.asyncio
-    async def test_sample_empty_stream(self):
+    async def test_sample_empty_stream(self) -> None:
         """Test sampling empty stream."""
         sample_flow: Flow[int, int] = sample_stream(0.01)
 
@@ -448,7 +448,7 @@ class TestSampleStream:
         assert values == []
 
     @pytest.mark.asyncio
-    async def test_sample_single_item(self):
+    async def test_sample_single_item(self) -> None:
         """Test sampling with single item."""
         sample_flow: Flow[str, str] = sample_stream(0.05)
 
@@ -473,7 +473,7 @@ class TestSampleAdvanced:
     """Additional tests for sample_stream function."""
 
     @pytest.mark.asyncio
-    async def test_sample_with_transform(self):
+    async def test_sample_with_transform(self) -> None:
         """Test sample_stream with data transformation."""
         from flowengine.combinators.basic import compose, map_stream
         from flowengine.combinators.temporal import sample_stream
@@ -508,7 +508,7 @@ class TestTemporalErrorHandling:
     """Error handling tests for temporal combinators."""
 
     @pytest.mark.asyncio
-    async def test_delay_stream_negative_seconds(self):
+    async def test_delay_stream_negative_seconds(self) -> None:
         """Test delay_stream with negative seconds."""
         # Should work with negative seconds (effectively no delay)
         delay_flow: Flow[int, int] = delay_stream(-0.1)
@@ -518,13 +518,13 @@ class TestTemporalErrorHandling:
         assert values == [0, 1]
 
     @pytest.mark.asyncio
-    async def test_throttle_stream_zero_rate(self):
+    async def test_throttle_stream_zero_rate(self) -> None:
         """Test throttle_stream with zero rate."""
         with pytest.raises(ZeroDivisionError):
             throttle_stream(0.0)
 
     @pytest.mark.asyncio
-    async def test_throttle_stream_negative_rate(self):
+    async def test_throttle_stream_negative_rate(self) -> None:
         """Test throttle_stream with negative rate."""
         # Negative rate should work (negative interval means no delay)
         throttle_flow: Flow[int, int] = throttle_stream(-1.0)
@@ -534,7 +534,7 @@ class TestTemporalErrorHandling:
         assert values == [0, 1]
 
     @pytest.mark.asyncio
-    async def test_timeout_stream_zero_timeout(self):
+    async def test_timeout_stream_zero_timeout(self) -> None:
         """Test timeout_stream with zero timeout."""
         timeout_flow: Flow[int, int] = timeout_stream(0.0)
 
@@ -546,7 +546,7 @@ class TestTemporalErrorHandling:
             values: list[int] = [item async for item in timeout_flow(simple_stream())]
 
     @pytest.mark.asyncio
-    async def test_sample_stream_zero_interval(self):
+    async def test_sample_stream_zero_interval(self) -> None:
         """Test sample_stream with zero interval."""
         sample_flow: Flow[int, int] = sample_stream(0.0)
 

@@ -6,7 +6,7 @@ from context.frame import ContextFrame
 from context.main import Context
 
 
-def test_push_layer_basic():
+def test_push_layer_basic() -> None:
     """Test basic push_layer functionality."""
     context = Context()
     initial_frame_count = len(context.frames)
@@ -21,7 +21,7 @@ def test_push_layer_basic():
     assert isinstance(context.frames[-1], ContextFrame)
 
 
-def test_push_layer_multiple():
+def test_push_layer_multiple() -> None:
     """Test pushing multiple layers."""
     context = Context()
     initial_frame_count = len(context.frames)
@@ -39,7 +39,7 @@ def test_push_layer_multiple():
         assert isinstance(frame, ContextFrame)
 
 
-def test_push_layer_isolation():
+def test_push_layer_isolation() -> None:
     """Test that new layers isolate changes."""
     context = Context()
     context["base_key"] = "base_value"
@@ -59,7 +59,7 @@ def test_push_layer_isolation():
     assert "new_key" in context.frames[1]  # new frame
 
 
-def test_push_layer_shadowing():
+def test_push_layer_shadowing() -> None:
     """Test that new layers can shadow values from lower layers."""
     context = Context()
     context["shared_key"] = "original_value"
@@ -80,7 +80,7 @@ def test_push_layer_shadowing():
     assert context.frames[1]["shared_key"] == "new_value"
 
 
-def test_push_layer_preserves_existing_data():
+def test_push_layer_preserves_existing_data() -> None:
     """Test that pushing layers preserves existing data."""
     context = Context()
     context["key1"] = "value1"
@@ -98,7 +98,7 @@ def test_push_layer_preserves_existing_data():
     assert context.frames[0]["key2"] == "value2"
 
 
-def test_push_layer_with_empty_context():
+def test_push_layer_with_empty_context() -> None:
     """Test pushing layers on an empty context."""
     context = Context()
 
@@ -116,7 +116,7 @@ def test_push_layer_with_empty_context():
     assert len(context.frames[1].data) == 0
 
 
-def test_push_layer_returns_none():
+def test_push_layer_returns_none() -> None:
     """Test that push_layer returns None."""
     context = Context()
 

@@ -5,7 +5,7 @@ import pytest
 from context.main import Context
 
 
-def test_context_contains_basic():
+def test_context_contains_basic() -> None:
     """Test basic __contains__ functionality."""
     # Create a context and add a value
     context = Context()
@@ -18,7 +18,7 @@ def test_context_contains_basic():
     assert "non_existent_key" not in context
 
 
-def test_context_contains_none_values():
+def test_context_contains_none_values() -> None:
     """Test __contains__ with None values."""
     # Create a context with None value
     context = Context()
@@ -28,7 +28,7 @@ def test_context_contains_none_values():
     assert "none_key" in context
 
 
-def test_context_contains_empty_context():
+def test_context_contains_empty_context() -> None:
     """Test __contains__ with empty context."""
     # Create an empty context
     context = Context()
@@ -37,7 +37,7 @@ def test_context_contains_empty_context():
     assert "any_key" not in context
 
 
-def test_context_contains_edge_cases():
+def test_context_contains_edge_cases() -> None:
     """Test __contains__ with edge cases."""
     # Create a context with various edge cases
     context = Context()

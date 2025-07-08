@@ -12,7 +12,7 @@ from git_hooks.validator_registry import ValidatorNotFoundError, ValidatorRegist
 class MockValidator(Validator):
     """Mock validator for testing."""
 
-    def __init__(self, limit: int, **kwargs: Any):
+    def __init__(self, limit: int, **kwargs: Any) -> None:
         super().__init__(limit)
         self.kwargs: Dict[str, Any] = kwargs
 

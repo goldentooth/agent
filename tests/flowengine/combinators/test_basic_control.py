@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import AsyncGenerator
+
 import pytest
 
 from flowengine.combinators.basic import (
@@ -20,7 +22,7 @@ class TestTakeStream:
     async def test_take_stream_basic(self) -> None:
         """Test take_stream with basic functionality."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in range(10):
                 yield i
 
@@ -36,7 +38,7 @@ class TestTakeStream:
     async def test_take_stream_more_than_available(self) -> None:
         """Test take_stream when n is greater than available items."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -52,7 +54,7 @@ class TestTakeStream:
     async def test_take_stream_zero_items(self) -> None:
         """Test take_stream with n=0."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -68,7 +70,7 @@ class TestTakeStream:
     async def test_take_stream_empty_input(self) -> None:
         """Test take_stream with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -97,7 +99,7 @@ class TestSkipStream:
     async def test_skip_stream_basic(self) -> None:
         """Test skip_stream with basic functionality."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in range(10):
                 yield i
 
@@ -113,7 +115,7 @@ class TestSkipStream:
     async def test_skip_stream_more_than_available(self) -> None:
         """Test skip_stream when n is greater than available items."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -129,7 +131,7 @@ class TestSkipStream:
     async def test_skip_stream_zero_items(self) -> None:
         """Test skip_stream with n=0 (skip nothing)."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -145,7 +147,7 @@ class TestSkipStream:
     async def test_skip_stream_empty_input(self) -> None:
         """Test skip_stream with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -174,7 +176,7 @@ class TestCollectStream:
     async def test_collect_stream_basic(self) -> None:
         """Test collect_stream with basic functionality."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3, 4, 5]:
                 yield i
 
@@ -191,7 +193,7 @@ class TestCollectStream:
     async def test_collect_stream_empty_input(self) -> None:
         """Test collect_stream with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[int, None]:
             return
             yield  # pragma: no cover
 
@@ -208,7 +210,7 @@ class TestCollectStream:
     async def test_collect_stream_single_item(self) -> None:
         """Test collect_stream with single item."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield 42
 
         collector: Flow[int, list[int]] = collect_stream()
@@ -224,7 +226,7 @@ class TestCollectStream:
     async def test_collect_stream_different_types(self) -> None:
         """Test collect_stream with different data types."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for item in ["hello", "world", "test"]:
                 yield item
 
@@ -251,7 +253,7 @@ class TestShareStream:
     async def test_share_stream_basic(self) -> None:
         """Test share_stream basic functionality."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 

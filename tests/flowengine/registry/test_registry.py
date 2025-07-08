@@ -32,14 +32,14 @@ def double(x: int) -> int:
 class TestFlowRegistry:
     """Tests for FlowRegistry class - core registry functionality."""
 
-    def test_registry_creation(self):
+    def test_registry_creation(self) -> None:
         """Test basic FlowRegistry creation."""
         registry = FlowRegistry()
 
         assert len(registry.flows) == 0
         assert len(registry.categories) == 0
 
-    def test_register_flow_basic(self):
+    def test_register_flow_basic(self) -> None:
         """Test registering a flow."""
         registry = FlowRegistry()
         flow = map_stream(increment)
@@ -49,7 +49,7 @@ class TestFlowRegistry:
         assert "increment_flow" in registry.flows
         assert registry.flows["increment_flow"] == flow
 
-    def test_register_flow_with_category(self):
+    def test_register_flow_with_category(self) -> None:
         """Test registering a flow with category."""
         registry = FlowRegistry()
         flow = map_stream(increment)
@@ -60,7 +60,7 @@ class TestFlowRegistry:
         assert "math" in registry.categories
         assert "increment_flow" in registry.categories["math"]
 
-    def test_get_flow_exists(self):
+    def test_get_flow_exists(self) -> None:
         """Test getting an existing flow."""
         registry = FlowRegistry()
         flow = map_stream(increment)
@@ -70,7 +70,7 @@ class TestFlowRegistry:
 
         assert retrieved == flow
 
-    def test_list_flows_empty(self):
+    def test_list_flows_empty(self) -> None:
         """Test listing flows when registry is empty."""
         registry = FlowRegistry()
 
@@ -78,7 +78,7 @@ class TestFlowRegistry:
 
         assert flows == []
 
-    def test_list_flows_all(self):
+    def test_list_flows_all(self) -> None:
         """Test listing all flows."""
         registry = FlowRegistry()
         flow1 = map_stream(increment)
@@ -93,7 +93,7 @@ class TestFlowRegistry:
         assert "flow1" in flows
         assert "flow2" in flows
 
-    def test_search_by_name(self):
+    def test_search_by_name(self) -> None:
         """Test searching flows by name."""
         registry = FlowRegistry()
         increment_flow = map_stream(increment)
@@ -137,7 +137,7 @@ class TestRegistryFiltering:
         registry.register("identity", utility_flow, category="utility")
         return registry
 
-    def test_category_filtering(self):
+    def test_category_filtering(self) -> None:
         """Test filtering flows by category."""
         registry = self._setup_category_registry()
 
@@ -179,7 +179,7 @@ class TestRegistryFiltering:
         registry.register("identity", flow4, tags=["utility", "simple"])
         return registry
 
-    def test_single_tag_filtering(self):
+    def test_single_tag_filtering(self) -> None:
         """Test filtering flows by single tags."""
         registry = self._setup_tag_registry()
 
@@ -194,7 +194,7 @@ class TestRegistryFiltering:
         assert "uppercase" in simple_flows
         assert "identity" in simple_flows
 
-    def test_multiple_tag_filtering(self):
+    def test_multiple_tag_filtering(self) -> None:
         """Test filtering flows by multiple tags (AND operation)."""
         registry = self._setup_tag_registry()
 
@@ -224,7 +224,7 @@ class TestRegistryFiltering:
         )
         return registry
 
-    def test_category_precedence_over_tags(self):
+    def test_category_precedence_over_tags(self) -> None:
         """Test that category takes precedence over tags in filtering."""
         registry = self._setup_combined_registry()
 
@@ -237,7 +237,7 @@ class TestRegistryFiltering:
         assert len(text_flows) == 1
         assert "uppercase" in text_flows
 
-    def test_tag_filtering_without_category(self):
+    def test_tag_filtering_without_category(self) -> None:
         """Test tag filtering when no category is specified."""
         registry = self._setup_combined_registry()
 
@@ -285,7 +285,7 @@ class TestRegistryFiltering:
         )
         return registry
 
-    def test_search_by_name(self):
+    def test_search_by_name(self) -> None:
         """Test searching flows by name."""
         registry = self._setup_search_registry()
 
@@ -293,7 +293,7 @@ class TestRegistryFiltering:
         assert len(name_results) == 1
         assert "increment_processor" in name_results
 
-    def test_search_by_metadata(self):
+    def test_search_by_metadata(self) -> None:
         """Test searching flows by metadata."""
         registry = self._setup_search_registry()
 
@@ -308,7 +308,7 @@ class TestRegistryFiltering:
         assert "increment_processor" in test_results
         assert "double_multiplier" in test_results
 
-    def test_search_patterns(self):
+    def test_search_patterns(self) -> None:
         """Test search pattern matching."""
         registry = self._setup_search_registry()
 
@@ -322,7 +322,7 @@ class TestRegistryFiltering:
         assert len(case_results) == 1
         assert "text_transformer" in case_results
 
-    def test_search_edge_cases(self):
+    def test_search_edge_cases(self) -> None:
         """Test search edge cases."""
         registry = self._setup_search_registry()
 
@@ -341,7 +341,7 @@ class TestRegistryFiltering:
 class TestRegistryPersistence:
     """Tests for FlowRegistry persistence functionality."""
 
-    def test_export_json(self):
+    def test_export_json(self) -> None:
         """Test exporting registry to JSON format."""
         from flowengine.registry import export_registry
 
@@ -354,7 +354,7 @@ class TestRegistryPersistence:
         # Verify JSON structure and content
         self._verify_json_export_structure(json_data)
 
-    def _setup_test_flows_for_export(self):
+    def _setup_test_flows_for_export(self) -> None:
         """Helper to set up test flows for export testing."""
         flow_registry.clear()
 
@@ -376,7 +376,7 @@ class TestRegistryPersistence:
             metadata={"description": "Test flow 2"},
         )
 
-    def _verify_json_export_structure(self, json_data: str):
+    def _verify_json_export_structure(self, json_data: str) -> None:
         """Helper to verify JSON export structure."""
         import json
 
@@ -407,7 +407,7 @@ class TestRegistryPersistence:
         assert parsed["stats"]["total_categories"] == 1
         assert parsed["stats"]["total_tags"] == 2
 
-    def test_export_yaml(self):
+    def test_export_yaml(self) -> None:
         """Test exporting registry to YAML format."""
         from flowengine.registry import export_registry
 
@@ -425,7 +425,7 @@ class TestRegistryPersistence:
         with pytest.raises(ValueError, match="Unsupported export format"):
             export_registry("yaml")  # type: ignore[arg-type]
 
-    def test_import_round_trip(self):
+    def test_import_round_trip(self) -> None:
         """Test importing registry data preserves structure."""
         from flowengine.registry import export_registry, import_registry
 
@@ -474,7 +474,7 @@ class TestRegistryPersistence:
 
         # Note: Categories and tags are not preserved without flows
 
-    def test_import_validation(self):
+    def test_import_validation(self) -> None:
         """Test import validation for malformed data."""
         import pytest
 
@@ -510,7 +510,7 @@ class TestRegistryPersistence:
 class TestRegistryDecorator:
     """Tests for FlowRegistry decorator functionality."""
 
-    def test_registered_flow_decorator(self):
+    def test_registered_flow_decorator(self) -> None:
         """Test basic registered_flow decorator usage."""
         flow_registry.clear()
 
@@ -524,7 +524,7 @@ class TestRegistryDecorator:
         registered_flow_obj = flow_registry.get("decorated_flow")
         assert registered_flow_obj == flow
 
-    def test_decorator_metadata(self):
+    def test_decorator_metadata(self) -> None:
         """Test decorator preserves flow metadata."""
         flow_registry.clear()
 
@@ -543,7 +543,7 @@ class TestRegistryDecorator:
         assert hasattr(registered_flow_obj, "metadata")
         assert registered_flow_obj.metadata.get("author") == "test_decorator"
 
-    def test_decorator_categories(self):
+    def test_decorator_categories(self) -> None:
         """Test decorator with category assignment."""
         flow_registry.clear()
 

@@ -25,12 +25,12 @@ class TestDebugStream:
     """Tests for debug_stream function."""
 
     @pytest.mark.asyncio
-    async def test_debug_stream_basic(self):
+    async def test_debug_stream_basic(self) -> None:
         """Test basic debug stream functionality."""
         debugger = get_flow_debugger()
         debugger.debug_enabled = False  # Disable output for test
 
-        async def test_stream():
+        async def test_stream() -> None:
             for i in range(3):
                 yield i
 
@@ -40,14 +40,14 @@ class TestDebugStream:
         assert result == [0, 1, 2]
 
     @pytest.mark.asyncio
-    async def test_debug_stream_with_logging(self, capsys: "CaptureFixture[str]"):
+    async def test_debug_stream_with_logging(self, capsys: "CaptureFixture[str]") -> None:
         """Test debug stream with logging enabled."""
         debugger = get_flow_debugger()
         debugger.debug_enabled = True
 
         try:
 
-            async def test_stream():
+            async def test_stream() -> None:
                 for i in range(2):
                     yield i
 
@@ -63,14 +63,14 @@ class TestDebugStream:
             debugger.debug_enabled = False
 
     @pytest.mark.asyncio
-    async def test_debug_stream_with_breakpoint_condition(self):
+    async def test_debug_stream_with_breakpoint_condition(self) -> None:
         """Test debug stream with breakpoint condition."""
         debugger = get_flow_debugger()
         debugger.debug_enabled = True
 
         try:
 
-            async def test_stream():
+            async def test_stream() -> None:
                 for i in range(5):
                     yield i
 
@@ -99,10 +99,10 @@ class TestDebugStream:
             debugger.execution_history.clear()
 
     @pytest.mark.asyncio
-    async def test_debug_stream_error_handling(self):
+    async def test_debug_stream_error_handling(self) -> None:
         """Test debug stream error handling."""
 
-        async def failing_stream():
+        async def failing_stream() -> AsyncGenerator[Any, None]:
             yield 1
             raise ValueError("Test error")
 
@@ -129,7 +129,7 @@ class TestTracedFlow:
     """Tests for traced_flow function."""
 
     @pytest.mark.asyncio
-    async def test_traced_flow_basic(self):
+    async def test_traced_flow_basic(self) -> None:
         """Test basic traced flow functionality."""
         from flowengine.flow import Flow
 
@@ -143,7 +143,7 @@ class TestTracedFlow:
         simple_flow = Flow(simple_flow_fn, name="simple_flow")
         traced = traced_flow(simple_flow)
 
-        async def test_stream():
+        async def test_stream() -> None:
             for i in range(3):
                 yield i
 
@@ -152,7 +152,7 @@ class TestTracedFlow:
         assert traced.name == "traced(simple_flow)"
 
     @pytest.mark.asyncio
-    async def test_traced_flow_with_breakpoints(self):
+    async def test_traced_flow_with_breakpoints(self) -> None:
         """Test traced flow with breakpoint checking."""
         from flowengine.flow import Flow
 
@@ -182,7 +182,7 @@ class TestTracedFlow:
 
             traced = traced_flow(multiply_flow)
 
-            async def test_stream():
+            async def test_stream() -> None:
                 for i in range(2):
                     yield i
 
@@ -200,7 +200,7 @@ class TestTracedFlow:
             debugger.execution_history.clear()
 
     @pytest.mark.asyncio
-    async def test_traced_flow_error_handling(self):
+    async def test_traced_flow_error_handling(self) -> None:
         """Test traced flow error handling and enhancement."""
         from flowengine.flow import Flow
 
@@ -216,7 +216,7 @@ class TestTracedFlow:
         failing_flow = Flow(failing_flow_fn, name="failing_flow")
         traced = traced_flow(failing_flow)
 
-        async def test_stream():
+        async def test_stream() -> None:
             for i in range(3):
                 yield i
 
@@ -236,7 +236,7 @@ class TestTracedFlow:
         assert isinstance(error.original_exception, ValueError)
 
     @pytest.mark.asyncio
-    async def test_traced_flow_preserves_enhanced_errors(self):
+    async def test_traced_flow_preserves_enhanced_errors(self) -> None:
         """Test that traced flow preserves already enhanced errors."""
         from flowengine.flow import Flow
 
@@ -257,7 +257,7 @@ class TestTracedFlow:
         enhanced_error_flow = Flow(enhanced_error_flow_fn, name="enhanced_error_flow")
         traced = traced_flow(enhanced_error_flow)
 
-        async def test_stream():
+        async def test_stream() -> None:
             for i in range(3):
                 yield i
 
@@ -278,7 +278,7 @@ class TestTracedFlow:
         assert isinstance(error.original_exception, RuntimeError)
 
     @pytest.mark.asyncio
-    async def test_traced_flow_execution_context_tracking(self):
+    async def test_traced_flow_execution_context_tracking(self) -> None:
         """Test that traced flow properly tracks execution context."""
         from flowengine.flow import Flow
 
@@ -300,7 +300,7 @@ class TestTracedFlow:
     async def _execute_traced_flow_test(self, traced_flow: Any) -> list[int]:
         """Helper to execute traced flow test."""
 
-        async def test_stream():
+        async def test_stream() -> None:
             for i in range(2):
                 yield i
 

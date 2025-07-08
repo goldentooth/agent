@@ -19,7 +19,7 @@ class TestMapStream:
     async def test_map_stream_basic(self) -> None:
         """Test map_stream with basic transformation."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -35,7 +35,7 @@ class TestMapStream:
     async def test_map_stream_type_transformation(self) -> None:
         """Test map_stream with type transformation."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [1, 2, 3]:
                 yield i
 
@@ -51,7 +51,7 @@ class TestMapStream:
     async def test_map_stream_empty_input(self) -> None:
         """Test map_stream with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[str, None]:
             return
             yield  # pragma: no cover
 
@@ -67,7 +67,7 @@ class TestMapStream:
     async def test_map_stream_complex_transformation(self) -> None:
         """Test map_stream with complex transformation."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for word in ["hello", "world", "test"]:
                 yield word
 
@@ -96,11 +96,11 @@ class TestFlatMapStream:
     async def test_flat_map_stream_basic(self) -> None:
         """Test flat_map_stream with basic character splitting."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for word in ["ab", "cd"]:
                 yield word
 
-        async def split_chars(s: str):
+        async def split_chars(s: str) -> AsyncGenerator[str, None]:
             for char in s:
                 yield char
 
@@ -116,11 +116,11 @@ class TestFlatMapStream:
     async def test_flat_map_stream_empty_sub_streams(self) -> None:
         """Test flat_map_stream when some sub-streams are empty."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for i in [0, 2, 0, 3]:
                 yield i
 
-        async def range_generator(n: int):
+        async def range_generator(n: int) -> AsyncGenerator[int, None]:
             for i in range(n):
                 yield i
 
@@ -142,11 +142,11 @@ class TestFlatMapStream:
     async def test_flat_map_stream_empty_input(self) -> None:
         """Test flat_map_stream with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[str, None]:
             return
             yield  # pragma: no cover
 
-        async def split_chars(s: str):
+        async def split_chars(s: str) -> AsyncGenerator[str, None]:
             for char in s:
                 yield char
 
@@ -162,7 +162,7 @@ class TestFlatMapStream:
     async def test_flat_map_stream_type_transformation(self) -> None:
         """Test flat_map_stream with type transformation."""
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             for n in [2, 3]:
                 yield n
 
@@ -204,7 +204,7 @@ class TestFlattenStream:
             for i in [3, 4]:
                 yield i
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield sub_stream_1()
             yield sub_stream_2()
 
@@ -228,7 +228,7 @@ class TestFlattenStream:
             for i in [1, 2]:
                 yield i
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield empty_stream()
             yield non_empty_stream()
             yield empty_stream()
@@ -249,7 +249,7 @@ class TestFlattenStream:
             for i in [10, 20, 30]:
                 yield i
 
-        async def source():
+        async def source() -> AsyncGenerator[int, None]:
             yield sub_stream()
 
         flattener: Flow[AsyncGenerator[int, None], int] = flatten_stream()
@@ -264,7 +264,7 @@ class TestFlattenStream:
     async def test_flatten_stream_empty_input(self) -> None:
         """Test flatten_stream with empty input stream."""
 
-        async def empty_source():
+        async def empty_source() -> AsyncGenerator[str, None]:
             return
             yield  # pragma: no cover
 

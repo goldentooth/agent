@@ -1,5 +1,7 @@
 """Tests for flowengine.combinators.utils module."""
 
+from typing import AsyncGenerator
+
 import pytest
 
 from flowengine.combinators.utils import (
@@ -10,8 +12,8 @@ from flowengine.combinators.utils import (
 )
 
 
-def test_get_function_name_returns_function_name():
-    def test_function():
+def test_get_function_name_returns_function_name() -> None:
+    def test_function() -> None:
         pass
 
     result = get_function_name(test_function)
@@ -19,9 +21,9 @@ def test_get_function_name_returns_function_name():
     assert result == "test_function"
 
 
-def test_get_function_name_returns_default_for_no_name():
+def test_get_function_name_returns_default_for_no_name() -> None:
     class CallableWithoutName:
-        def __call__(self):
+        def __call__(self) -> None:
             pass
 
     obj = CallableWithoutName()
@@ -32,7 +34,7 @@ def test_get_function_name_returns_default_for_no_name():
     assert result == "function"
 
 
-def test_stream_end_is_singleton():
+def test_stream_end_is_singleton() -> None:
     # STREAM_END should be a unique sentinel object
     assert STREAM_END is STREAM_END
     assert STREAM_END == STREAM_END
@@ -41,7 +43,7 @@ def test_stream_end_is_singleton():
 
 
 @pytest.mark.asyncio
-async def test_create_single_item_stream_yields_one_item():
+async def test_create_single_item_stream_yields_one_item() -> None:
     test_item = "test value"
 
     stream = create_single_item_stream(test_item)
@@ -56,7 +58,7 @@ async def test_create_single_item_stream_yields_one_item():
 
 
 @pytest.mark.asyncio
-async def test_create_single_item_stream_works_with_different_types():
+async def test_create_single_item_stream_works_with_different_types() -> None:
     # Test with integer
     int_stream = create_single_item_stream(42)
     int_items = [item async for item in int_stream]
@@ -75,7 +77,7 @@ async def test_create_single_item_stream_works_with_different_types():
     assert obj_items[0] is obj  # Same object reference
 
 
-def test_input_typevar_is_available():
+def test_input_typevar_is_available() -> None:
     # Input TypeVar should be available for type annotations
     assert Input is not None
     assert hasattr(Input, "__name__")

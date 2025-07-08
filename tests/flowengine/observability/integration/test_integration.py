@@ -42,7 +42,7 @@ async def async_range(n: int) -> AsyncGenerator[int, None]:
 class TestPerformanceObservability:
     """Test performance monitoring and observability features."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Reset state before each test."""
         # Clear performance metrics
         get_performance_summary()
@@ -120,11 +120,11 @@ class TestPerformanceObservability:
 class TestDebuggingCapabilities:
     """Test debugging and introspection capabilities."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         """Setup debugging for tests."""
         disable_flow_debugging()  # Start with debugging disabled
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         """Cleanup after tests."""
         disable_flow_debugging()
 
@@ -228,7 +228,7 @@ class TestHealthMonitoring:
         check_names = [check.name for check in health.checks]
         assert "test_check" in check_names
 
-    def test_configuration_validation(self):
+    def test_configuration_validation(self) -> None:
         """Test flow configuration validation."""
         # Valid configuration
         valid_config = {"max_items": 100, "timeout_seconds": 5.0, "batch_size": 10}

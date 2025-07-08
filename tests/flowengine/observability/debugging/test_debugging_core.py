@@ -23,7 +23,7 @@ from flowengine.observability.debugging import (
 class TestFlowExecutionContext:
     """Tests for FlowExecutionContext class."""
 
-    def test_context_creation(self):
+    def test_context_creation(self) -> None:
         """Test basic context creation."""
         context = FlowExecutionContext(
             flow_name="test_flow",
@@ -36,7 +36,7 @@ class TestFlowExecutionContext:
         assert context.item_index == 0
         assert context.parent_flow is None
 
-    def test_context_to_dict(self):
+    def test_context_to_dict(self) -> None:
         """Test context serialization to dictionary."""
         now = datetime.now()
         context = FlowExecutionContext(
@@ -60,7 +60,7 @@ class TestFlowExecutionContext:
 class TestBreakpointTypes:
     """Tests for breakpoint-related type aliases."""
 
-    def test_breakpoint_condition_callable(self):
+    def test_breakpoint_condition_callable(self) -> None:
         """Test BreakpointCondition type works with callables."""
         context = FlowExecutionContext("test", datetime.now())
 
@@ -69,7 +69,7 @@ class TestBreakpointTypes:
         assert condition(10, context) is True
         assert condition(3, context) is False
 
-    def test_breakpoint_registry_dict(self):
+    def test_breakpoint_registry_dict(self) -> None:
         """Test BreakpointRegistry type works with dictionaries."""
         condition: BreakpointCondition = lambda item, ctx: True
         registry: BreakpointRegistry = {"test_flow": condition}
@@ -81,7 +81,7 @@ class TestBreakpointTypes:
 class TestFlowDebugger:
     """Tests for FlowDebugger class."""
 
-    def test_debugger_creation(self):
+    def test_debugger_creation(self) -> None:
         """Test FlowDebugger creation."""
         debugger = FlowDebugger()
 
@@ -91,7 +91,7 @@ class TestFlowDebugger:
         assert not debugger.debug_enabled
         assert debugger.max_history == 1000
 
-    def test_enable_debugging(self):
+    def test_enable_debugging(self) -> None:
         """Test enabling debugging."""
         debugger = FlowDebugger()
         assert not debugger.debug_enabled
@@ -99,7 +99,7 @@ class TestFlowDebugger:
         debugger.enable_debugging()
         assert debugger.debug_enabled
 
-    def test_disable_debugging(self):
+    def test_disable_debugging(self) -> None:
         """Test disabling debugging."""
         debugger = FlowDebugger()
         debugger.enable_debugging()
@@ -108,7 +108,7 @@ class TestFlowDebugger:
         debugger.disable_debugging()
         assert not debugger.debug_enabled
 
-    def test_add_breakpoint(self):
+    def test_add_breakpoint(self) -> None:
         """Test adding breakpoints."""
         debugger = FlowDebugger()
 
@@ -123,7 +123,7 @@ class TestFlowDebugger:
         assert "custom_flow" in debugger.breakpoints
         assert debugger.breakpoints["custom_flow"] == condition
 
-    def test_remove_breakpoint(self):
+    def test_remove_breakpoint(self) -> None:
         """Test removing breakpoints."""
         debugger = FlowDebugger()
 
@@ -205,7 +205,7 @@ class TestFlowDebugger:
         # Both should be in history despite the corruption
         assert len(debugger.execution_history) == 2
 
-    def test_context_to_dict_with_none_values(self):
+    def test_context_to_dict_with_none_values(self) -> None:
         """Test context serialization with None values."""
         context = FlowExecutionContext(
             flow_name="test_flow",
@@ -216,7 +216,7 @@ class TestFlowDebugger:
         context_dict = context.to_dict()
         assert context_dict["current_item"] is None
 
-    def test_enable_disable_debugging_cycle(self):
+    def test_enable_disable_debugging_cycle(self) -> None:
         """Test multiple enable/disable cycles."""
         debugger = FlowDebugger()
 
@@ -317,7 +317,7 @@ class TestFlowDebugger:
             assert "Index: 3" in captured.out
             assert "Commands: (c)ontinue, (s)tack, (i)nspect, (q)uit" in captured.out
 
-    def test_print_execution_stack(self, capsys: "CaptureFixture[str]"):
+    def test_print_execution_stack(self, capsys: "CaptureFixture[str]") -> None:
         """Test execution stack printing."""
         debugger = FlowDebugger()
 
@@ -336,7 +336,7 @@ class TestFlowDebugger:
         assert "└─ flow2 (item 2)" in captured.out
         assert "  └─ flow1 (item 1)" in captured.out
 
-    def test_print_item_inspection_simple(self, capsys: "CaptureFixture[str]"):
+    def test_print_item_inspection_simple(self, capsys: "CaptureFixture[str]") -> None:
         """Test item inspection printing for simple types."""
         debugger = FlowDebugger()
 
@@ -348,7 +348,7 @@ class TestFlowDebugger:
         assert "Value: 'test_string'" in captured.out
         assert "String: test_string" in captured.out
 
-    def test_print_item_inspection_with_attributes(self, capsys: "CaptureFixture[str]"):
+    def test_print_item_inspection_with_attributes(self, capsys: "CaptureFixture[str]") -> None:
         """Test item inspection printing for objects with attributes."""
         debugger = FlowDebugger()
 
@@ -494,7 +494,7 @@ class TestFlowDebugger:
         # Should handle KeyboardInterrupt gracefully
         await debugger.handle_breakpoint_commands("test_item")
 
-    def test_get_execution_trace(self):
+    def test_get_execution_trace(self) -> None:
         """Test getting execution trace."""
         debugger = FlowDebugger()
 
@@ -511,7 +511,7 @@ class TestFlowDebugger:
         assert trace[0]["flow_name"] == "flow1"
         assert trace[1]["flow_name"] == "flow2"
 
-    def test_export_trace(self, tmp_path: Path):
+    def test_export_trace(self, tmp_path: Path) -> None:
         """Test exporting execution trace."""
         debugger = FlowDebugger()
 
@@ -535,7 +535,7 @@ class TestFlowDebugger:
         assert "breakpoints" in data
         assert "test_flow" in data["breakpoints"]
 
-    def test_step_debugger_function(self):
+    def test_step_debugger_function(self) -> None:
         """Test step_debugger convenience function."""
         from flowengine import Flow
         from flowengine.combinators.basic import map_stream

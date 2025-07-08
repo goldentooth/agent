@@ -5,7 +5,7 @@ import pytest
 from context.main import Context
 
 
-def test_fork_with_history_basic():
+def test_fork_with_history_basic() -> None:
     """Test basic fork_with_history functionality."""
     context = Context()
     context["key1"] = "value1"
@@ -23,7 +23,7 @@ def test_fork_with_history_basic():
     assert forked["key2"] == "value2"
 
 
-def test_fork_with_history_independence():
+def test_fork_with_history_independence() -> None:
     """Test that fork_with_history creates independent contexts."""
     context = Context()
     context["shared_key"] = "original_value"
@@ -53,7 +53,7 @@ def test_fork_with_history_independence():
         _ = context["fork_key"]
 
 
-def test_fork_with_history_vs_regular_fork():
+def test_fork_with_history_vs_regular_fork() -> None:
     """Test that fork_with_history preserves more than regular fork."""
     context = Context()
     context["test_key"] = "test_value"
@@ -73,7 +73,7 @@ def test_fork_with_history_vs_regular_fork():
     assert context["test_key"] == "test_value"
 
 
-def _create_layered_context_for_history_fork():
+def _create_layered_context_for_history_fork() -> None:
     """Helper function to create a layered context for history fork testing."""
     context = Context()
     context["base_key"] = "base_value"
@@ -90,7 +90,7 @@ def _create_layered_context_for_history_fork():
     return context
 
 
-def test_fork_with_history_with_multiple_frames():
+def test_fork_with_history_with_multiple_frames() -> None:
     """Test fork_with_history with multiple frames (layers)."""
     context = _create_layered_context_for_history_fork()
 
@@ -104,7 +104,7 @@ def test_fork_with_history_with_multiple_frames():
     assert forked["layer2_key"] == "layer2_value"
 
 
-def test_fork_with_history_layer_independence():
+def test_fork_with_history_layer_independence() -> None:
     """Test fork_with_history independence when layers are modified."""
     context = _create_layered_context_for_history_fork()
     forked = context.fork_with_history()
@@ -118,7 +118,7 @@ def test_fork_with_history_layer_independence():
     assert forked["layer2_key"] == "layer2_value"
 
 
-def test_fork_with_history_empty_context():
+def test_fork_with_history_empty_context() -> None:
     """Test fork_with_history on an empty context."""
     context = Context()
 
@@ -144,7 +144,7 @@ def test_fork_with_history_empty_context():
         _ = forked["original_key"]
 
 
-def test_fork_with_history_preserves_frame_layering():
+def test_fork_with_history_preserves_frame_layering() -> None:
     """Test that fork_with_history preserves exact frame layering behavior."""
     context = Context()
 
@@ -181,7 +181,7 @@ def _verify_context_instance_methods(context: Context) -> None:
     assert hasattr(context, "fork_with_history")
 
 
-def test_fork_with_history_returns_context_instance():
+def test_fork_with_history_returns_context_instance() -> None:
     """Test that fork_with_history returns a proper Context instance."""
     context = Context()
     context["test_key"] = "test_value"
@@ -224,7 +224,7 @@ def _verify_nested_fork_independence(
         _ = first_fork["second_fork_key"]
 
 
-def test_fork_with_history_can_be_forked_again():
+def test_fork_with_history_can_be_forked_again() -> None:
     """Test that a fork_with_history result can be forked again."""
     context = Context()
     context["original_key"] = "original_value"
@@ -241,7 +241,7 @@ def test_fork_with_history_can_be_forked_again():
     _verify_nested_fork_independence(context, first_fork, second_fork)
 
 
-def test_fork_with_history_with_none_values():
+def test_fork_with_history_with_none_values() -> None:
     """Test fork_with_history with None values."""
     context = Context()
     context["none_key"] = None

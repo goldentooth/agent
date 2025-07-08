@@ -72,13 +72,13 @@ class TestPrintResults:
         assert "error_file.py: Test error" in captured.out
         assert "⚠️  WARNING: warning_file.py (Test warning)" in captured.out
 
-    def _create_mixed_results(self):
+    def _create_mixed_results(self) -> tuple[ValidationResult, ValidationResult]:
         """Create error and warning results for testing."""
         error_result = self._create_error_result()
         warning_result = self._create_warning_result()
         return error_result, warning_result
 
-    def _create_error_result(self):
+    def _create_error_result(self) -> ValidationResult:
         """Create error result for testing."""
         return ValidationResult(
             file_path=Path("error_file.py"),
@@ -88,7 +88,7 @@ class TestPrintResults:
             limit=50,
         )
 
-    def _create_warning_result(self):
+    def _create_warning_result(self) -> ValidationResult:
         """Create warning result for testing."""
         return ValidationResult(
             file_path=Path("warning_file.py"),
@@ -120,7 +120,7 @@ class TestSeparateResultsBySeverity:
         assert errors[0].severity == ValidationSeverity.ERROR
         assert warnings[0].severity == ValidationSeverity.WARNING
 
-    def _create_test_results_pair(self):
+    def _create_test_results_pair(self) -> tuple[ValidationResult, ValidationResult]:
         """Create test error and warning results."""
         error_result = ValidationResult(
             file_path=Path("error.py"),
