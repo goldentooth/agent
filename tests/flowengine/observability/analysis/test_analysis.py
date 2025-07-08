@@ -28,7 +28,7 @@ from flowengine.observability.analysis import (
 class TestFlowNode:
     """Tests for FlowNode class."""
 
-    def test_flow_node_creation(self):
+    def test_flow_node_creation(self) -> None:
         """Test basic FlowNode creation."""
         node = FlowNode(
             id="test_node",
@@ -44,7 +44,7 @@ class TestFlowNode:
         assert node.description == "Test node"
         assert node.complexity_score == 2
 
-    def test_flow_node_to_dict(self):
+    def test_flow_node_to_dict(self) -> None:
         """Test FlowNode to_dict conversion."""
         node = FlowNode(
             id="node1",
@@ -66,7 +66,7 @@ class TestFlowNode:
 class TestFlowEdge:
     """Tests for FlowEdge class."""
 
-    def test_flow_edge_creation(self):
+    def test_flow_edge_creation(self) -> None:
         """Test basic FlowEdge creation."""
         edge = FlowEdge(source_id="node1", target_id="node2", edge_type="sequential")
 
@@ -74,7 +74,7 @@ class TestFlowEdge:
         assert edge.target_id == "node2"
         assert edge.edge_type == "sequential"
 
-    def test_flow_edge_to_dict(self):
+    def test_flow_edge_to_dict(self) -> None:
         """Test FlowEdge to_dict conversion."""
         edge = FlowEdge(
             source_id="node1",
@@ -94,7 +94,7 @@ class TestFlowEdge:
 class TestFlowGraph:
     """Tests for FlowGraph class."""
 
-    def test_flow_graph_creation(self):
+    def test_flow_graph_creation(self) -> None:
         """Test basic FlowGraph creation."""
         graph = FlowGraph()
 
@@ -103,7 +103,7 @@ class TestFlowGraph:
         assert len(graph.entry_points) == 0
         assert len(graph.exit_points) == 0
 
-    def test_flow_graph_complexity_score(self):
+    def test_flow_graph_complexity_score(self) -> None:
         """Test complexity score calculation."""
         graph = FlowGraph()
 
@@ -117,12 +117,12 @@ class TestFlowGraph:
 
         assert graph.complexity_score == 4
 
-    def test_flow_graph_depth_empty(self):
+    def test_flow_graph_depth_empty(self) -> None:
         """Test depth calculation for empty graph."""
         graph = FlowGraph()
         assert graph.depth == 0
 
-    def test_flow_graph_depth_single_node(self):
+    def test_flow_graph_depth_single_node(self) -> None:
         """Test depth calculation for single node."""
         graph = FlowGraph()
         node1 = FlowNode(id="1", name="single", flow_type="utility")
@@ -132,7 +132,7 @@ class TestFlowGraph:
 
         assert graph.depth == 1
 
-    def test_flow_graph_depth_chain(self):
+    def test_flow_graph_depth_chain(self) -> None:
         """Test depth calculation for chained nodes."""
         graph = FlowGraph()
 
@@ -154,12 +154,12 @@ class TestFlowGraph:
 
         assert graph.depth == 3
 
-    def test_flow_graph_critical_path_empty(self):
+    def test_flow_graph_critical_path_empty(self) -> None:
         """Test critical path for empty graph."""
         graph = FlowGraph()
         assert graph.get_critical_path() == []
 
-    def test_flow_graph_critical_path_single_node(self):
+    def test_flow_graph_critical_path_single_node(self) -> None:
         """Test critical path for single node."""
         graph = FlowGraph()
         node1 = FlowNode(id="1", name="single", flow_type="utility")
@@ -168,7 +168,7 @@ class TestFlowGraph:
 
         assert graph.get_critical_path() == ["1"]
 
-    def test_flow_graph_critical_path_chain(self):
+    def test_flow_graph_critical_path_chain(self) -> None:
         """Test critical path for chained nodes."""
         graph = FlowGraph()
 
@@ -188,7 +188,7 @@ class TestFlowGraph:
 
         assert graph.get_critical_path() == ["1", "2", "3"]
 
-    def test_flow_graph_critical_path_multiple_branches(self):
+    def test_flow_graph_critical_path_multiple_branches(self) -> None:
         """Test critical path with multiple branches."""
         graph = FlowGraph()
 
@@ -212,7 +212,7 @@ class TestFlowGraph:
         # Should find the longer path: 1->2->4 (length 3)
         assert graph.get_critical_path() == ["1", "2", "4"]
 
-    def test_flow_graph_find_cycles_no_cycles(self):
+    def test_flow_graph_find_cycles_no_cycles(self) -> None:
         """Test cycle detection with no cycles."""
         graph = FlowGraph()
 
@@ -227,7 +227,7 @@ class TestFlowGraph:
 
         assert graph.find_cycles() == []
 
-    def test_flow_graph_find_cycles_with_cycle(self):
+    def test_flow_graph_find_cycles_with_cycle(self) -> None:
         """Test cycle detection with a simple cycle."""
         graph = FlowGraph()
 
@@ -248,7 +248,7 @@ class TestFlowGraph:
         assert len(cycles) == 1
         assert "1" in cycles[0] and "2" in cycles[0]
 
-    def test_flow_graph_to_dict(self):
+    def test_flow_graph_to_dict(self) -> None:
         """Test FlowGraph to_dict conversion."""
         graph = FlowGraph()
 
@@ -277,7 +277,7 @@ class TestFlowGraph:
 
 
 # Helper functions for FlowAnalyzer tests
-def build_map_filter_graph():
+def build_map_filter_graph() -> FlowGraph:
     """Build a test graph with map-filter pattern."""
     graph = FlowGraph()
     map_node = FlowNode(id="1", name="map_func", flow_type="transformation")
@@ -322,20 +322,20 @@ def assert_fan_out_pattern(pattern: PatternData) -> None:
 class TestFlowAnalyzer:
     """Tests for FlowAnalyzer class."""
 
-    def test_analyzer_creation(self):
+    def test_analyzer_creation(self) -> None:
         """Test FlowAnalyzer creation."""
         analyzer = FlowAnalyzer()
 
         assert analyzer.node_id_counter == 0
         assert len(analyzer.flow_registry) == 0
 
-    def test_node_counter_behavior(self):
+    def test_node_counter_behavior(self) -> None:
         """Test that node counter behavior works correctly."""
         analyzer = FlowAnalyzer()
 
         assert analyzer.node_id_counter == 0
 
-    def test_flow_signature_generation(self):
+    def test_flow_signature_generation(self) -> None:
         """Test flow signature generation capability."""
         analyzer = FlowAnalyzer()
 
@@ -348,7 +348,7 @@ class TestFlowAnalyzer:
         assert hasattr(analyzer, "_get_flow_signature")
         assert callable(getattr(analyzer, "_get_flow_signature"))
 
-    def test_create_flow_node(self):
+    def test_create_flow_node(self) -> None:
         """Test flow node creation capability."""
         analyzer = FlowAnalyzer()
 
@@ -361,7 +361,7 @@ class TestFlowAnalyzer:
         assert hasattr(analyzer, "_create_flow_node")
         assert callable(getattr(analyzer, "_create_flow_node"))
 
-    def test_analyze_single_flow(self):
+    def test_analyze_single_flow(self) -> None:
         """Test analyzing a single flow."""
         analyzer = FlowAnalyzer()
 
@@ -381,7 +381,7 @@ class TestFlowAnalyzer:
             node.flow_type == "transformation"
         )  # map should be categorized as transformation
 
-    def test_analyze_composition_empty(self):
+    def test_analyze_composition_empty(self) -> None:
         """Test analyzing empty composition."""
         analyzer = FlowAnalyzer()
         graph = analyzer.analyze_composition([])
@@ -391,7 +391,7 @@ class TestFlowAnalyzer:
         assert len(graph.entry_points) == 0
         assert len(graph.exit_points) == 0
 
-    def test_analyze_composition_multiple_flows(self):
+    def test_analyze_composition_multiple_flows(self) -> None:
         """Test analyzing composition of multiple flows."""
         analyzer = FlowAnalyzer()
 
@@ -415,7 +415,7 @@ class TestFlowAnalyzer:
         assert edge.source_id in graph.nodes
         assert edge.target_id in graph.nodes
 
-    def test_extract_description_behavior(self):
+    def test_extract_description_behavior(self) -> None:
         """Test description extraction behavior through public analyze method."""
         analyzer = FlowAnalyzer()
 
@@ -431,7 +431,7 @@ class TestFlowAnalyzer:
         node = list(graph.nodes.values())[0]
         assert "map" in node.name
 
-    def test_detect_patterns_empty_graph(self):
+    def test_detect_patterns_empty_graph(self) -> None:
         """Test pattern detection with empty graph."""
         analyzer = FlowAnalyzer()
         graph = FlowGraph()
@@ -441,7 +441,7 @@ class TestFlowAnalyzer:
         # Should return empty list for empty graph
         assert patterns == []
 
-    def test_detect_patterns_single_node(self):
+    def test_detect_patterns_single_node(self) -> None:
         """Test pattern detection with single node graph."""
         analyzer = FlowAnalyzer()
 
@@ -456,7 +456,7 @@ class TestFlowAnalyzer:
         # Should not crash and return some result (specific patterns depend on helpers)
         assert isinstance(patterns, list)
 
-    def test_detect_map_filter_pattern(self):
+    def test_detect_map_filter_pattern(self) -> None:
         """Test detection of map-filter pattern."""
         analyzer = FlowAnalyzer()
         graph = build_map_filter_graph()
@@ -464,7 +464,7 @@ class TestFlowAnalyzer:
         assert len(patterns) == 1
         assert_map_filter_pattern(patterns[0])
 
-    def test_detect_fan_out_pattern(self):
+    def test_detect_fan_out_pattern(self) -> None:
         """Test detection of fan-out pattern."""
         analyzer = FlowAnalyzer()
         graph = build_fan_out_graph()
@@ -472,7 +472,7 @@ class TestFlowAnalyzer:
         assert len(patterns) == 1
         assert_fan_out_pattern(patterns[0])
 
-    def test_detect_pipeline_pattern(self):
+    def test_detect_pipeline_pattern(self) -> None:
         """Test detection of linear pipeline pattern."""
         analyzer = FlowAnalyzer()
         graph = FlowGraph()
@@ -506,7 +506,7 @@ class TestFlowAnalyzer:
         assert pattern["nodes"] == ["1", "2", "3", "4"]
         assert "4 stages" in pattern["description"]
 
-    def test_detect_error_handling_pattern(self):
+    def test_detect_error_handling_pattern(self) -> None:
         """Test detection of error handling pattern."""
         analyzer = FlowAnalyzer()
         graph = FlowGraph()
@@ -529,7 +529,7 @@ class TestFlowAnalyzer:
         assert "2 error handling stage" in pattern["description"]
         assert "fault tolerance" in pattern["reliability_impact"]
 
-    def test_generate_optimization_suggestions_empty(self):
+    def test_generate_optimization_suggestions_empty(self) -> None:
         """Test optimization suggestions for empty graph."""
         analyzer = FlowAnalyzer()
         graph = FlowGraph()
@@ -539,7 +539,7 @@ class TestFlowAnalyzer:
         # Empty graph should have no suggestions
         assert suggestions == []
 
-    def test_generate_optimization_suggestions_caching(self):
+    def test_generate_optimization_suggestions_caching(self) -> None:
         """Test caching suggestions for expensive nodes."""
         analyzer = FlowAnalyzer()
         graph = FlowGraph()
@@ -564,7 +564,7 @@ class TestFlowAnalyzer:
         assert "1" in suggestion["affected_nodes"]
         assert "2" not in suggestion["affected_nodes"]
 
-    def test_generate_optimization_suggestions_batching(self):
+    def test_generate_optimization_suggestions_batching(self) -> None:
         """Test batching suggestions for high complexity."""
         analyzer = FlowAnalyzer()
         graph = FlowGraph()
@@ -587,7 +587,7 @@ class TestFlowAnalyzer:
 class TestAnalysisFunctions:
     """Tests for module-level analysis functions."""
 
-    def test_analyze_flow_function(self):
+    def test_analyze_flow_function(self) -> None:
         """Test analyze_flow convenience function."""
 
         def increment(x: int) -> int:
@@ -599,13 +599,13 @@ class TestAnalysisFunctions:
         assert len(graph.nodes) == 1
         assert len(graph.entry_points) == 1
 
-    def test_get_flow_analyzer_function(self):
+    def test_get_flow_analyzer_function(self) -> None:
         """Test get_flow_analyzer convenience function."""
         analyzer = get_flow_analyzer()
 
         assert isinstance(analyzer, FlowAnalyzer)
 
-    def test_analyze_flow_composition_function(self):
+    def test_analyze_flow_composition_function(self) -> None:
         """Test analyze_flow_composition convenience function."""
 
         def increment(x: int) -> int:
@@ -622,7 +622,7 @@ class TestAnalysisFunctions:
         assert len(graph.entry_points) == 1
         assert len(graph.exit_points) == 1
 
-    def test_detect_flow_patterns_function(self):
+    def test_detect_flow_patterns_function(self) -> None:
         """Test detect_flow_patterns convenience function."""
         graph = FlowGraph()
 
@@ -635,7 +635,7 @@ class TestAnalysisFunctions:
         assert len(patterns) == 1
         assert patterns[0]["pattern"] == "error_handling"
 
-    def test_generate_flow_optimizations_function(self):
+    def test_generate_flow_optimizations_function(self) -> None:
         """Test generate_flow_optimizations convenience function."""
         graph = FlowGraph()
 
@@ -650,7 +650,7 @@ class TestAnalysisFunctions:
         assert len(optimizations) == 1
         assert optimizations[0]["type"] == "caching"
 
-    def test_export_flow_analysis_function(self):
+    def test_export_flow_analysis_function(self) -> None:
         """Test export_flow_analysis convenience function."""
         import json
         import os
@@ -685,7 +685,7 @@ class TestAnalysisFunctions:
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
 
-    def test_find_cycles_function(self):
+    def test_find_cycles_function(self) -> None:
         """Test find_cycles convenience function."""
         graph = FlowGraph()
 
@@ -714,7 +714,7 @@ class TestAnalysisFunctions:
         )  # Cycle includes duplicate node: ['1', '2', '3', '1']
         assert all(node_id in cycles[0] for node_id in ["1", "2", "3"])
 
-    def test_calculate_dependencies_function(self):
+    def test_calculate_dependencies_function(self) -> None:
         """Test calculate_dependencies convenience function."""
         graph = FlowGraph()
 
@@ -747,7 +747,7 @@ class TestAnalysisFunctions:
         # Node 4 depends on nodes 2 and 3
         assert sorted(deps["4"]) == ["2", "3"]
 
-    def test_visualize_flow_graph_dot_format(self):
+    def test_visualize_flow_graph_dot_format(self) -> None:
         """Test visualize_flow_graph DOT format output."""
         graph = self._create_simple_test_graph()
 
@@ -762,7 +762,7 @@ class TestAnalysisFunctions:
         assert '"1" -> "2"' in dot_output
         assert '"2" -> "3"' in dot_output
 
-    def test_visualize_flow_graph_json_format(self):
+    def test_visualize_flow_graph_json_format(self) -> None:
         """Test visualize_flow_graph JSON format output."""
         graph = self._create_simple_test_graph()
 
@@ -797,7 +797,7 @@ class TestAnalysisFunctions:
 
         return graph
 
-    def test_optimize_flow_composition_function(self):
+    def test_optimize_flow_composition_function(self) -> None:
         """Test optimize_flow_composition convenience function."""
         graph = FlowGraph()
 

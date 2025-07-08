@@ -21,13 +21,13 @@ from git_hooks.utils import print_results
 class TestPrintResults:
     """Test suite for print_results function."""
 
-    def test_print_results_empty_list(self, capsys):
+    def test_print_results_empty_list(self, capsys) -> None:
         """Test print_results with empty results list."""
         print_results([], "Test Hook")
         captured = capsys.readouterr()
         assert "✅ Test Hook: All files within healthy limits" in captured.out
 
-    def test_print_results_with_errors_only(self, capsys):
+    def test_print_results_with_errors_only(self, capsys) -> None:
         """Test print_results with only error results."""
         error_result = ValidationResult(
             file_path=Path("test_file.py"),
@@ -44,7 +44,7 @@ class TestPrintResults:
         assert "test_file.py: Test error" in captured.out
         assert "Please refactor large files/modules before committing." in captured.out
 
-    def test_print_results_with_warnings_only(self, capsys):
+    def test_print_results_with_warnings_only(self, capsys) -> None:
         """Test print_results with only warning results."""
         warning_result = ValidationResult(
             file_path=Path("test_file.py"),
@@ -61,7 +61,7 @@ class TestPrintResults:
         assert "⚠️  WARNING: test_file.py (Test warning)" in captured.out
         assert "Test guidance" in captured.out
 
-    def test_print_results_with_mixed_results(self, capsys):
+    def test_print_results_with_mixed_results(self, capsys) -> None:
         """Test print_results with both errors and warnings."""
         error_result, warning_result = self._create_mixed_results()
 
@@ -103,13 +103,13 @@ class TestPrintResults:
 class TestSeparateResultsBySeverity:
     """Test suite for _separate_results_by_severity function."""
 
-    def test_separate_empty_results(self):
+    def test_separate_empty_results(self) -> None:
         """Test separating empty results list."""
         errors, warnings = _separate_results_by_severity([])
         assert errors == []
         assert warnings == []
 
-    def test_separate_mixed_results(self):
+    def test_separate_mixed_results(self) -> None:
         """Test separating mixed results."""
         error_result, warning_result = self._create_test_results_pair()
 
@@ -142,13 +142,13 @@ class TestSeparateResultsBySeverity:
 class TestPrintErrorResults:
     """Test suite for _print_error_results function."""
 
-    def test_print_empty_errors(self, capsys):
+    def test_print_empty_errors(self, capsys) -> None:
         """Test printing empty error list."""
         _print_error_results([], "Test Hook")
         captured = capsys.readouterr()
         assert captured.out == ""
 
-    def test_print_single_error(self, capsys):
+    def test_print_single_error(self, capsys) -> None:
         """Test printing single error result."""
         error_result = ValidationResult(
             file_path=Path("./test_file.py"),
@@ -165,7 +165,7 @@ class TestPrintErrorResults:
         assert "test_file.py: Test error" in captured.out
         assert "Please refactor large files/modules before committing." in captured.out
 
-    def test_print_multiple_errors(self, capsys):
+    def test_print_multiple_errors(self, capsys) -> None:
         """Test printing multiple error results."""
         error1 = ValidationResult(
             file_path=Path("file1.py"),
@@ -192,13 +192,13 @@ class TestPrintErrorResults:
 class TestPrintWarningResults:
     """Test suite for _print_warning_results function."""
 
-    def test_print_empty_warnings(self, capsys):
+    def test_print_empty_warnings(self, capsys) -> None:
         """Test printing empty warning list."""
         _print_warning_results([])
         captured = capsys.readouterr()
         assert captured.out == ""
 
-    def test_print_single_warning(self, capsys):
+    def test_print_single_warning(self, capsys) -> None:
         """Test printing single warning result."""
         warning_result = ValidationResult(
             file_path=Path("test_file.py"),
@@ -215,7 +215,7 @@ class TestPrintWarningResults:
         assert "⚠️  WARNING: test_file.py (Test warning)" in captured.out
         assert "Test guidance" in captured.out
 
-    def test_print_multiple_warnings_same_guidance(self, capsys):
+    def test_print_multiple_warnings_same_guidance(self, capsys) -> None:
         """Test printing multiple warnings with same guidance only prints guidance once."""
         warning1 = ValidationResult(
             file_path=Path("file1.py"),
@@ -248,7 +248,7 @@ class TestPrintWarningResults:
 class TestPrintSingleWarning:
     """Test suite for _print_single_warning function."""
 
-    def test_print_regular_warning(self, capsys):
+    def test_print_regular_warning(self, capsys) -> None:
         """Test printing regular warning."""
         warning_result = ValidationResult(
             file_path=Path("./test_file.py"),
@@ -265,7 +265,7 @@ class TestPrintSingleWarning:
         assert "⚠️  WARNING: test_file.py (Test warning)" in captured.out
         assert "Test guidance" in captured.out
 
-    def test_print_urgent_warning(self, capsys):
+    def test_print_urgent_warning(self, capsys) -> None:
         """Test printing urgent warning."""
         warning_result = ValidationResult(
             file_path=Path("test_file.py"),
@@ -286,7 +286,7 @@ class TestPrintSingleWarning:
 class TestIsUrgentWarning:
     """Test suite for _is_urgent_warning function."""
 
-    def test_urgent_warning_at_threshold(self):
+    def test_urgent_warning_at_threshold(self) -> None:
         """Test urgent warning exactly at 90% threshold."""
         result = ValidationResult(
             file_path=Path("test.py"),
@@ -297,7 +297,7 @@ class TestIsUrgentWarning:
         )
         assert _is_urgent_warning(result) is True
 
-    def test_urgent_warning_above_threshold(self):
+    def test_urgent_warning_above_threshold(self) -> None:
         """Test urgent warning above 90% threshold."""
         result = ValidationResult(
             file_path=Path("test.py"),
@@ -308,7 +308,7 @@ class TestIsUrgentWarning:
         )
         assert _is_urgent_warning(result) is True
 
-    def test_regular_warning_below_threshold(self):
+    def test_regular_warning_below_threshold(self) -> None:
         """Test regular warning below 90% threshold."""
         result = ValidationResult(
             file_path=Path("test.py"),

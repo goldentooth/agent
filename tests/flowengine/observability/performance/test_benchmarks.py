@@ -54,14 +54,14 @@ class TestFlowBenchmarks:
     """Core benchmarking test class for Flow operations."""
 
     @pytest.mark.asyncio
-    async def test_simple_flow_performance(self):
+    async def test_simple_flow_performance(self) -> None:
         """Benchmark simple flow operations like map and filter."""
         await self._test_map_performance()
         await self._test_filter_performance()
 
-    async def _test_map_performance(self):
+    async def _test_map_performance(self) -> None:
         """Test map operation performance."""
-        map_flow = map_stream(lambda x: x * 2)
+        map_flow: Any = map_stream(lambda x: x * 2)
 
         start_time = time.time()
         input_stream = async_large_range(1000)
@@ -75,9 +75,9 @@ class TestFlowBenchmarks:
         throughput = len(result) / duration
         assert throughput > 500  # At least 500 items/second
 
-    async def _test_filter_performance(self):
+    async def _test_filter_performance(self) -> None:
         """Test filter operation performance."""
-        filter_flow = filter_stream(lambda x: x % 2 == 0)
+        filter_flow: Any = filter_stream(lambda x: x % 2 == 0)
 
         start_time = time.time()
         input_stream = async_large_range(1000)
@@ -88,13 +88,13 @@ class TestFlowBenchmarks:
         assert duration < 1.0
 
     @pytest.mark.asyncio
-    async def test_complex_composition_performance(self):
+    async def test_complex_composition_performance(self) -> None:
         """Benchmark complex flow composition performance."""
         # Create a complex pipeline using available methods
         from flowengine.combinators import batch_stream
 
         # Create empty input for from_iterable
-        async def empty_stream():
+        async def empty_stream() -> AsyncGenerator[None, None]:
             yield None
 
         base_flow = (
@@ -125,15 +125,15 @@ class TestFlowBenchmarks:
         assert result == expected_sums
 
     @pytest.mark.asyncio
-    async def test_memory_usage_tracking(self):
+    async def test_memory_usage_tracking(self) -> None:
         """Test memory usage tracking during flow operations."""
         await self._test_batch_memory_usage()
         await self._test_distinct_memory_usage()
         await self._test_memoization_memory_usage()
 
-    async def _test_batch_memory_usage(self):
+    async def _test_batch_memory_usage(self) -> None:
         """Test batch operation for memory usage."""
-        batch_flow = batch_stream(10)
+        batch_flow: Any = batch_stream(10)
 
         start_time = time.time()
         input_stream = async_large_range(1000)
@@ -144,11 +144,11 @@ class TestFlowBenchmarks:
         assert all(len(batch) == 10 for batch in result)
         assert duration < 1.0
 
-    async def _test_distinct_memory_usage(self):
+    async def _test_distinct_memory_usage(self) -> None:
         """Test distinct operation for memory usage."""
-        distinct_flow = distinct_stream()
+        distinct_flow: Any = distinct_stream()
 
-        async def duplicate_stream():
+        async def duplicate_stream() -> AsyncGenerator[int, None]:
             for _ in range(100):
                 for i in range(10):  # 10 unique items, repeated 100 times
                     yield i
@@ -161,11 +161,11 @@ class TestFlowBenchmarks:
         assert set(result) == set(range(10))
         assert duration < 1.0
 
-    async def _test_memoization_memory_usage(self):
+    async def _test_memoization_memory_usage(self) -> None:
         """Test memoization for memory usage."""
-        memoize_flow = memoize_stream(lambda x: x)
+        memoize_flow: Any = memoize_stream(lambda x: x)
 
-        async def repeat_stream():
+        async def repeat_stream() -> AsyncGenerator[int, None]:
             for _ in range(100):
                 for i in range(5):
                     yield i
@@ -178,12 +178,12 @@ class TestFlowBenchmarks:
         assert duration < 1.0
 
     @pytest.mark.asyncio
-    async def test_parallel_performance(self):
+    async def test_parallel_performance(self) -> None:
         """Benchmark parallel_stream performance."""
         # Create simple flows for parallel execution
-        flow1 = map_stream(lambda x: x * 2)
-        flow2 = map_stream(lambda x: x + 10)
-        flow3 = map_stream(lambda x: x**2)
+        flow1: Any = map_stream(lambda x: x * 2)
+        flow2: Any = map_stream(lambda x: x + 10)
+        flow3: Any = map_stream(lambda x: x**2)
 
         parallel_flow = parallel_stream(flow1, flow2, flow3)
 
@@ -197,11 +197,11 @@ class TestFlowBenchmarks:
         assert duration < 2.0  # Parallel should be faster than sequential
 
     @pytest.mark.asyncio
-    async def test_concurrent_flow_execution(self):
+    async def test_concurrent_flow_execution(self) -> None:
         """Test multiple flows running concurrently."""
-        flow1 = map_stream(lambda x: x * 2)
-        flow2 = map_stream(lambda x: x + 100)
-        flow3 = filter_stream(lambda x: x % 2 == 0)
+        flow1: Any = map_stream(lambda x: x * 2)
+        flow2: Any = map_stream(lambda x: x + 100)
+        flow3: Any = filter_stream(lambda x: x % 2 == 0)
 
         async def run_flow(flow: Any, stream_size: int) -> List[Any]:
             input_stream = async_range(stream_size)
@@ -224,7 +224,7 @@ class TestFlowBenchmarks:
         assert duration < 5.0
 
     @pytest.mark.asyncio
-    async def test_error_handling_performance(self):
+    async def test_error_handling_performance(self) -> None:
         """Test that error handling doesn't significantly impact performance."""
 
         def sometimes_fail(x: int) -> int:
@@ -257,19 +257,19 @@ class TestPerformanceRegression:
     """Performance regression test class for detecting performance degradation."""
 
     @pytest.mark.asyncio
-    async def test_performance_doesnt_degrade(self):
+    async def test_performance_doesnt_degrade(self) -> None:
         """Test that performance doesn't degrade compared to baseline."""
         # Define baseline performance expectations
         baseline_throughput = 500  # items/second
         baseline_duration = 1.0  # seconds for 1000 items
 
         # Test flow performance
-        test_flow = map_stream(lambda x: x * 2)
+        test_flow: Any = map_stream(lambda x: x * 2)
 
         # Run performance test
         benchmark = benchmark_stream(iterations=5)
 
-        def test_stream_factory():
+        def test_stream_factory() -> Any:
             return async_large_range(1000)
 
         stats = await benchmark(test_flow)(test_stream_factory)
@@ -283,7 +283,7 @@ class TestPerformanceRegression:
         assert throughput > baseline_throughput * 0.8  # Allow 20% variance
 
     @pytest.mark.asyncio
-    async def test_memory_leaks(self):
+    async def test_memory_leaks(self) -> None:
         """Test for memory leaks during repeated flow executions."""
         try:
             import psutil  # noqa: F401
@@ -294,7 +294,7 @@ class TestPerformanceRegression:
 
         # Create flow that processes data
         @monitored_stream("memory_leak_test")
-        def create_test_flow():
+        def create_test_flow() -> Any:
             return map_stream(lambda x: x * 2)
 
         flow = create_test_flow
@@ -324,22 +324,22 @@ class TestPerformanceRegression:
             assert memory_growth < initial_memory * 0.5
 
     @pytest.mark.asyncio
-    async def test_throughput_consistency(self):
+    async def test_throughput_consistency(self) -> None:
         """Test that throughput remains consistent across multiple runs."""
-        test_flow = map_stream(lambda x: x + 1)
+        test_flow: Any = map_stream(lambda x: x + 1)
         # Use 30 trials with percentile-based outlier removal (trim top/bottom 10%)
         benchmark = benchmark_stream(
             iterations=30, warmup_iterations=5, trim_percent=10.0
         )
 
-        def test_stream_factory():
+        def test_stream_factory() -> Any:
             # Use larger dataset for more stable timing measurements
             return async_large_range(2000)
 
         stats = await benchmark(test_flow)(test_stream_factory)
         self._validate_throughput_consistency(stats)
 
-    def _validate_throughput_consistency(self, stats: Dict[str, Any]):
+    def _validate_throughput_consistency(self, stats: Dict[str, Any]) -> None:
         """Validate throughput consistency from benchmark statistics."""
         throughput_metrics = self._calculate_throughput_metrics(stats)
         self._assert_variance_within_threshold(throughput_metrics, stats)
@@ -369,7 +369,7 @@ class TestPerformanceRegression:
 
     def _assert_variance_within_threshold(
         self, metrics: Dict[str, Any], stats: Dict[str, Any]
-    ):
+    ) -> None:
         """Assert throughput variance is within acceptable threshold."""
         throughput_variance = (
             metrics["max_throughput"] - metrics["min_throughput"]
@@ -387,7 +387,7 @@ class TestPerformanceRegression:
             f"after {stats.get('trim_percent', 0)}% trimming)"
         )
 
-    def _assert_no_extreme_outliers(self, metrics: Dict[str, Any]):
+    def _assert_no_extreme_outliers(self, metrics: Dict[str, Any]) -> None:
         """Assert max duration is not an extreme outlier."""
         # Use more lenient outlier detection in CI environments
         is_ci = os.getenv("CI") is not None or os.getenv("GITHUB_ACTIONS") is not None
@@ -398,7 +398,7 @@ class TestPerformanceRegression:
             f"{metrics['avg_duration']:.3f}s ({'CI' if is_ci else 'local'} environment)"
         )
 
-    def _assert_minimum_performance(self, metrics: Dict[str, Any]):
+    def _assert_minimum_performance(self, metrics: Dict[str, Any]) -> None:
         """Assert minimum performance is reasonable."""
         # Use more lenient minimum performance threshold in CI environments
         is_ci = os.getenv("CI") is not None or os.getenv("GITHUB_ACTIONS") is not None
@@ -417,12 +417,12 @@ class TestBenchmarkReporting:
     """Benchmark reporting test class for data export and analysis."""
 
     @pytest.mark.asyncio
-    async def test_benchmark_export(self):
+    async def test_benchmark_export(self) -> None:
         """Test benchmark data export functionality."""
 
         # Create monitored flow and generate performance data
         @monitored_stream("export_test_flow")
-        def create_test_flow():
+        def create_test_flow() -> Any:
             return map_stream(lambda x: x * 2)
 
         flow = create_test_flow
@@ -460,7 +460,7 @@ class TestBenchmarkReporting:
             os.unlink(tmp_file.name)
 
     @pytest.mark.asyncio
-    async def test_performance_comparison(self):
+    async def test_performance_comparison(self) -> None:
         """Test performance comparison analysis between benchmark runs."""
         # Run first benchmark (baseline)
         baseline_stats = await self._run_baseline_benchmark()
@@ -473,27 +473,27 @@ class TestBenchmarkReporting:
 
     async def _run_baseline_benchmark(self) -> Dict[str, Any]:
         """Run baseline benchmark for comparison testing."""
-        baseline_flow = map_stream(lambda x: x * 2)
+        baseline_flow: Any = map_stream(lambda x: x * 2)
         baseline_benchmark = benchmark_stream(iterations=5)
 
-        def baseline_stream_factory():
+        def baseline_stream_factory() -> Any:
             return async_large_range(500)
 
         return await baseline_benchmark(baseline_flow)(baseline_stream_factory)
 
     async def _run_comparison_benchmark(self) -> Dict[str, Any]:
         """Run comparison benchmark with different operation."""
-        comparison_flow = map_stream(lambda x: x * 3)  # Different operation
+        comparison_flow: Any = map_stream(lambda x: x * 3)  # Different operation
         comparison_benchmark = benchmark_stream(iterations=5)
 
-        def comparison_stream_factory():
+        def comparison_stream_factory() -> Any:
             return async_large_range(500)
 
         return await comparison_benchmark(comparison_flow)(comparison_stream_factory)
 
     def _validate_performance_comparison(
         self, baseline_stats: Dict[str, Any], comparison_stats: Dict[str, Any]
-    ):
+    ) -> None:
         """Validate performance comparison analysis results."""
         # Compare performance metrics
         baseline_avg = baseline_stats["avg_duration_ms"]
@@ -525,19 +525,19 @@ class TestBenchmarkReporting:
         assert comparison_stats["iterations"] == expected_trimmed
 
     @pytest.mark.asyncio
-    async def test_statistical_analysis(self):
+    async def test_statistical_analysis(self) -> None:
         """Test statistical analysis of benchmark results."""
         # Run benchmark with multiple iterations for statistical analysis
-        test_flow = map_stream(lambda x: x + 1)
+        test_flow: Any = map_stream(lambda x: x + 1)
         benchmark = benchmark_stream(iterations=10)
 
-        def test_stream_factory():
+        def test_stream_factory() -> Any:
             return async_large_range(300)
 
         stats = await benchmark(test_flow)(test_stream_factory)
         self._validate_statistical_metrics(stats)
 
-    def _validate_statistical_metrics(self, stats: Dict[str, Any]):
+    def _validate_statistical_metrics(self, stats: Dict[str, Any]) -> None:
         """Validate statistical metrics from benchmark results."""
         # Verify statistical metrics are present and valid
         assert "min_duration_ms" in stats
@@ -557,7 +557,7 @@ class TestBenchmarkReporting:
 
     def _validate_duration_relationships(
         self, min_dur: float, max_dur: float, avg_dur: float, iterations: int
-    ):
+    ) -> None:
         """Validate duration relationships and iteration count."""
         assert min_dur <= avg_dur <= max_dur
 
@@ -576,7 +576,7 @@ class TestBenchmarkReporting:
 
     def _validate_statistical_variation(
         self, min_dur: float, max_dur: float, avg_dur: float
-    ):
+    ) -> None:
         """Validate statistical variation is within reasonable bounds."""
         # Calculate coefficient of variation (standard deviation approximation)
         duration_range = max_dur - min_dur

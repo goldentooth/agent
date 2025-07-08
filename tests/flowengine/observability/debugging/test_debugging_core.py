@@ -139,7 +139,7 @@ class TestFlowDebugger:
         debugger.remove_breakpoint("non_existent")  # Should not raise
 
     @pytest.mark.asyncio
-    async def test_execution_context_manager(self):
+    async def test_execution_context_manager(self) -> None:
         """Test execution context manager."""
         debugger = FlowDebugger()
 
@@ -154,7 +154,7 @@ class TestFlowDebugger:
         assert debugger.execution_history[0] == context
 
     @pytest.mark.asyncio
-    async def test_execution_context_history_limit(self):
+    async def test_execution_context_history_limit(self) -> None:
         """Test execution context history limit enforcement."""
         debugger = FlowDebugger()
         debugger.max_history = 2  # Set small limit for testing
@@ -173,7 +173,7 @@ class TestFlowDebugger:
         assert debugger.execution_history[1].flow_name == "flow3"
 
     @pytest.mark.asyncio
-    async def test_execution_context_stack_corruption(self):
+    async def test_execution_context_stack_corruption(self) -> None:
         """Test execution context cleanup when stack is corrupted."""
         debugger = FlowDebugger()
 
@@ -189,7 +189,7 @@ class TestFlowDebugger:
         assert debugger.execution_history[0] == context1
 
     @pytest.mark.asyncio
-    async def test_execution_context_wrong_order_cleanup(self):
+    async def test_execution_context_wrong_order_cleanup(self) -> None:
         """Test execution context when contexts exit out of order."""
         debugger = FlowDebugger()
 
@@ -228,7 +228,7 @@ class TestFlowDebugger:
             assert not debugger.debug_enabled
 
     @pytest.mark.asyncio
-    async def test_check_breakpoint_disabled(self):
+    async def test_check_breakpoint_disabled(self) -> None:
         """Test breakpoint checking when debugging is disabled."""
         debugger = FlowDebugger()
         debugger.add_breakpoint("test_flow", lambda item, ctx: True)
@@ -241,7 +241,7 @@ class TestFlowDebugger:
         # No exceptions should be raised
 
     @pytest.mark.asyncio
-    async def test_check_breakpoint_no_condition_match(self):
+    async def test_check_breakpoint_no_condition_match(self) -> None:
         """Test breakpoint checking when condition doesn't match."""
         debugger = FlowDebugger()
         debugger.enable_debugging()
@@ -255,33 +255,30 @@ class TestFlowDebugger:
         # No exceptions should be raised
 
     @pytest.mark.asyncio
-    async def test_check_breakpoint_condition_matches(self):
+    async def test_check_breakpoint_condition_matches(self) -> None:
         """Test breakpoint checking when condition matches."""
         debugger = FlowDebugger()
         debugger.enable_debugging()
 
         # Mock the trigger method to avoid interactive input
-        original_trigger = debugger.trigger_breakpoint
+        from unittest.mock import patch
+
         trigger_called = False
 
         async def mock_trigger(item: Any, context: FlowExecutionContext) -> None:
             nonlocal trigger_called
             trigger_called = True
 
-        debugger.trigger_breakpoint = mock_trigger
         debugger.add_breakpoint("test_flow", lambda item, ctx: item == 5)
-
         context = FlowExecutionContext("test_flow", datetime.now())
 
-        try:
+        with patch.object(debugger, "trigger_breakpoint", side_effect=mock_trigger):
             # Should trigger breakpoint for item = 5
             await debugger.check_breakpoint(5, context)
             assert trigger_called
-        finally:
-            debugger.trigger_breakpoint = original_trigger
 
     @pytest.mark.asyncio
-    async def test_check_breakpoint_no_breakpoint_registered(self):
+    async def test_check_breakpoint_no_breakpoint_registered(self) -> None:
         """Test breakpoint checking when no breakpoint is registered for flow."""
         debugger = FlowDebugger()
         debugger.enable_debugging()
@@ -295,21 +292,23 @@ class TestFlowDebugger:
         # No exceptions should be raised
 
     @pytest.mark.asyncio
-    async def test_trigger_breakpoint_output(self, capsys: "CaptureFixture[str]"):
+    async def test_trigger_breakpoint_output(
+        self, capsys: "CaptureFixture[str]"
+    ) -> None:
         """Test breakpoint trigger output."""
         debugger = FlowDebugger()
         context = FlowExecutionContext("test_flow", datetime.now())
         context.item_index = 3
 
         # Mock the command handler to avoid infinite loop
-        original_handler = debugger.handle_breakpoint_commands
+        from unittest.mock import patch
 
         async def mock_handler(item: Any) -> None:
             pass  # Do nothing to avoid input loop
 
-        debugger.handle_breakpoint_commands = mock_handler
-
-        try:
+        with patch.object(
+            debugger, "handle_breakpoint_commands", side_effect=mock_handler
+        ):
             await debugger.trigger_breakpoint("test_item", context)
             captured = capsys.readouterr()
 
@@ -317,8 +316,6 @@ class TestFlowDebugger:
             assert "Item: test_item" in captured.out
             assert "Index: 3" in captured.out
             assert "Commands: (c)ontinue, (s)tack, (i)nspect, (q)uit" in captured.out
-        finally:
-            debugger.handle_breakpoint_commands = original_handler
 
     def test_print_execution_stack(self, capsys: "CaptureFixture[str]"):
         """Test execution stack printing."""
@@ -372,7 +369,7 @@ class TestFlowDebugger:
         assert "attr2" in captured.out
 
     @pytest.mark.asyncio
-    async def test_handle_breakpoint_commands_continue(self, monkeypatch: Any):
+    async def test_handle_breakpoint_commands_continue(self, monkeypatch: Any) -> None:
         """Test breakpoint command handling - continue command."""
         debugger = FlowDebugger()
 
@@ -390,7 +387,7 @@ class TestFlowDebugger:
     @pytest.mark.asyncio
     async def test_handle_breakpoint_commands_stack(
         self, monkeypatch: Any, capsys: "CaptureFixture[str]"
-    ):
+    ) -> None:
         """Test breakpoint command handling - stack command."""
         debugger = FlowDebugger()
 
@@ -414,7 +411,7 @@ class TestFlowDebugger:
     @pytest.mark.asyncio
     async def test_handle_breakpoint_commands_inspect(
         self, monkeypatch: Any, capsys: "CaptureFixture[str]"
-    ):
+    ) -> None:
         """Test breakpoint command handling - inspect command."""
         debugger = FlowDebugger()
 
@@ -432,7 +429,7 @@ class TestFlowDebugger:
         assert "🔬 Item Inspection:" in captured.out
 
     @pytest.mark.asyncio
-    async def test_handle_breakpoint_commands_quit(self, monkeypatch: Any):
+    async def test_handle_breakpoint_commands_quit(self, monkeypatch: Any) -> None:
         """Test breakpoint command handling - quit command."""
         debugger = FlowDebugger()
 
@@ -450,7 +447,7 @@ class TestFlowDebugger:
     @pytest.mark.asyncio
     async def test_handle_breakpoint_commands_unknown(
         self, monkeypatch: Any, capsys: "CaptureFixture[str]"
-    ):
+    ) -> None:
         """Test breakpoint command handling - unknown command."""
         debugger = FlowDebugger()
 
@@ -468,7 +465,7 @@ class TestFlowDebugger:
         assert "Unknown command" in captured.out
 
     @pytest.mark.asyncio
-    async def test_handle_breakpoint_commands_eof(self, monkeypatch: Any):
+    async def test_handle_breakpoint_commands_eof(self, monkeypatch: Any) -> None:
         """Test breakpoint command handling - EOF exception."""
         debugger = FlowDebugger()
 
@@ -484,7 +481,7 @@ class TestFlowDebugger:
     @pytest.mark.asyncio
     async def test_handle_breakpoint_commands_keyboard_interrupt(
         self, monkeypatch: Any
-    ):
+    ) -> None:
         """Test breakpoint command handling - KeyboardInterrupt exception."""
         debugger = FlowDebugger()
 

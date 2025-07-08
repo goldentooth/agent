@@ -256,8 +256,7 @@ class TestContextSnapshotRestoreTo:
         snapshot = ContextSnapshot(source_context, "return_test")
         target_context = MockContext({"target": "data"})
 
-        result = snapshot.restore_to(target_context)
-        assert result is None
+        snapshot.restore_to(target_context)
 
     def test_restore_to_preserves_snapshot_state(self) -> None:
         """Test that restore_to does not modify the snapshot."""

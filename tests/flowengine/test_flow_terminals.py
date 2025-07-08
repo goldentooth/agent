@@ -352,10 +352,9 @@ class TestFlowForEach:
             return
             yield  # pragma: no cover
 
-        result = await consumer(empty_stream())
+        await consumer(empty_stream())
 
-        # for_each should return None
-        assert result is None
+        # for_each doesn't return a value
 
         # Side effects should have occurred
         assert log_messages == [

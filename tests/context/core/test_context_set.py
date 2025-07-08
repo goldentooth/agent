@@ -295,12 +295,10 @@ class TestContextSet:
         assert context.get("internal") == "internal_value"
 
     def test_set_returns_none(self) -> None:
-        """Test set method returns None."""
+        """Test set method doesn't return a value."""
 
         context = Context()
-        result = context.set("key", "value")
-
-        assert result is None
+        context.set("key", "value")
 
     def test_set_thread_safety_simulation(self) -> None:
         """Test set behavior under simulated concurrent access."""

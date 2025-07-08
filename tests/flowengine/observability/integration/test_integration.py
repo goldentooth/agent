@@ -48,7 +48,7 @@ class TestPerformanceObservability:
         get_performance_summary()
 
     @pytest.mark.asyncio
-    async def test_monitored_stream_integration(self):
+    async def test_monitored_stream_integration(self) -> None:
         """Test performance monitoring integration."""
 
         def double_value(x: int) -> int:
@@ -72,7 +72,7 @@ class TestPerformanceObservability:
         assert "duration_ms" in summary or summary.get("total_flows_monitored", 0) >= 0
 
     @pytest.mark.asyncio
-    async def test_performance_stream_combinator(self):
+    async def test_performance_stream_combinator(self) -> None:
         """Test performance stream combinator."""
 
         def add_one(x: int) -> int:
@@ -83,7 +83,7 @@ class TestPerformanceObservability:
 
         base_pipeline = Flow.from_iterable(range(50)).map(add_one).filter(is_even)
 
-        pipeline = compose(
+        pipeline: Any = compose(
             compose(base_pipeline, performance_stream()), batch_stream(5)
         )
 
@@ -100,7 +100,7 @@ class TestPerformanceObservability:
         assert summary.get("total_flows_monitored", 0) > 0
 
     @pytest.mark.asyncio
-    async def test_export_performance_metrics(self):
+    async def test_export_performance_metrics(self) -> None:
         """Test exporting performance metrics."""
         flow = performance_stream()
         input_stream = async_range(10)
@@ -129,7 +129,7 @@ class TestDebuggingCapabilities:
         disable_flow_debugging()
 
     @pytest.mark.asyncio
-    async def test_debug_stream_basic(self):
+    async def test_debug_stream_basic(self) -> None:
         """Test basic debug stream functionality."""
         debug_flow = debug_stream(log_items=False)  # Don't log to avoid output
 
@@ -139,7 +139,7 @@ class TestDebuggingCapabilities:
         assert result == [0, 1, 2, 3, 4]
 
     @pytest.mark.asyncio
-    async def test_traced_flow_integration(self):
+    async def test_traced_flow_integration(self) -> None:
         """Test traced flow integration."""
 
         def triple_value(x: int) -> int:
@@ -154,7 +154,7 @@ class TestDebuggingCapabilities:
         assert result == [0, 3, 6]
 
     @pytest.mark.asyncio
-    async def test_flow_inspection(self):
+    async def test_flow_inspection(self) -> None:
         """Test flow inspection capabilities."""
 
         def add_one(x: int) -> int:
@@ -169,7 +169,7 @@ class TestDebuggingCapabilities:
         assert inspection["name"] == "map(add_one)"
 
     @pytest.mark.asyncio
-    async def test_execution_trace(self):
+    async def test_execution_trace(self) -> None:
         """Test execution trace collection."""
         enable_flow_debugging()
 
@@ -196,7 +196,7 @@ class TestHealthMonitoring:
     """Test health monitoring capabilities."""
 
     @pytest.mark.asyncio
-    async def test_system_health_check(self):
+    async def test_system_health_check(self) -> None:
         """Test system health checking."""
         health = await check_system_health()
 
@@ -209,7 +209,7 @@ class TestHealthMonitoring:
         ]
 
     @pytest.mark.asyncio
-    async def test_custom_health_check(self):
+    async def test_custom_health_check(self) -> None:
         """Test registering custom health checks."""
 
         async def custom_check():
@@ -253,7 +253,7 @@ class TestFlowAnalysis:
     """Test flow analysis and composition tools."""
 
     @pytest.mark.asyncio
-    async def test_single_flow_analysis(self):
+    async def test_single_flow_analysis(self) -> None:
         """Test analyzing a single flow."""
 
         def double_value(x: int) -> int:
@@ -269,7 +269,7 @@ class TestFlowAnalysis:
         assert graph.complexity_score >= 1
 
     @pytest.mark.asyncio
-    async def test_flow_composition_analysis(self):
+    async def test_flow_composition_analysis(self) -> None:
         """Test analyzing flow compositions."""
 
         def double_value(x: int) -> int:
@@ -292,7 +292,7 @@ class TestFlowAnalysis:
         assert len(graph.exit_points) == 1
 
     @pytest.mark.asyncio
-    async def test_pattern_detection(self):
+    async def test_pattern_detection(self) -> None:
         """Test pattern detection in flow graphs."""
 
         def double_value(x: int) -> int:
@@ -319,7 +319,7 @@ class TestFlowAnalysis:
         )  # At least attempted detection
 
     @pytest.mark.asyncio
-    async def test_optimization_suggestions(self):
+    async def test_optimization_suggestions(self) -> None:
         """Test optimization suggestion generation."""
 
         def double_value(x: int) -> int:
@@ -353,7 +353,7 @@ class TestFlowAnalysis:
             assert all("description" in opt for opt in optimizations)
 
     @pytest.mark.asyncio
-    async def test_export_analysis(self):
+    async def test_export_analysis(self) -> None:
         """Test exporting flow analysis."""
 
         def double_value(x: int) -> int:
@@ -393,7 +393,7 @@ class TestObservabilityLifecycle:
     """Test lifecycle management for observability system."""
 
     @pytest.mark.asyncio
-    async def test_startup_shutdown(self):
+    async def test_startup_shutdown(self) -> None:
         """Test system startup and shutdown scenarios."""
         # Test that all observability components can be initialized
         # and shut down gracefully without errors
@@ -450,7 +450,7 @@ class TestObservabilityLifecycle:
         assert result == expected_result
 
     @pytest.mark.asyncio
-    async def test_configuration_changes(self):
+    async def test_configuration_changes(self) -> None:
         """Test handling of configuration changes during operation."""
         # Test that observability systems can handle configuration
         # changes without losing critical state or failing
@@ -479,7 +479,7 @@ class TestObservabilityLifecycle:
         assert isinstance(summary, dict)
 
     @pytest.mark.asyncio
-    async def test_resource_cleanup(self):
+    async def test_resource_cleanup(self) -> None:
         """Test resource cleanup and memory management."""
         # Test that observability systems properly clean up
         # resources and don't accumulate unbounded state
@@ -540,7 +540,7 @@ class TestObservabilityScenarios:
     """Test real-world observability scenarios."""
 
     @pytest.mark.asyncio
-    async def test_production_monitoring(self):
+    async def test_production_monitoring(self) -> None:
         """Test production monitoring workflow scenario."""
         # Simulate a production-like monitoring scenario with multiple flows,
         # health checks, and performance tracking
@@ -606,7 +606,7 @@ class TestObservabilityScenarios:
             disable_flow_debugging()
 
     @pytest.mark.asyncio
-    async def test_development_debugging(self):
+    async def test_development_debugging(self) -> None:
         """Test development debugging workflow scenario."""
         # Simulate a development scenario with debugging enabled,
         # trace collection, and issue investigation
@@ -723,7 +723,7 @@ class TestObservabilityScenarios:
         return flow_graph, optimizations, patterns
 
     @pytest.mark.asyncio
-    async def test_performance_optimization(self):
+    async def test_performance_optimization(self) -> None:
         """Test performance optimization workflow scenario."""
         # Simulate a performance optimization scenario with analysis,
         # bottleneck detection, and optimization suggestions
@@ -751,7 +751,7 @@ class TestIntegratedObservability:
     """Test integrated observability scenarios."""
 
     @pytest.mark.asyncio
-    async def test_comprehensive_monitoring_pipeline(self):
+    async def test_comprehensive_monitoring_pipeline(self) -> None:
         """Test a pipeline with comprehensive monitoring."""
 
         def double_value(x: int) -> int:
@@ -788,7 +788,7 @@ class TestIntegratedObservability:
         assert "duration_ms" in summary or summary.get("total_flows_monitored", 0) >= 0
 
     @pytest.mark.asyncio
-    async def test_error_monitoring_integration(self):
+    async def test_error_monitoring_integration(self) -> None:
         """Test error monitoring in observability pipeline."""
 
         def sometimes_fail(x: int) -> int:
@@ -821,7 +821,7 @@ class TestIntegratedObservability:
         assert 5 in result  # Original value should be preserved for failed item
 
     @pytest.mark.asyncio
-    async def test_full_observability_stack(self):
+    async def test_full_observability_stack(self) -> None:
         """Test the complete observability stack working together."""
         # Enable all monitoring
         enable_flow_debugging()

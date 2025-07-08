@@ -3,7 +3,7 @@
 from context.frame import ContextFrame
 
 
-def test_context_frame_init():
+def test_context_frame_init() -> None:
     """Test that ContextFrame.__init__ initializes an empty frame."""
     frame = ContextFrame()
 
@@ -13,7 +13,7 @@ def test_context_frame_init():
     assert isinstance(frame.data, dict)
 
 
-def test_context_frame_getitem():
+def test_context_frame_getitem() -> None:
     """Test that ContextFrame.__getitem__ retrieves values correctly."""
     frame = ContextFrame()
 
@@ -57,7 +57,7 @@ def _verify_test_values(frame: ContextFrame) -> None:
     assert frame.data["none_key"] is None
 
 
-def test_context_frame_setitem():
+def test_context_frame_setitem() -> None:
     """Test that ContextFrame.__setitem__ sets values correctly."""
     frame = ContextFrame()
 
@@ -74,7 +74,7 @@ def test_context_frame_setitem():
     assert frame["dict_key"] == {"nested": "object"}
 
 
-def test_context_frame_delitem():
+def test_context_frame_delitem() -> None:
     """Test that ContextFrame.__delitem__ deletes keys correctly."""
     frame = ContextFrame()
 
@@ -100,7 +100,7 @@ def test_context_frame_delitem():
         pass  # Expected behavior
 
 
-def test_context_frame_contains():
+def test_context_frame_contains() -> None:
     """Test that ContextFrame.__contains__ checks key existence correctly."""
     frame = ContextFrame()
 
@@ -125,9 +125,9 @@ def test_context_frame_contains():
     assert "another_missing" not in frame
 
 
-def _setup_frame_with_nested_data(frame: ContextFrame) -> dict[str, str | list[int]]:
+def _setup_frame_with_nested_data(frame: ContextFrame) -> dict[str, object]:
     """Helper to set up frame with nested test data."""
-    nested_dict = {"inner": "value", "list": [1, 2, 3]}
+    nested_dict: dict[str, object] = {"inner": "value", "list": [1, 2, 3]}
     frame.data["string"] = "hello"
     frame.data["number"] = 42
     frame.data["nested"] = nested_dict
@@ -147,7 +147,7 @@ def _verify_deep_copy_behavior(frame: ContextFrame, copied_frame: ContextFrame) 
     assert copied_frame.data["nested"]["list"] is not frame.data["nested"]["list"]
 
 
-def test_context_frame_copy():
+def test_context_frame_copy() -> None:
     """Test that ContextFrame.copy creates an independent copy."""
     frame = ContextFrame()
     _setup_frame_with_nested_data(frame)

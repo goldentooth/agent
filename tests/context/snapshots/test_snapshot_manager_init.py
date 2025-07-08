@@ -44,7 +44,10 @@ class TestSnapshotManagerInit:
         assert manager1._snapshots is not manager2._snapshots  # type: ignore[reportPrivateUsage]
 
         # Modifying one should not affect the other
-        manager1._snapshots["test"] = "value"  # type: ignore[reportPrivateUsage]
+        from unittest.mock import Mock
+
+        mock_snapshot = Mock()
+        manager1._snapshots["test"] = mock_snapshot  # type: ignore[reportPrivateUsage]
         assert "test" not in manager2._snapshots  # type: ignore[reportPrivateUsage]
 
     def test_init_attributes_types(self) -> None:
@@ -55,7 +58,10 @@ class TestSnapshotManagerInit:
         assert isinstance(manager._snapshots, dict)  # type: ignore[reportPrivateUsage]
 
         # Should be able to store string keys (snapshot names)
-        manager._snapshots["test_name"] = None  # type: ignore[reportPrivateUsage]
+        from unittest.mock import Mock
+
+        mock_snapshot = Mock()
+        manager._snapshots["test_name"] = mock_snapshot  # type: ignore[reportPrivateUsage]
         assert "test_name" in manager._snapshots  # type: ignore[reportPrivateUsage]
 
     def test_init_inheritance(self) -> None:
@@ -76,7 +82,7 @@ class TestSnapshotManagerInit:
 
         # Should not accept extra arguments (test default behavior)
         with pytest.raises(TypeError):
-            SnapshotManager("extra_arg")  # type: ignore[reportCallIssue]
+            SnapshotManager("extra_arg")  # type: ignore[call-arg,reportCallIssue]
 
     def test_init_state_consistency(self) -> None:
         """Test that SnapshotManager state is consistent after initialization."""

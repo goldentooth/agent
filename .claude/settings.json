@@ -7,7 +7,8 @@
     ],
     "allow": [
       "Bash(/dev/null)",
-      "Bash(TEMP_DIR:*)",
+      "Bash(TEMP_DIR=$(mktemp -d); echo $TEMP_DIR)",
+      "Bash(TEMP_DIR=$(mktemp -d):*)",
       "Bash(cd:*)",
       "Bash(chmod:*)",
       "Bash(cp:*)",

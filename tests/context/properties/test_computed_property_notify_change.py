@@ -36,7 +36,7 @@ class TestComputedPropertyNotifyChange:
         prop.notify_change()
 
         # Should call _handle_computed_property_change on the context
-        context._handle_computed_property_change.assert_called_once_with(prop)  # type: ignore[reportPrivateUsage]
+        context._handle_computed_property_change.assert_called_once_with(prop)
 
     def test_notify_change_multiple_subscribers(self) -> None:
         """Test notifying multiple subscribed contexts."""
@@ -58,9 +58,9 @@ class TestComputedPropertyNotifyChange:
         prop.notify_change()
 
         # All contexts should be notified
-        context1._handle_computed_property_change.assert_called_once_with(prop)  # type: ignore[reportPrivateUsage]
-        context2._handle_computed_property_change.assert_called_once_with(prop)  # type: ignore[reportPrivateUsage]
-        context3._handle_computed_property_change.assert_called_once_with(prop)  # type: ignore[reportPrivateUsage]
+        context1._handle_computed_property_change.assert_called_once_with(prop)
+        context2._handle_computed_property_change.assert_called_once_with(prop)
+        context3._handle_computed_property_change.assert_called_once_with(prop)
 
     def test_notify_change_no_subscribers(self) -> None:
         """Test notify_change when no contexts are subscribed."""
@@ -85,9 +85,8 @@ class TestComputedPropertyNotifyChange:
         context = MockContext()
         prop.subscribe(context)
 
-        # notify_change should return None
-        result = prop.notify_change()
-        assert result is None
+        # notify_change doesn't return a value
+        prop.notify_change()
 
     def test_notify_change_after_unsubscribed_context(self) -> None:
         """Test notify_change after context is no longer referenced."""
@@ -124,15 +123,15 @@ class TestComputedPropertyNotifyChange:
 
         # Compute value to set cache
         prop.compute(context)
-        cached_value = prop._cached_value  # type: ignore[reportPrivateUsage]
-        cached_flag = prop._is_cached  # type: ignore[reportPrivateUsage]
+        cached_value = prop._cached_value
+        cached_flag = prop._is_cached
 
         # Notify change
         prop.notify_change()
 
         # Cache state should be unchanged
-        assert prop._cached_value == cached_value  # type: ignore[reportPrivateUsage]
-        assert prop._is_cached == cached_flag  # type: ignore[reportPrivateUsage]
+        assert prop._cached_value == cached_value
+        assert prop._is_cached == cached_flag
 
     def test_notify_change_multiple_calls(self) -> None:
         """Test calling notify_change multiple times."""
@@ -150,9 +149,9 @@ class TestComputedPropertyNotifyChange:
         prop.notify_change()
 
         # Context should be notified each time
-        assert context._handle_computed_property_change.call_count == 3  # type: ignore[reportPrivateUsage]
+        assert context._handle_computed_property_change.call_count == 3
         # All calls should pass the same property
-        for call in context._handle_computed_property_change.call_args_list:  # type: ignore[reportPrivateUsage]
+        for call in context._handle_computed_property_change.call_args_list:
             assert call[0][0] is prop
 
     def test_notify_change_with_context_exception(self) -> None:
@@ -166,7 +165,7 @@ class TestComputedPropertyNotifyChange:
         context2 = MockContext({"id": "bad"})
 
         # Make one context raise exception
-        context2._handle_computed_property_change.side_effect = Exception("Test error")  # type: ignore[reportPrivateUsage]
+        context2._handle_computed_property_change.side_effect = Exception("Test error")
 
         prop.subscribe(context1)
         prop.subscribe(context2)
@@ -175,8 +174,8 @@ class TestComputedPropertyNotifyChange:
         prop.notify_change()
 
         # Both contexts should be called despite exception
-        context1._handle_computed_property_change.assert_called_once_with(prop)  # type: ignore[reportPrivateUsage]
-        context2._handle_computed_property_change.assert_called_once_with(prop)  # type: ignore[reportPrivateUsage]
+        context1._handle_computed_property_change.assert_called_once_with(prop)
+        context2._handle_computed_property_change.assert_called_once_with(prop)
 
     def test_notify_change_preserves_dependencies(self) -> None:
         """Test that notify_change doesn't affect dependencies."""
@@ -233,8 +232,8 @@ class TestComputedPropertyNotifyChange:
         prop.notify_change()
 
         # Both should be notified regardless of subscription order
-        context1._handle_computed_property_change.assert_called_once_with(prop)  # type: ignore[reportPrivateUsage]
-        context2._handle_computed_property_change.assert_called_once_with(prop)  # type: ignore[reportPrivateUsage]
+        context1._handle_computed_property_change.assert_called_once_with(prop)
+        context2._handle_computed_property_change.assert_called_once_with(prop)
 
     def test_notify_change_after_subscribe_unsubscribe_cycle(self) -> None:
         """Test notify_change after subscribe/unsubscribe cycles."""
@@ -260,4 +259,4 @@ class TestComputedPropertyNotifyChange:
         prop.notify_change()
 
         # Only context1 should be notified (context2 was garbage collected)
-        context1._handle_computed_property_change.assert_called_once_with(prop)  # type: ignore[reportPrivateUsage]
+        context1._handle_computed_property_change.assert_called_once_with(prop)

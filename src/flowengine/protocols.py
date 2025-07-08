@@ -5,13 +5,16 @@ from __future__ import annotations
 from typing import Any, Protocol, TypeVar, runtime_checkable
 
 # Type variables for protocols
-T = TypeVar("T", covariant=True)
+T_co = TypeVar("T_co", covariant=True)  # For protocol return types
+T = TypeVar(
+    "T"
+)  # For protocol methods that use type in both parameter and return positions
 K = TypeVar("K", covariant=True)  # Key type
 V = TypeVar("V", covariant=True)  # Value type
 
 
 @runtime_checkable
-class ContextKeyProtocol(Protocol[T]):
+class ContextKeyProtocol(Protocol[T_co]):
     """Protocol for context keys that can store typed values."""
 
     @property
@@ -20,7 +23,7 @@ class ContextKeyProtocol(Protocol[T]):
         ...
 
     @property
-    def value_type(self) -> type[T]:
+    def value_type(self) -> type[T_co]:
         """The type of values this key can store."""
         ...
 
@@ -43,7 +46,7 @@ class ContextProtocol(Protocol):
 
 
 @runtime_checkable
-class FlowProtocol(Protocol[T, V]):
+class FlowProtocol(Protocol[T_co, V]):
     """Protocol for Flow objects to avoid concrete dependencies."""
 
     @property

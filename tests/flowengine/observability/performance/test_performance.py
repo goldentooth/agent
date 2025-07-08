@@ -3,7 +3,7 @@
 import asyncio
 import time
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, Generator
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -24,7 +24,7 @@ from flowengine.observability.performance import (
 
 
 @pytest.fixture(autouse=True)
-def reset_global_performance_monitor():
+def reset_global_performance_monitor() -> Generator[None, None, None]:
     """Reset the global performance monitor before each test to prevent interference."""
     monitor = get_performance_monitor()
     monitor.reset_metrics()
@@ -529,7 +529,7 @@ class TestFlowIntegration:
 
         # Use monitored_stream decorator
         @monitored_stream("test_monitored")
-        def create_test_flow():
+        def create_test_flow() -> Any:
             return base_flow
 
         monitored_flow = create_test_flow
@@ -591,7 +591,7 @@ class TestFlowIntegration:
         benchmark_func = benchmark_stream(iterations=5)
         run_benchmark = benchmark_func(test_flow)
 
-        def test_stream_factory():
+        def test_stream_factory() -> Any:
             return async_range(10)
 
         return await run_benchmark(test_stream_factory)
@@ -699,7 +699,7 @@ class TestErrorHandling:
         """Wrap flow with monitoring decorator."""
 
         @monitored_stream("error_test")
-        def create_error_flow():
+        def create_error_flow() -> Any:
             return base_flow
 
         return create_error_flow

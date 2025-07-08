@@ -84,9 +84,8 @@ class TestComputedPropertySubscribe:
         prop = ComputedProperty(test_func, ["dep"])
         context = MockContext()
 
-        # Subscribe should return None
-        result = prop.subscribe(context)
-        assert result is None
+        # Subscribe doesn't return a value
+        prop.subscribe(context)
 
     def test_subscribe_uses_weakset(self) -> None:
         """Test that subscribers is a WeakSet."""

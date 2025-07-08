@@ -332,8 +332,10 @@ class TestHealthReportingFunctions:
 
     def test_validate_flow_configuration(self) -> None:
         """Test validate_flow_configuration function."""
+        from typing import Any
+
         # Valid config
-        config = {"timeout_seconds": 30}
+        config: dict[str, Any] = {"timeout_seconds": 30}
         errors = validate_flow_configuration(config)
         assert errors == []
 

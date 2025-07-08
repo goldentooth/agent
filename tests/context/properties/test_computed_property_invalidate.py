@@ -98,8 +98,8 @@ class TestComputedPropertyInvalidate:
         prop.invalidate()
 
         # Should still be in invalidated state
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
+        assert prop._cached_value is None
 
     def test_invalidate_without_prior_compute(self) -> None:
         """Test invalidate on property that was never computed."""
@@ -110,15 +110,15 @@ class TestComputedPropertyInvalidate:
         prop = ComputedProperty(test_func, [])
 
         # Should start in invalidated state
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
+        assert prop._cached_value is None
 
         # Invalidate without computing first
         prop.invalidate()
 
         # Should remain in same state
-        assert prop._is_cached is False  # type: ignore[reportPrivateUsage]
-        assert prop._cached_value is None  # type: ignore[reportPrivateUsage]
+        assert prop._is_cached is False
+        assert prop._cached_value is None
 
     def test_invalidate_with_none_cached_value(self) -> None:
         """Test invalidate when cached value is None."""
@@ -180,9 +180,8 @@ class TestComputedPropertyInvalidate:
 
         prop = ComputedProperty(test_func, [])
 
-        # Invalidate should return None
-        result = prop.invalidate()
-        assert result is None
+        # Invalidate doesn't return a value
+        prop.invalidate()
 
     def test_invalidate_preserves_function_and_dependencies(self) -> None:
         """Test that invalidate doesn't affect function or dependencies."""

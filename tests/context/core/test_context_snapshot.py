@@ -12,9 +12,9 @@ class MockContext:
     def __init__(self, data: dict[str, str] | None = None) -> None:
         super().__init__()
         self.data = data or {}
-        self.frames = []
-        self._computed_properties = {}
-        self._transformations = {}
+        self.frames: list[MockFrame] = []
+        self._computed_properties: dict[str, object] = {}
+        self._transformations: dict[str, object] = {}
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, MockContext):

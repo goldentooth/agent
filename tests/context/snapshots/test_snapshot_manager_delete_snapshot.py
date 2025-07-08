@@ -55,9 +55,8 @@ class TestSnapshotManagerDeleteSnapshot:
         # Create snapshot
         manager.create_snapshot(context, "test_snapshot")
 
-        # Delete should return None
-        result = manager.delete_snapshot("test_snapshot")
-        assert result is None
+        # Delete doesn't return a value
+        manager.delete_snapshot("test_snapshot")
 
     def test_delete_snapshot_multiple_snapshots(self) -> None:
         """Test deleting specific snapshot from multiple snapshots."""

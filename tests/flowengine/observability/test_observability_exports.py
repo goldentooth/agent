@@ -1,7 +1,7 @@
 """Tests for observability module exports to verify Epic 20 completion."""
 
 
-def test_analysis_exports():
+def test_analysis_exports() -> None:
     """Test that analysis exports are available from observability module."""
     from flowengine.observability import (
         FlowAnalyzer,
@@ -29,7 +29,7 @@ def test_analysis_exports():
     assert get_flow_analyzer is not None
 
 
-def test_analysis_exports_in_all():
+def test_analysis_exports_in_all() -> None:
     """Test that analysis exports are included in __all__."""
     from flowengine.observability import __all__
 
