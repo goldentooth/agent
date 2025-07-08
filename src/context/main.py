@@ -614,3 +614,14 @@ class Context:
             Dictionary mapping snapshot names to their timestamps
         """
         return self._snapshot_manager.list_snapshots()
+
+    def delete_snapshot(self, name: str) -> None:
+        """Delete a snapshot.
+
+        Args:
+            name: Name of the snapshot to delete
+
+        Raises:
+            KeyError: If snapshot with the given name doesn't exist
+        """
+        self._snapshot_manager.delete_snapshot(name)
