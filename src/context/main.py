@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Any, Dict, Set, cast
+from typing import TYPE_CHECKING, Any, Dict, Iterator, Set, cast
 
 if TYPE_CHECKING:
     from .history_tracker import ContextChangeEvent
@@ -663,3 +663,24 @@ class Context:
             List of change events
         """
         return self._history_tracker.get_history(limit=limit, since=since)
+
+    def clear_history(self) -> None:
+        """Clear the change history."""
+        self._history_tracker.clear_history()
+
+    def keys(self) -> Iterator[str]:
+        """Yield all unique keys from the context, including computed properties."""
+        seen: set[str] = set()
+
+        # First yield computed properties
+        for k in self._computed_properties:
+            if k not in seen:
+                yield k
+                seen.add(k)
+
+        # Then yield frame keys
+        for frame in reversed(self.frames):
+            for k in frame.data:
+                if k not in seen:
+                    yield k
+                    seen.add(k)
