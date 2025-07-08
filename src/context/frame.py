@@ -44,3 +44,7 @@ class ContextFrame:
         frame = ContextFrame()
         frame.data = copy.deepcopy(self.data)
         return frame
+
+    def keys(self):
+        """Return the keys in this context frame."""
+        return self.data.keys()

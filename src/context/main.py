@@ -344,3 +344,19 @@ class Context:
         #     forked._snapshot_manager._snapshots[name] = forked_snapshot
 
         return forked
+
+    def merge(self, other: "Context") -> "Context":
+        """Merge another context into this context.
+
+        Args:
+            other: The context to merge into this context
+
+        Returns:
+            This context (for method chaining)
+        """
+        # Merge all data from other context's frames into current context
+        for frame in other.frames:
+            for key in frame.keys():
+                self.set(key, frame[key])
+
+        return self
