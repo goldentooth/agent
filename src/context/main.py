@@ -561,3 +561,14 @@ class Context:
                 result["removed"][f"[{i}]"] = old_list[i]
 
         return result
+
+    def create_snapshot(self, name: str) -> ContextSnapshot:
+        """Create a snapshot of the current context state.
+
+        Args:
+            name: Name/identifier for this snapshot
+
+        Returns:
+            A ContextSnapshot instance containing the current state
+        """
+        return ContextSnapshot(self, name)
