@@ -194,3 +194,25 @@ class Context:
 
         # Snapshots for time-travel debugging
         self._snapshot_manager: SnapshotManager = SnapshotManager()
+
+    def get(self, key: str, default: Any | None = None) -> Any | None:
+        """Get the value for a key, searching through all frames and computed properties.
+
+        Args:
+            key: The key to search for
+            default: Default value to return if key is not found
+
+        Returns:
+            The value for the key, or the default value if not found
+        """
+        # Check if it's a computed property first
+        if key in self._computed_properties:
+            computed_value = self._computed_properties[key].compute(self)
+            return computed_value
+
+        # Search through frames in reverse order (top to bottom)
+        for frame in reversed(self.frames):
+            if key in frame:
+                frame_value = frame[key]
+                return frame_value
+        return default
