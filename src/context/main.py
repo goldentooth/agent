@@ -216,3 +216,35 @@ class Context:
                 frame_value = frame[key]
                 return frame_value
         return default
+
+    def __getitem__(self, key: str) -> ContextValue:
+        """Get the value for a key, raising KeyError if not found.
+
+        Args:
+            key: The key to search for
+
+        Returns:
+            The value for the key
+
+        Raises:
+            KeyError: If the key is not found in any frame or computed property
+        """
+        # Check if it's a computed property first
+        if key in self._computed_properties:
+            return self._computed_properties[key].compute(self)
+
+        # Search through frames in reverse order (top to bottom)
+        for frame in reversed(self.frames):
+            if key in frame:
+                return frame[key]
+        raise KeyError(f"Context key '{key}' not found")
+
+    def set(self, key: str, value: ContextValue) -> None:
+        """Set a value for a key in the current frame.
+
+        Args:
+            key: The key to set
+            value: The value to set
+        """
+        # Set value in the current (last) frame
+        self.frames[-1][key] = value
