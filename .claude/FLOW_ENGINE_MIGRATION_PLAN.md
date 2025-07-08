@@ -13,6 +13,30 @@ This document outlines the detailed migration plan for extracting the Flow Engin
 - Create a branch for each epic, add commits to it until you have completed the epic and related work, then create a pull request.
 - When you prepare a commit, write the commit message to a file in a temporary directory, then create the commit using that message file. Do not write the message inline.
 
+## Key Migration Learnings (from Context Migration Experience)
+
+### Import Strategy for Tests
+- **Use relative imports in tests**: `from context.symbol import Symbol` NOT `from src.context.symbol import Symbol`
+- Poetry package structure works better with relative imports than absolute `src.` imports
+- Test collection issues can occur when using absolute `src.` imports during pre-commit hooks
+
+### Package Configuration
+- **Always add new packages to pyproject.toml**: Add `{ include = "package_name", from = "src" }` to `[tool.poetry] packages`
+- Run `poetry install` after adding new packages to update the development environment
+- Package imports work through poetry's package management system
+
+### Test Collection and Coverage
+- Individual function tests should achieve 100% coverage for that specific function
+- Global project coverage requirements (90%) may conflict during early migration phases
+- Focus on individual function coverage rather than global project coverage during migration
+- Pre-commit hooks run full test suite, so ensure all new test files can be collected properly
+
+### Pre-commit Hook Considerations
+- Hooks may stash/restore changes, causing import issues if not properly staged
+- Always stage test files with correct imports before committing
+- Import path consistency is critical for test collection success
+- Use `git add` to stage corrected imports before running commit hooks
+
 ## Key Statistics
 
 - **Source Files**: 26 Python files (5,954 total lines)
@@ -148,68 +172,6 @@ The Flow Engine will be extracted as `flowengine` - a **separate package** that:
 
 **Dependencies**: Trampoline execution functions
 **Coverage**: 100% - trampoline signal functionality
-
----
-
-### Epic 46: Migrate ergonomics test class 1
-**Unit**: Flow chaining and creation tests
-**Source**: `old/tests/flow_engine/test_ergonomics.py` (TestFlowChaining, TestFlowCreation)
-**Target**: `tests/flowengine/test_ergonomics.py`
-
-**Test classes to migrate**:
-1. `TestFlowChaining` - Method chaining ergonomics
-   - Methods: `test_fluent_api()`, `test_method_composition()`, `test_readable_chains()`
-
-2. `TestFlowCreation` - Flow creation patterns
-   - Methods: `test_factory_methods()`, `test_decorator_patterns()`, `test_lambda_flows()`
-
-**Test scenarios**:
-- Fluent API usability
-- Method discoverability
-- Flow creation patterns
-
-**Dependencies**: Complete core system
-**Coverage**: 100% - chaining and creation ergonomics
-
----
-
-### Epic 47: Migrate ergonomics test class 2
-**Unit**: Debugging and composition tests
-**Source**: `old/tests/flow_engine/test_ergonomics.py` (TestFlowDebugging, TestFlowComposition)
-**Target**: `tests/flowengine/test_ergonomics.py`
-
-**Test classes to migrate**:
-3. `TestFlowDebugging` - Debugging ergonomics
-   - Methods: `test_debug_labels()`, `test_flow_inspection()`, `test_error_messages()`
-
-4. `TestFlowComposition` - Composition patterns
-   - Methods: `test_pipe_operator()`, `test_compose_function()`, `test_nested_composition()`
-
-**Test scenarios**:
-- Error message clarity
-- Composition patterns
-
-**Dependencies**: Complete core system
-**Coverage**: 100% - debugging and composition ergonomics
-
----
-
-### Epic 48: Migrate ergonomics test class 3
-**Unit**: Documentation and introspection tests
-**Source**: `old/tests/flow_engine/test_ergonomics.py` (TestFlowDocumentation)
-**Target**: `tests/flowengine/test_ergonomics.py`
-
-**Test class to migrate**:
-5. `TestFlowDocumentation` - Self-documenting flows
-   - Methods: `test_flow_names()`, `test_metadata_preservation()`, `test_introspection()`
-
-**Test scenarios**:
-- Documentation and introspection
-- IDE integration (type hints)
-- Common usage patterns
-
-**Dependencies**: Complete core system
-**Coverage**: 100% - documentation ergonomics
 
 ---
 

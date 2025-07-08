@@ -45,3 +45,5 @@
 43. Revisit `agent-knowledge-base`. Is this still valuable? What if we get into 100,000-1,000,000 files? Does this just become absurd, and should we abandon it now?
 44. Probably split out anything correlating Flow and Context into a subclass or smth.
 45. Replace placeholder health check implementations in Epic 18 with proper flow execution monitoring, error tracking, and performance metrics collection. Current implementations are basic placeholders that need real system integration for production use.
+46. Symbol should probably throw an exception on successive dots.
+47. FAILED tests/flowengine/observability/health/test_health_checks.py::TestBuiltInHealthChecks::test_check_system_resources - assert False is True

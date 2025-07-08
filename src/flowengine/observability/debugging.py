@@ -267,7 +267,6 @@ def debug_stream(
     Returns:
         A flow that provides debugging and passes items through unchanged.
     """
-    from collections.abc import AsyncGenerator
 
     async def _flow(stream: AsyncGenerator[Any, None]) -> AsyncGenerator[Any, None]:
         flow_name = "debug_stream"
@@ -316,7 +315,6 @@ def traced_flow(flow: Flow[Input, Output]) -> Flow[Input, Output]:
     Returns:
         A flow with enhanced debugging and error reporting.
     """
-    from collections.abc import AsyncGenerator
 
     async def _traced_flow(
         stream: AsyncGenerator[Input, None],

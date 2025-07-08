@@ -78,7 +78,7 @@ def debounce_stream_trailing_edge(seconds: float) -> Flow[Input, Input]:
         latest_item = None
         last_update_time = 0.0
 
-        async def item_collector():
+        async def item_collector() -> None:
             """Collect items and track timing."""
             nonlocal latest_item, last_update_time
             async for item in stream:

@@ -118,7 +118,7 @@ def retry_stream(n: int, flow: Flow[Input, Output]) -> Flow[Input, Output]:
 
 
 def recover_stream(
-    handler: Callable[[Exception, Input], Awaitable[Input]],
+    handler: Callable[[Exception, Input | None], Awaitable[Input]],
 ) -> Flow[Input, Input]:
     """Create a flow that handles exceptions and provides fallback values.
 
@@ -134,7 +134,7 @@ def recover_stream(
         except Exception as e:
             # If we can determine what item caused the issue, call handler
             # For now, we'll pass None as the item since we can't determine it
-            fallback = await handler(e, None)  # type: ignore[arg-type]
+            fallback = await handler(e, None)
             yield fallback
 
     return Flow(_flow, name=f"recover({get_function_name(handler)})")
@@ -348,7 +348,7 @@ def circuit_breaker_stream(
     return Flow(_flow, name=f"circuit_breaker({failure_threshold}, {recovery_timeout})")
 
 
-def chain_flows(*flows: Flow[Input, Input]) -> Flow[Input, Input]:
+def chain_flows(*flows: Flow[Input, Any]) -> Flow[Input, Any]:
     """Create a flow that chains multiple flows sequentially.
 
     Applies each flow in sequence to the same input stream.
@@ -361,7 +361,7 @@ def chain_flows(*flows: Flow[Input, Input]) -> Flow[Input, Input]:
         A flow that applies all flows to the input stream
     """
 
-    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Input, None]:
+    async def _flow(stream: AsyncGenerator[Input, None]) -> AsyncGenerator[Any, None]:
         """Chain multiple flows sequentially."""
         # Convert stream to list to replay it for each flow
         items = [item async for item in stream]

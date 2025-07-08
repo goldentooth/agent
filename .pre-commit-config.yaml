@@ -21,15 +21,6 @@ repos:
         language: system
         entry: bash -c 'if [ -n "$SKIP" ]; then echo "SKIP environment variable is set. Please unset it before committing." >&2; exit 1; fi'
 
-  # Initial black formatting
-  - repo: local
-    hooks:
-      - id: black-format
-        name: Black Code Formatter
-        language: system
-        entry: poetry run black .
-        files: \.py$
-
   # Basic file formatting
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -74,6 +65,7 @@ repos:
         exclude: ^old/
       - id: pretty-format-json
         description: Pretty-format JSON files
+        args: ['--autofix']
         exclude: ^old/
       - id: debug-statements
         description: Check for debugger statements
@@ -93,8 +85,9 @@ repos:
       - id: black
         description: Format Python code with Black
         language_version: python3
-        args: []
+        args: ['.']
         exclude: ^old/
+        always_run: true
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
@@ -125,15 +118,26 @@ repos:
         pass_filenames: false
         always_run: true
 
-  # Pyright type checking
+  # Pyright type checking src/
   - repo: local
     hooks:
       - id: pyright
-        name: Pyright Type Check
-        entry: poetry run pyright
+        name: Pyright Source Type Check
+        entry: poetry run poe pyright-src
         language: system
         types: [python]
-        args: ['src', 'tests']
+        description: Run Pyright type checking
+        pass_filenames: false
+        always_run: true
+
+  # Pyright type checking tests/
+  - repo: local
+    hooks:
+      - id: pyright
+        name: Pyright Tests Type Check
+        entry: poetry run poe pyright-tests
+        language: system
+        types: [python]
         description: Run Pyright type checking
         pass_filenames: false
         always_run: true

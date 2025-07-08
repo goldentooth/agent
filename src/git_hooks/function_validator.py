@@ -120,7 +120,7 @@ class FunctionLengthValidator(Validator):
         if tree is None:
             return None
 
-        for func_name, start_line, end_line in functions:
+        for func_name, start_line, _ in functions:
             # Find the function node to count statements
             stmt_count = self._get_statement_count_for_function(
                 tree, func_name, start_line

@@ -32,21 +32,8 @@ dependencies = [
 scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 
 [tool.poetry]
-packages = [
-    { include = "goldentooth_agent", from = "src" },
-    { include = "git_hooks", from = "src" },
-    { include = "flowengine", from = "src" },
-]
-include = [
-    { path = "src/goldentooth_agent/data/system_prompts/*.yaml", format = [
-        "sdist",
-        "wheel",
-    ] },
-    { path = "src/goldentooth_agent/data/sample_github/**/*.yaml", format = [
-        "sdist",
-        "wheel",
-    ] },
-]
+packages = [{ include = "*", from = "src" }]
+include = []
 
 
 [tool.poetry.group.dev.dependencies]
@@ -77,7 +64,8 @@ radon = "^6.0.1"
 [tool.poe.tasks]
 pytest = "pytest"
 mypy = "mypy"
-pyright = "pyright"
+pyright-src = "pyright --project src"
+pyright-tests = "pyright --project tests"
 vulture = "vulture"
 
 # Pre-commit management tasks

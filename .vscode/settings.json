@@ -1,57 +1,61 @@
 {
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python",
+    "editor.formatOnSave": true
+  },
+  "accessibility.signals.terminalBell": {
+    "sound": "on"
+  },
+  "black-formatter.args": [
+    "--line-length=88"
+  ],
+  "editor.insertSpaces": true,
+  "editor.rulers": [
+    88
+  ],
+  "editor.tabSize": 4,
+  "editor.trimAutoWhitespace": true,
+  "files.exclude": {
+    "**/*.pyc": true,
+    "**/.mypy_cache": true,
+    "**/.pytest_cache": true,
+    "**/__pycache__": true,
+    "**/node_modules": true
+  },
+  "git.ignoreLimitWarning": true,
+  "mypy-type-checker.enable": true,
+  "python.analysis.autoFormatStrings": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.completeFunctionParens": true,
+  "python.analysis.inlayHints.callArgumentNames": "partial",
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "python.analysis.inlayHints.variableTypes": true,
+  "python.analysis.packageIndexDepths": [
+    {
+      "depth": 10,
+      "name": "goldentooth_agent"
+    }
+  ],
   "python.defaultInterpreterPath": "./venv/bin/python",
   "python.terminal.activateEnvironment": true,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "ruff.enable": true,
+  "search.exclude": {
+    "**/.mypy_cache": true,
+    "**/.pytest_cache": true,
+    "**/__pycache__": true,
+    "**/node_modules": true,
+    "**/old": true
+  },
+  "terminal.integrated.enableVisualBell": true,
   "terminal.integrated.env.linux": {
     "PROJECT_ROOT": "${workspaceFolder}"
   },
   "terminal.integrated.env.osx": {
     "PROJECT_ROOT": "${workspaceFolder}"
-  },
-  "python.analysis.autoImportCompletions": true,
-  "python.analysis.autoFormatStrings": true,
-  "python.analysis.completeFunctionParens": true,
-  "python.analysis.inlayHints.functionReturnTypes": true,
-  "python.analysis.inlayHints.variableTypes": true,
-  "python.analysis.inlayHints.callArgumentNames": "partial",
-  "python.analysis.packageIndexDepths": [
-    {
-      "name": "goldentooth_agent",
-      "depth": 10
-    }
-  ],
-  "ruff.enable": true,
-  "mypy-type-checker.enable": true,
-  "terminal.integrated.enableVisualBell": true,
-  "accessibility.signals.terminalBell": {
-    "sound": "on"
-  },
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.python",
-    "editor.formatOnSave": true
-  },
-  "black-formatter.args": ["--line-length=88"],
-  "python.testing.pytestEnabled": true,
-  "python.testing.unittestEnabled": false,
-  "python.testing.pytestArgs": [
-    "tests"
-  ],
-  "editor.rulers": [88],
-  "editor.tabSize": 4,
-  "editor.insertSpaces": true,
-  "editor.trimAutoWhitespace": true,
-  "files.exclude": {
-    "**/__pycache__": true,
-    "**/*.pyc": true,
-    "**/node_modules": true,
-    "**/.mypy_cache": true,
-    "**/.pytest_cache": true
-  },
-  "git.ignoreLimitWarning": true,
-  "search.exclude": {
-    "**/old": true,
-    "**/.mypy_cache": true,
-    "**/.pytest_cache": true,
-    "**/node_modules": true,
-    "**/__pycache__": true
   }
 }

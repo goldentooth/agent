@@ -36,7 +36,7 @@ class FlowRegistry(object):
     - Thread-safe concurrent operations
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize empty registry with thread safety."""
         super().__init__()
         self._flows: Dict[str, AnyFlow] = {}
@@ -57,7 +57,7 @@ class FlowRegistry(object):
         if not name:
             raise FlowRegistryError("Flow name cannot be empty")
 
-        if not isinstance(flow, Flow):  # type: ignore
+        if not isinstance(flow, Flow):  # pyright: ignore[reportUnnecessaryIsInstance]
             raise FlowRegistryError("Flow must be an instance of Flow")
 
         with self._lock:
@@ -113,7 +113,7 @@ class FlowRegistry(object):
             if name in self._flows:
                 return self._flows[name]
             elif default is not _MISSING:  # Default was explicitly provided
-                return default
+                return cast(AnyFlow | None, default)
             else:
                 raise FlowRegistryError(f"Flow '{name}' not found")
 
@@ -445,9 +445,15 @@ def registered_flow(name: str, category: str | None = None) -> Callable[
     ) -> Union[AnyFlow, Callable[[], AnyFlow], DecoratedCallable]:
         # Check if it's a Flow instance
         if isinstance(flow_or_factory, Flow):
-            # Cast to AnyFlow since we know it's a Flow instance
-            flow_instance = cast(AnyFlow, flow_or_factory)
-            return register_flow(name, flow_instance, category)
+            # Type narrowing confirms it's already a Flow instance
+            flow_instance = (  # pyright: ignore[reportUnknownVariableType]
+                flow_or_factory
+            )
+            return register_flow(
+                name,
+                flow_instance,  # pyright: ignore[reportUnknownArgumentType]
+                category,
+            )
 
         # Check if it's a callable that might return a Flow
         if callable(flow_or_factory):
@@ -455,13 +461,17 @@ def registered_flow(name: str, category: str | None = None) -> Callable[
             try:
                 result = flow_or_factory()
                 if isinstance(result, Flow):
-                    # Cast to AnyFlow since we know it's a Flow instance
-                    flow_instance = cast(AnyFlow, result)
+                    # Type narrowing confirms it's already a Flow instance
+                    flow_result = result  # pyright: ignore[reportUnknownVariableType]
                     # Register the Flow and return a function that always returns the same instance
-                    register_flow(name, flow_instance, category)
+                    register_flow(
+                        name,
+                        flow_result,  # pyright: ignore[reportUnknownArgumentType]
+                        category,
+                    )
 
                     def cached_factory() -> AnyFlow:
-                        return flow_instance
+                        return flow_result  # pyright: ignore[reportUnknownVariableType]
 
                     return cast(
                         Union[AnyFlow, Callable[[], AnyFlow], DecoratedCallable],

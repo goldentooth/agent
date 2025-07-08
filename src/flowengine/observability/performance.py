@@ -21,7 +21,7 @@ try:
 
     _psutil_available = True
 except ImportError:
-    psutil = None  # type: ignore
+    psutil = None  # type: ignore[assignment]
 
 # Type aliases for performance monitoring
 PerformanceData = dict[str, Any]
@@ -199,7 +199,7 @@ class PerformanceMonitor:
         ):
             return
         try:
-            process = psutil.Process()  # type: ignore
+            process = psutil.Process()  # pyright: ignore[reportOptionalMemberAccess]
             memory_info = process.memory_info()
             current_usage = memory_info.rss / 1024
             metrics = self.metrics[metrics_id]

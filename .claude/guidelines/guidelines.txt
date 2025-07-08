@@ -63,6 +63,32 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
   - These will be used to create followup issues, so make them detailed!
 - Prefer defining functions (or reusing them!) to using Lambdas, particularly when encountering type-checking issues.
 
+## Package Migration Guidelines
+
+When migrating packages from `old/` to `src/`, follow these critical patterns learned from the context migration:
+
+### Test Import Strategy
+- **ALWAYS use relative imports in tests**: `from package.module import Class`
+- **NEVER use absolute src imports**: `from src.package.module import Class` (causes test collection failures)
+- Poetry package structure expects relative imports for proper test collection
+
+### Package Configuration
+- **Immediately add new packages to pyproject.toml** when creating them
+- Add entry: `{ include = "package_name", from = "src" }` to `[tool.poetry] packages`
+- Run `poetry install` after adding packages to update development environment
+- Package imports work through poetry's package management, not direct file imports
+
+### Test Collection and Staging
+- **Always stage test files with correct imports before committing**
+- Pre-commit hooks can stash/restore changes, reverting import fixes
+- Use `git add tests/package/test_file.py` to stage corrected imports
+- Import path consistency is critical for successful test collection during pre-commit
+
+### Coverage During Migration
+- Focus on 100% coverage for individual functions being migrated
+- Global project coverage (90%) may conflict during early migration phases
+- This is acceptable during migration - focus on function-level coverage quality
+
 ## The Commandments
 
 0. **Do not ever, ever, under any circumstances, bypass pre-commit checks.**
