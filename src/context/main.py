@@ -163,3 +163,7 @@ class Transformation:
         super().__init__()
         self.func = func
         self.key = key
+
+    def apply(self, value: ContextValue) -> ContextValue:
+        """Apply the transformation to a value."""
+        return self.func(value)
