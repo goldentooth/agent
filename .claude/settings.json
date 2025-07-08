@@ -51,7 +51,8 @@
       "Bash(git commit -m:*)",
       "Bash(git reset:*)",
       "Bash(SKIP:*)",
-      "Edit(pyrightconfig.json)",
+      "Edit(src/pyrightconfig.json)",
+      "Edit(tests/pyrightconfig.json)",
       "Edit(pytest.ini)"
     ]
   }
