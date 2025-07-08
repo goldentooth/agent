@@ -288,3 +288,25 @@ class Context:
         if len(self.frames) <= 1:
             raise IndexError("Cannot pop root context frame")
         self.frames.pop()
+
+    def fork(self) -> "Context":
+        """Create a fork of the current context with copies of the frames, computed properties, and transformations.
+
+        Returns:
+            A new Context instance that is an independent copy of this context
+        """
+        # Create new context with deep copies of all frames
+        forked = Context([frame.copy() for frame in self.frames])
+
+        # TODO: Copy computed properties when add_computed_property is implemented
+        # for key, computed_prop in self._computed_properties.items():
+        #     forked.add_computed_property(
+        #         key, computed_prop.func, computed_prop.dependencies
+        #     )
+
+        # TODO: Copy transformations when add_transformation is implemented
+        # for key, transformations in self._transformations.items():
+        #     for transformation in transformations:
+        #         forked.add_transformation(key, transformation.func)
+
+        return forked
