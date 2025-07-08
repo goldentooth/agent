@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Any, Set
+from typing import TYPE_CHECKING, Any, Dict, Set, cast
 from weakref import WeakSet
 
 from .frame import ContextFrame
@@ -461,12 +461,18 @@ class Context:
         try:
             if isinstance(old, dict) and isinstance(new, dict):
                 return self._deep_compare_dicts(
-                    old, new, max_depth - 1, visited
-                )  # pyright: ignore[reportUnknownArgumentType]
+                    cast(Dict[str, Any], old),
+                    cast(Dict[str, Any], new),
+                    max_depth - 1,
+                    visited,
+                )
             elif isinstance(old, list) and isinstance(new, list):
                 return self._deep_compare_lists(
-                    old, new, max_depth - 1, visited
-                )  # pyright: ignore[reportUnknownArgumentType]
+                    old,  # pyright: ignore[reportUnknownArgumentType]
+                    new,  # pyright: ignore[reportUnknownArgumentType]
+                    max_depth - 1,
+                    visited,
+                )
             else:
                 return {}
         finally:

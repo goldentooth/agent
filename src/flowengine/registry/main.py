@@ -446,10 +446,14 @@ def registered_flow(name: str, category: str | None = None) -> Callable[
         # Check if it's a Flow instance
         if isinstance(flow_or_factory, Flow):
             # Type narrowing confirms it's already a Flow instance
-            flow_instance: AnyFlow = (
-                flow_or_factory  # pyright: ignore[reportUnknownVariableType]
+            flow_instance = (  # pyright: ignore[reportUnknownVariableType]
+                flow_or_factory
             )
-            return register_flow(name, flow_instance, category)
+            return register_flow(
+                name,
+                flow_instance,  # pyright: ignore[reportUnknownArgumentType]
+                category,
+            )
 
         # Check if it's a callable that might return a Flow
         if callable(flow_or_factory):
@@ -458,14 +462,16 @@ def registered_flow(name: str, category: str | None = None) -> Callable[
                 result = flow_or_factory()
                 if isinstance(result, Flow):
                     # Type narrowing confirms it's already a Flow instance
-                    flow_result: AnyFlow = (
-                        result  # pyright: ignore[reportUnknownVariableType]
-                    )
+                    flow_result = result  # pyright: ignore[reportUnknownVariableType]
                     # Register the Flow and return a function that always returns the same instance
-                    register_flow(name, flow_result, category)
+                    register_flow(
+                        name,
+                        flow_result,  # pyright: ignore[reportUnknownArgumentType]
+                        category,
+                    )
 
                     def cached_factory() -> AnyFlow:
-                        return flow_result
+                        return flow_result  # pyright: ignore[reportUnknownVariableType]
 
                     return cast(
                         Union[AnyFlow, Callable[[], AnyFlow], DecoratedCallable],

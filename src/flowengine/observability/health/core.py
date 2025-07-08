@@ -12,7 +12,7 @@ from collections.abc import AsyncGenerator, Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, TypeVar, Union, cast
+from typing import Any, Union, cast
 
 # Type aliases
 HealthMetadata = dict[str, Any]
@@ -164,10 +164,8 @@ class HealthCheck:
             return False
         else:
             # It's a regular coroutine - safe to cast since not a generator
-            coro = check_result
-            result = (
-                await coro
-            )  # pyright: ignore[reportGeneralTypeIssues, reportUnknownVariableType]
-            return bool(
-                result
-            )  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+            coro = check_result  # pyright: ignore[reportUnknownVariableType]
+            result = (  # pyright: ignore[reportUnknownVariableType]
+                await coro  # pyright: ignore[reportGeneralTypeIssues]
+            )
+            return bool(result)  # pyright: ignore[reportUnknownArgumentType]

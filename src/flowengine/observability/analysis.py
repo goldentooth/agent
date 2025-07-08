@@ -666,14 +666,14 @@ def optimize_flow_composition(graph: FlowGraph) -> FlowGraph:
 
     # Apply optimization strategies based on analysis
     analyzer = get_flow_analyzer()
-    optimization_suggestions = analyzer.generate_optimization_suggestions(graph)
+    _ = analyzer.generate_optimization_suggestions(graph)
 
     # For now, implement basic optimizations
     # In a full implementation, this would apply various optimization strategies
     # such as caching, batching, parallel processing, etc.
 
     # Example optimization: Mark expensive nodes for potential caching
-    for node_id, node in optimized_graph.nodes.items():
+    for _, node in optimized_graph.nodes.items():
         if node.complexity_score >= 3:
             # Add metadata to indicate caching recommendation
             if "optimizations" not in node.metadata:
