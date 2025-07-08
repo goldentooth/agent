@@ -31,14 +31,15 @@ Example:
     >>> items = [item async for item in result]  # [0, 2, 4, 6, 8]
 """
 
-from flowengine.exceptions import (
+from . import exceptions, observability
+from .exceptions import (
     FlowConfigurationError,
     FlowError,
     FlowExecutionError,
     FlowTimeoutError,
     FlowValidationError,
 )
-from flowengine.flow import Flow
+from .flow import Flow
 
 __version__ = "0.0.1"
 __all__ = [
@@ -48,4 +49,6 @@ __all__ = [
     "FlowExecutionError",
     "FlowTimeoutError",
     "FlowConfigurationError",
+    "exceptions",
+    "observability",
 ]
