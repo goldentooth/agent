@@ -53,7 +53,7 @@
 - This is a normal part of the migration process where intermediate states may break compatibility
 
 ## Technical Changes Made
-1. **src/context/main.py**: 
+1. **src/context/main.py**:
    - Added `restore_snapshot` method
    - Fixed `create_snapshot` to use `SnapshotManager.create_snapshot`
 
@@ -85,7 +85,7 @@
 
 ## Time Invested
 - Implementation: ~30 minutes
-- Testing: ~20 minutes  
+- Testing: ~20 minutes
 - Pre-commit fixes: ~15 minutes
 - Issue resolution: ~30 minutes
 - **Total**: ~95 minutes
