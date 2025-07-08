@@ -360,3 +360,52 @@ class Context:
                 self.set(key, frame[key])
 
         return self
+
+    def diff(self, other: "Context") -> dict[str, Any]:
+        """Compare this context with another context and return the differences.
+
+        Args:
+            other: The context to compare against
+
+        Returns:
+            Dictionary with 'added', 'modified', and 'removed' keys containing the differences
+        """
+        diff_result: dict[str, Any] = {"added": {}, "modified": {}, "removed": {}}
+
+        # Get all keys from both contexts
+        self_keys: set[str] = set()
+        other_keys: set[str] = set()
+
+        # Collect all keys that exist in self
+        for frame in self.frames:
+            self_keys.update(frame.keys())
+
+        # Add computed property keys
+        self_keys.update(self._computed_properties.keys())
+
+        # Collect all keys that exist in other
+        for frame in other.frames:
+            other_keys.update(frame.keys())
+
+        # Add computed property keys from other
+        other_keys.update(other._computed_properties.keys())
+
+        # Find added keys (in other but not in self)
+        added_keys = other_keys - self_keys
+        for key in added_keys:
+            diff_result["added"][key] = other.get(key)
+
+        # Find removed keys (in self but not in other)
+        removed_keys = self_keys - other_keys
+        for key in removed_keys:
+            diff_result["removed"][key] = self.get(key)
+
+        # Find modified keys (in both but with different values)
+        shared_keys = self_keys & other_keys
+        for key in shared_keys:
+            self_value = self.get(key)
+            other_value = other.get(key)
+            if self_value != other_value:
+                diff_result["modified"][key] = {"old": self_value, "new": other_value}
+
+        return diff_result
