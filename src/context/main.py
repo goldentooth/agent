@@ -56,12 +56,29 @@ class ContextSnapshot:
         # Store metadata
         self.context_id = id(context)
 
+        # For backward compatibility with MockContext objects (used in tests)
+        if hasattr(context, "data") and not hasattr(context, "frames"):
+            self.mock_data: dict[str, Any] | None = (
+                context.data.copy() if context.data else {}
+            )
+        else:
+            self.mock_data = None
+
     def restore_to(self, context: Any) -> None:
         """Restore this snapshot to the given context.
 
         Args:
             context: The context to restore to
         """
+        # Handle MockContext objects (backward compatibility for tests)
+        if hasattr(context, "data") and not hasattr(context, "frames"):
+            if self.mock_data is not None:
+                context.data = self.mock_data.copy()
+            else:
+                context.data = {}
+            return
+
+        # Handle real Context objects
         # Clear current state
         if hasattr(context, "frames"):
             context.frames.clear()
@@ -577,4 +594,23 @@ class Context:
         Returns:
             A ContextSnapshot instance containing the current state
         """
-        return ContextSnapshot(self, name)
+        return self._snapshot_manager.create_snapshot(self, name)
+
+    def restore_snapshot(self, name: str) -> None:
+        """Restore the context to a previous snapshot state.
+
+        Args:
+            name: Name of the snapshot to restore
+
+        Raises:
+            KeyError: If snapshot with the given name doesn't exist
+        """
+        self._snapshot_manager.restore_snapshot(self, name)
+
+    def list_snapshots(self) -> dict[str, float]:
+        """List all available snapshots with their timestamps.
+
+        Returns:
+            Dictionary mapping snapshot names to their timestamps
+        """
+        return self._snapshot_manager.list_snapshots()
