@@ -8,7 +8,7 @@ dictionary-like behavior.
 from __future__ import annotations
 
 import copy
-from typing import Any
+from typing import Any, KeysView
 
 # Type aliases for context data - contexts can store any type of value
 ContextData = dict[str, Any]
@@ -45,6 +45,6 @@ class ContextFrame:
         frame.data = copy.deepcopy(self.data)
         return frame
 
-    def keys(self):
+    def keys(self) -> KeysView[str]:
         """Return the keys in this context frame."""
         return self.data.keys()

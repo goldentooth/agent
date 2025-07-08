@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Set
 from weakref import WeakSet
 
 from .frame import ContextFrame
@@ -41,17 +41,17 @@ class ContextSnapshot:
         # Store computed property definitions (but not cached values)
         self.computed_properties: dict[str, dict[str, Any]] = {}
         if hasattr(context, "_computed_properties"):
-            for key, prop in context._computed_properties.items():  # type: ignore[reportUnknownMemberType]
+            for key, prop in context._computed_properties.items():
                 self.computed_properties[key] = {
-                    "func": prop.func,  # type: ignore[reportUnknownMemberType]
-                    "dependencies": prop.dependencies.copy(),  # type: ignore[reportUnknownMemberType]
+                    "func": prop.func,
+                    "dependencies": prop.dependencies.copy(),
                 }
 
         # Store transformations
         self.transformations: dict[str, list[Any]] = {}
         if hasattr(context, "_transformations"):
-            for key, transforms in context._transformations.items():  # type: ignore[reportUnknownMemberType]
-                self.transformations[key] = [t.func for t in transforms]  # type: ignore[reportUnknownMemberType]
+            for key, transforms in context._transformations.items():
+                self.transformations[key] = [t.func for t in transforms]
 
         # Store metadata
         self.context_id = id(context)
@@ -66,24 +66,24 @@ class ContextSnapshot:
         if hasattr(context, "frames"):
             context.frames.clear()
         if hasattr(context, "_computed_properties"):
-            context._computed_properties.clear()  # type: ignore[reportUnknownMemberType]
+            context._computed_properties.clear()
         if hasattr(context, "_transformations"):
-            context._transformations.clear()  # type: ignore[reportUnknownMemberType]
+            context._transformations.clear()
         if hasattr(context, "_dependency_graph"):
-            context._dependency_graph.clear()  # type: ignore[reportUnknownMemberType]
+            context._dependency_graph.clear()
         if hasattr(context, "_sync_events"):
-            context._sync_events.clear()  # type: ignore[reportUnknownMemberType]
+            context._sync_events.clear()
         if hasattr(context, "_async_events"):
-            context._async_events.clear()  # type: ignore[reportUnknownMemberType]
+            context._async_events.clear()
 
         # Restore frames
         if hasattr(context, "frames"):
-            context.frames.extend([frame.copy() for frame in self.frames])  # type: ignore[reportUnknownMemberType]
+            context.frames.extend([frame.copy() for frame in self.frames])
 
         # Restore computed properties
         for key, prop_data in self.computed_properties.items():
             if hasattr(context, "add_computed_property"):
-                context.add_computed_property(  # type: ignore[reportUnknownMemberType]
+                context.add_computed_property(
                     key,
                     prop_data["func"],
                     prop_data["dependencies"],
@@ -93,7 +93,7 @@ class ContextSnapshot:
         for key, funcs in self.transformations.items():
             for func in funcs:
                 if hasattr(context, "add_transformation"):
-                    context.add_transformation(key, func)  # type: ignore[reportUnknownMemberType]
+                    context.add_transformation(key, func)
 
 
 class ComputedProperty:
@@ -443,7 +443,7 @@ class Context:
         return isinstance(value, (dict, list))
 
     def _deep_compare(
-        self, old: Any, new: Any, max_depth: int, visited: set[int]
+        self, old: Any, new: Any, max_depth: int, visited: Set[int]
     ) -> dict[str, Any]:
         """Recursively compare two complex values and return deep differences."""
         if max_depth <= 0:
@@ -460,13 +460,9 @@ class Context:
 
         try:
             if isinstance(old, dict) and isinstance(new, dict):
-                return self._deep_compare_dicts(
-                    old, new, max_depth - 1, visited  # type: ignore[arg-type]
-                )
+                return self._deep_compare_dicts(old, new, max_depth - 1, visited)
             elif isinstance(old, list) and isinstance(new, list):
-                return self._deep_compare_lists(
-                    old, new, max_depth - 1, visited  # type: ignore[arg-type]
-                )
+                return self._deep_compare_lists(old, new, max_depth - 1, visited)
             else:
                 return {}
         finally:
@@ -478,7 +474,7 @@ class Context:
         old_dict: dict[str, Any],
         new_dict: dict[str, Any],
         max_depth: int,
-        visited: set[int],
+        visited: Set[int],
     ) -> dict[str, Any]:
         """Compare two dictionaries deeply."""
         result: dict[str, Any] = {"added": {}, "modified": {}, "removed": {}}
@@ -521,7 +517,7 @@ class Context:
         old_list: list[Any],
         new_list: list[Any],
         max_depth: int,
-        visited: set[int],
+        visited: Set[int],
     ) -> dict[str, Any]:
         """Compare two lists deeply."""
         result: dict[str, Any] = {"added": {}, "modified": {}, "removed": {}}

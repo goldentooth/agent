@@ -6,7 +6,7 @@ from context.dependency_graph import DependencyGraph
 class TestDependencyGraphInit:
     """Test suite for DependencyGraph.__init__ method."""
 
-    def test_init_creates_empty_graph(self):
+    def test_init_creates_empty_graph(self) -> None:
         """Test that __init__ creates an empty internal graph."""
         graph = DependencyGraph()
 
@@ -15,7 +15,7 @@ class TestDependencyGraphInit:
         assert isinstance(internal_graph, dict)
         assert len(internal_graph) == 0
 
-    def test_init_creates_isolated_instances(self):
+    def test_init_creates_isolated_instances(self) -> None:
         """Test that multiple instances have isolated internal graphs."""
         graph1 = DependencyGraph()
         graph2 = DependencyGraph()
@@ -26,7 +26,7 @@ class TestDependencyGraphInit:
         assert internal1 is not internal2
         assert id(internal1) != id(internal2)
 
-    def test_init_graph_type_annotation(self):
+    def test_init_graph_type_annotation(self) -> None:
         """Test that internal graph has correct type structure."""
         graph = DependencyGraph()
 
@@ -42,7 +42,7 @@ class TestDependencyGraphInit:
         internal_graph["test_key"].add("dependent")
         assert "dependent" in internal_graph["test_key"]
 
-    def test_init_multiple_calls_independent(self):
+    def test_init_multiple_calls_independent(self) -> None:
         """Test that creating multiple graphs results in independent instances."""
         graphs = [DependencyGraph() for _ in range(5)]
 

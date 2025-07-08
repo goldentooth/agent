@@ -3,8 +3,8 @@
 import tempfile
 from pathlib import Path
 
-from src.git_hooks.core import ValidationSeverity
-from src.git_hooks.function_validator import FunctionLengthValidator
+from git_hooks.core import ValidationSeverity
+from git_hooks.function_validator import FunctionLengthValidator
 
 
 class TestFunctionLengthValidator:

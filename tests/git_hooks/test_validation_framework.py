@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import Optional
 from unittest.mock import patch
 
-from src.git_hooks.core import ValidationResult, ValidationSeverity, Validator
-from src.git_hooks.file_validator import FileLengthValidator
-from src.git_hooks.module_validator import ModuleSizeValidator
+from git_hooks.core import ValidationResult, ValidationSeverity, Validator
+from git_hooks.file_validator import FileLengthValidator
+from git_hooks.module_validator import ModuleSizeValidator
 
 from .conftest import create_file_with_lines, create_module_with_total_lines
 

@@ -6,7 +6,7 @@ from context.dependency_graph import DependencyGraph
 class TestDependencyGraphClear:
     """Test suite for DependencyGraph.clear method."""
 
-    def test_clear_empty_graph(self):
+    def test_clear_empty_graph(self) -> None:
         """Test clearing an already empty graph."""
         graph = DependencyGraph()
 
@@ -15,7 +15,7 @@ class TestDependencyGraphClear:
         internal_graph = graph.get_internal_graph_for_testing()
         assert len(internal_graph) == 0
 
-    def test_clear_single_dependency(self):
+    def test_clear_single_dependency(self) -> None:
         """Test clearing a graph with single dependency."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -26,7 +26,7 @@ class TestDependencyGraphClear:
         assert len(internal_graph) == 0
         assert "source" not in internal_graph
 
-    def test_clear_multiple_dependencies(self):
+    def test_clear_multiple_dependencies(self) -> None:
         """Test clearing a graph with multiple dependencies."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -42,7 +42,7 @@ class TestDependencyGraphClear:
         assert "source2" not in internal_graph
         assert "source3" not in internal_graph
 
-    def test_clear_affects_all_methods(self):
+    def test_clear_affects_all_methods(self) -> None:
         """Test that clear affects all query methods."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -57,7 +57,7 @@ class TestDependencyGraphClear:
         assert len(graph.get_dependents("source2")) == 0
         assert len(graph.get_all_source_keys()) == 0
 
-    def test_clear_idempotent(self):
+    def test_clear_idempotent(self) -> None:
         """Test that multiple clear calls are safe."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -68,7 +68,7 @@ class TestDependencyGraphClear:
         internal_graph = graph.get_internal_graph_for_testing()
         assert len(internal_graph) == 0
 
-    def test_clear_enables_fresh_start(self):
+    def test_clear_enables_fresh_start(self) -> None:
         """Test that after clear, graph can be used normally."""
         graph = DependencyGraph()
         graph.add_dependency("old_source", "old_dep")
@@ -84,7 +84,7 @@ class TestDependencyGraphClear:
         assert "new_source" in graph.get_all_source_keys()
         assert "old_source" not in graph.get_all_source_keys()
 
-    def test_clear_with_empty_string_keys(self):
+    def test_clear_with_empty_string_keys(self) -> None:
         """Test clearing graph with empty string keys."""
         graph = DependencyGraph()
         graph.add_dependency("", "dep1")
@@ -97,16 +97,14 @@ class TestDependencyGraphClear:
         assert "" not in internal_graph
         assert "source" not in internal_graph
 
-    def test_clear_return_value(self):
+    def test_clear_return_value(self) -> None:
         """Test that clear returns None."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
 
-        result = graph.clear()
+        graph.clear()
 
-        assert result is None
-
-    def test_clear_vs_individual_removal(self):
+    def test_clear_vs_individual_removal(self) -> None:
         """Test that clear is equivalent to removing all dependencies individually."""
         # Create two identical graphs
         graph1 = DependencyGraph()
@@ -136,7 +134,7 @@ class TestDependencyGraphClear:
         assert internal1 == internal2
         assert len(internal1) == 0
 
-    def test_clear_preserves_graph_type(self):
+    def test_clear_preserves_graph_type(self) -> None:
         """Test that clear preserves the internal graph type."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -153,7 +151,7 @@ class TestDependencyGraphClear:
 class TestDependencyGraphGetGraphCopy:
     """Test suite for DependencyGraph.get_graph_copy method."""
 
-    def test_get_graph_copy_empty_graph(self):
+    def test_get_graph_copy_empty_graph(self) -> None:
         """Test getting copy of empty graph."""
         graph = DependencyGraph()
 
@@ -162,7 +160,7 @@ class TestDependencyGraphGetGraphCopy:
         assert isinstance(graph_copy, dict)
         assert len(graph_copy) == 0
 
-    def test_get_graph_copy_single_dependency(self):
+    def test_get_graph_copy_single_dependency(self) -> None:
         """Test getting copy with single dependency."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -175,7 +173,7 @@ class TestDependencyGraphGetGraphCopy:
         assert "dep" in graph_copy["source"]
         assert len(graph_copy["source"]) == 1
 
-    def test_get_graph_copy_multiple_sources(self):
+    def test_get_graph_copy_multiple_sources(self) -> None:
         """Test getting copy with multiple source keys."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -190,7 +188,7 @@ class TestDependencyGraphGetGraphCopy:
         assert "source2" in graph_copy
         assert "source3" in graph_copy
 
-    def test_get_graph_copy_multiple_dependencies_content(self):
+    def test_get_graph_copy_multiple_dependencies_content(self) -> None:
         """Test content of copied dependencies for multiple sources."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -206,7 +204,7 @@ class TestDependencyGraphGetGraphCopy:
         assert "dep3" in graph_copy["source2"]
         assert "dep4" in graph_copy["source3"]
 
-    def test_get_graph_copy_returns_deep_copy(self):
+    def test_get_graph_copy_returns_deep_copy(self) -> None:
         """Test that get_graph_copy returns a deep copy."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -224,7 +222,7 @@ class TestDependencyGraphGetGraphCopy:
         assert len(original_deps) == 1
         assert not graph.has_dependents("new_source")
 
-    def test_get_graph_copy_vs_internal_state(self):
+    def test_get_graph_copy_vs_internal_state(self) -> None:
         """Test that copy matches internal state."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -242,7 +240,7 @@ class TestDependencyGraphGetGraphCopy:
             # But sets should be different objects
             assert graph_copy[key] is not internal_graph[key]
 
-    def test_get_graph_copy_with_empty_string_keys(self):
+    def test_get_graph_copy_with_empty_string_keys(self) -> None:
         """Test getting copy with empty string keys."""
         graph = DependencyGraph()
         graph.add_dependency("", "dep1")
@@ -256,7 +254,7 @@ class TestDependencyGraphGetGraphCopy:
         assert "dep1" in graph_copy[""]
         assert "" in graph_copy["source"]
 
-    def test_get_graph_copy_after_modifications(self):
+    def test_get_graph_copy_after_modifications(self) -> None:
         """Test copy reflects current state after modifications."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -283,7 +281,7 @@ class TestDependencyGraphGetGraphCopy:
         assert "source3" in copy2
         assert "dep3" in copy2["source3"]
 
-    def test_get_graph_copy_immutability_guarantee(self):
+    def test_get_graph_copy_immutability_guarantee(self) -> None:
         """Test that modifying copy doesn't affect subsequent copies."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -302,7 +300,7 @@ class TestDependencyGraphGetGraphCopy:
         assert len(copy2["source"]) == 1
         assert "dep1" in copy2["source"]
 
-    def test_get_graph_copy_consistency_with_other_methods(self):
+    def test_get_graph_copy_consistency_with_other_methods(self) -> None:
         """Test consistency between get_graph_copy and other methods."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -328,7 +326,7 @@ class TestDependencyGraphGetGraphCopy:
             has_deps_method = graph.has_dependents(key)
             assert has_deps_in_copy == has_deps_method
 
-    def test_get_graph_copy_self_reference(self):
+    def test_get_graph_copy_self_reference(self) -> None:
         """Test copy with self-reference dependencies."""
         graph = DependencyGraph()
         graph.add_dependency("key", "key")
@@ -346,20 +344,20 @@ class TestDependencyGraphGetGraphCopy:
 class TestDependencyGraphLen:
     """Test suite for DependencyGraph.__len__ method."""
 
-    def test_len_empty_graph(self):
+    def test_len_empty_graph(self) -> None:
         """Test __len__ returns 0 for empty graph."""
         graph = DependencyGraph()
 
         assert len(graph) == 0
 
-    def test_len_single_source(self):
+    def test_len_single_source(self) -> None:
         """Test __len__ returns 1 for single source."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
 
         assert len(graph) == 1
 
-    def test_len_multiple_sources(self):
+    def test_len_multiple_sources(self) -> None:
         """Test __len__ with multiple sources."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -368,7 +366,7 @@ class TestDependencyGraphLen:
 
         assert len(graph) == 3
 
-    def test_len_multiple_dependencies_same_source(self):
+    def test_len_multiple_dependencies_same_source(self) -> None:
         """Test __len__ counts source keys, not individual dependencies."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -378,7 +376,7 @@ class TestDependencyGraphLen:
         # Should be 1 source, not 3 dependencies
         assert len(graph) == 1
 
-    def test_len_after_adding_dependencies(self):
+    def test_len_after_adding_dependencies(self) -> None:
         """Test __len__ changes as dependencies are added."""
         graph = DependencyGraph()
 
@@ -394,7 +392,7 @@ class TestDependencyGraphLen:
         graph.add_dependency("source1", "dep3")
         assert len(graph) == 2
 
-    def test_len_after_removing_dependencies(self):
+    def test_len_after_removing_dependencies(self) -> None:
         """Test __len__ changes as dependencies are removed."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -415,7 +413,7 @@ class TestDependencyGraphLen:
         graph.remove_all_dependencies("source2")
         assert len(graph) == 0
 
-    def test_len_after_clear(self):
+    def test_len_after_clear(self) -> None:
         """Test __len__ returns 0 after clear."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -427,7 +425,7 @@ class TestDependencyGraphLen:
         graph.clear()
         assert len(graph) == 0
 
-    def test_len_with_empty_string_keys(self):
+    def test_len_with_empty_string_keys(self) -> None:
         """Test __len__ with empty string source keys."""
         graph = DependencyGraph()
         graph.add_dependency("", "dep1")
@@ -435,7 +433,7 @@ class TestDependencyGraphLen:
 
         assert len(graph) == 2
 
-    def test_len_consistency_with_get_all_source_keys(self):
+    def test_len_consistency_with_get_all_source_keys(self) -> None:
         """Test __len__ is consistent with get_all_source_keys."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -450,7 +448,7 @@ class TestDependencyGraphLen:
         source_keys = graph.get_all_source_keys()
         assert len(graph) == len(source_keys)
 
-    def test_len_return_type(self):
+    def test_len_return_type(self) -> None:
         """Test that __len__ returns int type."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -459,7 +457,7 @@ class TestDependencyGraphLen:
         assert isinstance(length, int)
         assert length == 1
 
-    def test_len_builtin_compatibility(self):
+    def test_len_builtin_compatibility(self) -> None:
         """Test that __len__ works with built-in functions."""
         graph = DependencyGraph()
 
@@ -479,20 +477,20 @@ class TestDependencyGraphLen:
 class TestDependencyGraphContains:
     """Test suite for DependencyGraph.__contains__ method."""
 
-    def test_contains_empty_graph(self):
+    def test_contains_empty_graph(self) -> None:
         """Test __contains__ returns False for empty graph."""
         graph = DependencyGraph()
 
         assert "any_key" not in graph
 
-    def test_contains_existing_source(self):
+    def test_contains_existing_source(self) -> None:
         """Test __contains__ returns True for existing source."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
 
         assert "source" in graph
 
-    def test_contains_nonexistent_source(self):
+    def test_contains_nonexistent_source(self) -> None:
         """Test __contains__ returns False for nonexistent source."""
         graph = DependencyGraph()
         graph.add_dependency("existing", "dep")
@@ -500,7 +498,7 @@ class TestDependencyGraphContains:
         assert "nonexistent" not in graph
         assert "existing" in graph
 
-    def test_contains_multiple_sources(self):
+    def test_contains_multiple_sources(self) -> None:
         """Test __contains__ with multiple sources."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -512,7 +510,7 @@ class TestDependencyGraphContains:
         assert "source3" in graph
         assert "nonexistent" not in graph
 
-    def test_contains_after_adding_dependencies(self):
+    def test_contains_after_adding_dependencies(self) -> None:
         """Test __contains__ changes as dependencies are added."""
         graph = DependencyGraph()
 
@@ -525,7 +523,7 @@ class TestDependencyGraphContains:
         graph.add_dependency("source", "dep2")
         assert "source" in graph
 
-    def test_contains_after_removing_dependencies(self):
+    def test_contains_after_removing_dependencies(self) -> None:
         """Test __contains__ changes as dependencies are removed."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -541,7 +539,7 @@ class TestDependencyGraphContains:
         graph.remove_dependency("source", "dep2")
         assert "source" not in graph
 
-    def test_contains_after_remove_all_dependencies(self):
+    def test_contains_after_remove_all_dependencies(self) -> None:
         """Test __contains__ after remove_all_dependencies."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -552,7 +550,7 @@ class TestDependencyGraphContains:
         graph.remove_all_dependencies("source")
         assert "source" not in graph
 
-    def test_contains_after_clear(self):
+    def test_contains_after_clear(self) -> None:
         """Test __contains__ returns False after clear."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -565,7 +563,7 @@ class TestDependencyGraphContains:
         assert "source1" not in graph
         assert "source2" not in graph
 
-    def test_contains_empty_string_key(self):
+    def test_contains_empty_string_key(self) -> None:
         """Test __contains__ with empty string source key."""
         graph = DependencyGraph()
         graph.add_dependency("", "dep")
@@ -574,7 +572,7 @@ class TestDependencyGraphContains:
         assert "" in graph
         assert "normal" in graph
 
-    def test_contains_consistency_with_has_dependents(self):
+    def test_contains_consistency_with_has_dependents(self) -> None:
         """Test __contains__ is consistent with has_dependents."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -590,7 +588,7 @@ class TestDependencyGraphContains:
         assert "nonexistent" not in graph
         assert not graph.has_dependents("nonexistent")
 
-    def test_contains_return_type(self):
+    def test_contains_return_type(self) -> None:
         """Test that __contains__ returns bool type."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -603,7 +601,7 @@ class TestDependencyGraphContains:
         assert result_true is True
         assert result_false is False
 
-    def test_contains_builtin_compatibility(self):
+    def test_contains_builtin_compatibility(self) -> None:
         """Test that __contains__ works with built-in functions."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -620,7 +618,7 @@ class TestDependencyGraphContains:
         existing_keys = list(filter(lambda x: x in graph, all_keys))
         assert existing_keys == ["source1", "source2"]
 
-    def test_contains_case_sensitivity(self):
+    def test_contains_case_sensitivity(self) -> None:
         """Test __contains__ is case sensitive."""
         graph = DependencyGraph()
         graph.add_dependency("Source", "dep")
@@ -633,14 +631,14 @@ class TestDependencyGraphContains:
 class TestDependencyGraphRepr:
     """Test suite for DependencyGraph.__repr__ method."""
 
-    def test_repr_empty_graph(self):
+    def test_repr_empty_graph(self) -> None:
         """Test __repr__ for empty graph."""
         graph = DependencyGraph()
 
         repr_str = repr(graph)
         assert repr_str == "DependencyGraph(0 source keys)"
 
-    def test_repr_single_source(self):
+    def test_repr_single_source(self) -> None:
         """Test __repr__ for single source."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -648,7 +646,7 @@ class TestDependencyGraphRepr:
         repr_str = repr(graph)
         assert repr_str == "DependencyGraph(1 source keys)"
 
-    def test_repr_multiple_sources(self):
+    def test_repr_multiple_sources(self) -> None:
         """Test __repr__ for multiple sources."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -658,7 +656,7 @@ class TestDependencyGraphRepr:
         repr_str = repr(graph)
         assert repr_str == "DependencyGraph(3 source keys)"
 
-    def test_repr_after_adding_dependencies(self):
+    def test_repr_after_adding_dependencies(self) -> None:
         """Test __repr__ changes as dependencies are added."""
         graph = DependencyGraph()
 
@@ -674,7 +672,7 @@ class TestDependencyGraphRepr:
         graph.add_dependency("source1", "dep3")
         assert repr(graph) == "DependencyGraph(2 source keys)"
 
-    def test_repr_after_removing_dependencies(self):
+    def test_repr_after_removing_dependencies(self) -> None:
         """Test __repr__ changes as dependencies are removed."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -695,7 +693,7 @@ class TestDependencyGraphRepr:
         graph.remove_all_dependencies("source2")
         assert repr(graph) == "DependencyGraph(0 source keys)"
 
-    def test_repr_after_clear(self):
+    def test_repr_after_clear(self) -> None:
         """Test __repr__ after clear."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -707,7 +705,7 @@ class TestDependencyGraphRepr:
         graph.clear()
         assert repr(graph) == "DependencyGraph(0 source keys)"
 
-    def test_repr_consistency_with_len(self):
+    def test_repr_consistency_with_len(self) -> None:
         """Test __repr__ is consistent with __len__."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -725,7 +723,7 @@ class TestDependencyGraphRepr:
         expected = f"DependencyGraph({length} source keys)"
         assert repr_str == expected
 
-    def test_repr_return_type(self):
+    def test_repr_return_type(self) -> None:
         """Test that __repr__ returns string type."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -733,7 +731,7 @@ class TestDependencyGraphRepr:
         repr_str = repr(graph)
         assert isinstance(repr_str, str)
 
-    def test_repr_format_consistency(self):
+    def test_repr_format_consistency(self) -> None:
         """Test __repr__ format consistency."""
         graph = DependencyGraph()
 
@@ -746,7 +744,7 @@ class TestDependencyGraphRepr:
             if i < 4:  # Don't add after last iteration
                 graph.add_dependency(f"source{i}", f"dep{i}")
 
-    def test_repr_debugging_utility(self):
+    def test_repr_debugging_utility(self) -> None:
         """Test __repr__ provides useful debugging information."""
         graph = DependencyGraph()
         graph.add_dependency("user_session", "ui_state")
@@ -762,7 +760,7 @@ class TestDependencyGraphRepr:
         # Should be informative for debugging
         assert repr_str == "DependencyGraph(2 source keys)"
 
-    def test_repr_with_empty_string_keys(self):
+    def test_repr_with_empty_string_keys(self) -> None:
         """Test __repr__ counts empty string keys correctly."""
         graph = DependencyGraph()
         graph.add_dependency("", "dep1")

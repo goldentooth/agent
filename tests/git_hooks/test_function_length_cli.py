@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from src.git_hooks.cli import check_function_length, check_function_length_warnings
+from git_hooks.cli import check_function_length, check_function_length_warnings
 
 
 class TestFunctionLengthCLI:

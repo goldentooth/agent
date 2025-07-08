@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from pytest import MonkeyPatch
 
-from src.git_hooks.config import ValidationConfig
+from git_hooks.config import ValidationConfig
 
 
 class TestConfigRefactored:

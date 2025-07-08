@@ -2,10 +2,7 @@
 
 from pathlib import Path
 
-from src.git_hooks.guidance import (
-    get_module_refactoring_guidance,
-    get_refactoring_guidance,
-)
+from git_hooks.guidance import get_module_refactoring_guidance, get_refactoring_guidance
 
 
 class TestGuidance:

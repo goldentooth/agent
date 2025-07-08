@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from typing import AsyncGenerator
 
 import pytest
 
@@ -41,7 +42,7 @@ async def test_create_test_flow_execution() -> None:
     """Test create_test_flow execution."""
     flow = create_test_flow(transform_fn=lambda x: x * 3)
 
-    async def test_stream():
+    async def test_stream() -> AsyncGenerator[int, None]:
         for i in range(3):
             yield i
 

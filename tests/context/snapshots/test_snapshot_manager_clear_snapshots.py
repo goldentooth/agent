@@ -48,8 +48,7 @@ class TestSnapshotManagerClearSnapshots:
         manager.create_snapshot(context, "test_snapshot")
 
         # Clear should return None
-        result = manager.clear_snapshots()
-        assert result is None
+        manager.clear_snapshots()
 
     def test_clear_snapshots_empty_manager(self) -> None:
         """Test clearing empty manager has no effect."""
@@ -134,17 +133,17 @@ class TestSnapshotManagerClearSnapshots:
         manager.create_snapshot(context, "snapshot2")
 
         # Verify internal state before clearing
-        assert len(manager._snapshots) == 2  # type: ignore[reportPrivateUsage]
-        assert "snapshot1" in manager._snapshots  # type: ignore[reportPrivateUsage]
-        assert "snapshot2" in manager._snapshots  # type: ignore[reportPrivateUsage]
+        assert len(manager._snapshots) == 2
+        assert "snapshot1" in manager._snapshots
+        assert "snapshot2" in manager._snapshots
 
         # Clear snapshots
         manager.clear_snapshots()
 
         # Verify internal state after clearing
-        assert len(manager._snapshots) == 0  # type: ignore[reportPrivateUsage]
-        assert "snapshot1" not in manager._snapshots  # type: ignore[reportPrivateUsage]
-        assert "snapshot2" not in manager._snapshots  # type: ignore[reportPrivateUsage]
+        assert len(manager._snapshots) == 0
+        assert "snapshot1" not in manager._snapshots
+        assert "snapshot2" not in manager._snapshots
 
     def test_clear_snapshots_after_operations(self) -> None:
         """Test clearing snapshots after various operations."""

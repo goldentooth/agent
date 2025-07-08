@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 import typer
 
-from src.git_hooks import cli, utils
-from src.git_hooks.core import ValidationResult, ValidationSeverity
+from git_hooks import cli, utils
+from git_hooks.core import ValidationResult, ValidationSeverity
 
 from .conftest import create_file_with_lines, create_module_with_total_lines
 

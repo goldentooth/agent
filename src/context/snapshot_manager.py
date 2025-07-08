@@ -43,7 +43,7 @@ class SnapshotManager:
     def __init__(self) -> None:
         """Initialize the snapshot manager."""
         super().__init__()
-        self._snapshots: dict[str, Any] = {}
+        self._snapshots: dict[str, ContextSnapshot] = {}
 
     def create_snapshot(self, context: Any, name: str) -> ContextSnapshot:
         """Create a snapshot of the current context state.

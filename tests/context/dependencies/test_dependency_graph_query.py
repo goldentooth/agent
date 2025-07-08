@@ -6,7 +6,7 @@ from context.dependency_graph import DependencyGraph
 class TestDependencyGraphGetDependents:
     """Test suite for DependencyGraph.get_dependents method."""
 
-    def test_get_dependents_basic(self):
+    def test_get_dependents_basic(self) -> None:
         """Test getting dependents for a source key with dependencies."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -21,7 +21,7 @@ class TestDependencyGraphGetDependents:
         assert "dep2" in dependents
         assert "dep3" in dependents
 
-    def test_get_dependents_nonexistent_source(self):
+    def test_get_dependents_nonexistent_source(self) -> None:
         """Test getting dependents for a nonexistent source key."""
         graph = DependencyGraph()
         graph.add_dependency("existing", "dep")
@@ -31,7 +31,7 @@ class TestDependencyGraphGetDependents:
         assert isinstance(dependents, set)
         assert len(dependents) == 0
 
-    def test_get_dependents_empty_graph(self):
+    def test_get_dependents_empty_graph(self) -> None:
         """Test getting dependents from an empty graph."""
         graph = DependencyGraph()
 
@@ -40,7 +40,7 @@ class TestDependencyGraphGetDependents:
         assert isinstance(dependents, set)
         assert len(dependents) == 0
 
-    def test_get_dependents_returns_copy(self):
+    def test_get_dependents_returns_copy(self) -> None:
         """Test that get_dependents returns a copy, not the original set."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -61,7 +61,7 @@ class TestDependencyGraphGetDependents:
         original_dependents = graph.get_dependents("source")
         assert "new_dep" not in original_dependents
 
-    def test_get_dependents_after_adding(self):
+    def test_get_dependents_after_adding(self) -> None:
         """Test getting dependents after adding dependencies."""
         graph = DependencyGraph()
 
@@ -82,7 +82,7 @@ class TestDependencyGraphGetDependents:
         assert "dep1" in dependents
         assert "dep2" in dependents
 
-    def test_get_dependents_after_removing(self):
+    def test_get_dependents_after_removing(self) -> None:
         """Test getting dependents after removing dependencies."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -100,7 +100,7 @@ class TestDependencyGraphGetDependents:
         dependents = graph.get_dependents("source")
         assert len(dependents) == 0
 
-    def test_get_dependents_multiple_sources(self):
+    def test_get_dependents_multiple_sources(self) -> None:
         """Test getting dependents when multiple sources exist."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -121,7 +121,7 @@ class TestDependencyGraphGetDependents:
         assert len(deps3) == 1
         assert "dep4" in deps3
 
-    def test_get_dependents_isolation(self):
+    def test_get_dependents_isolation(self) -> None:
         """Test that dependents are isolated between sources."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -134,7 +134,7 @@ class TestDependencyGraphGetDependents:
         assert "dep3" not in deps1
         assert "dep1" not in deps2
 
-    def test_get_dependents_empty_string_key(self):
+    def test_get_dependents_empty_string_key(self) -> None:
         """Test getting dependents for empty string key."""
         graph = DependencyGraph()
         graph.add_dependency("", "dep1")
@@ -146,7 +146,7 @@ class TestDependencyGraphGetDependents:
         assert "dep1" in dependents
         assert "dep2" in dependents
 
-    def test_get_dependents_self_reference(self):
+    def test_get_dependents_self_reference(self) -> None:
         """Test getting dependents when source depends on itself."""
         graph = DependencyGraph()
         graph.add_dependency("key", "key")
@@ -158,7 +158,7 @@ class TestDependencyGraphGetDependents:
         assert "key" in dependents
         assert "other" in dependents
 
-    def test_get_dependents_immutability_guarantee(self):
+    def test_get_dependents_immutability_guarantee(self) -> None:
         """Test that modifying returned set doesn't affect internal state."""
         graph = DependencyGraph()
         graph.add_dependency("source", "original")
@@ -177,7 +177,7 @@ class TestDependencyGraphGetDependents:
 class TestDependencyGraphHasDependents:
     """Test suite for DependencyGraph.has_dependents method."""
 
-    def test_has_dependents_with_dependencies(self):
+    def test_has_dependents_with_dependencies(self) -> None:
         """Test has_dependents returns True when source has dependencies."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -187,7 +187,7 @@ class TestDependencyGraphHasDependents:
 
         assert result is True
 
-    def test_has_dependents_single_dependency(self):
+    def test_has_dependents_single_dependency(self) -> None:
         """Test has_dependents returns True with single dependency."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -196,7 +196,7 @@ class TestDependencyGraphHasDependents:
 
         assert result is True
 
-    def test_has_dependents_no_dependencies(self):
+    def test_has_dependents_no_dependencies(self) -> None:
         """Test has_dependents returns False for nonexistent source."""
         graph = DependencyGraph()
         graph.add_dependency("other", "dep")
@@ -205,7 +205,7 @@ class TestDependencyGraphHasDependents:
 
         assert result is False
 
-    def test_has_dependents_empty_graph(self):
+    def test_has_dependents_empty_graph(self) -> None:
         """Test has_dependents returns False in empty graph."""
         graph = DependencyGraph()
 
@@ -213,7 +213,7 @@ class TestDependencyGraphHasDependents:
 
         assert result is False
 
-    def test_has_dependents_after_adding(self):
+    def test_has_dependents_after_adding(self) -> None:
         """Test has_dependents changes after adding dependencies."""
         graph = DependencyGraph()
 
@@ -224,7 +224,7 @@ class TestDependencyGraphHasDependents:
         graph.add_dependency("source", "dep")
         assert graph.has_dependents("source") is True
 
-    def test_has_dependents_after_removing_all(self):
+    def test_has_dependents_after_removing_all(self) -> None:
         """Test has_dependents after removing all dependencies."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -237,7 +237,7 @@ class TestDependencyGraphHasDependents:
         graph.remove_all_dependencies("source")
         assert graph.has_dependents("source") is False
 
-    def test_has_dependents_after_removing_some(self):
+    def test_has_dependents_after_removing_some(self) -> None:
         """Test has_dependents after removing some but not all dependencies."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep1")
@@ -254,7 +254,7 @@ class TestDependencyGraphHasDependents:
         graph.remove_dependency("source", "dep2")
         assert graph.has_dependents("source") is False
 
-    def test_has_dependents_empty_string_key(self):
+    def test_has_dependents_empty_string_key(self) -> None:
         """Test has_dependents with empty string key."""
         graph = DependencyGraph()
 
@@ -265,7 +265,7 @@ class TestDependencyGraphHasDependents:
         graph.add_dependency("", "dep")
         assert graph.has_dependents("") is True
 
-    def test_has_dependents_multiple_sources(self):
+    def test_has_dependents_multiple_sources(self) -> None:
         """Test has_dependents with multiple independent sources."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -275,7 +275,7 @@ class TestDependencyGraphHasDependents:
         assert graph.has_dependents("source2") is True
         assert graph.has_dependents("source3") is False
 
-    def test_has_dependents_return_type(self):
+    def test_has_dependents_return_type(self) -> None:
         """Test that has_dependents returns boolean type."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -292,7 +292,7 @@ class TestDependencyGraphHasDependents:
 class TestDependencyGraphGetAllSourceKeys:
     """Test suite for DependencyGraph.get_all_source_keys method."""
 
-    def test_get_all_source_keys_empty_graph(self):
+    def test_get_all_source_keys_empty_graph(self) -> None:
         """Test get_all_source_keys returns empty set for empty graph."""
         graph = DependencyGraph()
 
@@ -301,7 +301,7 @@ class TestDependencyGraphGetAllSourceKeys:
         assert isinstance(source_keys, set)
         assert len(source_keys) == 0
 
-    def test_get_all_source_keys_single_source(self):
+    def test_get_all_source_keys_single_source(self) -> None:
         """Test get_all_source_keys with single source key."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -312,7 +312,7 @@ class TestDependencyGraphGetAllSourceKeys:
         assert len(source_keys) == 1
         assert "source" in source_keys
 
-    def test_get_all_source_keys_multiple_sources(self):
+    def test_get_all_source_keys_multiple_sources(self) -> None:
         """Test get_all_source_keys with multiple source keys."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -326,7 +326,7 @@ class TestDependencyGraphGetAllSourceKeys:
         assert "source2" in source_keys
         assert "source3" in source_keys
 
-    def test_get_all_source_keys_excludes_removed_sources(self):
+    def test_get_all_source_keys_excludes_removed_sources(self) -> None:
         """Test that removed sources are excluded from result."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -341,7 +341,7 @@ class TestDependencyGraphGetAllSourceKeys:
         assert "source1" not in source_keys
         assert "source2" in source_keys
 
-    def test_get_all_source_keys_after_individual_removal(self):
+    def test_get_all_source_keys_after_individual_removal(self) -> None:
         """Test source keys after removing last dependency individually."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")
@@ -354,7 +354,7 @@ class TestDependencyGraphGetAllSourceKeys:
         assert len(source_keys) == 0
         assert "source" not in source_keys
 
-    def test_get_all_source_keys_returns_copy(self):
+    def test_get_all_source_keys_returns_copy(self) -> None:
         """Test that get_all_source_keys returns a copy."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -372,7 +372,7 @@ class TestDependencyGraphGetAllSourceKeys:
         assert "new_source" not in keys2
         assert "new_source" not in graph.get_all_source_keys()
 
-    def test_get_all_source_keys_empty_string(self):
+    def test_get_all_source_keys_empty_string(self) -> None:
         """Test get_all_source_keys with empty string source."""
         graph = DependencyGraph()
         graph.add_dependency("", "dep")
@@ -384,7 +384,7 @@ class TestDependencyGraphGetAllSourceKeys:
         assert "" in source_keys
         assert "normal" in source_keys
 
-    def test_get_all_source_keys_with_empty_dependents(self):
+    def test_get_all_source_keys_with_empty_dependents(self) -> None:
         """Test that sources with no remaining dependents are excluded."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -401,7 +401,7 @@ class TestDependencyGraphGetAllSourceKeys:
         assert "source1" not in source_keys
         assert "source2" in source_keys
 
-    def test_get_all_source_keys_consistency_with_has_dependents(self):
+    def test_get_all_source_keys_consistency_with_has_dependents(self) -> None:
         """Test consistency between get_all_source_keys and has_dependents."""
         graph = DependencyGraph()
         graph.add_dependency("source1", "dep1")
@@ -422,7 +422,7 @@ class TestDependencyGraphGetAllSourceKeys:
             else:
                 assert key not in source_keys
 
-    def test_get_all_source_keys_immutability_guarantee(self):
+    def test_get_all_source_keys_immutability_guarantee(self) -> None:
         """Test that modifying returned set doesn't affect internal state."""
         graph = DependencyGraph()
         graph.add_dependency("source", "dep")

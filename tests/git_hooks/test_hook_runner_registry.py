@@ -6,10 +6,10 @@ from unittest.mock import patch
 
 import pytest
 
-from src.git_hooks.config import ValidationConfig
-from src.git_hooks.core import ValidationResult, Validator
-from src.git_hooks.hook_runner import HookConfig, HookRunner
-from src.git_hooks.validator_registry import ValidatorNotFoundError, ValidatorRegistry
+from git_hooks.config import ValidationConfig
+from git_hooks.core import ValidationResult, Validator
+from git_hooks.hook_runner import HookConfig, HookRunner
+from git_hooks.validator_registry import ValidatorNotFoundError, ValidatorRegistry
 
 
 class MockRegistryValidator(Validator):
@@ -29,7 +29,7 @@ class TestHookRunnerWithRegistry:
     def setup_method(self):
         """Setup for each test."""
         # Import actual validators to trigger registration FIRST
-        from src.git_hooks import (  # noqa: F401  # type: ignore[reportUnusedImport]
+        from git_hooks import (  # noqa: F401  # type: ignore[reportUnusedImport]
             file_validator,
             function_validator,
             module_validator,

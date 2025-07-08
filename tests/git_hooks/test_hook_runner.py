@@ -4,9 +4,9 @@ import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from src.git_hooks.config import ValidationConfig
-from src.git_hooks.core import ValidationResult, ValidationSeverity
-from src.git_hooks.hook_runner import HookConfig, HookRunner
+from git_hooks.config import ValidationConfig
+from git_hooks.core import ValidationResult, ValidationSeverity
+from git_hooks.hook_runner import HookConfig, HookRunner
 
 
 class TestHookRunner:

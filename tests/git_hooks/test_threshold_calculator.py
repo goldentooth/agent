@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.git_hooks.core import ThresholdCalculator
+from git_hooks.core import ThresholdCalculator
 
 
 class TestThresholdCalculator:

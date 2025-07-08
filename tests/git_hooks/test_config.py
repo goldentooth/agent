@@ -3,7 +3,7 @@
 import os
 from unittest.mock import patch
 
-from src.git_hooks.config import ValidationConfig
+from git_hooks.config import ValidationConfig
 
 
 class TestValidationConfig:
