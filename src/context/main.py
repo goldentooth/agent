@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING, Any
 from weakref import WeakSet
 
 if TYPE_CHECKING:
-    pass
+    from .frame import ContextFrame
+    from .snapshot_manager import SnapshotManager
 
 # Type aliases for context system
 ContextValue = Any
@@ -167,3 +168,29 @@ class Transformation:
     def apply(self, value: ContextValue) -> ContextValue:
         """Apply the transformation to a value."""
         return self.func(value)
+
+
+class Context:
+    """A layered, reactive, symbolic context with scoped access and transformation support."""
+
+    def __init__(self, frames: list[ContextFrame] | None = None) -> None:
+        """Initialize the context with optional initial frames."""
+        super().__init__()
+
+        # Import here to avoid circular imports
+        from .frame import ContextFrame
+        from .snapshot_manager import SnapshotManager
+
+        if frames is None:
+            self.frames: list[ContextFrame] = [ContextFrame()]
+        elif len(frames) == 0:
+            self.frames = [ContextFrame()]
+        else:
+            self.frames = frames
+
+        # Computed properties and transformations
+        self._computed_properties: dict[str, ComputedProperty] = {}
+        self._transformations: dict[str, list[Transformation]] = {}
+
+        # Snapshots for time-travel debugging
+        self._snapshot_manager: SnapshotManager = SnapshotManager()
