@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 # Type aliases for context system
 ContextValue = Any
 ComputedFunction = Any
+TransformFunction = Any
 
 
 class ContextSnapshot:
@@ -147,3 +148,18 @@ class ComputedProperty:
             except Exception:
                 # Continue notifying other contexts even if one fails
                 pass
+
+
+class Transformation:
+    """Represents a value transformation applied to context keys."""
+
+    def __init__(self, func: TransformFunction, key: str) -> None:
+        """Initialize a transformation.
+
+        Args:
+            func: Function that transforms the value
+            key: The context key this transformation applies to
+        """
+        super().__init__()
+        self.func = func
+        self.key = key
