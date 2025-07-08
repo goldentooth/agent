@@ -668,6 +668,14 @@ class Context:
         """Clear the change history."""
         self._history_tracker.clear_history()
 
+    def get_history_size(self) -> int:
+        """Get the current size of the change history.
+
+        Returns:
+            The number of change events currently stored in the history
+        """
+        return self._history_tracker.get_history_size()
+
     def keys(self) -> Iterator[str]:
         """Yield all unique keys from the context, including computed properties."""
         seen: set[str] = set()
