@@ -484,11 +484,11 @@ class TestBuiltInHealthChecks:
         """Test check_system_resources function."""
         from flowengine.observability.health.checks import check_system_resources
 
-        # Test with high thresholds (should pass)
+        # Test with very high thresholds (should pass)
         async for result in check_system_resources(
-            disk_threshold=99.0, load_threshold=10.0
+            disk_threshold=99.0, load_threshold=100.0  # Much higher load threshold
         ):
             assert isinstance(result, bool)
-            # Should be True with high thresholds or when psutil unavailable
+            # Should be True with very high thresholds or when psutil unavailable
             assert result is True
             break

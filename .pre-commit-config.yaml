@@ -85,8 +85,9 @@ repos:
       - id: black
         description: Format Python code with Black
         language_version: python3
-        args: []
+        args: ['.']
         exclude: ^old/
+        always_run: true
 
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
