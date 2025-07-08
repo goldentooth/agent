@@ -126,15 +126,26 @@ repos:
         pass_filenames: false
         always_run: true
 
-  # Pyright type checking
+  # Pyright type checking src/
   - repo: local
     hooks:
       - id: pyright
-        name: Pyright Type Check
-        entry: poetry run pyright
+        name: Pyright Source Type Check
+        entry: poetry run poe pyright-src
         language: system
         types: [python]
-        args: ['src', 'tests']
+        description: Run Pyright type checking
+        pass_filenames: false
+        always_run: true
+
+  # Pyright type checking tests/
+  - repo: local
+    hooks:
+      - id: pyright
+        name: Pyright Tests Type Check
+        entry: poetry run poe pyright-tests
+        language: system
+        types: [python]
         description: Run Pyright type checking
         pass_filenames: false
         always_run: true

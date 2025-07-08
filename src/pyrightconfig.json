@@ -1,0 +1,48 @@
+{
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__"
+  ],
+  "extraPaths": [
+    "."
+  ],
+  "include": [
+    "."
+  ],
+  "pythonPlatform": "All",
+  "pythonVersion": "3.13",
+  "reportAssertAlwaysTrue": "error",
+  "reportCallInDefaultInitializer": "error",
+  "reportConstantRedefinition": "error",
+  "reportDuplicateImport": "error",
+  "reportFunctionMemberAccess": "error",
+  "reportImplicitStringConcatenation": "error",
+  "reportIncompatibleMethodOverride": "error",
+  "reportIncompatibleVariableOverride": "error",
+  "reportIncompleteStub": "error",
+  "reportInconsistentConstructor": "error",
+  "reportInvalidStringEscapeSequence": "error",
+  "reportInvalidStubStatement": "error",
+  "reportInvalidTypeVarUse": "error",
+  "reportMissingImports": true,
+  "reportMissingParameterType": "error",
+  "reportMissingSuperCall": "error",
+  "reportMissingTypeArgument": "error",
+  "reportMissingTypeStubs": false,
+  "reportOverlappingOverload": "error",
+  "reportSelfClsParameterName": "error",
+  "reportUnboundVariable": "error",
+  "reportUndefinedVariable": "error",
+  "reportUninitializedInstanceVariable": "error",
+  "reportUnknownArgumentType": "error",
+  "reportUnknownLambdaType": "error",
+  "reportUnknownMemberType": "error",
+  "reportUnknownParameterType": "error",
+  "reportUnknownVariableType": "error",
+  "reportUnnecessaryCast": "error",
+  "reportUnnecessaryComparison": "error",
+  "reportUnnecessaryIsInstance": "error",
+  "reportUnusedImport": "error",
+  "reportUnusedVariable": "error",
+  "typeCheckingMode": "strict"
+}
