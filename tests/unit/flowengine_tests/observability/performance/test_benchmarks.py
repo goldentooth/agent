@@ -386,19 +386,25 @@ class TestPerformanceRegression:
     def _assert_variance_within_threshold(
         self, metrics: Dict[str, Any], stats: Dict[str, Any]
     ) -> None:
-        """Assert throughput variance is within acceptable threshold."""
-        throughput_variance = (
-            metrics["max_throughput"] - metrics["min_throughput"]
-        ) / metrics["avg_throughput"]
+        """Assert timing variance is within acceptable threshold."""
+        # Focus on timing stability instead of throughput variance
+        # Small timing variations get amplified in throughput calculations
+        min_time = metrics["min_duration"]
+        max_time = metrics["max_duration"]
+        avg_time = metrics["avg_duration"]
+
+        # Calculate relative range of timings
+        time_range = max_time - min_time
+        relative_range = time_range / avg_time if avg_time > 0 else 0
 
         # Use more lenient thresholds in CI environments
         is_ci = os.getenv("CI") is not None or os.getenv("GITHUB_ACTIONS") is not None
-        variance_threshold = 0.5 if is_ci else 0.35  # 50% for CI, 35% for local
+        variance_threshold = 0.25 if is_ci else 0.15  # 25% for CI, 15% for local
 
-        assert throughput_variance < variance_threshold, (
-            f"Throughput variance {throughput_variance:.3f} exceeds threshold {variance_threshold} "
+        assert relative_range < variance_threshold, (
+            f"Timing variance {relative_range:.3f} exceeds threshold {variance_threshold} "
             f"({'CI' if is_ci else 'local'} environment). "
-            f"Stats: min={metrics['min_throughput']:.2f}, max={metrics['max_throughput']:.2f}, avg={metrics['avg_throughput']:.2f} ops/sec "
+            f"Times: min={min_time*1000:.2f}ms, max={max_time*1000:.2f}ms, avg={avg_time*1000:.2f}ms "
             f"(from {stats['iterations']}/{stats.get('original_iterations', 'unknown')} samples "
             f"after {stats.get('trim_percent', 0)}% trimming)"
         )
