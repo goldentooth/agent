@@ -688,3 +688,11 @@ class Context:
         """
         if key in self._transformations:
             del self._transformations[key]
+
+    def transformations(self) -> dict[str, list[Transformation]]:
+        """Get all transformations in this context.
+
+        Returns:
+            Dictionary mapping context keys to lists of transformations (copy)
+        """
+        return {k: v.copy() for k, v in self._transformations.items()}
