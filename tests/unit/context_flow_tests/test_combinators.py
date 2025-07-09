@@ -611,3 +611,260 @@ class TestContextFlowCombinators:
         combinators = ContextFlowCombinators()
         flow2 = combinators.set_key(test_key, "value")
         assert isinstance(flow2, Flow)
+
+    def test_require_key_basic_functionality(self) -> None:
+        """Test that require_key extracts values from context successfully."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key and context
+        name_key: ContextKey[str] = ContextKey("name", str, "User's name")
+        context = Context()
+        context["name"] = "Alice"
+
+        # Create and run the flow
+        require_name_flow = ContextFlowCombinators.require_key(name_key)
+        result = run_flow_with_input(require_name_flow, context)
+
+        assert result == "Alice"
+        assert isinstance(result, str)
+
+    def test_require_key_with_integer_type(self) -> None:
+        """Test that require_key works with integer values."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Test with integer
+        age_key: ContextKey[int] = ContextKey("age", int, "User's age")
+        context = Context()
+        context["age"] = 25
+
+        require_age_flow = ContextFlowCombinators.require_key(age_key)
+        age_result = run_flow_with_input(require_age_flow, context)
+
+        assert age_result == 25
+        assert isinstance(age_result, int)
+
+    def test_require_key_with_boolean_type(self) -> None:
+        """Test that require_key works with boolean values."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Test with boolean
+        active_key: ContextKey[bool] = ContextKey("active", bool, "Is user active")
+        context = Context()
+        context["active"] = True
+
+        require_active_flow = ContextFlowCombinators.require_key(active_key)
+        active_result = run_flow_with_input(require_active_flow, context)
+
+        assert active_result is True
+        assert isinstance(active_result, bool)
+
+    def test_require_key_with_list_type(self) -> None:
+        """Test that require_key works with list values."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Test with list
+        items_key: ContextKey[list[Any]] = ContextKey("items", list, "List of items")
+        context = Context()
+        context["items"] = [1, 2, 3]
+
+        require_items_flow = ContextFlowCombinators.require_key(items_key)
+        items_result = run_flow_with_input(require_items_flow, context)
+
+        assert items_result == [1, 2, 3]
+        assert isinstance(items_result, list)
+
+    def test_require_key_with_missing_key_always_raises_error(self) -> None:
+        """Test that require_key always raises MissingRequiredKeyError when key is missing."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key and empty context
+        name_key: ContextKey[str] = ContextKey("name", str, "User's name")
+        context = Context()
+
+        # Create the flow
+        require_name_flow = ContextFlowCombinators.require_key(name_key)
+
+        # Should always raise MissingRequiredKeyError for missing keys
+        with pytest.raises(
+            MissingRequiredKeyError, match="Required context key 'name' is missing"
+        ):
+            run_flow_with_input(require_name_flow, context)
+
+    def test_require_key_with_type_mismatch(self) -> None:
+        """Test that require_key raises ContextTypeMismatchError for wrong types."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key expecting int but provide str
+        age_key: ContextKey[int] = ContextKey("age", int, "User's age")
+        context = Context()
+        context["age"] = "not_an_int"
+
+        # Create the flow
+        require_age_flow = ContextFlowCombinators.require_key(age_key)
+
+        # Should raise ContextTypeMismatchError
+        with pytest.raises(
+            ContextTypeMismatchError, match="Context key 'age' expected int, got str"
+        ):
+            run_flow_with_input(require_age_flow, context)
+
+    def test_require_key_with_complex_path(self) -> None:
+        """Test that require_key works with complex key paths."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key with complex path
+        user_name_key: ContextKey[str] = ContextKey(
+            "user.profile.name", str, "User profile name"
+        )
+        context = Context()
+        context["user.profile.name"] = "John Doe"
+
+        # Create and run the flow
+        require_user_name_flow = ContextFlowCombinators.require_key(user_name_key)
+        result = run_flow_with_input(require_user_name_flow, context)
+
+        assert result == "John Doe"
+        assert isinstance(result, str)
+
+    def test_require_key_flow_name(self) -> None:
+        """Test that require_key creates flows with descriptive names."""
+        from context.key import ContextKey
+
+        # Create a context key
+        name_key: ContextKey[str] = ContextKey("user.name", str, "User's name")
+
+        # Create the flow
+        require_name_flow = ContextFlowCombinators.require_key(name_key)
+
+        # Check that the flow has a descriptive name
+        assert require_name_flow.name == "require_key(user.name)"
+
+    def test_require_key_with_inheritance_types(self) -> None:
+        """Test that require_key works correctly with inheritance and isinstance checks."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Test with inheritance - list should be instance of object
+        data_key: ContextKey[object] = ContextKey("data", object, "Any object")
+        context = Context()
+        context["data"] = [1, 2, 3]  # List is an object
+
+        require_data_flow = ContextFlowCombinators.require_key(data_key)
+        result = run_flow_with_input(require_data_flow, context)
+
+        assert result == [1, 2, 3]
+        assert isinstance(result, list)
+
+    def test_require_key_error_message_formatting(self) -> None:
+        """Test that require_key produces well-formatted error messages."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Test missing key error message
+        missing_key: ContextKey[str] = ContextKey(
+            "user.profile.email", str, "User email"
+        )
+        context = Context()
+
+        require_email_flow = ContextFlowCombinators.require_key(missing_key)
+
+        with pytest.raises(MissingRequiredKeyError) as exc_info:
+            run_flow_with_input(require_email_flow, context)
+
+        assert "Required context key 'user.profile.email' is missing" in str(
+            exc_info.value
+        )
+
+        # Test type mismatch error message
+        age_key: ContextKey[int] = ContextKey("user.age", int, "User age")
+        context["user.age"] = "twenty-five"
+
+        require_age_flow = ContextFlowCombinators.require_key(age_key)
+
+        with pytest.raises(ContextTypeMismatchError) as exc_info2:
+            run_flow_with_input(require_age_flow, context)
+
+        error_message = str(exc_info2.value)
+        assert "Context key 'user.age' expected int, got str" in error_message
+
+    def test_require_key_with_custom_classes(self) -> None:
+        """Test that require_key works with custom class types."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Define a custom class
+        class User:
+            def __init__(self, name: str, age: int):
+                super().__init__()
+                self.name = name
+                self.age = age
+
+            def __eq__(self, other: object) -> bool:
+                return (
+                    isinstance(other, User)
+                    and self.name == other.name
+                    and self.age == other.age
+                )
+
+        # Create a context key for the custom class
+        user_key: ContextKey[User] = ContextKey(
+            "current_user", User, "Current user object"
+        )
+        context = Context()
+        user_obj = User("Alice", 30)
+        context["current_user"] = user_obj
+
+        # Create and run the flow
+        require_user_flow = ContextFlowCombinators.require_key(user_key)
+        result = run_flow_with_input(require_user_flow, context)
+
+        assert result == user_obj
+        assert isinstance(result, User)
+        assert result.name == "Alice"
+        assert result.age == 30
+
+    def test_require_key_flow_integration_with_chaining(self) -> None:
+        """Test that require_key flows can be chained with other flows."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key and context
+        name_key: ContextKey[str] = ContextKey("name", str, "User's name")
+        context = Context()
+        context["name"] = "alice"
+
+        # Create a flow that gets the name and then processes it
+        require_name_flow = ContextFlowCombinators.require_key(name_key)
+        uppercase_flow: Flow[str, str] = Flow.from_sync_fn(lambda x: x.upper())
+
+        # Chain the flows
+        chained_flow = require_name_flow >> uppercase_flow
+
+        # Run the chained flow
+        result = run_flow_with_input(chained_flow, context)
+
+        assert result == "ALICE"
+        assert isinstance(result, str)
+
+    def test_require_key_static_method_access(self) -> None:
+        """Test that require_key can be accessed as a static method."""
+        from context.key import ContextKey
+
+        # Create a context key
+        test_key: ContextKey[str] = ContextKey("test", str, "Test key")
+
+        # Should be able to access as static method
+        flow = ContextFlowCombinators.require_key(test_key)
+        assert isinstance(flow, Flow)
+
+        # Should also work through class instance (though not recommended)
+        combinators = ContextFlowCombinators()
+        flow2 = combinators.require_key(test_key)
+        assert isinstance(flow2, Flow)
