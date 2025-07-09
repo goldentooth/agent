@@ -6,8 +6,8 @@ including exception classes, combinators, and decorator functions.
 
 from __future__ import annotations
 
-from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, TypeVar
+from collections.abc import AsyncGenerator, Callable
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from goldentooth_agent.core.background_loop import run_in_background
 
@@ -21,6 +21,7 @@ __all__ = [
     "_single_item_stream",
     "run_flow_with_input",
     "extend_flow_with_context",
+    "context_flow",
 ]
 
 T = TypeVar("T")
@@ -72,8 +73,6 @@ def extend_flow_with_context() -> None:
     This function adds convenience methods to the Flow class that make it easier
     to work with context-flow integration patterns.
     """
-    from typing import Any
-
     from flowengine.flow import Flow
 
     def run(self: "Flow[Any, Any]", input_item: Any) -> Any:
@@ -93,3 +92,91 @@ def extend_flow_with_context() -> None:
     # Add the methods to Flow class
     Flow.run = run  # type: ignore[attr-defined]
     Flow.then = then  # type: ignore[attr-defined]
+
+
+def context_flow(
+    context_keys: list[str] | None = None,
+    required_keys: list[str] | None = None,
+    type_hints: dict[str, type] | None = None,
+    name: str | None = None,
+) -> Callable[[Callable[..., Any]], "Flow[Any, Any]"]:
+    """Create a context-aware flow decorator.
+
+    This decorator creates flows that automatically inject context values
+    into the decorated function and validate context state.
+
+    Args:
+        context_keys: List of context keys to make available to the function.
+                     If None, all context keys are available.
+        required_keys: List of context keys that must be present.
+                      Missing keys will raise MissingRequiredKeyError.
+        type_hints: Dictionary mapping context keys to expected types.
+                   Type mismatches will raise ContextTypeMismatchError.
+        name: Optional name for the flow (defaults to function name).
+
+    Returns:
+        A decorator that creates context-aware Flow instances.
+
+    Raises:
+        MissingRequiredKeyError: When required context keys are missing.
+        ContextTypeMismatchError: When context values don't match expected types.
+    """
+    from flowengine.flow import Flow
+
+    def decorator(func: Callable[..., Any]) -> "Flow[Any, Any]":
+        """Decorator that creates a context-aware flow."""
+        flow_name = name or func.__name__
+
+        async def context_aware_flow(
+            stream: AsyncGenerator[Any, None]
+        ) -> AsyncGenerator[Any, None]:
+            """Context-aware flow implementation."""
+            from context.main import Context
+
+            # Process the stream with context injection
+            async for item in stream:
+                # Create a fresh context for each item
+                context = Context()
+
+                # Inject context into function call
+                if context_keys:
+                    # Create a new context with filtered keys
+                    from context.frame import ContextFrame
+
+                    filtered_frame = ContextFrame()
+                    for key in context_keys:
+                        if key in context:
+                            filtered_frame[key] = context.get(key)
+                    context_obj = Context([filtered_frame])
+                else:
+                    context_obj = context
+
+                # Call the function with item and context
+                result = await func(item, context_obj)
+
+                # Validate required keys after function execution
+                if required_keys:
+                    for key in required_keys:
+                        if key not in context_obj:
+                            raise MissingRequiredKeyError(
+                                f"Required context key '{key}' is missing"
+                            )
+
+                # Validate type hints after function execution
+                if type_hints:
+                    for key, expected_type in type_hints.items():
+                        if key in context_obj:
+                            value = context_obj.get(key)
+                            if not isinstance(value, expected_type):
+                                actual_type = type(value).__name__
+                                expected_type_name = expected_type.__name__
+                                raise ContextTypeMismatchError(
+                                    f"Context key '{key}' expected {expected_type_name}, "
+                                    + f"got {actual_type}"
+                                )
+
+                yield result
+
+        return Flow(context_aware_flow, name=flow_name)
+
+    return decorator
