@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import re
 import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, Set, cast
 
@@ -17,6 +16,7 @@ from .nested_operations import (
     set_nested_value,
     traverse_nested_path,
 )
+from .search_operations import find_keys_by_pattern, query_context, search_context
 from .snapshots import ContextSnapshot
 
 if TYPE_CHECKING:
@@ -724,44 +724,15 @@ class Context:
         Returns:
             Dictionary of filtered key-value pairs
         """
-        result: ContextData = {}
-
-        # Compile regex pattern if provided
-        compiled_pattern = None
-        if pattern is not None:
-            try:
-                compiled_pattern = re.compile(pattern)
-            except re.error:
-                # Invalid regex pattern, return empty result
-                return result
-
-        # Iterate through all context keys
-        for key in self.keys():
-            # Skip computed properties if not included
-            if not include_computed and self.is_computed_property(key):
-                continue
-
-            # Apply pattern filter
-            if compiled_pattern is not None and not compiled_pattern.search(key):
-                continue
-
-            # Apply key filter
-            if key_filter is not None and not key_filter(key):
-                continue
-
-            # Get value and apply value filter
-            try:
-                value = self.get(key)
-                if value_filter is not None and not value_filter(value):
-                    continue
-
-                # Key passed all filters, include in result
-                result[key] = value
-            except Exception:
-                # Skip keys that can't be accessed
-                continue
-
-        return result
+        return query_context(
+            self.keys(),
+            self.get,
+            self.is_computed_property,
+            pattern,
+            key_filter,
+            value_filter,
+            include_computed,
+        )
 
     def find_keys(self, pattern: str) -> list[str]:
         """Find all keys matching a regex pattern.
@@ -772,12 +743,7 @@ class Context:
         Returns:
             List of matching keys
         """
-        try:
-            regex = re.compile(pattern)
-            return [key for key in self.keys() if regex.search(key)]
-        except re.error:
-            # Invalid regex pattern, return empty list
-            return []
+        return find_keys_by_pattern(self.keys(), pattern)
 
     def find_values(self, predicate: ValuePredicate) -> ContextData:
         """Find all key-value pairs where the value matches a predicate.
@@ -811,34 +777,12 @@ class Context:
         Returns:
             Dictionary of matching key-value pairs
         """
-        if not case_sensitive:
-            search_term = search_term.lower()
-
-        def matches_search(key: str, value: ContextValue) -> bool:
-            # Check key
-            key_match = search_term in (key if case_sensitive else key.lower())
-
-            # Check value (convert to string)
-            try:
-                value_str = str(value)
-                if not case_sensitive:
-                    value_str = value_str.lower()
-                value_match = search_term in value_str
-            except Exception:
-                value_match = False
-
-            return key_match or value_match
-
-        results: ContextData = {}
-        for key in self.keys():
-            try:
-                value = self[key]
-                if matches_search(key, value):
-                    results[key] = value
-            except Exception:
-                continue
-
-        return results
+        return search_context(
+            self.keys(),
+            self.__getitem__,
+            search_term,
+            case_sensitive,
+        )
 
     def get_nested(self, path: str, delimiter: str = ".") -> ContextValue:
         """Get a nested value using dot notation or custom delimiter.
