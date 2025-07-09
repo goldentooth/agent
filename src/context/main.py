@@ -901,3 +901,21 @@ class Context:
             new_value: The new value (None if key was deleted)
         """
         self._history_tracker.record_change(key, old_value, new_value, id(self))
+
+    def _emit_change_event(
+        self, key: str, new_value: ContextValue, old_value: ContextValue
+    ) -> None:
+        """Emit context change events.
+
+        Args:
+            key: The key that was changed
+            new_value: The new value
+            old_value: The previous value (None if key was new)
+
+        Note:
+            This is a Flow-independent stub implementation. Event emission
+            functionality will be added in the Context-Flow integration layer.
+        """
+        # Flow-independent implementation - no events are emitted
+        # This provides the interface that will be enhanced in context_flow package
+        pass
