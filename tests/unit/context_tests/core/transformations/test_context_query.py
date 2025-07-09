@@ -174,9 +174,9 @@ class TestContextQuery:
 
         result = context.query()
 
-        # Note: transformations don't affect get() results in current implementation
+        # Transformations are now applied to get() results
         assert len(result) == 2
-        assert result["name"] == "alice"  # Not transformed by get()
+        assert result["name"] == "ALICE"  # Transformed by get()
         assert result["other"] == "bob"
 
     def test_query_layered_context(self) -> None:

@@ -299,7 +299,7 @@ class TestContextFindValues:
 
         result = context.find_values(lambda v: isinstance(v, str))
 
-        # Note: transformations don't affect get() results in current implementation
+        # Transformations are now applied to get() results
         assert len(result) == 2
-        assert result["name"] == "alice"  # Not transformed by get()
+        assert result["name"] == "ALICE"  # Transformed by get()
         assert result["other"] == "bob"

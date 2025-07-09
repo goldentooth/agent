@@ -333,9 +333,9 @@ class TestContextFilterByType:
 
         result = context.filter_by_type(str)
 
-        # Note: transformations don't affect get() results in current implementation
+        # Transformations are now applied to get() results
         assert len(result) == 1
-        assert result["name"] == "alice"  # Not transformed by get()
+        assert result["name"] == "ALICE"  # Transformed by get()
         assert "age" not in result
 
     def test_filter_by_type_mixed_types(self) -> None:
