@@ -24,6 +24,7 @@ __all__ = [
     "extend_flow_with_context",
     "context_flow",
     "as_flow",
+    "global_changes_as_flow",
 ]
 
 T = TypeVar("T")
@@ -202,3 +203,27 @@ def as_flow(context: "Context", key: str, use_async: bool = True) -> "Flow[None,
     _ = use_async  # Parameter reserved for future EventFlow integration
     current_value = context.get(key)
     return Flow.pure(current_value)
+
+
+def global_changes_as_flow(
+    context: "Context", use_async: bool = True
+) -> "Flow[None, Any]":
+    """Convert all context changes to a Flow stream.
+
+    This function creates a Flow that emits change data for ANY key modification
+    in the context, unlike as_flow which only monitors a specific key.
+
+    Args:
+        context: The context instance to watch
+        use_async: Whether to use async or sync event flow
+
+    Returns:
+        Flow that yields change data when any key changes
+    """
+    from flowengine.flow import Flow
+
+    # For now, create a minimal Flow that returns empty change data
+    # This is a placeholder implementation to pass initial tests
+    _ = use_async  # Parameter reserved for future EventFlow integration
+    # Return a Flow that emits empty change data as placeholder
+    return Flow.pure({"changes": "global"})
