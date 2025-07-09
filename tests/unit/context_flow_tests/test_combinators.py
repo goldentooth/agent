@@ -16,3 +16,5 @@ class TestContextFlowCombinators:
         assert callable(getattr(ContextFlowCombinators, "require_key"))
         assert hasattr(ContextFlowCombinators, "optional_key")
         assert callable(getattr(ContextFlowCombinators, "optional_key"))
+        assert hasattr(ContextFlowCombinators, "move_key")
+        assert callable(getattr(ContextFlowCombinators, "move_key"))
