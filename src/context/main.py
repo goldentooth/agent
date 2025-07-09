@@ -646,3 +646,14 @@ class Context:
             raise KeyError(f"No computed property found for key: {key}")
 
         return self._computed_properties[key].compute(self)
+
+    def is_computed_property(self, key: str) -> bool:
+        """Check if a key represents a computed property.
+
+        Args:
+            key: The key to check
+
+        Returns:
+            True if the key is a computed property, False otherwise
+        """
+        return key in self._computed_properties
