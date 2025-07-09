@@ -941,3 +941,55 @@ class Context:
             return True
         except KeyError:
             return False
+
+    def flatten(
+        self, delimiter: str = ".", max_depth: int | None = None
+    ) -> ContextData:
+        """Flatten nested dictionaries into dot-separated keys.
+
+        Args:
+            delimiter: Delimiter to use for flattened keys
+            max_depth: Maximum depth to flatten (None for unlimited)
+
+        Returns:
+            Flattened dictionary
+        """
+
+        def _flatten_dict(
+            obj: ContextData, prefix: str = "", depth: int = 0
+        ) -> ContextData:
+            items: ContextData = {}
+
+            for key, value in obj.items():
+                new_key = f"{prefix}{delimiter}{key}" if prefix else key
+
+                if isinstance(value, dict) and (max_depth is None or depth < max_depth):
+                    # Handle empty dictionaries
+                    if not value:
+                        items[new_key] = value
+                    else:
+                        # Type assertion for pyright
+                        typed_value = cast(ContextData, value)
+                        items.update(
+                            _flatten_dict(
+                                typed_value,
+                                new_key,
+                                depth + 1,
+                            )
+                        )
+                else:
+                    items[new_key] = value
+
+            return items
+
+        # Get all regular values (excluding computed properties)
+        regular_data: ContextData = {}
+        for key in self.keys():
+            if not self.is_computed_property(key):
+                try:
+                    value = self[key]
+                    regular_data[key] = value
+                except Exception:
+                    continue
+
+        return _flatten_dict(regular_data)
