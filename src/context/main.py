@@ -794,3 +794,42 @@ class Context:
             Dictionary of entries with values of the specified type(s)
         """
         return self.query(value_filter=lambda v: isinstance(v, value_type))
+
+    def search(self, search_term: str, case_sensitive: bool = False) -> ContextData:
+        """Search for keys or values containing a term.
+
+        Args:
+            search_term: Term to search for
+            case_sensitive: Whether search should be case sensitive
+
+        Returns:
+            Dictionary of matching key-value pairs
+        """
+        if not case_sensitive:
+            search_term = search_term.lower()
+
+        def matches_search(key: str, value: ContextValue) -> bool:
+            # Check key
+            key_match = search_term in (key if case_sensitive else key.lower())
+
+            # Check value (convert to string)
+            try:
+                value_str = str(value)
+                if not case_sensitive:
+                    value_str = value_str.lower()
+                value_match = search_term in value_str
+            except Exception:
+                value_match = False
+
+            return key_match or value_match
+
+        results: ContextData = {}
+        for key in self.keys():
+            try:
+                value = self[key]
+                if matches_search(key, value):
+                    results[key] = value
+            except Exception:
+                continue
+
+        return results
