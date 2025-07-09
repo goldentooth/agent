@@ -958,3 +958,26 @@ class Context:
         # In a full implementation, this would use a dependency graph to find
         # computed properties that depend on the given key and invalidate them
         pass
+
+    def _handle_computed_property_change(self, computed_prop: ComputedProperty) -> None:
+        """Handle when a computed property has changed.
+
+        Args:
+            computed_prop: The computed property that has changed
+        """
+        # Find the key for this computed property and emit change event
+        for key, prop in self._computed_properties.items():
+            if prop is computed_prop:
+                # Get the old cached value if it exists
+                # Note: We use None as old_value since accessing _cached_value would require
+                # accessing private members. This is acceptable for the stub implementation.
+                old_value = None
+                # Invalidate the cache to force recomputation
+                prop.invalidate()
+                # Compute the new value
+                new_value = prop.compute(self)
+                # Emit change event
+                self._emit_change_event(key, new_value, old_value)
+                # Invalidate any computed properties that depend on this one
+                self._invalidate_dependent_computed_properties(key)
+                break
