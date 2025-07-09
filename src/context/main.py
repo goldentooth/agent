@@ -169,16 +169,16 @@ class Context:
         # Create new context with deep copies of all frames
         forked = Context([frame.copy() for frame in self.frames])
 
-        # TODO: Copy computed properties when add_computed_property is implemented
-        # for key, computed_prop in self._computed_properties.items():
-        #     forked.add_computed_property(
-        #         key, computed_prop.func, computed_prop.dependencies
-        #     )
+        # Copy computed properties
+        for key, computed_prop in self._computed_properties.items():
+            forked.add_computed_property(
+                key, computed_prop.func, computed_prop.dependencies
+            )
 
-        # TODO: Copy transformations when add_transformation is implemented
-        # for key, transformations in self._transformations.items():
-        #     for transformation in transformations:
-        #         forked.add_transformation(key, transformation.func)
+        # Copy transformations
+        for key, transformations in self._transformations.items():
+            for transformation in transformations:
+                forked.add_transformation(key, transformation.func)
 
         return forked
 
@@ -188,31 +188,32 @@ class Context:
         Returns:
             A new Context instance that is an independent copy with preserved history and snapshots
         """
+        import copy
+
         # Start with a basic fork
         forked = self.fork()
 
-        # TODO: Copy history when history tracking is fully implemented
-        # all_history = self._history_tracker.get_all_history()
-        # for event in all_history:
-        #     # Create a deep copy of the event
-        #     copied_event = ContextChangeEvent(
-        #         event.key,
-        #         copy.deepcopy(event.old_value),
-        #         copy.deepcopy(event.new_value),
-        #         id(forked),  # Update context_id to the forked context
-        #     )
-        #     copied_event.timestamp = event.timestamp  # Preserve original timestamp
-        #     forked._history_tracker._change_history.append(copied_event)
+        # Copy history
+        all_history = self._history_tracker.get_all_history()
+        for event in all_history:
+            # Use record_change to properly add events to the forked context
+            # Note: This creates new timestamps, but preserves the change sequence
+            forked._history_tracker.record_change(
+                event.key, event.old_value, event.new_value, id(forked)
+            )
 
-        # TODO: Copy snapshots when snapshot system is fully implemented
-        # for name in self._snapshot_manager.list_snapshots():
-        #     snapshot = self._snapshot_manager.get_snapshot(name)
-        #     forked_snapshot = ContextSnapshot(forked, name)
-        #     forked_snapshot.timestamp = snapshot.timestamp
-        #     forked_snapshot.frames = [frame.copy() for frame in snapshot.frames]
-        #     forked_snapshot.computed_properties = copy.deepcopy(snapshot.computed_properties)
-        #     forked_snapshot.transformations = copy.deepcopy(snapshot.transformations)
-        #     forked._snapshot_manager._snapshots[name] = forked_snapshot
+        # Copy snapshots
+        for name in self._snapshot_manager.list_snapshots():
+            snapshot = self._snapshot_manager.get_snapshot(name)
+            # Create a new snapshot in the forked context
+            forked_snapshot = forked._snapshot_manager.create_snapshot(forked, name)
+            # Copy the original snapshot's properties
+            forked_snapshot.timestamp = snapshot.timestamp
+            forked_snapshot.frames = [frame.copy() for frame in snapshot.frames]
+            forked_snapshot.computed_properties = copy.deepcopy(
+                snapshot.computed_properties
+            )
+            forked_snapshot.transformations = copy.deepcopy(snapshot.transformations)
 
         return forked
 
@@ -946,3 +947,14 @@ class Context:
                 pass
 
         return transformed_value
+
+    def _invalidate_dependent_computed_properties(self, key: str) -> None:
+        """Invalidate computed properties that depend on the given key.
+
+        Args:
+            key: The key that was changed, whose dependents should be invalidated
+        """
+        # For now, this is a stub implementation
+        # In a full implementation, this would use a dependency graph to find
+        # computed properties that depend on the given key and invalidate them
+        pass
