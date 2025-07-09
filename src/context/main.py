@@ -17,6 +17,7 @@ from .nested_operations import (
     set_nested_value,
     traverse_nested_path,
 )
+from .observers import ChangeNotifier, ContextObserver
 from .search_operations import find_keys_by_pattern, query_context, search_context
 from .snapshots import ContextSnapshot
 from .transformations_manager import TransformationsManager
@@ -53,6 +54,9 @@ class Context:
         # Computed properties and transformations managers
         self._computed_properties_manager = ComputedPropertiesManager()
         self._transformations_manager = TransformationsManager()
+
+        # Change notification system
+        self._change_notifier = ChangeNotifier()
 
         # History tracking for change events
         self._history_tracker: HistoryTracker = HistoryTracker()
@@ -126,6 +130,9 @@ class Context:
 
         # Record the change in history
         self._history_tracker.record_change(key, old_value, transformed_value, id(self))
+
+        # Emit change event to observers
+        self._emit_change_event(key, transformed_value, old_value, "set")
 
     def __setitem__(self, key: str, value: ContextValue) -> None:
         """Set a value for a key in the current frame.
@@ -878,20 +885,52 @@ class Context:
         """
         return f"<Context frames={len(self.frames)} keys={list(self.keys())}>"
 
+    def add_observer(self, observer: ContextObserver) -> None:
+        """Add an observer to receive change notifications.
+
+        Args:
+            observer: Observer to add for change notifications
+        """
+        self._change_notifier.add_observer(observer)
+
+    def remove_observer(self, observer: ContextObserver) -> None:
+        """Remove an observer from receiving change notifications.
+
+        Args:
+            observer: Observer to remove
+        """
+        self._change_notifier.remove_observer(observer)
+
+    def clear_observers(self) -> None:
+        """Remove all observers."""
+        self._change_notifier.clear_observers()
+
+    def has_observers(self) -> bool:
+        """Check if there are any registered observers."""
+        return self._change_notifier.has_observers()
+
     def _emit_change_event(
-        self, key: str, new_value: ContextValue, old_value: ContextValue
+        self,
+        key: str,
+        new_value: ContextValue,
+        old_value: ContextValue,
+        change_type: str = "set",
+        metadata: dict[str, Any] | None = None,
     ) -> None:
-        """Emit context change events.
+        """Emit context change events to registered observers.
 
         Args:
             key: The key that was changed
             new_value: The new value
-            old_value: The previous value (None if key was new)
-
-        Note:
-            This is a Flow-independent stub implementation. Event emission
-            functionality will be added in the Context-Flow integration layer.
+            old_value: The previous value
+            change_type: Type of change ('set', 'computed_update', etc.)
+            metadata: Additional metadata about the change
         """
-        # Flow-independent implementation - no events are emitted
-        # This provides the interface that will be enhanced in context_flow package
-        pass
+        self._change_notifier.emit_change(
+            key=key,
+            old_value=old_value,
+            new_value=new_value,
+            context_id=id(self),
+            change_type=change_type,
+            metadata=metadata,
+        )

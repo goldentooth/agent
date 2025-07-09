@@ -88,7 +88,31 @@ class ComputedPropertiesManager:
         if key not in self._computed_properties:
             raise KeyError(f"No computed property found for key: {key}")
 
-        return self._computed_properties[key].compute(context)
+        computed_prop = self._computed_properties[key]
+
+        # Check if this is the first computation
+        was_cached = computed_prop.is_cached()
+        old_value = computed_prop.get_cached_value() if was_cached else None
+
+        # Compute the value
+        new_value = computed_prop.compute(context)
+
+        # Emit change event if this is a new computation or if value changed
+        if not was_cached or old_value != new_value:
+            emit_change_event = getattr(context, "_emit_change_event", None)
+            if emit_change_event:
+                emit_change_event(
+                    key,
+                    new_value,
+                    old_value,
+                    "computed_update",
+                    {
+                        "computed_property": True,
+                        "dependencies": computed_prop.dependencies,
+                    },
+                )
+
+        return new_value
 
     def is_computed_property(self, key: str) -> bool:
         """Check if a key represents a computed property.
@@ -157,7 +181,16 @@ class ComputedPropertiesManager:
                 # Emit change event through context
                 emit_change_event = getattr(context, "_emit_change_event", None)
                 if emit_change_event:
-                    emit_change_event(key, new_value, old_value)
+                    emit_change_event(
+                        key,
+                        new_value,
+                        old_value,
+                        "computed_update",
+                        {
+                            "computed_property": True,
+                            "dependencies": computed_prop.dependencies,
+                        },
+                    )
 
                 # Invalidate any computed properties that depend on this one
                 self.invalidate_dependent_properties(key)
