@@ -571,6 +571,17 @@ class Context:
             # Restore original history tracker
             self._history_tracker = original_tracker
 
+    def replay_changes_since(self, timestamp: float) -> list[ContextChangeEvent]:
+        """Get all changes that occurred since a specific timestamp.
+
+        Args:
+            timestamp: Timestamp to get changes since
+
+        Returns:
+            List of change events in chronological order
+        """
+        return self._history_tracker.replay_changes_since(timestamp)
+
     def keys(self) -> Iterator[str]:
         """Yield all unique keys from the context, including computed properties."""
         seen: set[str] = set()
