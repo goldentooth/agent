@@ -166,7 +166,7 @@ class Context:
             raise IndexError("Cannot pop root context frame")
         self.frames.pop()
 
-    def fork(self) -> "Context":
+    def fork(self) -> Context:
         """Create a fork of the current context with copies of the frames, computed properties, and transformations.
 
         Returns:
@@ -183,7 +183,7 @@ class Context:
 
         return forked
 
-    def fork_with_history(self) -> "Context":
+    def fork_with_history(self) -> Context:
         """Create a fork of the current context that includes history and snapshots.
 
         Returns:
@@ -218,7 +218,7 @@ class Context:
 
         return forked
 
-    def merge(self, other: "Context") -> "Context":
+    def merge(self, other: Context) -> Context:
         """Merge another context into this context.
 
         Args:
@@ -283,7 +283,7 @@ class Context:
 
         return diff_result
 
-    def deep_diff(self, other: "Context", max_depth: int = 10) -> dict[str, Any]:
+    def deep_diff(self, other: Context, max_depth: int = 10) -> dict[str, Any]:
         """Compare this context with another context and return deep differences.
 
         Args:
