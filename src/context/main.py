@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import time
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, Set, cast
@@ -925,3 +926,14 @@ class Context:
                     continue
 
         return flatten_dict_recursive(regular_data, delimiter, max_depth)
+
+    def dump(self) -> str:
+        """Dump the context as a JSON string, merging all frames.
+
+        Returns:
+            JSON string representation of the merged context data
+        """
+        merged: ContextData = {}
+        for frame in self.frames:
+            merged.update(frame.data)
+        return json.dumps(merged, indent=2)
