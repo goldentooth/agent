@@ -25,8 +25,8 @@ if TYPE_CHECKING:
 # Type aliases for context system
 ContextValue = Any
 TransformFunction = Callable[[ContextValue], ContextValue]
-ContextData = dict[str, Any]
-ValuePredicate = Callable[[Any], bool]
+ContextData = dict[str, ContextValue]
+ValuePredicate = Callable[[ContextValue], bool]
 
 
 class Context:
