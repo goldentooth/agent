@@ -679,3 +679,12 @@ class Context:
 
         transformation = Transformation(func, key)
         self._transformations[key].append(transformation)
+
+    def remove_transformations(self, key: str) -> None:
+        """Remove all transformations for a specific key.
+
+        Args:
+            key: The context key to remove transformations from
+        """
+        if key in self._transformations:
+            del self._transformations[key]
