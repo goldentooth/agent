@@ -232,7 +232,7 @@ class Context:
 
         return self
 
-    def diff(self, other: "Context") -> dict[str, Any]:
+    def diff(self, other: Context) -> dict[str, Any]:
         """Compare this context with another context and return the differences.
 
         Args:
