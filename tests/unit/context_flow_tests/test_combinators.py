@@ -409,3 +409,205 @@ class TestContextFlowCombinators:
         combinators = ContextFlowCombinators()
         flow2 = combinators.get_key(test_key)
         assert isinstance(flow2, Flow)
+
+    def test_set_key_basic_functionality(self) -> None:
+        """Test that set_key sets values in context successfully."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key and context
+        name_key: ContextKey[str] = ContextKey("name", str, "User's name")
+        context = Context()
+
+        # Create and run the flow to set the value
+        set_name_flow = ContextFlowCombinators.set_key(name_key, "Alice")
+        result_context = run_flow_with_input(set_name_flow, context)
+
+        # Check that the value was set in the returned context
+        assert result_context["name"] == "Alice"
+        assert isinstance(result_context["name"], str)
+
+    def test_set_key_with_integer_type(self) -> None:
+        """Test that set_key works with integer values."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Test with integer
+        age_key: ContextKey[int] = ContextKey("age", int, "User's age")
+        context = Context()
+        set_age_flow = ContextFlowCombinators.set_key(age_key, 25)
+        result_context = run_flow_with_input(set_age_flow, context)
+        assert result_context["age"] == 25
+        assert isinstance(result_context["age"], int)
+
+    def test_set_key_with_boolean_type(self) -> None:
+        """Test that set_key works with boolean values."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Test with boolean
+        active_key: ContextKey[bool] = ContextKey("active", bool, "Is user active")
+        context = Context()
+        set_active_flow = ContextFlowCombinators.set_key(active_key, True)
+        result_context = run_flow_with_input(set_active_flow, context)
+        assert result_context["active"] is True
+        assert isinstance(result_context["active"], bool)
+
+    def test_set_key_with_list_type(self) -> None:
+        """Test that set_key works with list values."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Test with list
+        items_key: ContextKey[list[Any]] = ContextKey("items", list, "List of items")
+        context = Context()
+        set_items_flow = ContextFlowCombinators.set_key(items_key, [1, 2, 3])
+        result_context = run_flow_with_input(set_items_flow, context)
+        assert result_context["items"] == [1, 2, 3]
+        assert isinstance(result_context["items"], list)
+
+    def test_set_key_overwrites_existing_value(self) -> None:
+        """Test that set_key overwrites existing values."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key and context with existing value
+        name_key: ContextKey[str] = ContextKey("name", str, "User's name")
+        context = Context()
+        context["name"] = "OldName"
+
+        # Create and run the flow to set the new value
+        set_name_flow = ContextFlowCombinators.set_key(name_key, "NewName")
+        result_context = run_flow_with_input(set_name_flow, context)
+
+        # Check that the value was overwritten
+        assert result_context["name"] == "NewName"
+        assert result_context["name"] != "OldName"
+
+    def test_set_key_with_type_validation(self) -> None:
+        """Test that set_key validates value types against the key type."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key expecting int
+        age_key: ContextKey[int] = ContextKey("age", int, "User's age")
+        context = Context()
+
+        # Should raise ContextTypeMismatchError when setting wrong type
+        with pytest.raises(
+            ContextTypeMismatchError,
+            match="Value for context key 'age' expected int, got str",
+        ):
+            set_age_flow = ContextFlowCombinators.set_key(age_key, "not_an_int")  # type: ignore[misc]
+            run_flow_with_input(set_age_flow, context)
+
+    def test_set_key_with_complex_path(self) -> None:
+        """Test that set_key works with complex key paths."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key with complex path
+        user_email_key: ContextKey[str] = ContextKey(
+            "user.profile.email", str, "User email"
+        )
+        context = Context()
+
+        # Create and run the flow
+        set_email_flow = ContextFlowCombinators.set_key(
+            user_email_key, "user@example.com"
+        )
+        result_context = run_flow_with_input(set_email_flow, context)
+
+        # Check that the value was set
+        assert result_context["user.profile.email"] == "user@example.com"
+        assert isinstance(result_context["user.profile.email"], str)
+
+    def test_set_key_flow_name(self) -> None:
+        """Test that set_key creates flows with descriptive names."""
+        from context.key import ContextKey
+
+        # Create a context key
+        name_key: ContextKey[str] = ContextKey("user.name", str, "User's name")
+
+        # Create the flow
+        set_name_flow = ContextFlowCombinators.set_key(name_key, "Alice")
+
+        # Check that the flow has a descriptive name
+        assert set_name_flow.name == "set_key(user.name)"
+
+    def test_set_key_returns_new_context(self) -> None:
+        """Test that set_key returns a new context instance."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key and context
+        name_key: ContextKey[str] = ContextKey("name", str, "User's name")
+        original_context = Context()
+        original_context["other"] = "value"
+
+        # Create and run the flow
+        set_name_flow = ContextFlowCombinators.set_key(name_key, "Alice")
+        result_context = run_flow_with_input(set_name_flow, original_context)
+
+        # Check that both contexts have the expected values
+        assert result_context["name"] == "Alice"
+        assert result_context["other"] == "value"
+        assert "name" not in original_context or original_context.get("name") != "Alice"
+
+    def test_set_key_with_none_value(self) -> None:
+        """Test that set_key can set None values."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create a context key that accepts None
+        optional_key: ContextKey[str | None] = ContextKey(
+            "optional", str, "Optional value"
+        )
+        context = Context()
+
+        # Create and run the flow with None
+        set_optional_flow = ContextFlowCombinators.set_key(optional_key, None)
+        result_context = run_flow_with_input(set_optional_flow, context)
+
+        # Check that None was set
+        assert result_context["optional"] is None
+
+    def test_set_key_flow_integration_with_chaining(self) -> None:
+        """Test that set_key flows can be chained with other flows."""
+        from context.key import ContextKey
+        from context.main import Context
+
+        # Create context keys
+        name_key: ContextKey[str] = ContextKey("name", str, "User's name")
+        age_key: ContextKey[int] = ContextKey("age", int, "User's age")
+        context = Context()
+
+        # Create flows that set values
+        set_name_flow = ContextFlowCombinators.set_key(name_key, "Alice")
+        set_age_flow = ContextFlowCombinators.set_key(age_key, 30)
+
+        # Chain the flows
+        chained_flow = set_name_flow >> set_age_flow
+
+        # Run the chained flow
+        result_context = run_flow_with_input(chained_flow, context)
+
+        # Check that both values were set
+        assert result_context["name"] == "Alice"
+        assert result_context["age"] == 30
+
+    def test_set_key_static_method_access(self) -> None:
+        """Test that set_key can be accessed as a static method."""
+        from context.key import ContextKey
+
+        # Create a context key
+        test_key: ContextKey[str] = ContextKey("test", str, "Test key")
+
+        # Should be able to access as static method
+        flow = ContextFlowCombinators.set_key(test_key, "value")
+        assert isinstance(flow, Flow)
+
+        # Should also work through class instance (though not recommended)
+        combinators = ContextFlowCombinators()
+        flow2 = combinators.set_key(test_key, "value")
+        assert isinstance(flow2, Flow)

@@ -318,3 +318,78 @@ class ContextFlowCombinators:
                 yield cast(T, value)
 
         return Flow(_get_key_flow, name=f"get_key({key.path})")
+
+    @staticmethod
+    def set_key(key: "ContextKey[T]", value: T) -> "Flow[Context, Context]":
+        """Create a Flow that sets a value for a context key.
+
+        This method creates a Flow that takes a Context as input and yields
+        a new Context with the specified key set to the given value. It provides
+        type safety through the ContextKey type system and proper error handling.
+
+        Args:
+            key: The ContextKey to set in the context. Must be a typed
+                ContextKey[T] instance that specifies the expected type.
+            value: The value to set for the key. Must match the type specified
+                in the ContextKey.
+
+        Returns:
+            A Flow[Context, Context] that sets the key value in contexts.
+
+        Raises:
+            ContextTypeMismatchError: If the value doesn't match the expected
+                type specified in the ContextKey.
+
+        Example:
+            ```python
+            from context.key import ContextKey
+            from context.main import Context
+
+            # Create a typed context key
+            name_key = ContextKey("user.name", str, "User's name")
+
+            # Create a flow to set the key
+            set_name_flow = ContextFlowCombinators.set_key(name_key, "Alice")
+
+            # Use the flow
+            context = Context()
+            result_context = run_flow_with_input(set_name_flow, context)
+            # result_context["user.name"] == "Alice"
+            ```
+        """
+        from flowengine.flow import Flow
+
+        async def _set_key_flow(
+            stream: AsyncGenerator["Context", None]
+        ) -> AsyncGenerator["Context", None]:
+            """Internal flow implementation for key setting."""
+            async for context in stream:
+                # Validate type if key has type specification
+                # Handle None values and union types properly
+                if value is not None and not isinstance(value, key.type_):
+                    # For union types like str | None, we need to check if None is acceptable
+                    # This is a simplified approach - in a full implementation we'd need
+                    # more sophisticated type checking for complex union types
+                    actual_type = type(value).__name__
+                    expected_type = key.type_.__name__
+                    raise ContextTypeMismatchError(
+                        f"Value for context key '{key.path}' expected {expected_type}, "
+                        + f"got {actual_type}"
+                    )
+
+                # Create a new context with the key set
+                # We need to create a copy to avoid modifying the original
+                from context.main import Context
+
+                new_context = Context()
+
+                # Copy all existing keys from the original context
+                for existing_key in context.keys():
+                    new_context[existing_key] = context[existing_key]
+
+                # Set the new key value
+                new_context[key.path] = cast(T, value)
+
+                yield new_context
+
+        return Flow(_set_key_flow, name=f"set_key({key.path})")
