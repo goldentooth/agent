@@ -833,3 +833,95 @@ class Context:
                 continue
 
         return results
+
+    def get_nested(self, path: str, delimiter: str = ".") -> ContextValue:
+        """Get a nested value using dot notation or custom delimiter.
+
+        Args:
+            path: Dot-separated path to the value (e.g., "user.profile.name")
+            delimiter: Path delimiter (default: ".")
+
+        Returns:
+            The nested value
+
+        Raises:
+            KeyError: If any part of the path is not found
+        """
+        parts = path.split(delimiter)
+        current: ContextValue = self[
+            parts[0]
+        ]  # This will raise KeyError if first part not found
+
+        for part in parts[1:]:
+            if isinstance(current, dict):
+                if part not in current:
+                    raise KeyError(
+                        f"Path '{path}' not found - missing '{part}' in {current}"
+                    )
+                current = current[part]  # pyright: ignore[reportUnknownVariableType]
+            elif hasattr(current, part):  # pyright: ignore[reportUnknownArgumentType]
+                current = getattr(  # pyright: ignore[reportUnknownArgumentType]
+                    current, part  # pyright: ignore[reportUnknownArgumentType]
+                )
+            else:
+                raise KeyError(
+                    f"Path '{path}' not found - '{part}' not accessible in {type(current)}"  # pyright: ignore[reportUnknownArgumentType]
+                )
+
+        return current  # pyright: ignore[reportUnknownVariableType]
+
+    def set_nested(
+        self,
+        path: str,
+        value: ContextValue,
+        delimiter: str = ".",
+        create_missing: bool = True,
+    ) -> None:
+        """Set a nested value using dot notation or custom delimiter.
+
+        Args:
+            path: Dot-separated path to set (e.g., "user.profile.name")
+            value: Value to set
+            delimiter: Path delimiter (default: ".")
+            create_missing: Whether to create missing intermediate dictionaries
+        """
+        parts = path.split(delimiter)
+
+        if len(parts) == 1:
+            # Simple case - just set the value
+            self[parts[0]] = value
+            return
+
+        # Navigate to parent and set final key
+        current_value: ContextValue = self.get(parts[0])
+        if current_value is None:
+            if not create_missing:
+                raise KeyError(f"Cannot set '{path}' - '{parts[0]}' does not exist")
+            current_dict: ContextData = {}
+            self[parts[0]] = current_dict
+            current_value = current_dict
+
+        # Navigate through intermediate parts
+        for part in parts[1:-1]:
+            if not isinstance(current_value, dict):
+                if not create_missing:
+                    raise KeyError(
+                        f"Cannot set '{path}' - '{part}' is not a dictionary"
+                    )
+                # Cannot replace non-dict with dict, this is an error condition
+                raise KeyError(f"Cannot set '{path}' - parent is not a dictionary")
+
+            if part not in current_value:
+                if not create_missing:
+                    raise KeyError(f"Cannot set '{path}' - '{part}' does not exist")
+                current_value[part] = {}
+
+            current_value = current_value[  # pyright: ignore[reportUnknownVariableType]
+                part
+            ]
+
+        # Set final value
+        if not isinstance(current_value, dict):
+            raise KeyError(f"Cannot set '{path}' - parent is not a dictionary")
+
+        current_value[parts[-1]] = value
