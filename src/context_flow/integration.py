@@ -634,3 +634,101 @@ class ContextFlowCombinators:
             _move_key_flow,
             name=f"move_key({source_key.path} -> {destination_key.path})",
         )
+
+    @staticmethod
+    def copy_key(
+        source_key: "ContextKey[T]", destination_key: "ContextKey[T]"
+    ) -> "Flow[Context, Context]":
+        """Create a Flow that copies a value from one context key to another.
+
+        This method creates a Flow that takes a Context as input and yields
+        a new Context with the value copied from the source key to the destination
+        key. Unlike move_key, the source key is preserved in the context after the
+        copy. Both keys must have compatible types.
+
+        Args:
+            source_key: The ContextKey to copy the value from. Must be a typed
+                ContextKey[T] instance that specifies the expected type.
+            destination_key: The ContextKey to copy the value to. Must be a typed
+                ContextKey[T] instance with the same type as source_key.
+
+        Returns:
+            A Flow[Context, Context] that copies the value between keys.
+
+        Raises:
+            MissingRequiredKeyError: If the source key is missing from the context.
+            ContextTypeMismatchError: If the value doesn't match the expected type
+                for either key.
+
+        Example:
+            ```python
+            from context.key import ContextKey
+            from context.main import Context
+
+            # Create typed context keys
+            source_key = ContextKey("original.data", str, "Original data")
+            backup_key = ContextKey("backup.data", str, "Backup data")
+
+            # Create a flow to copy the value
+            copy_flow = ContextFlowCombinators.copy_key(source_key, backup_key)
+
+            # Use the flow
+            context = Context()
+            context["original.data"] = "Important"
+            result = run_flow_with_input(copy_flow, context)
+            # result["backup.data"] == "Important"
+            # result["original.data"] == "Important"  # Still exists
+            ```
+        """
+        from flowengine.flow import Flow
+
+        async def _copy_key_flow(
+            stream: AsyncGenerator["Context", None]
+        ) -> AsyncGenerator["Context", None]:
+            """Internal flow implementation for key copying."""
+            async for context in stream:
+                # Check if source key exists in context
+                if source_key.path not in context:
+                    raise MissingRequiredKeyError(
+                        f"Required context key '{source_key.path}' is missing"
+                    )
+
+                # Get the value from context
+                value = context[source_key.path]
+
+                # Validate type for source key
+                if not isinstance(value, source_key.type_):
+                    actual_type = type(value).__name__
+                    expected_type = source_key.type_.__name__
+                    raise ContextTypeMismatchError(
+                        f"Context key '{source_key.path}' expected {expected_type}, "
+                        + f"got {actual_type}"
+                    )
+
+                # Validate type compatibility with destination key
+                if not isinstance(value, destination_key.type_):
+                    actual_type = type(value).__name__
+                    expected_type = destination_key.type_.__name__
+                    raise ContextTypeMismatchError(
+                        f"Context key '{destination_key.path}' expected {expected_type}, "
+                        + f"got {actual_type}"
+                    )
+
+                # Create a new context with the value copied
+                from context.main import Context
+
+                new_context = Context()
+
+                # Copy all existing keys
+                for existing_key in context.keys():
+                    new_context[existing_key] = context[existing_key]
+
+                # Set the destination key with the value (source key remains)
+                new_context[destination_key.path] = cast(T, value)
+
+                yield new_context
+
+        return Flow(
+            _copy_key_flow,
+            name=f"copy_key({source_key.path} -> {destination_key.path})",
+        )
