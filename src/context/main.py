@@ -598,3 +598,34 @@ class Context:
                 if k not in seen:
                     yield k
                     seen.add(k)
+
+    def add_computed_property(
+        self, key: str, func: Any, dependencies: list[str] | None = None
+    ) -> None:
+        """Add a computed property to the context.
+
+        Args:
+            key: The key where the computed value will be accessible
+            func: Function that computes the value, takes Context as parameter
+            dependencies: List of context keys this property depends on. If None, will track automatically.
+        """
+        # Create the computed property
+        computed_prop = ComputedProperty(func, dependencies)
+
+        # Subscribe this context to the computed property for dependency tracking
+        computed_prop.subscribe(self)
+
+        # Store the computed property
+        self._computed_properties[key] = computed_prop
+
+    def remove_computed_property(self, key: str) -> None:
+        """Remove a computed property from the context.
+
+        Args:
+            key: The key of the computed property to remove
+        """
+        if key not in self._computed_properties:
+            return
+
+        # Remove the computed property
+        del self._computed_properties[key]
