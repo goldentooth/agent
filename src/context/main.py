@@ -116,7 +116,7 @@ class Context:
         self.frames[-1][key] = value
 
         # Record the change in history
-        self._history_tracker.record_change(key, old_value, value, id(self))
+        self._record_change(key, old_value, value)
 
     def __setitem__(self, key: str, value: ContextValue) -> None:
         """Set a value for a key in the current frame.
@@ -889,3 +889,15 @@ class Context:
             String representation showing frame count and all keys
         """
         return f"<Context frames={len(self.frames)} keys={list(self.keys())}>"
+
+    def _record_change(
+        self, key: str, old_value: ContextValue, new_value: ContextValue
+    ) -> None:
+        """Record a change event in the history.
+
+        Args:
+            key: The key that was changed
+            old_value: The previous value (None if key was new)
+            new_value: The new value (None if key was deleted)
+        """
+        self._history_tracker.record_change(key, old_value, new_value, id(self))
