@@ -937,3 +937,11 @@ class Context:
         for frame in self.frames:
             merged.update(frame.data)
         return json.dumps(merged, indent=2)
+
+    def __repr__(self) -> str:
+        """Return a string representation of the context.
+
+        Returns:
+            String representation showing frame count and all keys
+        """
+        return f"<Context frames={len(self.frames)} keys={list(self.keys())}>"
