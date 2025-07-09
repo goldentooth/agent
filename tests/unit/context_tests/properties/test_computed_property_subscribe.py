@@ -3,7 +3,7 @@
 from typing import Any
 from weakref import WeakSet
 
-from context.main import ComputedProperty
+from context.computed import ComputedProperty
 
 
 class MockContext:

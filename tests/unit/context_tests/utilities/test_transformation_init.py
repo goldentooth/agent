@@ -2,7 +2,7 @@
 
 from typing import Any, Callable
 
-from context.main import Transformation
+from context.computed import Transformation
 
 
 def simple_transform(value: Any) -> str:

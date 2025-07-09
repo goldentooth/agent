@@ -2,173 +2,25 @@
 
 from __future__ import annotations
 
+import re
 import time
-from typing import TYPE_CHECKING, Any, Dict, Set, cast
-from weakref import WeakSet
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, Set, cast
 
+if TYPE_CHECKING:
+    from .history_tracker import ContextChangeEvent
+
+from .computed import ComputedProperty, Transformation
 from .frame import ContextFrame
+from .snapshots import ContextSnapshot
 
 if TYPE_CHECKING:
     from .snapshot_manager import SnapshotManager
 
 # Type aliases for context system
 ContextValue = Any
-ComputedFunction = Any
 TransformFunction = Any
-
-
-class ContextSnapshot:
-    """Represents a snapshot of context state at a specific point in time."""
-
-    def __init__(self, context: Any, name: str) -> None:
-        """Create a snapshot of the current context state.
-
-        Args:
-            context: The context to snapshot
-            name: Name/identifier for this snapshot
-        """
-        super().__init__()
-        self.name = name
-        self.timestamp = time.time()
-
-        # Deep copy the frames to preserve state
-        self.frames = (
-            [frame.copy() for frame in context.frames]
-            if hasattr(context, "frames")
-            else []
-        )
-
-        # Store computed property definitions (but not cached values)
-        self.computed_properties: dict[str, dict[str, Any]] = {}
-        if hasattr(context, "_computed_properties"):
-            for key, prop in context._computed_properties.items():
-                self.computed_properties[key] = {
-                    "func": prop.func,
-                    "dependencies": prop.dependencies.copy(),
-                }
-
-        # Store transformations
-        self.transformations: dict[str, list[Any]] = {}
-        if hasattr(context, "_transformations"):
-            for key, transforms in context._transformations.items():
-                self.transformations[key] = [t.func for t in transforms]
-
-        # Store metadata
-        self.context_id = id(context)
-
-    def restore_to(self, context: Any) -> None:
-        """Restore this snapshot to the given context.
-
-        Args:
-            context: The context to restore to
-        """
-        # Clear current state
-        if hasattr(context, "frames"):
-            context.frames.clear()
-        if hasattr(context, "_computed_properties"):
-            context._computed_properties.clear()
-        if hasattr(context, "_transformations"):
-            context._transformations.clear()
-        if hasattr(context, "_dependency_graph"):
-            context._dependency_graph.clear()
-        if hasattr(context, "_sync_events"):
-            context._sync_events.clear()
-        if hasattr(context, "_async_events"):
-            context._async_events.clear()
-
-        # Restore frames
-        if hasattr(context, "frames"):
-            context.frames.extend([frame.copy() for frame in self.frames])
-
-        # Restore computed properties
-        for key, prop_data in self.computed_properties.items():
-            if hasattr(context, "add_computed_property"):
-                context.add_computed_property(
-                    key,
-                    prop_data["func"],
-                    prop_data["dependencies"],
-                )
-
-        # Restore transformations
-        for key, funcs in self.transformations.items():
-            for func in funcs:
-                if hasattr(context, "add_transformation"):
-                    context.add_transformation(key, func)
-
-
-class ComputedProperty:
-    """Represents a computed property that automatically updates when its dependencies change."""
-
-    def __init__(
-        self, func: ComputedFunction, dependencies: list[str] | None = None
-    ) -> None:
-        """Initialize a computed property.
-
-        Args:
-            func: Function that computes the value, takes Context as parameter
-            dependencies: List of context keys this property depends on. If None, will track automatically.
-        """
-        super().__init__()
-        self.func = func
-        self.dependencies = (dependencies or []).copy()
-        self._cached_value: ContextValue = None
-        self._is_cached = False
-        self._subscribers: WeakSet[Any] = WeakSet()
-
-    def compute(self, context: Any) -> ContextValue:
-        """Compute the property value for the given context.
-
-        Args:
-            context: The context to compute the value from
-
-        Returns:
-            The computed value (cached if already computed)
-        """
-        if self._is_cached:
-            return self._cached_value
-
-        value = self.func(context)
-        self._cached_value = value
-        self._is_cached = True
-        return value
-
-    def invalidate(self) -> None:
-        """Invalidate the cached value, requiring recomputation."""
-        self._is_cached = False
-        self._cached_value = None
-
-    def subscribe(self, context: Any) -> None:
-        """Subscribe a context to this computed property for dependency tracking."""
-        self._subscribers.add(context)
-
-    def notify_change(self) -> None:
-        """Notify all subscribed contexts that this property may have changed."""
-        for context in self._subscribers:
-            try:
-                if hasattr(context, "_handle_computed_property_change"):
-                    context._handle_computed_property_change(self)
-            except Exception:
-                # Continue notifying other contexts even if one fails
-                pass
-
-
-class Transformation:
-    """Represents a value transformation applied to context keys."""
-
-    def __init__(self, func: TransformFunction, key: str) -> None:
-        """Initialize a transformation.
-
-        Args:
-            func: Function that transforms the value
-            key: The context key this transformation applies to
-        """
-        super().__init__()
-        self.func = func
-        self.key = key
-
-    def apply(self, value: ContextValue) -> ContextValue:
-        """Apply the transformation to a value."""
-        return self.func(value)
+ContextData = dict[str, Any]
+ValuePredicate = Callable[[Any], bool]
 
 
 class Context:
@@ -180,6 +32,7 @@ class Context:
 
         # Import here to avoid circular imports
         from .frame import ContextFrame
+        from .history_tracker import HistoryTracker
         from .snapshot_manager import SnapshotManager
 
         if frames is None:
@@ -192,6 +45,9 @@ class Context:
         # Computed properties and transformations
         self._computed_properties: dict[str, ComputedProperty] = {}
         self._transformations: dict[str, list[Transformation]] = {}
+
+        # History tracking for change events
+        self._history_tracker: HistoryTracker = HistoryTracker()
 
         # Snapshots for time-travel debugging
         self._snapshot_manager: SnapshotManager = SnapshotManager()
@@ -247,8 +103,14 @@ class Context:
             key: The key to set
             value: The value to set
         """
+        # Get old value for history tracking
+        old_value = self.get(key, None)
+
         # Set value in the current (last) frame
         self.frames[-1][key] = value
+
+        # Record the change in history
+        self._history_tracker.record_change(key, old_value, value, id(self))
 
     def __setitem__(self, key: str, value: ContextValue) -> None:
         """Set a value for a key in the current frame.
@@ -577,4 +439,489 @@ class Context:
         Returns:
             A ContextSnapshot instance containing the current state
         """
-        return ContextSnapshot(self, name)
+        return self._snapshot_manager.create_snapshot(self, name)
+
+    def restore_snapshot(self, name: str) -> None:
+        """Restore the context to a previous snapshot state.
+
+        Args:
+            name: Name of the snapshot to restore
+
+        Raises:
+            KeyError: If snapshot with the given name doesn't exist
+        """
+        self._snapshot_manager.restore_snapshot(self, name)
+
+    def list_snapshots(self) -> dict[str, float]:
+        """List all available snapshots with their timestamps.
+
+        Returns:
+            Dictionary mapping snapshot names to their timestamps
+        """
+        return self._snapshot_manager.list_snapshots()
+
+    def delete_snapshot(self, name: str) -> None:
+        """Delete a snapshot.
+
+        Args:
+            name: Name of the snapshot to delete
+
+        Raises:
+            KeyError: If snapshot with the given name doesn't exist
+        """
+        self._snapshot_manager.delete_snapshot(name)
+
+    def get_snapshots(self) -> dict[str, ContextSnapshot]:
+        """Get all snapshots (returns a copy).
+
+        Returns:
+            Dictionary of snapshot names to snapshot objects
+        """
+        return {
+            name: self._snapshot_manager.get_snapshot(name)
+            for name in self._snapshot_manager.list_snapshots()
+        }
+
+    def get_change_history(
+        self, limit: int | None = None, since: float | None = None
+    ) -> list[ContextChangeEvent]:
+        """Get the change history for this context.
+
+        Args:
+            limit: Maximum number of events to return (most recent first)
+            since: Only return events after this timestamp
+
+        Returns:
+            List of change events
+        """
+        return self._history_tracker.get_history(limit=limit, since=since)
+
+    def clear_history(self) -> None:
+        """Clear the change history."""
+        self._history_tracker.clear_history()
+
+    def get_history_size(self) -> int:
+        """Get the current size of the change history.
+
+        Returns:
+            The number of change events currently stored in the history
+        """
+        return self._history_tracker.get_history_size()
+
+    def set_max_history_size(self, size: int) -> None:
+        """Set the maximum history size.
+
+        Args:
+            size: Maximum number of change events to keep
+        """
+        self._history_tracker.set_max_history_size(size)
+
+    def rollback_to_timestamp(self, timestamp: float) -> None:
+        """Rollback the context to a specific timestamp.
+
+        Args:
+            timestamp: The timestamp to rollback to
+
+        Raises:
+            ValueError: If timestamp is in the future or no history exists
+        """
+        current_time = time.time()
+        if timestamp > current_time:
+            raise ValueError("Cannot rollback to a future timestamp")
+
+        if self.get_history_size() == 0:
+            raise ValueError("No history available for rollback")
+
+        # Create automatic snapshot before rollback
+        auto_snapshot_name = f"auto_rollback_backup_{current_time}"
+        self.create_snapshot(auto_snapshot_name)
+
+        # Get changes to reverse from history tracker
+        changes_to_reverse = self._history_tracker.get_changes_to_reverse(timestamp)
+
+        if not changes_to_reverse:
+            # No changes to reverse, but we've already created a snapshot
+            return
+
+        # Temporarily store original history tracker to avoid recording rollback operations
+        original_tracker = self._history_tracker
+
+        # Create a temporary history tracker to avoid recording rollback operations
+        from .history_tracker import HistoryTracker
+
+        temp_tracker = HistoryTracker()
+        temp_tracker.set_max_history_size(
+            0
+        )  # Disable history recording during rollback
+        self._history_tracker = temp_tracker
+
+        try:
+            # Apply reversals - set each key back to its old value
+            for event in changes_to_reverse:
+                try:
+                    if event.old_value is None:
+                        # Key was added, so remove it if it exists
+                        for frame in reversed(self.frames):
+                            if event.key in frame:
+                                del frame[event.key]
+                                break
+                    else:
+                        # Key was modified or deleted, so restore old value
+                        self.frames[-1][event.key] = event.old_value
+                except Exception:
+                    # Continue with other reversals even if one fails
+                    pass
+        finally:
+            # Restore original history tracker
+            self._history_tracker = original_tracker
+
+    def replay_changes_since(self, timestamp: float) -> list[ContextChangeEvent]:
+        """Get all changes that occurred since a specific timestamp.
+
+        Args:
+            timestamp: Timestamp to get changes since
+
+        Returns:
+            List of change events in chronological order
+        """
+        return self._history_tracker.replay_changes_since(timestamp)
+
+    def keys(self) -> Iterator[str]:
+        """Yield all unique keys from the context, including computed properties."""
+        seen: set[str] = set()
+
+        # First yield computed properties
+        for k in self._computed_properties:
+            if k not in seen:
+                yield k
+                seen.add(k)
+
+        # Then yield frame keys
+        for frame in reversed(self.frames):
+            for k in frame.data:
+                if k not in seen:
+                    yield k
+                    seen.add(k)
+
+    def add_computed_property(
+        self, key: str, func: Any, dependencies: list[str] | None = None
+    ) -> None:
+        """Add a computed property to the context.
+
+        Args:
+            key: The key where the computed value will be accessible
+            func: Function that computes the value, takes Context as parameter
+            dependencies: List of context keys this property depends on. If None, will track automatically.
+        """
+        # Create the computed property
+        computed_prop = ComputedProperty(func, dependencies)
+
+        # Subscribe this context to the computed property for dependency tracking
+        computed_prop.subscribe(self)
+
+        # Store the computed property
+        self._computed_properties[key] = computed_prop
+
+    def remove_computed_property(self, key: str) -> None:
+        """Remove a computed property from the context.
+
+        Args:
+            key: The key of the computed property to remove
+        """
+        if key not in self._computed_properties:
+            return
+
+        # Remove the computed property
+        del self._computed_properties[key]
+
+    def get_computed_value(self, key: str) -> Any:
+        """Get the value of a computed property.
+
+        Args:
+            key: The computed property key
+
+        Returns:
+            The computed value
+
+        Raises:
+            KeyError: If the key is not a computed property
+        """
+        if key not in self._computed_properties:
+            raise KeyError(f"No computed property found for key: {key}")
+
+        return self._computed_properties[key].compute(self)
+
+    def is_computed_property(self, key: str) -> bool:
+        """Check if a key represents a computed property.
+
+        Args:
+            key: The key to check
+
+        Returns:
+            True if the key is a computed property, False otherwise
+        """
+        return key in self._computed_properties
+
+    def computed_properties(self) -> dict[str, ComputedProperty]:
+        """Get all computed properties in this context.
+
+        Returns:
+            Dictionary mapping property names to ComputedProperty objects (copy)
+        """
+        return self._computed_properties.copy()
+
+    def add_transformation(self, key: str, func: TransformFunction) -> None:
+        """Add a value transformation for a specific key.
+
+        Args:
+            key: The context key to apply transformation to
+            func: Function that transforms the value
+        """
+        if key not in self._transformations:
+            self._transformations[key] = []
+
+        transformation = Transformation(func, key)
+        self._transformations[key].append(transformation)
+
+    def remove_transformations(self, key: str) -> None:
+        """Remove all transformations for a specific key.
+
+        Args:
+            key: The context key to remove transformations from
+        """
+        if key in self._transformations:
+            del self._transformations[key]
+
+    def transformations(self) -> dict[str, list[Transformation]]:
+        """Get all transformations in this context.
+
+        Returns:
+            Dictionary mapping context keys to lists of transformations (copy)
+        """
+        return {k: v.copy() for k, v in self._transformations.items()}
+
+    def query(
+        self,
+        pattern: str | None = None,
+        key_filter: Callable[[str], bool] | None = None,
+        value_filter: ValuePredicate | None = None,
+        include_computed: bool = True,
+    ) -> ContextData:
+        """Query the context with flexible filtering options.
+
+        Args:
+            pattern: Regex pattern to match against context keys
+            key_filter: Function to filter keys based on custom logic
+            value_filter: Function to filter values
+            include_computed: Whether to include computed properties in results
+
+        Returns:
+            Dictionary of filtered key-value pairs
+        """
+        result: ContextData = {}
+
+        # Compile regex pattern if provided
+        compiled_pattern = None
+        if pattern is not None:
+            try:
+                compiled_pattern = re.compile(pattern)
+            except re.error:
+                # Invalid regex pattern, return empty result
+                return result
+
+        # Iterate through all context keys
+        for key in self.keys():
+            # Skip computed properties if not included
+            if not include_computed and self.is_computed_property(key):
+                continue
+
+            # Apply pattern filter
+            if compiled_pattern is not None and not compiled_pattern.search(key):
+                continue
+
+            # Apply key filter
+            if key_filter is not None and not key_filter(key):
+                continue
+
+            # Get value and apply value filter
+            try:
+                value = self.get(key)
+                if value_filter is not None and not value_filter(value):
+                    continue
+
+                # Key passed all filters, include in result
+                result[key] = value
+            except Exception:
+                # Skip keys that can't be accessed
+                continue
+
+        return result
+
+    def find_keys(self, pattern: str) -> list[str]:
+        """Find all keys matching a regex pattern.
+
+        Args:
+            pattern: Regex pattern to match against keys
+
+        Returns:
+            List of matching keys
+        """
+        try:
+            regex = re.compile(pattern)
+            return [key for key in self.keys() if regex.search(key)]
+        except re.error:
+            # Invalid regex pattern, return empty list
+            return []
+
+    def find_values(self, predicate: ValuePredicate) -> ContextData:
+        """Find all key-value pairs where the value matches a predicate.
+
+        Args:
+            predicate: Function that returns True for matching values
+
+        Returns:
+            Dictionary of matching key-value pairs
+        """
+        return self.query(value_filter=predicate)
+
+    def filter_by_type(self, value_type: type | tuple[type, ...]) -> ContextData:
+        """Filter context entries by value type.
+
+        Args:
+            value_type: Type or tuple of types to filter by
+
+        Returns:
+            Dictionary of entries with values of the specified type(s)
+        """
+        return self.query(value_filter=lambda v: isinstance(v, value_type))
+
+    def search(self, search_term: str, case_sensitive: bool = False) -> ContextData:
+        """Search for keys or values containing a term.
+
+        Args:
+            search_term: Term to search for
+            case_sensitive: Whether search should be case sensitive
+
+        Returns:
+            Dictionary of matching key-value pairs
+        """
+        if not case_sensitive:
+            search_term = search_term.lower()
+
+        def matches_search(key: str, value: ContextValue) -> bool:
+            # Check key
+            key_match = search_term in (key if case_sensitive else key.lower())
+
+            # Check value (convert to string)
+            try:
+                value_str = str(value)
+                if not case_sensitive:
+                    value_str = value_str.lower()
+                value_match = search_term in value_str
+            except Exception:
+                value_match = False
+
+            return key_match or value_match
+
+        results: ContextData = {}
+        for key in self.keys():
+            try:
+                value = self[key]
+                if matches_search(key, value):
+                    results[key] = value
+            except Exception:
+                continue
+
+        return results
+
+    def get_nested(self, path: str, delimiter: str = ".") -> ContextValue:
+        """Get a nested value using dot notation or custom delimiter.
+
+        Args:
+            path: Dot-separated path to the value (e.g., "user.profile.name")
+            delimiter: Path delimiter (default: ".")
+
+        Returns:
+            The nested value
+
+        Raises:
+            KeyError: If any part of the path is not found
+        """
+        parts = path.split(delimiter)
+        current: ContextValue = self[
+            parts[0]
+        ]  # This will raise KeyError if first part not found
+
+        for part in parts[1:]:
+            if isinstance(current, dict):
+                if part not in current:
+                    raise KeyError(
+                        f"Path '{path}' not found - missing '{part}' in {current}"
+                    )
+                current = current[part]  # pyright: ignore[reportUnknownVariableType]
+            elif hasattr(current, part):  # pyright: ignore[reportUnknownArgumentType]
+                current = getattr(  # pyright: ignore[reportUnknownArgumentType]
+                    current, part  # pyright: ignore[reportUnknownArgumentType]
+                )
+            else:
+                raise KeyError(
+                    f"Path '{path}' not found - '{part}' not accessible in {type(current)}"  # pyright: ignore[reportUnknownArgumentType]
+                )
+
+        return current  # pyright: ignore[reportUnknownVariableType]
+
+    def set_nested(
+        self,
+        path: str,
+        value: ContextValue,
+        delimiter: str = ".",
+        create_missing: bool = True,
+    ) -> None:
+        """Set a nested value using dot notation or custom delimiter.
+
+        Args:
+            path: Dot-separated path to set (e.g., "user.profile.name")
+            value: Value to set
+            delimiter: Path delimiter (default: ".")
+            create_missing: Whether to create missing intermediate dictionaries
+        """
+        parts = path.split(delimiter)
+
+        if len(parts) == 1:
+            # Simple case - just set the value
+            self[parts[0]] = value
+            return
+
+        # Navigate to parent and set final key
+        current_value: ContextValue = self.get(parts[0])
+        if current_value is None:
+            if not create_missing:
+                raise KeyError(f"Cannot set '{path}' - '{parts[0]}' does not exist")
+            current_dict: ContextData = {}
+            self[parts[0]] = current_dict
+            current_value = current_dict
+
+        # Navigate through intermediate parts
+        for part in parts[1:-1]:
+            if not isinstance(current_value, dict):
+                if not create_missing:
+                    raise KeyError(
+                        f"Cannot set '{path}' - '{part}' is not a dictionary"
+                    )
+                # Cannot replace non-dict with dict, this is an error condition
+                raise KeyError(f"Cannot set '{path}' - parent is not a dictionary")
+
+            if part not in current_value:
+                if not create_missing:
+                    raise KeyError(f"Cannot set '{path}' - '{part}' does not exist")
+                current_value[part] = {}
+
+            current_value = current_value[  # pyright: ignore[reportUnknownVariableType]
+                part
+            ]
+
+        # Set final value
+        if not isinstance(current_value, dict):
+            raise KeyError(f"Cannot set '{path}' - parent is not a dictionary")
+
+        current_value[parts[-1]] = value

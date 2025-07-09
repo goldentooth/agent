@@ -1,6 +1,7 @@
 """Performance benchmarks for Flow operations."""
 
 import asyncio
+import gc
 import json
 import os
 import tempfile
@@ -326,18 +327,33 @@ class TestPerformanceRegression:
     @pytest.mark.asyncio
     async def test_throughput_consistency(self) -> None:
         """Test that throughput remains consistent across multiple runs."""
-        test_flow: Any = map_stream(lambda x: x + 1)
-        # Use 30 trials with percentile-based outlier removal (trim top/bottom 10%)
-        benchmark = benchmark_stream(
-            iterations=30, warmup_iterations=5, trim_percent=10.0
-        )
+        # Control garbage collection for more consistent timing
+        gc_was_enabled = gc.isenabled()
+        gc.disable()
 
-        def test_stream_factory() -> Any:
-            # Use larger dataset for more stable timing measurements
-            return async_large_range(2000)
+        try:
+            # Force collection before benchmarking
+            gc.collect()
+            gc.collect()  # Second pass for thorough cleanup
 
-        stats = await benchmark(test_flow)(test_stream_factory)
-        self._validate_throughput_consistency(stats)
+            test_flow: Any = map_stream(lambda x: x + 1)
+            # Use settings that provide consistent results
+            benchmark = benchmark_stream(
+                iterations=50, warmup_iterations=10, trim_percent=20.0
+            )
+
+            def test_stream_factory() -> Any:
+                # Use larger dataset for more stable measurements
+                return async_large_range(5000)
+
+            # Allow system to settle before benchmarking
+            await asyncio.sleep(0.1)
+
+            stats = await benchmark(test_flow)(test_stream_factory)
+            self._validate_throughput_consistency(stats)
+        finally:
+            if gc_was_enabled:
+                gc.enable()
 
     def _validate_throughput_consistency(self, stats: Dict[str, Any]) -> None:
         """Validate throughput consistency from benchmark statistics."""
@@ -352,8 +368,8 @@ class TestPerformanceRegression:
         max_duration = stats["max_duration_ms"] / 1000
         avg_duration = stats["avg_duration_ms"] / 1000
 
-        # Calculate throughput for each duration measurement (2000 items per test)
-        dataset_size = 2000
+        # Calculate throughput for each duration measurement (5000 items per test)
+        dataset_size = 5000
         min_throughput = dataset_size / max_duration  # Inverse relationship
         max_throughput = dataset_size / min_duration
         avg_throughput = dataset_size / avg_duration
@@ -370,19 +386,25 @@ class TestPerformanceRegression:
     def _assert_variance_within_threshold(
         self, metrics: Dict[str, Any], stats: Dict[str, Any]
     ) -> None:
-        """Assert throughput variance is within acceptable threshold."""
-        throughput_variance = (
-            metrics["max_throughput"] - metrics["min_throughput"]
-        ) / metrics["avg_throughput"]
+        """Assert timing variance is within acceptable threshold."""
+        # Focus on timing stability instead of throughput variance
+        # Small timing variations get amplified in throughput calculations
+        min_time = metrics["min_duration"]
+        max_time = metrics["max_duration"]
+        avg_time = metrics["avg_duration"]
+
+        # Calculate relative range of timings
+        time_range = max_time - min_time
+        relative_range = time_range / avg_time if avg_time > 0 else 0
 
         # Use more lenient thresholds in CI environments
         is_ci = os.getenv("CI") is not None or os.getenv("GITHUB_ACTIONS") is not None
-        variance_threshold = 0.4 if is_ci else 0.25  # 40% for CI, 25% for local
+        variance_threshold = 0.25 if is_ci else 0.15  # 25% for CI, 15% for local
 
-        assert throughput_variance < variance_threshold, (
-            f"Throughput variance {throughput_variance:.3f} exceeds threshold {variance_threshold} "
+        assert relative_range < variance_threshold, (
+            f"Timing variance {relative_range:.3f} exceeds threshold {variance_threshold} "
             f"({'CI' if is_ci else 'local'} environment). "
-            f"Stats: min={metrics['min_throughput']:.2f}, max={metrics['max_throughput']:.2f}, avg={metrics['avg_throughput']:.2f} ops/sec "
+            f"Times: min={min_time*1000:.2f}ms, max={max_time*1000:.2f}ms, avg={avg_time*1000:.2f}ms "
             f"(from {stats['iterations']}/{stats.get('original_iterations', 'unknown')} samples "
             f"after {stats.get('trim_percent', 0)}% trimming)"
         )

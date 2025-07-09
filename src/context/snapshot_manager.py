@@ -5,36 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    pass
-
-
-# Temporary ContextSnapshot implementation for this commit
-# This will be replaced with proper implementation in future commits
-class ContextSnapshot:
-    """Temporary snapshot class for testing create_snapshot method."""
-
-    def __init__(self, context: Any, name: str) -> None:
-        super().__init__()
-        # Create a copy of the context to preserve its state at snapshot time
-        if hasattr(context, "data"):
-            # For MockContext objects, create a new MockContext with copied data
-            self.context = type(context)(context.data.copy())
-        else:
-            self.context = context
-        self.name = name
-        import time
-
-        self.timestamp = time.time()
-
-    def restore_to(self, target_context: Any) -> None:
-        """Restore the snapshot data to a target context.
-
-        Args:
-            target_context: The context to restore the snapshot data to
-        """
-        # For now, just copy the data if both contexts have data attribute
-        if hasattr(self.context, "data") and hasattr(target_context, "data"):
-            target_context.data = self.context.data.copy()
+    from .snapshots import ContextSnapshot
 
 
 class SnapshotManager:
@@ -43,7 +14,7 @@ class SnapshotManager:
     def __init__(self) -> None:
         """Initialize the snapshot manager."""
         super().__init__()
-        self._snapshots: dict[str, ContextSnapshot] = {}
+        self._snapshots: dict[str, Any] = {}
 
     def create_snapshot(self, context: Any, name: str) -> ContextSnapshot:
         """Create a snapshot of the current context state.
@@ -60,6 +31,9 @@ class SnapshotManager:
         """
         if name in self._snapshots:
             raise ValueError(f"Snapshot '{name}' already exists")
+
+        # Import here to avoid circular import
+        from .snapshots import ContextSnapshot
 
         snapshot = ContextSnapshot(context, name)
         self._snapshots[name] = snapshot
@@ -103,7 +77,7 @@ class SnapshotManager:
 
         del self._snapshots[name]
 
-    def get_snapshot(self, name: str) -> ContextSnapshot:
+    def get_snapshot(self, name: str) -> Any:
         """Get a specific snapshot.
 
         Args:

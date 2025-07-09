@@ -4,7 +4,7 @@ from typing import Any, Callable
 
 import pytest
 
-from context.main import Transformation
+from context.computed import Transformation
 
 
 def simple_transform(value: Any) -> str:

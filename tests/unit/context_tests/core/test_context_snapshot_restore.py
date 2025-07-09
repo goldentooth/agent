@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from context.main import ContextSnapshot
+from context.snapshots import ContextSnapshot
 
 
 class MockFrame:

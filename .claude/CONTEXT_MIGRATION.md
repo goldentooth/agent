@@ -149,10 +149,10 @@ src/
 
 ##### 7.9 Context Class - Event System (Flow-Independent)
 - **Commit 81**: `Context.keys` method
-- **Commit 82**: `Context.subscribe_sync` method
-- **Commit 83**: `Context.subscribe_async` method
-- **Commit 84**: `Context.global_changes_sync` method
-- **Commit 85**: `Context.global_changes_async` method
+- **Commit 82**: `Context.subscribe_sync` method [NOT DONE]
+- **Commit 83**: `Context.subscribe_async` method [NOT DONE]
+- **Commit 84**: `Context.global_changes_sync` method [NOT DONE]
+- **Commit 85**: `Context.global_changes_async` method [NOT DONE]
 
 ##### 7.10 Context Class - Computed Properties
 - **Commit 86**: `Context.add_computed_property` method
