@@ -11,6 +11,11 @@ if TYPE_CHECKING:
 
 from .computed import ComputedProperty, Transformation
 from .frame import ContextFrame
+from .nested_operations import (
+    flatten_dict_recursive,
+    set_nested_value,
+    traverse_nested_path,
+)
 from .snapshots import ContextSnapshot
 
 if TYPE_CHECKING:
@@ -848,27 +853,14 @@ class Context:
             KeyError: If any part of the path is not found
         """
         parts = path.split(delimiter)
-        current: ContextValue = self[
+        initial_value = self[
             parts[0]
         ]  # This will raise KeyError if first part not found
 
-        for part in parts[1:]:
-            if isinstance(current, dict):
-                if part not in current:
-                    raise KeyError(
-                        f"Path '{path}' not found - missing '{part}' in {current}"
-                    )
-                current = current[part]  # pyright: ignore[reportUnknownVariableType]
-            elif hasattr(current, part):  # pyright: ignore[reportUnknownArgumentType]
-                current = getattr(  # pyright: ignore[reportUnknownArgumentType]
-                    current, part  # pyright: ignore[reportUnknownArgumentType]
-                )
-            else:
-                raise KeyError(
-                    f"Path '{path}' not found - '{part}' not accessible in {type(current)}"  # pyright: ignore[reportUnknownArgumentType]
-                )
+        if len(parts) == 1:
+            return initial_value
 
-        return current  # pyright: ignore[reportUnknownVariableType]
+        return traverse_nested_path(initial_value, parts[1:], path)
 
     def set_nested(
         self,
@@ -885,46 +877,14 @@ class Context:
             delimiter: Path delimiter (default: ".")
             create_missing: Whether to create missing intermediate dictionaries
         """
-        parts = path.split(delimiter)
-
-        if len(parts) == 1:
-            # Simple case - just set the value
-            self[parts[0]] = value
-            return
-
-        # Navigate to parent and set final key
-        current_value: ContextValue = self.get(parts[0])
-        if current_value is None:
-            if not create_missing:
-                raise KeyError(f"Cannot set '{path}' - '{parts[0]}' does not exist")
-            current_dict: ContextData = {}
-            self[parts[0]] = current_dict
-            current_value = current_dict
-
-        # Navigate through intermediate parts
-        for part in parts[1:-1]:
-            if not isinstance(current_value, dict):
-                if not create_missing:
-                    raise KeyError(
-                        f"Cannot set '{path}' - '{part}' is not a dictionary"
-                    )
-                # Cannot replace non-dict with dict, this is an error condition
-                raise KeyError(f"Cannot set '{path}' - parent is not a dictionary")
-
-            if part not in current_value:
-                if not create_missing:
-                    raise KeyError(f"Cannot set '{path}' - '{part}' does not exist")
-                current_value[part] = {}
-
-            current_value = current_value[  # pyright: ignore[reportUnknownVariableType]
-                part
-            ]
-
-        # Set final value
-        if not isinstance(current_value, dict):
-            raise KeyError(f"Cannot set '{path}' - parent is not a dictionary")
-
-        current_value[parts[-1]] = value
+        set_nested_value(
+            lambda key: self.get(key),
+            lambda key, val: self.__setitem__(key, val),
+            path,
+            value,
+            delimiter,
+            create_missing,
+        )
 
     def has_nested(self, path: str, delimiter: str = ".") -> bool:
         """Check if a nested path exists.
@@ -954,34 +914,6 @@ class Context:
         Returns:
             Flattened dictionary
         """
-
-        def _flatten_dict(
-            obj: ContextData, prefix: str = "", depth: int = 0
-        ) -> ContextData:
-            items: ContextData = {}
-
-            for key, value in obj.items():
-                new_key = f"{prefix}{delimiter}{key}" if prefix else key
-
-                if isinstance(value, dict) and (max_depth is None or depth < max_depth):
-                    # Handle empty dictionaries
-                    if not value:
-                        items[new_key] = value
-                    else:
-                        # Type assertion for pyright
-                        typed_value = cast(ContextData, value)
-                        items.update(
-                            _flatten_dict(
-                                typed_value,
-                                new_key,
-                                depth + 1,
-                            )
-                        )
-                else:
-                    items[new_key] = value
-
-            return items
-
         # Get all regular values (excluding computed properties)
         regular_data: ContextData = {}
         for key in self.keys():
@@ -992,4 +924,4 @@ class Context:
                 except Exception:
                     continue
 
-        return _flatten_dict(regular_data)
+        return flatten_dict_recursive(regular_data, delimiter, max_depth)
