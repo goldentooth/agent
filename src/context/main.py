@@ -23,8 +23,6 @@ from .snapshots import ContextSnapshot
 from .transformations_manager import TransformationsManager
 
 if TYPE_CHECKING:
-    from flowengine.flow import Flow
-
     from .snapshot_manager import SnapshotManager
 
 # Type aliases for context system
@@ -910,26 +908,6 @@ class Context:
     def has_observers(self) -> bool:
         """Check if there are any registered observers."""
         return self._change_notifier.has_observers()
-
-    def as_flow(self, key: str, use_async: bool = True) -> "Flow[None, Any]":
-        """Convert context key changes to a Flow stream.
-
-        Args:
-            key: The context key to watch for changes
-            use_async: Whether to use async or sync event flow
-
-        Returns:
-            Flow that yields new values when the key changes
-        """
-        # Import here to avoid circular imports
-        from flowengine.flow import Flow
-
-        # For now, create a minimal Flow that returns the current value
-        # This is a placeholder implementation to pass initial tests
-        # TODO: use_async parameter will be used when implementing full EventFlow system
-        _ = use_async  # Temporarily ignore the parameter to avoid vulture warnings
-        current_value = self.get(key)
-        return Flow.pure(current_value)
 
     def _emit_change_event(
         self,

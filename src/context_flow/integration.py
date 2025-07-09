@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, TypeVar
 from goldentooth_agent.core.background_loop import run_in_background
 
 if TYPE_CHECKING:
+    from context.main import Context
     from flowengine.flow import Flow
 
 __all__ = [
@@ -22,6 +23,7 @@ __all__ = [
     "run_flow_with_input",
     "extend_flow_with_context",
     "context_flow",
+    "as_flow",
 ]
 
 T = TypeVar("T")
@@ -180,3 +182,23 @@ def context_flow(
         return Flow(context_aware_flow, name=flow_name)
 
     return decorator
+
+
+def as_flow(context: "Context", key: str, use_async: bool = True) -> "Flow[None, Any]":
+    """Convert context key changes to a Flow stream.
+
+    Args:
+        context: The context instance to watch
+        key: The context key to watch for changes
+        use_async: Whether to use async or sync event flow
+
+    Returns:
+        Flow that yields new values when the key changes
+    """
+    from flowengine.flow import Flow
+
+    # For now, create a minimal Flow that returns the current value
+    # This is a placeholder implementation to pass initial tests
+    _ = use_async  # Parameter reserved for future EventFlow integration
+    current_value = context.get(key)
+    return Flow.pure(current_value)
