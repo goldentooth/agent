@@ -3,7 +3,7 @@
 from typing import Any
 from unittest.mock import Mock
 
-from context.main import ComputedProperty
+from context.computed import ComputedProperty
 
 
 class MockContext:

@@ -1,6 +1,7 @@
 """Test Context.get_snapshots method."""
 
-from context.main import Context, ContextSnapshot
+from context.main import Context
+from context.snapshots import ContextSnapshot
 
 
 def test_get_snapshots_empty() -> None:

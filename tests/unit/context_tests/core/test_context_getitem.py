@@ -119,7 +119,7 @@ class TestContextGetitem:
         def compute_func(ctx: Any) -> str:
             return "computed_value"
 
-        from context.main import ComputedProperty
+        from context.computed import ComputedProperty
 
         context._computed_properties["key"] = ComputedProperty(compute_func)
 
@@ -135,7 +135,7 @@ class TestContextGetitem:
         def compute_func(ctx: Any) -> int:
             return 100
 
-        from context.main import ComputedProperty
+        from context.computed import ComputedProperty
 
         context._computed_properties["computed_key"] = ComputedProperty(compute_func)
 
@@ -244,7 +244,7 @@ class TestContextGetitem:
             call_count += 1
             return call_count * 10
 
-        from context.main import ComputedProperty
+        from context.computed import ComputedProperty
 
         computed_prop = ComputedProperty(counting_compute)
         context._computed_properties["computed"] = computed_prop

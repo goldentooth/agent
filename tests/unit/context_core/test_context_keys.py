@@ -55,7 +55,7 @@ class TestContextKeys:
 
         # Since add_computed_property is not implemented yet, we'll simulate
         # by directly adding to _computed_properties
-        from context.main import ComputedProperty
+        from context.computed import ComputedProperty
 
         computed_prop = ComputedProperty(lambda ctx: "computed_value")
         context._computed_properties["computed_key"] = computed_prop
@@ -68,7 +68,7 @@ class TestContextKeys:
         context = Context()
         context["frame_key"] = "frame_value"
 
-        from context.main import ComputedProperty
+        from context.computed import ComputedProperty
 
         computed_prop = ComputedProperty(lambda ctx: "computed_value")
         context._computed_properties["computed_key"] = computed_prop

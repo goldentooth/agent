@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from context.main import ComputedProperty
+from context.computed import ComputedProperty
 
 
 class MockContext:

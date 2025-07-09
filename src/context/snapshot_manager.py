@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from .main import ContextSnapshot
+    from .snapshots import ContextSnapshot
 
 
 class SnapshotManager:
@@ -33,7 +33,7 @@ class SnapshotManager:
             raise ValueError(f"Snapshot '{name}' already exists")
 
         # Import here to avoid circular import
-        from .main import ContextSnapshot
+        from .snapshots import ContextSnapshot
 
         snapshot = ContextSnapshot(context, name)
         self._snapshots[name] = snapshot
