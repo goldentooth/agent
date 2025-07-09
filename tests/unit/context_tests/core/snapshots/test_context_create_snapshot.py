@@ -151,11 +151,22 @@ def test_create_snapshot_with_computed_properties() -> None:
     context = Context()
     context["base_value"] = 10
 
-    # TODO: This test will be enhanced when computed properties are implemented
-    # For now, just verify snapshot creation works
+    # Add a computed property that doubles the base value
+    context.add_computed_property(
+        "doubled_value", lambda ctx: ctx.get("base_value", 0) * 2
+    )
+
+    # Verify computed property works before snapshot
+    assert context["doubled_value"] == 20
+
+    # Create snapshot - snapshots only capture stored values, not computed ones
     snapshot = context.create_snapshot("computed_test")
 
+    # Verify snapshot contains only the base value (computed properties are derived)
     assert snapshot.frames[0]["base_value"] == 10
+    assert (
+        "doubled_value" not in snapshot.frames[0].data
+    )  # Computed properties not stored
 
 
 def test_create_snapshot_multiple_snapshots() -> None:

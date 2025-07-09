@@ -54,6 +54,15 @@ tests/context_flow/
 - **Tests**: 10 comprehensive test cases including exception chaining
 - **Coverage**: 100% line coverage achieved
 
+### Commit #118: as_flow function (ARCHITECTURE REFACTOR)
+- **Initial Implementation**: Added as_flow method to Context class
+- **Architecture Issue**: Created unwanted Flow dependency in core Context package
+- **Refactor**: Moved as_flow from Context method to context_flow.integration function
+- **API Change**: context.as_flow(key) → as_flow(context, key)
+- **Benefits**: Maintains clean dependency boundaries, removes Context→Flow coupling
+- **Tests**: 10 comprehensive test cases moved to context_flow_tests/test_as_flow.py
+- **Code Quality**: Eliminated all TODO comments from codebase per guidelines
+
 ## Key Learnings
 
 ### TDD Approach Success
@@ -94,6 +103,13 @@ tests/context_flow/
 ```
 
 This correction was essential to maintain consistency with the established codebase patterns and ensure proper test discovery by the testing framework.
+
+### Dependency Architecture - CRITICAL LESSON
+**Issue**: Initially implemented as_flow as a Context method, creating circular dependency concerns
+**Solution**: Moved as_flow to context_flow package as a standalone function
+**Principle**: Keep core packages dependency-free; put integration logic in dedicated packages
+**API Impact**: Breaking change from method to function, but cleaner architecture
+**Guideline**: Always consider dependency graph implications before adding methods to core classes
 
 ## Technical Challenges Overcome
 
