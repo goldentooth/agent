@@ -676,6 +676,14 @@ class Context:
         """
         return self._history_tracker.get_history_size()
 
+    def set_max_history_size(self, size: int) -> None:
+        """Set the maximum history size.
+
+        Args:
+            size: Maximum number of change events to keep
+        """
+        self._history_tracker.set_max_history_size(size)
+
     def keys(self) -> Iterator[str]:
         """Yield all unique keys from the context, including computed properties."""
         seen: set[str] = set()
