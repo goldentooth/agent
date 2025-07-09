@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 # Type aliases for context system
 ContextValue = Any
+TransformFunction = Any
 
 
 class Context:
@@ -665,3 +666,16 @@ class Context:
             Dictionary mapping property names to ComputedProperty objects (copy)
         """
         return self._computed_properties.copy()
+
+    def add_transformation(self, key: str, func: TransformFunction) -> None:
+        """Add a value transformation for a specific key.
+
+        Args:
+            key: The context key to apply transformation to
+            func: Function that transforms the value
+        """
+        if key not in self._transformations:
+            self._transformations[key] = []
+
+        transformation = Transformation(func, key)
+        self._transformations[key].append(transformation)
