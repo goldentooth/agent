@@ -732,3 +732,60 @@ class ContextFlowCombinators:
             _copy_key_flow,
             name=f"copy_key({source_key.path} -> {destination_key.path})",
         )
+
+    @staticmethod
+    def forget_key(key: "ContextKey[T]") -> "Flow[Context, Context]":
+        """Create a Flow that removes a key from the context.
+
+        This method creates a Flow that takes a Context as input and yields
+        a new Context with the specified key removed. If the key doesn't exist
+        in the context, this operation is a no-op and returns the context
+        unchanged (except for creating a new instance).
+
+        Args:
+            key: The ContextKey to remove from the context. Must be a typed
+                ContextKey[T] instance.
+
+        Returns:
+            A Flow[Context, Context] that removes the key from contexts.
+
+        Example:
+            ```python
+            from context.key import ContextKey
+            from context.main import Context
+
+            # Create a typed context key
+            temp_key = ContextKey("temp.data", str, "Temporary data")
+
+            # Create a flow to remove the key
+            forget_flow = ContextFlowCombinators.forget_key(temp_key)
+
+            # Use the flow
+            context = Context()
+            context["temp.data"] = "cleanup_me"
+            context["permanent"] = "keep_me"
+            result = run_flow_with_input(forget_flow, context)
+            # "temp.data" not in result
+            # result["permanent"] == "keep_me"
+            ```
+        """
+        from flowengine.flow import Flow
+
+        async def _forget_key_flow(
+            stream: AsyncGenerator["Context", None]
+        ) -> AsyncGenerator["Context", None]:
+            """Internal flow implementation for key removal."""
+            async for context in stream:
+                # Create a new context without the specified key
+                from context.main import Context
+
+                new_context = Context()
+
+                # Copy all existing keys except the one to forget
+                for existing_key in context.keys():
+                    if existing_key != key.path:
+                        new_context[existing_key] = context[existing_key]
+
+                yield new_context
+
+        return Flow(_forget_key_flow, name=f"forget_key({key.path})")
