@@ -772,3 +772,14 @@ class Context:
         except re.error:
             # Invalid regex pattern, return empty list
             return []
+
+    def find_values(self, predicate: ValuePredicate) -> ContextData:
+        """Find all key-value pairs where the value matches a predicate.
+
+        Args:
+            predicate: Function that returns True for matching values
+
+        Returns:
+            Dictionary of matching key-value pairs
+        """
+        return self.query(value_filter=predicate)
