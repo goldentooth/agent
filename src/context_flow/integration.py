@@ -853,3 +853,83 @@ class ContextFlowCombinators:
         flow_name = f"require_keys([{', '.join(key_names)}])"
 
         return Flow(_require_keys_flow, name=flow_name)
+
+    @staticmethod
+    def transform_key(
+        key: "ContextKey[T]", transform_func: Callable[[T], R]
+    ) -> "Flow[Context, Context]":
+        """Create a Flow that transforms a value for a context key.
+
+        This method creates a Flow that takes a Context as input, applies a
+        transformation function to the value of the specified key, and yields
+        a new Context with the transformed value. The transformation function
+        can change the type of the value.
+
+        Args:
+            key: The ContextKey to transform. Must be present in the context
+                or MissingRequiredKeyError will be raised.
+            transform_func: A function that takes the current value and returns
+                the transformed value. Can change the type of the value.
+
+        Returns:
+            A Flow[Context, Context] that transforms the key value in contexts.
+
+        Raises:
+            MissingRequiredKeyError: If the key is missing from the context.
+            Any exceptions raised by the transform_func are propagated.
+
+        Example:
+            ```python
+            from context.key import ContextKey
+            from context.main import Context
+
+            # Create a typed context key
+            name_key = ContextKey("user.name", str, "User's name")
+
+            # Create a flow to transform the key
+            def capitalize_name(name: str) -> str:
+                return name.capitalize()
+
+            transform_flow = ContextFlowCombinators.transform_key(name_key, capitalize_name)
+
+            # Use the flow
+            context = Context()
+            context["user.name"] = "alice"
+            result = run_flow_with_input(transform_flow, context)
+            # result["user.name"] == "Alice"
+            ```
+        """
+        from flowengine.flow import Flow
+
+        async def _transform_key_flow(
+            stream: AsyncGenerator["Context", None]
+        ) -> AsyncGenerator["Context", None]:
+            """Internal flow implementation for key transformation."""
+            async for context in stream:
+                # Check if key exists in context
+                if key.path not in context:
+                    raise MissingRequiredKeyError(
+                        f"Required context key '{key.path}' is missing"
+                    )
+
+                # Get the current value from context
+                current_value = context[key.path]
+
+                # Apply the transformation function
+                transformed_value = transform_func(cast(T, current_value))
+
+                # Create a new context with the transformed value
+                from context.main import Context
+
+                new_context = Context()
+
+                # Copy all existing keys from the original context
+                for existing_key in context.keys():
+                    new_context[existing_key] = context[existing_key]
+
+                # Set the transformed value for the target key
+                new_context[key.path] = transformed_value
+
+                yield new_context
+
+        return Flow(_transform_key_flow, name=f"transform_key({key.path})")
