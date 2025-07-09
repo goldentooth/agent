@@ -8,19 +8,19 @@ Following the CONTEXT_MIGRATION.md plan, we are implementing **Phase 2: Context-
 
 ## Progress Summary
 
-### Completed Tasks (2/9 commits)
+### Completed Tasks (8/9 commits)
 - ✅ **Commit #111**: ContextFlowError exception class
 - ✅ **Commit #112**: MissingRequiredKeyError exception class
+- ✅ **Commit #113**: ContextTypeMismatchError exception class
+- ✅ **Commit #114**: _single_item_stream function
+- ✅ **Commit #115**: run_flow_with_input function
+- ✅ **Commit #116**: extend_flow_with_context function
+- ✅ **Commit #117**: context_flow decorator function
 
 ### In Progress
-- 🔄 **Commit #113**: ContextTypeMismatchError exception class
+- 🔄 **Commit #118**: Context.as_flow method (Flow-dependent)
 
-### Pending Tasks (6/9 commits)
-- ⏳ **Commit #114**: _single_item_stream function
-- ⏳ **Commit #115**: run_flow_with_input function
-- ⏳ **Commit #116**: extend_flow_with_context function
-- ⏳ **Commit #117**: context_flow decorator function
-- ⏳ **Commit #118**: Context.as_flow method (Flow-dependent)
+### Pending Tasks (1/9 commits)
 - ⏳ **Commit #119**: Context.global_changes_as_flow method (Flow-dependent)
 
 ## Implementation Details
