@@ -756,3 +756,19 @@ class Context:
                 continue
 
         return result
+
+    def find_keys(self, pattern: str) -> list[str]:
+        """Find all keys matching a regex pattern.
+
+        Args:
+            pattern: Regex pattern to match against keys
+
+        Returns:
+            List of matching keys
+        """
+        try:
+            regex = re.compile(pattern)
+            return [key for key in self.keys() if regex.search(key)]
+        except re.error:
+            # Invalid regex pattern, return empty list
+            return []
