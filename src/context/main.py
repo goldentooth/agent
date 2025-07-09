@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 # Type aliases for context system
 ContextValue = Any
-TransformFunction = Any
+TransformFunction = Callable[[ContextValue], ContextValue]
 ContextData = dict[str, Any]
 ValuePredicate = Callable[[Any], bool]
 
@@ -112,11 +112,14 @@ class Context:
         # Get old value for history tracking
         old_value = self.get(key, None)
 
-        # Set value in the current (last) frame
-        self.frames[-1][key] = value
+        # Apply transformations if any exist for this key
+        transformed_value = self._apply_transformations(key, value)
+
+        # Set transformed value in the current (last) frame
+        self.frames[-1][key] = transformed_value
 
         # Record the change in history
-        self._record_change(key, old_value, value)
+        self._record_change(key, old_value, transformed_value)
 
     def __setitem__(self, key: str, value: ContextValue) -> None:
         """Set a value for a key in the current frame.
@@ -919,3 +922,27 @@ class Context:
         # Flow-independent implementation - no events are emitted
         # This provides the interface that will be enhanced in context_flow package
         pass
+
+    def _apply_transformations(self, key: str, value: ContextValue) -> ContextValue:
+        """Apply all transformations for a given key to the value.
+
+        Args:
+            key: The key whose transformations should be applied
+            value: The value to transform
+
+        Returns:
+            The transformed value, or original value if no transformations exist
+            or if all transformations fail
+        """
+        if key not in self._transformations:
+            return value
+
+        transformed_value = value
+        for transformation in self._transformations[key]:
+            try:
+                transformed_value = transformation.apply(transformed_value)
+            except Exception:
+                # If transformation fails, use the current value and continue
+                pass
+
+        return transformed_value
