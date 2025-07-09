@@ -789,3 +789,67 @@ class ContextFlowCombinators:
                 yield new_context
 
         return Flow(_forget_key_flow, name=f"forget_key({key.path})")
+
+    @staticmethod
+    def require_keys(keys: list["ContextKey[Any]"]) -> "Flow[Context, Context]":
+        """Create a Flow that validates multiple required keys exist in context.
+
+        This method creates a Flow that takes a Context as input and validates
+        that all specified keys exist in the context. If any key is missing,
+        it raises MissingRequiredKeyError. If all keys are present, it returns
+        the original context unchanged.
+
+        Args:
+            keys: List of ContextKey instances to validate. Each must be present
+                in the context or MissingRequiredKeyError will be raised.
+
+        Returns:
+            A Flow[Context, Context] that validates the required keys and
+            returns the original context if validation passes.
+
+        Raises:
+            MissingRequiredKeyError: If any of the required keys is missing
+                from the context.
+
+        Example:
+            ```python
+            from context.key import ContextKey
+            from context.main import Context
+
+            # Create typed context keys
+            name_key = ContextKey("user.name", str, "User's name")
+            age_key = ContextKey("user.age", int, "User's age")
+
+            # Create a flow to validate both keys
+            require_flow = ContextFlowCombinators.require_keys([name_key, age_key])
+
+            # Use the flow
+            context = Context()
+            context["user.name"] = "Alice"
+            context["user.age"] = 30
+            result = run_flow_with_input(require_flow, context)
+            # result is the same context with validation passed
+            ```
+        """
+        from flowengine.flow import Flow
+
+        async def _require_keys_flow(
+            stream: AsyncGenerator["Context", None]
+        ) -> AsyncGenerator["Context", None]:
+            """Internal flow implementation for multiple key validation."""
+            async for context in stream:
+                # Validate each required key exists in context
+                for key in keys:
+                    if key.path not in context:
+                        raise MissingRequiredKeyError(
+                            f"Required context key '{key.path}' is missing"
+                        )
+
+                # All keys validated, return the original context
+                yield context
+
+        # Create descriptive flow name
+        key_names = [key.path for key in keys]
+        flow_name = f"require_keys([{', '.join(key_names)}])"
+
+        return Flow(_require_keys_flow, name=flow_name)
