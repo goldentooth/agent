@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 ContextValue = Any
 TransformFunction = Any
 ContextData = dict[str, Any]
-ValuePredicate = Any
+ValuePredicate = Callable[[Any], bool]
 
 
 class Context:
@@ -783,3 +783,14 @@ class Context:
             Dictionary of matching key-value pairs
         """
         return self.query(value_filter=predicate)
+
+    def filter_by_type(self, value_type: type | tuple[type, ...]) -> ContextData:
+        """Filter context entries by value type.
+
+        Args:
+            value_type: Type or tuple of types to filter by
+
+        Returns:
+            Dictionary of entries with values of the specified type(s)
+        """
+        return self.query(value_filter=lambda v: isinstance(v, value_type))
