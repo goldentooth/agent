@@ -684,6 +684,65 @@ class Context:
         """
         self._history_tracker.set_max_history_size(size)
 
+    def rollback_to_timestamp(self, timestamp: float) -> None:
+        """Rollback the context to a specific timestamp.
+
+        Args:
+            timestamp: The timestamp to rollback to
+
+        Raises:
+            ValueError: If timestamp is in the future or no history exists
+        """
+        current_time = time.time()
+        if timestamp > current_time:
+            raise ValueError("Cannot rollback to a future timestamp")
+
+        if self.get_history_size() == 0:
+            raise ValueError("No history available for rollback")
+
+        # Create automatic snapshot before rollback
+        auto_snapshot_name = f"auto_rollback_backup_{current_time}"
+        self.create_snapshot(auto_snapshot_name)
+
+        # Get changes to reverse from history tracker
+        changes_to_reverse = self._history_tracker.get_changes_to_reverse(timestamp)
+
+        if not changes_to_reverse:
+            # No changes to reverse, but we've already created a snapshot
+            return
+
+        # Temporarily store original history tracker to avoid recording rollback operations
+        original_tracker = self._history_tracker
+
+        # Create a temporary history tracker to avoid recording rollback operations
+        from .history_tracker import HistoryTracker
+
+        temp_tracker = HistoryTracker()
+        temp_tracker.set_max_history_size(
+            0
+        )  # Disable history recording during rollback
+        self._history_tracker = temp_tracker
+
+        try:
+            # Apply reversals - set each key back to its old value
+            for event in changes_to_reverse:
+                try:
+                    if event.old_value is None:
+                        # Key was added, so remove it if it exists
+                        for frame in reversed(self.frames):
+                            if event.key in frame:
+                                del frame[event.key]
+                                break
+                    else:
+                        # Key was modified or deleted, so restore old value
+                        self.frames[-1][event.key] = event.old_value
+                except Exception:
+                    # Continue with other reversals even if one fails
+                    pass
+        finally:
+            # Restore original history tracker
+            self._history_tracker = original_tracker
+
     def keys(self) -> Iterator[str]:
         """Yield all unique keys from the context, including computed properties."""
         seen: set[str] = set()
