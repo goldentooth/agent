@@ -657,3 +657,11 @@ class Context:
             True if the key is a computed property, False otherwise
         """
         return key in self._computed_properties
+
+    def computed_properties(self) -> dict[str, ComputedProperty]:
+        """Get all computed properties in this context.
+
+        Returns:
+            Dictionary mapping property names to ComputedProperty objects (copy)
+        """
+        return self._computed_properties.copy()
