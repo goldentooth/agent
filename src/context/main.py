@@ -925,3 +925,19 @@ class Context:
             raise KeyError(f"Cannot set '{path}' - parent is not a dictionary")
 
         current_value[parts[-1]] = value
+
+    def has_nested(self, path: str, delimiter: str = ".") -> bool:
+        """Check if a nested path exists.
+
+        Args:
+            path: Dot-separated path to check
+            delimiter: Path delimiter (default: ".")
+
+        Returns:
+            True if path exists, False otherwise
+        """
+        try:
+            self.get_nested(path, delimiter)
+            return True
+        except KeyError:
+            return False
