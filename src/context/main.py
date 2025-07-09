@@ -629,3 +629,20 @@ class Context:
 
         # Remove the computed property
         del self._computed_properties[key]
+
+    def get_computed_value(self, key: str) -> Any:
+        """Get the value of a computed property.
+
+        Args:
+            key: The computed property key
+
+        Returns:
+            The computed value
+
+        Raises:
+            KeyError: If the key is not a computed property
+        """
+        if key not in self._computed_properties:
+            raise KeyError(f"No computed property found for key: {key}")
+
+        return self._computed_properties[key].compute(self)
