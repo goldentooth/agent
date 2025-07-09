@@ -24,6 +24,6 @@ class MissingRequiredKeyError(ContextFlowError):
 
 
 class ContextTypeMismatchError(ContextFlowError):
-    """Raised when a context key has an unexpected type."""
+    """Raised when a context key has the wrong type."""
 
     pass
