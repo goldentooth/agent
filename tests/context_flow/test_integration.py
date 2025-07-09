@@ -6,6 +6,7 @@ from context_flow.integration import (
     ContextFlowError,
     ContextTypeMismatchError,
     MissingRequiredKeyError,
+    _single_item_stream,
 )
 
 
@@ -215,3 +216,216 @@ class TestContextTypeMismatchError:
 
         error = ContextTypeMismatchError(message)
         assert str(error) == "Expected int, got str"
+
+
+class TestSingleItemStream:
+    """Test cases for _single_item_stream function."""
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_basic_functionality(self) -> None:
+        """Test that _single_item_stream yields exactly one item."""
+        item = "test_item"
+
+        stream = _single_item_stream(item)
+
+        # Collect all items from the stream
+        items = []
+        async for result in stream:
+            items.append(result)
+
+        assert len(items) == 1
+        assert items[0] == "test_item"
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_string(self) -> None:
+        """Test _single_item_stream with string input."""
+        item = "hello world"
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result == "hello world"
+            assert isinstance(result, str)
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_integer(self) -> None:
+        """Test _single_item_stream with integer input."""
+        item = 42
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result == 42
+            assert isinstance(result, int)
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_none(self) -> None:
+        """Test _single_item_stream with None input."""
+        item = None
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result is None
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_list(self) -> None:
+        """Test _single_item_stream with list input."""
+        item = [1, 2, 3, "test"]
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result == [1, 2, 3, "test"]
+            assert isinstance(result, list)
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_dict(self) -> None:
+        """Test _single_item_stream with dictionary input."""
+        item = {"key": "value", "number": 42}
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result == {"key": "value", "number": 42}
+            assert isinstance(result, dict)
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_custom_object(self) -> None:
+        """Test _single_item_stream with custom object input."""
+
+        class CustomObject:
+            def __init__(self, value: str):
+                super().__init__()
+                self.value = value
+
+            def __eq__(self, other: object) -> bool:
+                return isinstance(other, CustomObject) and self.value == other.value
+
+        item = CustomObject("test_value")
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result == item
+            assert isinstance(result, CustomObject)
+            assert result.value == "test_value"
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_exhaustible(self) -> None:
+        """Test that _single_item_stream is properly exhaustible."""
+        item = "test"
+
+        stream = _single_item_stream(item)
+
+        # First iteration should yield the item
+        first_result = await stream.__anext__()
+        assert first_result == "test"
+
+        # Second iteration should raise StopAsyncIteration
+        with pytest.raises(StopAsyncIteration):
+            await stream.__anext__()
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_multiple_iterations(self) -> None:
+        """Test that _single_item_stream can be iterated multiple times."""
+        item = "test"
+
+        # First iteration
+        stream1 = _single_item_stream(item)
+        async for result in stream1:
+            assert result == "test"
+            break
+
+        # Second iteration with new stream
+        stream2 = _single_item_stream(item)
+        async for result in stream2:
+            assert result == "test"
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_type_preservation(self) -> None:
+        """Test that _single_item_stream preserves the type of the input."""
+        # Test with different types
+        test_cases = [
+            ("string", str),
+            (123, int),
+            (45.67, float),
+            (True, bool),
+            ([1, 2, 3], list),
+            ({"key": "value"}, dict),
+            ((1, 2, 3), tuple),
+        ]
+
+        for item, expected_type in test_cases:
+            stream = _single_item_stream(item)
+            async for result in stream:
+                assert isinstance(result, expected_type)
+                assert result == item
+                break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_empty_string(self) -> None:
+        """Test _single_item_stream with empty string."""
+        item = ""
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result == ""
+            assert isinstance(result, str)
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_zero(self) -> None:
+        """Test _single_item_stream with zero value."""
+        item = 0
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result == 0
+            assert isinstance(result, int)
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_false(self) -> None:
+        """Test _single_item_stream with False boolean."""
+        item = False
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result is False
+            assert isinstance(result, bool)
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_with_empty_list(self) -> None:
+        """Test _single_item_stream with empty list."""
+        item: list[int] = []
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result == []
+            assert isinstance(result, list)
+            break
+
+    @pytest.mark.asyncio
+    async def test_single_item_stream_reference_preservation(self) -> None:
+        """Test that _single_item_stream preserves object references."""
+        item = {"mutable": "object"}
+
+        stream = _single_item_stream(item)
+
+        async for result in stream:
+            assert result is item  # Same object reference
+            assert result == item  # Same content
+            break
