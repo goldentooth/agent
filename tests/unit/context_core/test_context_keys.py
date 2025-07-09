@@ -53,12 +53,8 @@ class TestContextKeys:
         context = Context()
         context["regular_key"] = "regular_value"
 
-        # Since add_computed_property is not implemented yet, we'll simulate
-        # by directly adding to _computed_properties
-        from context.computed import ComputedProperty
-
-        computed_prop = ComputedProperty(lambda ctx: "computed_value")
-        context._computed_properties["computed_key"] = computed_prop
+        # Add computed property using public API
+        context.add_computed_property("computed_key", lambda ctx: "computed_value")
 
         keys = list(context.keys())
         assert set(keys) == {"computed_key", "regular_key"}
@@ -68,10 +64,8 @@ class TestContextKeys:
         context = Context()
         context["frame_key"] = "frame_value"
 
-        from context.computed import ComputedProperty
-
-        computed_prop = ComputedProperty(lambda ctx: "computed_value")
-        context._computed_properties["computed_key"] = computed_prop
+        # Add computed property using public API
+        context.add_computed_property("computed_key", lambda ctx: "computed_value")
 
         keys = list(context.keys())
         assert keys[0] == "computed_key"

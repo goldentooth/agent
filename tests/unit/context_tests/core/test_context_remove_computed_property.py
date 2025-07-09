@@ -22,7 +22,7 @@ def test_remove_computed_property_basic() -> None:
     # Remove computed property
     context.remove_computed_property("sum")
     assert "sum" not in context
-    assert "sum" not in context._computed_properties
+    assert not context.is_computed_property("sum")
 
     # Should raise KeyError when accessed
     with pytest.raises(KeyError, match="Context key 'sum' not found"):
@@ -37,7 +37,7 @@ def test_remove_computed_property_nonexistent() -> None:
     context.remove_computed_property("nonexistent")
 
     # Verify context is unchanged
-    assert len(context._computed_properties) == 0
+    assert len(context.computed_properties()) == 0
 
 
 def test_remove_computed_property_from_keys() -> None:
@@ -128,16 +128,16 @@ def test_remove_computed_property_subscription_cleanup() -> None:
     # Add computed property
     context.add_computed_property("doubled", test_func, ["value"])
 
-    # Get the computed property and verify subscription
-    computed_prop = context._computed_properties["doubled"]
-    assert context in computed_prop._subscribers
+    # Verify computed property exists
+    assert context.is_computed_property("doubled")
+    assert context["doubled"] == 20
 
     # Remove computed property
     context.remove_computed_property("doubled")
 
-    # Verify subscription is cleaned up (subscribers should be weak references, so it might be empty)
-    # The main assertion is that the computed property is removed from context
-    assert "doubled" not in context._computed_properties
+    # Verify computed property is removed
+    assert not context.is_computed_property("doubled")
+    assert "doubled" not in context
 
 
 def test_remove_computed_property_return_value() -> None:

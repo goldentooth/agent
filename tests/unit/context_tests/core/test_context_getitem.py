@@ -115,13 +115,11 @@ class TestContextGetitem:
         context = Context()
         context.frames[0]["key"] = "frame_value"
 
-        # Add a computed property with same key
+        # Add a computed property with same key using public API
         def compute_func(ctx: Any) -> str:
             return "computed_value"
 
-        from context.computed import ComputedProperty
-
-        context._computed_properties["key"] = ComputedProperty(compute_func)
+        context.add_computed_property("key", compute_func)
 
         # Should return computed value, not frame value
         result = context["key"]
@@ -135,9 +133,7 @@ class TestContextGetitem:
         def compute_func(ctx: Any) -> int:
             return 100
 
-        from context.computed import ComputedProperty
-
-        context._computed_properties["computed_key"] = ComputedProperty(compute_func)
+        context.add_computed_property("computed_key", compute_func)
 
         result = context["computed_key"]
         assert result == 100
@@ -244,10 +240,7 @@ class TestContextGetitem:
             call_count += 1
             return call_count * 10
 
-        from context.computed import ComputedProperty
-
-        computed_prop = ComputedProperty(counting_compute)
-        context._computed_properties["computed"] = computed_prop
+        context.add_computed_property("computed", counting_compute)
 
         # First call should compute
         result1 = context["computed"]

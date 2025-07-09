@@ -52,6 +52,14 @@ class ComputedProperty:
         self._is_cached = False
         self._cached_value = None
 
+    def is_cached(self) -> bool:
+        """Check if the property has a cached value."""
+        return self._is_cached
+
+    def get_cached_value(self) -> ContextValue:
+        """Get the cached value if available."""
+        return self._cached_value if self._is_cached else None
+
     def subscribe(self, context: Any) -> None:
         """Subscribe a context to this computed property for dependency tracking."""
         self._subscribers.add(context)

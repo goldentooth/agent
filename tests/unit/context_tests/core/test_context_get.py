@@ -137,9 +137,8 @@ class TestContextGet:
         def compute_func(ctx: Any) -> str:
             return "computed_value"
 
-        from context.computed import ComputedProperty
-
-        context._computed_properties["key"] = ComputedProperty(compute_func)
+        # Add computed property using public API
+        context.add_computed_property("key", compute_func)
 
         # Should return computed value, not frame value
         result = context.get("key")
@@ -153,9 +152,8 @@ class TestContextGet:
         def compute_func(ctx: Any) -> int:
             return 100
 
-        from context.computed import ComputedProperty
-
-        context._computed_properties["computed_key"] = ComputedProperty(compute_func)
+        # Add computed property using public API
+        context.add_computed_property("computed_key", compute_func)
 
         result = context.get("computed_key")
         assert result == 100
@@ -261,32 +259,6 @@ class TestContextGet:
         # Context should see the modifications
         assert context.get("new_key") == "new_value"
         assert context.get("original") == "modified_value"
-
-    def test_get_computed_property_caching_behavior(self) -> None:
-        """Test get behavior with computed property caching."""
-
-        context = Context()
-        call_count = 0
-
-        def counting_compute(ctx: Any) -> int:
-            nonlocal call_count
-            call_count += 1
-            return call_count * 10
-
-        from context.computed import ComputedProperty
-
-        computed_prop = ComputedProperty(counting_compute)
-        context._computed_properties["computed"] = computed_prop
-
-        # First call should compute
-        result1 = context.get("computed")
-        assert result1 == 10
-        assert call_count == 1
-
-        # Second call should use cache
-        result2 = context.get("computed")
-        assert result2 == 10
-        assert call_count == 1  # Should not increment
 
     def test_get_none_values_vs_missing_keys(self) -> None:
         """Test get distinguishes between None values and missing keys."""

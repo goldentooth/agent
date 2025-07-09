@@ -79,18 +79,20 @@ class TestContextInit:
 
         context = Context()
 
-        assert hasattr(context, "_computed_properties")
-        assert isinstance(context._computed_properties, dict)
-        assert len(context._computed_properties) == 0
+        assert hasattr(context, "_computed_properties_manager")
+        assert isinstance(
+            context._computed_properties_manager._computed_properties, dict
+        )
+        assert len(context._computed_properties_manager._computed_properties) == 0
 
     def test_init_transformations_dict(self) -> None:
         """Test initialization creates transformations dict."""
 
         context = Context()
 
-        assert hasattr(context, "_transformations")
-        assert isinstance(context._transformations, dict)
-        assert len(context._transformations) == 0
+        assert hasattr(context, "_transformations_manager")
+        assert isinstance(context._transformations_manager._transformations, dict)
+        assert len(context._transformations_manager._transformations) == 0
 
     def test_init_snapshot_manager(self) -> None:
         """Test initialization creates snapshot manager."""
@@ -112,11 +114,16 @@ class TestContextInit:
         # Should have different frames lists
         assert context1.frames is not context2.frames
 
-        # Should have different computed properties dicts
-        assert context1._computed_properties is not context2._computed_properties
+        # Should have different computed properties managers
+        assert (
+            context1._computed_properties_manager
+            is not context2._computed_properties_manager
+        )
 
-        # Should have different transformations dicts
-        assert context1._transformations is not context2._transformations
+        # Should have different transformations managers
+        assert (
+            context1._transformations_manager is not context2._transformations_manager
+        )
 
         # Should have different snapshot managers
         assert context1._snapshot_manager is not context2._snapshot_manager

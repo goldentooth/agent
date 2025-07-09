@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from .history_tracker import ContextChangeEvent
 
 from .computed import ComputedProperty, Transformation
+from .computed_properties_manager import ComputedPropertiesManager
 from .frame import ContextFrame
 from .nested_operations import (
     flatten_dict_recursive,
@@ -18,6 +19,7 @@ from .nested_operations import (
 )
 from .search_operations import find_keys_by_pattern, query_context, search_context
 from .snapshots import ContextSnapshot
+from .transformations_manager import TransformationsManager
 
 if TYPE_CHECKING:
     from .snapshot_manager import SnapshotManager
@@ -48,9 +50,9 @@ class Context:
         else:
             self.frames = frames
 
-        # Computed properties and transformations
-        self._computed_properties: dict[str, ComputedProperty] = {}
-        self._transformations: dict[str, list[Transformation]] = {}
+        # Computed properties and transformations managers
+        self._computed_properties_manager = ComputedPropertiesManager()
+        self._transformations_manager = TransformationsManager()
 
         # History tracking for change events
         self._history_tracker: HistoryTracker = HistoryTracker()
@@ -69,8 +71,10 @@ class Context:
             The value for the key, or the default value if not found
         """
         # Check if it's a computed property first
-        if key in self._computed_properties:
-            computed_value = self._computed_properties[key].compute(self)
+        if self._computed_properties_manager.is_computed_property(key):
+            computed_value = self._computed_properties_manager.get_computed_value(
+                key, self
+            )
             return computed_value
 
         # Search through frames in reverse order (top to bottom)
@@ -93,8 +97,8 @@ class Context:
             KeyError: If the key is not found in any frame or computed property
         """
         # Check if it's a computed property first
-        if key in self._computed_properties:
-            return self._computed_properties[key].compute(self)
+        if self._computed_properties_manager.is_computed_property(key):
+            return self._computed_properties_manager.get_computed_value(key, self)
 
         # Search through frames in reverse order (top to bottom)
         for frame in reversed(self.frames):
@@ -113,13 +117,15 @@ class Context:
         old_value = self.get(key, None)
 
         # Apply transformations if any exist for this key
-        transformed_value = self._apply_transformations(key, value)
+        transformed_value = self._transformations_manager.apply_transformations(
+            key, value
+        )
 
         # Set transformed value in the current (last) frame
         self.frames[-1][key] = transformed_value
 
         # Record the change in history
-        self._record_change(key, old_value, transformed_value)
+        self._history_tracker.record_change(key, old_value, transformed_value, id(self))
 
     def __setitem__(self, key: str, value: ContextValue) -> None:
         """Set a value for a key in the current frame.
@@ -141,7 +147,7 @@ class Context:
             True if the key exists in any frame or as a computed property, False otherwise
         """
         # Check computed properties first
-        if key in self._computed_properties:
+        if self._computed_properties_manager.is_computed_property(key):
             return True
 
         # Check frames
@@ -169,16 +175,11 @@ class Context:
         # Create new context with deep copies of all frames
         forked = Context([frame.copy() for frame in self.frames])
 
-        # Copy computed properties
-        for key, computed_prop in self._computed_properties.items():
-            forked.add_computed_property(
-                key, computed_prop.func, computed_prop.dependencies
-            )
-
-        # Copy transformations
-        for key, transformations in self._transformations.items():
-            for transformation in transformations:
-                forked.add_transformation(key, transformation.func)
+        # Copy computed properties and transformations using managers
+        self._computed_properties_manager.copy_to_manager(
+            forked._computed_properties_manager
+        )
+        self._transformations_manager.copy_to_manager(forked._transformations_manager)
 
         return forked
 
@@ -253,14 +254,14 @@ class Context:
             self_keys.update(frame.keys())
 
         # Add computed property keys
-        self_keys.update(self._computed_properties.keys())
+        self_keys.update(self._computed_properties_manager.get_keys())
 
         # Collect all keys that exist in other
         for frame in other.frames:
             other_keys.update(frame.keys())
 
         # Add computed property keys from other
-        other_keys.update(other._computed_properties.keys())
+        other_keys.update(other._computed_properties_manager.get_keys())
 
         # Find added keys (in other but not in self)
         added_keys = other_keys - self_keys
@@ -601,7 +602,7 @@ class Context:
         seen: set[str] = set()
 
         # First yield computed properties
-        for k in self._computed_properties:
+        for k in self._computed_properties_manager.get_keys():
             if k not in seen:
                 yield k
                 seen.add(k)
@@ -623,14 +624,9 @@ class Context:
             func: Function that computes the value, takes Context as parameter
             dependencies: List of context keys this property depends on. If None, will track automatically.
         """
-        # Create the computed property
-        computed_prop = ComputedProperty(func, dependencies)
-
-        # Subscribe this context to the computed property for dependency tracking
-        computed_prop.subscribe(self)
-
-        # Store the computed property
-        self._computed_properties[key] = computed_prop
+        self._computed_properties_manager.add_computed_property(
+            key, func, dependencies, self
+        )
 
     def remove_computed_property(self, key: str) -> None:
         """Remove a computed property from the context.
@@ -638,11 +634,7 @@ class Context:
         Args:
             key: The key of the computed property to remove
         """
-        if key not in self._computed_properties:
-            return
-
-        # Remove the computed property
-        del self._computed_properties[key]
+        self._computed_properties_manager.remove_computed_property(key)
 
     def get_computed_value(self, key: str) -> Any:
         """Get the value of a computed property.
@@ -656,10 +648,7 @@ class Context:
         Raises:
             KeyError: If the key is not a computed property
         """
-        if key not in self._computed_properties:
-            raise KeyError(f"No computed property found for key: {key}")
-
-        return self._computed_properties[key].compute(self)
+        return self._computed_properties_manager.get_computed_value(key, self)
 
     def is_computed_property(self, key: str) -> bool:
         """Check if a key represents a computed property.
@@ -670,7 +659,7 @@ class Context:
         Returns:
             True if the key is a computed property, False otherwise
         """
-        return key in self._computed_properties
+        return self._computed_properties_manager.is_computed_property(key)
 
     def computed_properties(self) -> dict[str, ComputedProperty]:
         """Get all computed properties in this context.
@@ -678,7 +667,7 @@ class Context:
         Returns:
             Dictionary mapping property names to ComputedProperty objects (copy)
         """
-        return self._computed_properties.copy()
+        return self._computed_properties_manager.get_all_properties()
 
     def add_transformation(self, key: str, func: TransformFunction) -> None:
         """Add a value transformation for a specific key.
@@ -687,11 +676,7 @@ class Context:
             key: The context key to apply transformation to
             func: Function that transforms the value
         """
-        if key not in self._transformations:
-            self._transformations[key] = []
-
-        transformation = Transformation(func, key)
-        self._transformations[key].append(transformation)
+        self._transformations_manager.add_transformation(key, func)
 
     def remove_transformations(self, key: str) -> None:
         """Remove all transformations for a specific key.
@@ -699,8 +684,7 @@ class Context:
         Args:
             key: The context key to remove transformations from
         """
-        if key in self._transformations:
-            del self._transformations[key]
+        self._transformations_manager.remove_transformations(key)
 
     def transformations(self) -> dict[str, list[Transformation]]:
         """Get all transformations in this context.
@@ -708,7 +692,7 @@ class Context:
         Returns:
             Dictionary mapping context keys to lists of transformations (copy)
         """
-        return {k: v.copy() for k, v in self._transformations.items()}
+        return self._transformations_manager.get_all_transformations()
 
     def query(
         self,
@@ -894,18 +878,6 @@ class Context:
         """
         return f"<Context frames={len(self.frames)} keys={list(self.keys())}>"
 
-    def _record_change(
-        self, key: str, old_value: ContextValue, new_value: ContextValue
-    ) -> None:
-        """Record a change event in the history.
-
-        Args:
-            key: The key that was changed
-            old_value: The previous value (None if key was new)
-            new_value: The new value (None if key was deleted)
-        """
-        self._history_tracker.record_change(key, old_value, new_value, id(self))
-
     def _emit_change_event(
         self, key: str, new_value: ContextValue, old_value: ContextValue
     ) -> None:
@@ -923,61 +895,3 @@ class Context:
         # Flow-independent implementation - no events are emitted
         # This provides the interface that will be enhanced in context_flow package
         pass
-
-    def _apply_transformations(self, key: str, value: ContextValue) -> ContextValue:
-        """Apply all transformations for a given key to the value.
-
-        Args:
-            key: The key whose transformations should be applied
-            value: The value to transform
-
-        Returns:
-            The transformed value, or original value if no transformations exist
-            or if all transformations fail
-        """
-        if key not in self._transformations:
-            return value
-
-        transformed_value = value
-        for transformation in self._transformations[key]:
-            try:
-                transformed_value = transformation.apply(transformed_value)
-            except Exception:
-                # If transformation fails, use the current value and continue
-                pass
-
-        return transformed_value
-
-    def _invalidate_dependent_computed_properties(self, key: str) -> None:
-        """Invalidate computed properties that depend on the given key.
-
-        Args:
-            key: The key that was changed, whose dependents should be invalidated
-        """
-        # For now, this is a stub implementation
-        # In a full implementation, this would use a dependency graph to find
-        # computed properties that depend on the given key and invalidate them
-        pass
-
-    def _handle_computed_property_change(self, computed_prop: ComputedProperty) -> None:
-        """Handle when a computed property has changed.
-
-        Args:
-            computed_prop: The computed property that has changed
-        """
-        # Find the key for this computed property and emit change event
-        for key, prop in self._computed_properties.items():
-            if prop is computed_prop:
-                # Get the old cached value if it exists
-                # Note: We use None as old_value since accessing _cached_value would require
-                # accessing private members. This is acceptable for the stub implementation.
-                old_value = None
-                # Invalidate the cache to force recomputation
-                prop.invalidate()
-                # Compute the new value
-                new_value = prop.compute(self)
-                # Emit change event
-                self._emit_change_event(key, new_value, old_value)
-                # Invalidate any computed properties that depend on this one
-                self._invalidate_dependent_computed_properties(key)
-                break
