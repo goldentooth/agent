@@ -21,6 +21,7 @@
       "Bash(gh:*)",
       "Bash(git add:*)",
       "Bash(git checkout:*)",
+      "Bash(git commit)",
       "Bash(git commit -F:*)",
       "Bash(git mv:*)",
       "Bash(goldentooth-agent:*)",
