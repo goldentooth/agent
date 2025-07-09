@@ -462,3 +462,76 @@ class ContextFlowCombinators:
                 yield cast(T, value)
 
         return Flow(_require_key_flow, name=f"require_key({key.path})")
+
+    @staticmethod
+    def optional_key(key: "ContextKey[T]") -> "Flow[Context, T | None]":
+        """Create a Flow that extracts an optional value from a context key.
+
+        This method creates a Flow that takes a Context as input and yields
+        the value associated with the given key, or None if the key is missing.
+        Unlike get_key (which can accept a default) and require_key (which always
+        raises an error), this method always returns None for missing keys.
+
+        Args:
+            key: The ContextKey to extract from the context. Must be a typed
+                ContextKey[T] instance that specifies the expected type.
+
+        Returns:
+            A Flow[Context, T | None] that extracts the key value from contexts
+            or yields None if the key is missing.
+
+        Raises:
+            ContextTypeMismatchError: If the key exists but the value doesn't
+                match the expected type specified in the ContextKey.
+
+        Example:
+            ```python
+            from context.key import ContextKey
+            from context.main import Context
+
+            # Create a typed context key
+            name_key = ContextKey("user.name", str, "User's name")
+
+            # Create a flow to extract the optional key
+            optional_name_flow = ContextFlowCombinators.optional_key(name_key)
+
+            # Use the flow with existing key
+            context = Context()
+            context["user.name"] = "Alice"
+            result = run_flow_with_input(optional_name_flow, context)
+            # result is "Alice"
+
+            # Use the flow with missing key
+            empty_context = Context()
+            result = run_flow_with_input(optional_name_flow, empty_context)
+            # result is None
+            ```
+        """
+        from flowengine.flow import Flow
+
+        async def _optional_key_flow(
+            stream: AsyncGenerator["Context", None]
+        ) -> AsyncGenerator[T | None, None]:
+            """Internal flow implementation for optional key extraction."""
+            async for context in stream:
+                # Check if key exists in context
+                if key.path not in context:
+                    yield None
+                    continue
+
+                # Get the value from context
+                value = context[key.path]
+
+                # Validate type if key has type specification
+                if not isinstance(value, key.type_):
+                    actual_type = type(value).__name__
+                    expected_type = key.type_.__name__
+                    raise ContextTypeMismatchError(
+                        f"Context key '{key.path}' expected {expected_type}, "
+                        + f"got {actual_type}"
+                    )
+
+                # Type cast and yield the value
+                yield cast(T, value)
+
+        return Flow(_optional_key_flow, name=f"optional_key({key.path})")
