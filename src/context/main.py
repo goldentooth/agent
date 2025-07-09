@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import re
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterator, Set, cast
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterator, Set, cast
 
 if TYPE_CHECKING:
     from .history_tracker import ContextChangeEvent
@@ -18,6 +19,8 @@ if TYPE_CHECKING:
 # Type aliases for context system
 ContextValue = Any
 TransformFunction = Any
+ContextData = dict[str, Any]
+ValuePredicate = Any
 
 
 class Context:
@@ -696,3 +699,60 @@ class Context:
             Dictionary mapping context keys to lists of transformations (copy)
         """
         return {k: v.copy() for k, v in self._transformations.items()}
+
+    def query(
+        self,
+        pattern: str | None = None,
+        key_filter: Callable[[str], bool] | None = None,
+        value_filter: ValuePredicate | None = None,
+        include_computed: bool = True,
+    ) -> ContextData:
+        """Query the context with flexible filtering options.
+
+        Args:
+            pattern: Regex pattern to match against context keys
+            key_filter: Function to filter keys based on custom logic
+            value_filter: Function to filter values
+            include_computed: Whether to include computed properties in results
+
+        Returns:
+            Dictionary of filtered key-value pairs
+        """
+        result: ContextData = {}
+
+        # Compile regex pattern if provided
+        compiled_pattern = None
+        if pattern is not None:
+            try:
+                compiled_pattern = re.compile(pattern)
+            except re.error:
+                # Invalid regex pattern, return empty result
+                return result
+
+        # Iterate through all context keys
+        for key in self.keys():
+            # Skip computed properties if not included
+            if not include_computed and self.is_computed_property(key):
+                continue
+
+            # Apply pattern filter
+            if compiled_pattern is not None and not compiled_pattern.search(key):
+                continue
+
+            # Apply key filter
+            if key_filter is not None and not key_filter(key):
+                continue
+
+            # Get value and apply value filter
+            try:
+                value = self.get(key)
+                if value_filter is not None and not value_filter(value):
+                    continue
+
+                # Key passed all filters, include in result
+                result[key] = value
+            except Exception:
+                # Skip keys that can't be accessed
+                continue
+
+        return result
