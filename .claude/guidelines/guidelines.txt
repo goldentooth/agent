@@ -50,12 +50,6 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
 5. **NEVER IGNORE** - There are NO warnings, only requirements
 
 ## The Guidelines
-- When you prepare a commit, DO NOT use the `-m` option and do not write the message inline.
-  - DO NOT use multiline `cat` commands and HEREDOCs to write commit messages, because then I have to approve it.
-  - Instead:
-    - create a directory via `mktemp -d`
-    - use the Write tool to write the commit message to a file within that directory
-    - create the commit using that message file with `git commit -F`
 - Each function/method MUST be in its own commit even if the code already exists. No exceptions!
 - Update README.md and relevant files in docs/ before opening a pull request.
 - Maintain a file in .claude/retros/<initiative-name.md> for each task (i.e. pull request) that you end up performing.
@@ -63,6 +57,7 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
   - These will be used to create followup issues, so make them detailed!
 - Prefer defining functions (or reusing them!) to using Lambdas, particularly when encountering type-checking issues.
 - Do not do "stub implementations"; whatever functionality exists must be production-ready 100% of the time.
+- If you go to commit your changes and find an unexpected file has been modified, go ahead and include that in the commit.
 
 ## Package Migration Guidelines
 

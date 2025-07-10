@@ -32,7 +32,13 @@ dependencies = [
 scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
 
 [tool.poetry]
-packages = [{ include = "*", from = "src" }]
+packages = [
+    { include = "context", from = "src" },
+    { include = "context_flow", from = "src" },
+    { include = "flowengine", from = "src" },
+    { include = "git_hooks", from = "src" },
+    { include = "goldentooth_agent", from = "src" },
+]
 include = []
 
 
