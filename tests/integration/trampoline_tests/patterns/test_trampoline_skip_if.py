@@ -112,31 +112,15 @@ class TestTrampolineFlowCombinatorsSkipIf:
 
     def test_skip_if_context_based_predicate(self) -> None:
         """Test skip_if with context-based predicate logic."""
-        from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
 
         # Create flows using helper method
         predicate, process_flow = self._create_cache_flows()
         skip_flow = TrampolineFlowCombinators.skip_if(predicate, process_flow)
 
-        # Test case 1: status="cached" -> predicate=True -> SKIP execution
-        context1 = Context()
-        context1["status"] = "cached"
-        result1 = run_flow_with_input(skip_flow, context1)
-
-        # Should skip processing, return original context unchanged
-        assert result1["status"] == "cached"
-        assert "value" not in result1  # No processing occurred
-        assert "processed" not in result1
-
-        # Test case 2: status="pending" -> predicate=False -> EXECUTE flow
-        context2 = Context()
-        context2["status"] = "pending"
-        result2 = run_flow_with_input(skip_flow, context2)
-
-        # Should execute processing
-        assert result2["value"] == "processed_value"
-        assert result2["processed"] is True
+        # Test both skip and execute cases
+        self._test_skip_case(skip_flow)
+        self._test_execute_case(skip_flow)
 
     def test_skip_if_preserves_context_data(self) -> None:
         """Test that skip_if preserves existing context data in both cases."""
@@ -507,3 +491,28 @@ class TestTrampolineFlowCombinatorsSkipIf:
                 import gc
 
                 gc.collect()
+
+    def _test_skip_case(self, skip_flow: Any) -> None:
+        """Test case where predicate=True, should skip execution."""
+        from context_flow.integration import run_flow_with_input
+
+        context = Context()
+        context["status"] = "cached"
+        result = run_flow_with_input(skip_flow, context)
+
+        # Should skip processing, return original context unchanged
+        assert result["status"] == "cached"
+        assert "value" not in result  # No processing occurred
+        assert "processed" not in result
+
+    def _test_execute_case(self, skip_flow: Any) -> None:
+        """Test case where predicate=False, should execute flow."""
+        from context_flow.integration import run_flow_with_input
+
+        context = Context()
+        context["status"] = "pending"
+        result = run_flow_with_input(skip_flow, context)
+
+        # Should execute processing
+        assert result["value"] == "processed_value"
+        assert result["processed"] is True

@@ -4,18 +4,18 @@ from typing import Any
 
 import pytest
 
-from context_flow.trampoline import _async_iter_from_item, extend_flow_with_trampoline
+from context_flow.trampoline import async_iter_from_item, extend_flow_with_trampoline
 
 
 class TestAsyncIterFromItem:
-    """Test cases for _async_iter_from_item utility function."""
+    """Test cases for async_iter_from_item utility function."""
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_basic_functionality(self) -> None:
-        """Test that _async_iter_from_item creates an async iterator from a single item."""
+    async def testasync_iter_from_item_basic_functionality(self) -> None:
+        """Test that async_iter_from_item creates an async iterator from a single item."""
         # Test with string item
         item = "test_value"
-        async_iter = _async_iter_from_item(item)
+        async_iter = async_iter_from_item(item)
 
         # Collect all items from the iterator
         items: list[object] = []
@@ -27,8 +27,8 @@ class TestAsyncIterFromItem:
         assert items[0] == "test_value"
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_with_different_types(self) -> None:
-        """Test that _async_iter_from_item works with different data types."""
+    async def testasync_iter_from_item_with_different_types(self) -> None:
+        """Test that async_iter_from_item works with different data types."""
         # Test with integer
         await self._test_async_iter_with_integer()
 
@@ -39,9 +39,9 @@ class TestAsyncIterFromItem:
         await self._test_async_iter_with_dict()
 
     async def _test_async_iter_with_integer(self) -> None:
-        """Test _async_iter_from_item with integer type."""
+        """Test async_iter_from_item with integer type."""
         item = 42
-        async_iter = _async_iter_from_item(item)
+        async_iter = async_iter_from_item(item)
 
         items: list[object] = []
         async for value in async_iter:
@@ -52,9 +52,9 @@ class TestAsyncIterFromItem:
         assert isinstance(items[0], int)
 
     async def _test_async_iter_with_list(self) -> None:
-        """Test _async_iter_from_item with list type."""
+        """Test async_iter_from_item with list type."""
         item = [1, 2, 3]
-        async_iter = _async_iter_from_item(item)
+        async_iter = async_iter_from_item(item)
 
         items: list[object] = []
         async for value in async_iter:
@@ -65,9 +65,9 @@ class TestAsyncIterFromItem:
         assert isinstance(items[0], list)
 
     async def _test_async_iter_with_dict(self) -> None:
-        """Test _async_iter_from_item with dict type."""
+        """Test async_iter_from_item with dict type."""
         item = {"key": "value", "count": 1}
-        async_iter = _async_iter_from_item(item)
+        async_iter = async_iter_from_item(item)
 
         items: list[object] = []
         async for value in async_iter:
@@ -78,10 +78,10 @@ class TestAsyncIterFromItem:
         assert isinstance(items[0], dict)
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_with_none(self) -> None:
-        """Test that _async_iter_from_item works with None value."""
+    async def testasync_iter_from_item_with_none(self) -> None:
+        """Test that async_iter_from_item works with None value."""
         item = None
-        async_iter = _async_iter_from_item(item)
+        async_iter = async_iter_from_item(item)
 
         items: list[object] = []
         async for value in async_iter:
@@ -91,8 +91,8 @@ class TestAsyncIterFromItem:
         assert items[0] is None
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_with_custom_objects(self) -> None:
-        """Test that _async_iter_from_item works with custom objects."""
+    async def testasync_iter_from_item_with_custom_objects(self) -> None:
+        """Test that async_iter_from_item works with custom objects."""
 
         # Create a custom class
         class TestObject:
@@ -110,7 +110,7 @@ class TestAsyncIterFromItem:
 
         # Test with custom object
         test_obj = TestObject("test", 123)
-        async_iter = _async_iter_from_item(test_obj)
+        async_iter = async_iter_from_item(test_obj)
 
         items: list[object] = []
         async for value in async_iter:
@@ -123,10 +123,10 @@ class TestAsyncIterFromItem:
         assert items[0].value == 123
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_iterator_protocol(self) -> None:
-        """Test that _async_iter_from_item returns proper async iterator."""
+    async def testasync_iter_from_item_iterator_protocol(self) -> None:
+        """Test that async_iter_from_item returns proper async iterator."""
         item = "test"
-        async_iter = _async_iter_from_item(item)
+        async_iter = async_iter_from_item(item)
 
         # Check that it has async iterator methods
         assert hasattr(async_iter, "__aiter__")
@@ -136,10 +136,10 @@ class TestAsyncIterFromItem:
         assert async_iter.__aiter__() is async_iter
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_single_consumption(self) -> None:
-        """Test that _async_iter_from_item can only be consumed once."""
+    async def testasync_iter_from_item_single_consumption(self) -> None:
+        """Test that async_iter_from_item can only be consumed once."""
         item = "test_value"
-        async_iter = _async_iter_from_item(item)
+        async_iter = async_iter_from_item(item)
 
         # First consumption
         items1 = []
@@ -157,8 +157,8 @@ class TestAsyncIterFromItem:
         assert len(items2) == 0
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_with_context_objects(self) -> None:
-        """Test that _async_iter_from_item works with Context objects."""
+    async def testasync_iter_from_item_with_context_objects(self) -> None:
+        """Test that async_iter_from_item works with Context objects."""
         from context.main import Context
 
         # Create a context object
@@ -166,7 +166,7 @@ class TestAsyncIterFromItem:
         context["test_key"] = "test_value"
         context["count"] = 42
 
-        async_iter = _async_iter_from_item(context)
+        async_iter = async_iter_from_item(context)
 
         items: list[object] = []
         async for value in async_iter:
@@ -179,12 +179,12 @@ class TestAsyncIterFromItem:
         assert items[0]["count"] == 42
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_memory_efficiency(self) -> None:
-        """Test that _async_iter_from_item doesn't unnecessarily copy data."""
+    async def testasync_iter_from_item_memory_efficiency(self) -> None:
+        """Test that async_iter_from_item doesn't unnecessarily copy data."""
         # Create a large-ish object to test memory efficiency
         large_list = list(range(1000))
 
-        async_iter = _async_iter_from_item(large_list)
+        async_iter = async_iter_from_item(large_list)
 
         items: list[object] = []
         async for value in async_iter:
@@ -195,10 +195,10 @@ class TestAsyncIterFromItem:
         assert items[0] is large_list
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_with_async_break(self) -> None:
-        """Test that _async_iter_from_item works with early break."""
+    async def testasync_iter_from_item_with_async_break(self) -> None:
+        """Test that async_iter_from_item works with early break."""
         item = "test_value"
-        async_iter = _async_iter_from_item(item)
+        async_iter = async_iter_from_item(item)
 
         # Break after first item (which should be the only item anyway)
         items: list[object] = []
@@ -217,10 +217,10 @@ class TestAsyncIterFromItem:
         assert len(additional_items) == 0
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_exception_handling(self) -> None:
-        """Test that _async_iter_from_item properly handles exceptions."""
+    async def testasync_iter_from_item_exception_handling(self) -> None:
+        """Test that async_iter_from_item properly handles exceptions."""
         item = "test_value"
-        async_iter = _async_iter_from_item(item)
+        async_iter = async_iter_from_item(item)
 
         # Test that exceptions during iteration are properly propagated
         with pytest.raises(ValueError, match="test exception"):
@@ -229,13 +229,13 @@ class TestAsyncIterFromItem:
                 raise ValueError("test exception")
 
     @pytest.mark.asyncio
-    async def test_async_iter_from_item_multiple_iterators(self) -> None:
-        """Test that each call to _async_iter_from_item creates independent iterators."""
+    async def testasync_iter_from_item_multiple_iterators(self) -> None:
+        """Test that each call to async_iter_from_item creates independent iterators."""
         item = "shared_value"
 
         # Create two independent iterators
-        iter1 = _async_iter_from_item(item)
-        iter2 = _async_iter_from_item(item)
+        iter1 = async_iter_from_item(item)
+        iter2 = async_iter_from_item(item)
 
         # They should be different objects
         assert iter1 is not iter2
