@@ -668,8 +668,65 @@ This retrospective tracks the migration of the Context system from `old/goldento
 - Coverage configuration may need adjustment for migration phase
 - Import patterns should be consistent across all packages
 
+### Commit #138: TrampolineFlowCombinators.check_should_break method
+- **Date**: 2025-07-10
+- **Files Modified**:
+  - `src/context_flow/trampoline.py` - Added check_should_break method
+  - `tests/integration/test_trampoline_check_should_break.py` - Created comprehensive test file
+- **Implementation Details**:
+  - Creates Flow that checks SHOULD_BREAK_KEY in context and returns boolean value
+  - Uses ContextFlowCombinators.get_key() internally with False default
+  - Follows exact same pattern as check_should_exit method
+  - Returns Flow[Context, bool] for type safety
+  - Wrapper flow ensures bool return type with proper type casting
+  - Comprehensive documentation with usage examples
+- **Test Coverage**: 100% coverage of check_should_break method (14 test cases)
+- **Test Cases Cover**:
+  - Basic import verification and method signature checking
+  - Flag true/false/missing scenarios with proper return values
+  - Context preservation during flow execution
+  - Static method behavior verification
+  - Flow composition with other flows (set_should_break >> check_should_break)
+  - Multiple execution scenarios
+  - Documentation and naming verification
+  - Type consistency (always returns boolean)
+  - Error handling with empty contexts
+  - Comprehensive edge case testing
+- **Pre-commit Status**: All hooks passed ✅
+- **Challenges**: None - straightforward implementation following established pattern
+- **Key Learning**: Consistent patterns across similar methods simplify implementation and testing
+
+### Commit #139: TrampolineFlowCombinators.check_should_skip method
+- **Date**: 2025-07-10
+- **Files Modified**:
+  - `src/context_flow/trampoline.py` - Added check_should_skip method
+  - `tests/integration/test_trampoline_check_should_skip.py` - Created comprehensive test file
+- **Implementation Details**:
+  - Creates Flow that checks SHOULD_SKIP_KEY in context and returns boolean value
+  - Uses ContextFlowCombinators.get_key() internally with False default
+  - Follows exact same pattern as check_should_exit and check_should_break methods
+  - Returns Flow[Context, bool] for type safety
+  - Wrapper flow ensures bool return type with proper type casting
+  - Used by trampoline loops to determine whether to skip operations
+  - Comprehensive documentation with usage examples
+- **Test Coverage**: 100% coverage of check_should_skip method (14 test cases)
+- **Test Cases Cover**:
+  - Basic import verification and method signature checking
+  - Flag true/false/missing scenarios with proper return values
+  - Context preservation during flow execution
+  - Static method behavior verification
+  - Flow composition with other flows (set_should_skip >> check_should_skip)
+  - Multiple execution scenarios
+  - Documentation and naming verification
+  - Type consistency (always returns boolean)
+  - Error handling with empty contexts
+  - Comprehensive edge case testing
+- **Pre-commit Status**: All hooks passed ✅
+- **Challenges**: None - straightforward implementation following established pattern
+- **Key Learning**: Consistent patterns across similar methods enable rapid implementation
+
 ## Next Steps
-1. Continue with Commit #7: ContextKey.__str__ method
+1. Continue with Commit #140: TrampolineFlowCombinators.clear_break_flag method
 2. Maintain one function per commit approach
-3. Monitor test collection performance as more files are added
-4. Remember to add explicit type annotations in tests for Pyright
+3. Follow established patterns for trampoline flow combinators
+4. Continue with Phase 2 context-flow integration package
