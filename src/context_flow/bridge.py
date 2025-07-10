@@ -387,6 +387,43 @@ class ContextFlowBridge:
         # Return a copy to prevent external modification
         return dict(self._protocols[name])
 
+    def list_protocols(self) -> list[str]:
+        """List all registered protocol names.
+
+        This method returns a list of all protocol names that have been registered
+        with the bridge via register_protocol(). The returned list is sorted
+        alphabetically and is a copy that can be safely modified without affecting
+        the bridge's internal protocol registry.
+
+        Returns:
+            A sorted list of protocol names currently registered with the bridge
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+
+            bridge = ContextFlowBridge()
+
+            # Register some protocols
+            bridge.register_protocol("integration_v1", "1.0", {"features": "basic"})
+            bridge.register_protocol("advanced_flow", "2.0", {"features": "full"})
+
+            # Get all protocol names
+            protocols = bridge.list_protocols()
+            # Returns: ["advanced_flow", "integration_v1"]
+
+            # Safe to modify returned list
+            protocols.append("custom_protocol")  # Does not affect bridge registry
+            ```
+
+        Note:
+            The returned list is a copy of the internal protocol registry keys,
+            sorted alphabetically for consistent ordering. Modifying the returned
+            list does not affect the bridge's internal protocol registry.
+        """
+        # Return sorted list of protocol names as a copy
+        return sorted(list(self._protocols.keys()))
+
     def register_trampoline_support(self) -> None:
         """Register trampoline support with the bridge."""
         # Placeholder for trampoline registration

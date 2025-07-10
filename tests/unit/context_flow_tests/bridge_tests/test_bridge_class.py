@@ -1,6 +1,12 @@
 """Tests for context_flow.bridge ContextFlowBridge class methods."""
 
+from __future__ import annotations
+
 import inspect
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from context_flow.bridge import ContextFlowBridge
 
 
 class TestContextFlowBridgeInit:
@@ -609,4 +615,175 @@ class TestContextFlowBridgeGetProtocol:
         # Docstring should describe the method purpose
         docstring = bridge.get_protocol.__doc__.lower()
         assert "get" in docstring or "retrieve" in docstring
+        assert "protocol" in docstring
+
+
+class TestContextFlowBridgeListProtocols:
+    """Test cases for ContextFlowBridge.list_protocols method."""
+
+    def test_list_protocols_import(self) -> None:
+        """Test that list_protocols method exists and is callable."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should exist and be callable
+        assert hasattr(bridge, "list_protocols")
+        assert callable(getattr(bridge, "list_protocols"))
+
+    def test_list_protocols_empty_registry(self) -> None:
+        """Test that list_protocols returns empty list for empty registry."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Should return empty list when no protocols registered
+        protocols = bridge.list_protocols()
+        assert isinstance(protocols, list)
+        assert len(protocols) == 0
+
+    def test_list_protocols_single_protocol(self) -> None:
+        """Test that list_protocols returns single protocol correctly."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register a single protocol
+        bridge.register_protocol("test_protocol", "1.0", {"feature": "test"})
+
+        # Should return list with single protocol name
+        protocols = bridge.list_protocols()
+        assert isinstance(protocols, list)
+        assert len(protocols) == 1
+        assert "test_protocol" in protocols
+
+    def test_list_protocols_multiple_protocols(self) -> None:
+        """Test that list_protocols returns all registered protocols."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register multiple protocols
+        bridge.register_protocol("protocol_a", "1.0", {"type": "flow"})
+        bridge.register_protocol("protocol_b", "2.0", {"type": "context"})
+        bridge.register_protocol("protocol_c", "1.5", {"type": "integration"})
+
+        # Should return all protocol names
+        protocols = bridge.list_protocols()
+        assert isinstance(protocols, list)
+        assert len(protocols) == 3
+        assert "protocol_a" in protocols
+        assert "protocol_b" in protocols
+        assert "protocol_c" in protocols
+
+    def test_list_protocols_returns_copy(self) -> None:
+        """Test that list_protocols returns a copy that can be safely modified."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register protocols
+        bridge.register_protocol("protocol_1", "1.0", {"type": "test"})
+        bridge.register_protocol("protocol_2", "2.0", {"type": "test"})
+
+        # Get protocol list and modify it
+        protocols = bridge.list_protocols()
+        original_length = len(protocols)
+        protocols.append("fake_protocol")
+        protocols.remove("protocol_1")
+
+        # Original registry should be unchanged
+        protocols_again = bridge.list_protocols()
+        assert len(protocols_again) == original_length
+        assert "protocol_1" in protocols_again
+        assert "protocol_2" in protocols_again
+        assert "fake_protocol" not in protocols_again
+
+    def test_list_protocols_sorted_order(self) -> None:
+        """Test that list_protocols returns protocols in sorted order."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register protocols in non-alphabetical order
+        bridge.register_protocol("zebra_protocol", "1.0", {})
+        bridge.register_protocol("alpha_protocol", "1.0", {})
+        bridge.register_protocol("beta_protocol", "1.0", {})
+
+        # Should return protocols in sorted order
+        protocols = bridge.list_protocols()
+        expected_order = ["alpha_protocol", "beta_protocol", "zebra_protocol"]
+        assert protocols == expected_order
+
+    def test_list_protocols_after_updates(self) -> None:
+        """Test that list_protocols reflects protocol registry updates."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Initially empty
+        assert len(bridge.list_protocols()) == 0
+
+        # Test adding first protocol
+        self._test_add_first_protocol(bridge)
+
+        # Test adding second protocol
+        self._test_add_second_protocol(bridge)
+
+        # Test updating existing protocol
+        self._test_update_existing_protocol(bridge)
+
+    def _test_add_first_protocol(self, bridge: "ContextFlowBridge") -> None:
+        """Test adding first protocol to registry."""
+        bridge.register_protocol("test_protocol", "1.0", {})
+        protocols = bridge.list_protocols()
+        assert len(protocols) == 1
+        assert "test_protocol" in protocols
+
+    def _test_add_second_protocol(self, bridge: "ContextFlowBridge") -> None:
+        """Test adding second protocol to registry."""
+        bridge.register_protocol("another_protocol", "2.0", {})
+        protocols = bridge.list_protocols()
+        assert len(protocols) == 2
+        assert "test_protocol" in protocols
+        assert "another_protocol" in protocols
+
+    def _test_update_existing_protocol(self, bridge: "ContextFlowBridge") -> None:
+        """Test updating existing protocol (should not change list)."""
+        bridge.register_protocol("test_protocol", "1.1", {"updated": "true"})
+        protocols = bridge.list_protocols()
+        assert len(protocols) == 2
+        assert "test_protocol" in protocols
+        assert "another_protocol" in protocols
+
+    def test_list_protocols_type_annotations(self) -> None:
+        """Test that list_protocols has proper type annotations."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Get method signature
+        signature = inspect.signature(bridge.list_protocols)
+
+        # Should have no parameters except self
+        params = list(signature.parameters.keys())
+        assert len(params) == 0  # Only self, which is not in signature.parameters
+
+        # Should have return annotation
+        assert signature.return_annotation is not None
+        assert "list" in str(signature.return_annotation).lower()
+
+    def test_list_protocols_documentation(self) -> None:
+        """Test that list_protocols has proper documentation."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should have docstring
+        assert bridge.list_protocols.__doc__ is not None
+        assert len(bridge.list_protocols.__doc__.strip()) > 0
+
+        # Docstring should describe the method purpose
+        docstring = bridge.list_protocols.__doc__.lower()
+        assert "list" in docstring or "get" in docstring
         assert "protocol" in docstring
