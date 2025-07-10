@@ -6,7 +6,7 @@ between Context and Flow systems while enabling full integration.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     pass
@@ -463,3 +463,60 @@ class ContextFlowBridge:
         """
         # Ensure trampoline context keys are registered
         self.ensure_context_keys()
+
+    def _create_set_exit_method(self) -> Callable[[Any, Any, bool], None]:
+        """Create method for setting exit signal in context.
+
+        This method creates a callable function that can be used to set the exit
+        signal in a context instance. The exit signal is used by trampoline
+        execution patterns to indicate that execution should terminate early.
+
+        Returns:
+            A callable function that accepts (self, context, value) parameters
+            and sets the exit signal in the provided context instance
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+            from context.main import Context
+
+            bridge = ContextFlowBridge()
+            bridge.register_trampoline_support()
+
+            # Get the exit setter method
+            set_exit = bridge._create_set_exit_method()
+
+            # Use with a context instance
+            context = Context()
+            set_exit(None, context, True)  # Set exit signal
+
+            # Check if exit was signaled
+            exit_key = bridge.get_trampoline_key("should_exit")
+            should_exit = context.get(exit_key, False)
+            ```
+
+        Note:
+            This method returns a function that can be used to set the exit
+            signal in any context instance. The returned function follows the
+            pattern expected by Flow system method registration, accepting
+            a self parameter (which is ignored), a context instance, and a
+            boolean value indicating the signal state.
+
+            The method uses the trampoline key registered by ensure_context_keys()
+            to maintain consistency with the bridge's key management system.
+        """
+        # Get the exit trampoline key
+        exit_key = self.get_trampoline_key("should_exit")
+
+        def set_should_exit(_: Any, context: Any, value: bool = True) -> None:
+            """Set the exit signal in the context.
+
+            Args:
+                _: Ignored self parameter (for compatibility)
+                context: Context instance to set the signal in
+                value: Boolean value for the exit signal (default: True)
+            """
+            if exit_key and hasattr(context, "set"):
+                context.set(exit_key, value)
+
+        return set_should_exit
