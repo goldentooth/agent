@@ -276,3 +276,41 @@ class TrampolineFlowCombinators:
             flow maintains context immutability by creating new Context instances.
         """
         return ContextFlowCombinators.set_key(SHOULD_EXIT_KEY, value)
+
+    @staticmethod
+    def set_should_break(value: bool = True) -> Flow[Context, Context]:
+        """Create a Flow that sets the break signal in the context.
+
+        This method creates a Flow that sets the SHOULD_BREAK_KEY in the context
+        to signal that trampoline execution should break/restart the current
+        iteration. When this flag is set to True, trampoline loops will break
+        out of the current iteration and restart processing.
+
+        Args:
+            value: Whether to signal break (default: True). Set to True to
+                signal break/restart, False to clear the break signal.
+
+        Returns:
+            A Flow[Context, Context] that sets the break flag and returns the
+            updated context with the flag set to the specified value.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+
+            # Create a flow to signal break
+            break_flow = TrampolineFlowCombinators.set_should_break(True)
+
+            # Use in a flow chain
+            context = Context()
+            result_context = break_flow.run_single(context)
+            # result_context will have the break flag set to True
+            ```
+
+        Note:
+            This method uses ContextFlowCombinators.set_key() internally to
+            create a type-safe flow that sets the SHOULD_BREAK_KEY. The returned
+            flow maintains context immutability by creating new Context instances.
+        """
+        return ContextFlowCombinators.set_key(SHOULD_BREAK_KEY, value)
