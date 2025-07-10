@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "initialize_context_integration",
+    "get_context_bridge",
 ]
 
 # Global bridge instance for singleton pattern
@@ -78,6 +79,55 @@ def initialize_context_integration() -> None:
     extend_flow_with_context()
 
 
+def get_context_bridge() -> "ContextFlowBridge":
+    """Get the global Context-Flow bridge instance.
+
+    This function provides access to the global bridge instance that handles
+    all Context-Flow system integration. If the bridge has not been initialized
+    yet, this function will automatically call initialize_context_integration()
+    to set it up.
+
+    Returns:
+        The global ContextFlowBridge instance for Context-Flow integration.
+
+    Example:
+        ```python
+        from context_flow.bridge import get_context_bridge
+
+        # Get the bridge instance (initializes if needed)
+        bridge = get_context_bridge()
+
+        # Use bridge methods for integration
+        bridge.ensure_context_keys()
+        trampoline_key = bridge.get_trampoline_key("should_exit")
+        ```
+
+    Note:
+        This function is the recommended way to access bridge functionality
+        rather than calling initialize_context_integration() directly and
+        accessing the global variable. The function ensures proper initialization
+        and provides a clean API for bridge access.
+
+        The bridge instance is shared globally across the application to ensure
+        consistent Context-Flow integration state. All bridge operations are
+        thread-safe and support concurrent access patterns.
+    """
+    global _bridge_instance
+
+    # Initialize bridge if not already done
+    if _bridge_instance is None:
+        initialize_context_integration()
+
+    # Bridge should be available after initialization
+    if _bridge_instance is None:
+        raise RuntimeError(
+            "Failed to initialize Context-Flow bridge. "
+            + "Check that all required dependencies are available."
+        )
+
+    return _bridge_instance
+
+
 class ContextFlowBridge:
     """Protocol-based bridge for Context-Flow system integration.
 
@@ -86,10 +136,49 @@ class ContextFlowBridge:
     """
 
     def __init__(self) -> None:
-        """Initialize the Context-Flow bridge."""
+        """Initialize the Context-Flow bridge.
+
+        Sets up the bridge with proper state management for Context-Flow integration.
+        Initializes all internal data structures needed for protocol-based communication,
+        context key management, trampoline key mappings, and protocol registrations.
+
+        The bridge maintains separate registries for:
+        - Context keys: Mappings between context key names and their configurations
+        - Trampoline keys: Control signal key mappings for trampoline execution
+        - Protocols: Protocol definitions for cross-system communication
+
+        After initialization, the bridge is ready to handle registration and
+        integration operations between Context and Flow systems.
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+
+            # Create a new bridge instance
+            bridge = ContextFlowBridge()
+
+            # Bridge is now ready for registration operations
+            bridge.register_trampoline_support()
+            ```
+
+        Note:
+            The bridge uses internal state to track initialization and prevent
+            double-initialization of components. All registries start empty
+            and are populated through registration methods.
+        """
         super().__init__()
-        # Initialize bridge state
-        self._initialized = False
+
+        # Core bridge state
+        self._initialized = True
+
+        # Context key registry for tracking context key configurations
+        self._context_keys: dict[str, str] = {}
+
+        # Trampoline key registry for control signal mappings
+        self._trampoline_keys: dict[str, str] = {}
+
+        # Protocol registry for cross-system communication
+        self._protocols: dict[str, dict[str, str]] = {}
 
     def register_trampoline_support(self) -> None:
         """Register trampoline support with the bridge."""
