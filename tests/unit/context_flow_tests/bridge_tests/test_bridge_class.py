@@ -787,3 +787,88 @@ class TestContextFlowBridgeListProtocols:
         docstring = bridge.list_protocols.__doc__.lower()
         assert "list" in docstring or "get" in docstring
         assert "protocol" in docstring
+
+
+class TestContextFlowBridgeRegisterTrampolineSupport:
+    """Test cases for ContextFlowBridge.register_trampoline_support method."""
+
+    def test_register_trampoline_support_import(self) -> None:
+        """Test that register_trampoline_support method exists and is callable."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should exist and be callable
+        assert hasattr(bridge, "register_trampoline_support")
+        assert callable(getattr(bridge, "register_trampoline_support"))
+
+    def test_register_trampoline_support_ensures_context_keys(self) -> None:
+        """Test that register_trampoline_support sets up trampoline context keys."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Initially trampoline keys should be empty
+        assert len(bridge._trampoline_keys) == 0
+
+        # Register trampoline support
+        bridge.register_trampoline_support()
+
+        # Should have set up trampoline keys
+        assert len(bridge._trampoline_keys) > 0
+        assert "should_exit" in bridge._trampoline_keys
+        assert "should_break" in bridge._trampoline_keys
+        assert "should_skip" in bridge._trampoline_keys
+
+    def test_register_trampoline_support_idempotent(self) -> None:
+        """Test that register_trampoline_support is idempotent."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register trampoline support multiple times
+        bridge.register_trampoline_support()
+        first_keys = dict(bridge._trampoline_keys)
+
+        bridge.register_trampoline_support()
+        second_keys = dict(bridge._trampoline_keys)
+
+        bridge.register_trampoline_support()
+        third_keys = dict(bridge._trampoline_keys)
+
+        # Should have same keys each time
+        assert first_keys == second_keys == third_keys
+
+    def test_register_trampoline_support_enables_key_access(self) -> None:
+        """Test that register_trampoline_support enables trampoline key access."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register trampoline support
+        bridge.register_trampoline_support()
+
+        # Should be able to access trampoline keys
+        exit_key = bridge.get_trampoline_key("should_exit")
+        break_key = bridge.get_trampoline_key("should_break")
+        skip_key = bridge.get_trampoline_key("should_skip")
+
+        # Keys should be available
+        assert exit_key is not None
+        assert break_key is not None
+        assert skip_key is not None
+
+    def test_register_trampoline_support_documentation(self) -> None:
+        """Test that register_trampoline_support has proper documentation."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should have docstring
+        assert bridge.register_trampoline_support.__doc__ is not None
+        assert len(bridge.register_trampoline_support.__doc__.strip()) > 0
+
+        # Docstring should describe the method purpose
+        docstring = bridge.register_trampoline_support.__doc__.lower()
+        assert "register" in docstring or "setup" in docstring
+        assert "trampoline" in docstring

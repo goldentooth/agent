@@ -425,6 +425,41 @@ class ContextFlowBridge:
         return sorted(list(self._protocols.keys()))
 
     def register_trampoline_support(self) -> None:
-        """Register trampoline support with the bridge."""
-        # Placeholder for trampoline registration
-        pass
+        """Register trampoline support with the bridge.
+
+        This method sets up the bridge for trampoline operation support by ensuring
+        that all required context keys are registered and available for trampoline
+        execution patterns. It configures the bridge to support control signal
+        communication between Context and Flow systems.
+
+        The method ensures that trampoline control keys are properly initialized
+        and available for cross-system communication. This enables features like
+        early termination, iteration control, and execution skipping in trampoline
+        patterns.
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+
+            bridge = ContextFlowBridge()
+
+            # Register trampoline support for the bridge
+            bridge.register_trampoline_support()
+
+            # Bridge is now ready for trampoline operations
+            exit_key = bridge.get_trampoline_key("should_exit")
+            # Use exit_key in trampoline execution patterns
+            ```
+
+        Note:
+            This method is idempotent and can be called multiple times safely.
+            It delegates to ensure_context_keys() to set up the required
+            trampoline control signal keys. The method provides the foundation
+            for all trampoline-based integration between Context and Flow systems.
+
+            Additional trampoline functionality like method registration and
+            protocol setup will be handled by higher-level integration modules
+            that build upon this bridge foundation.
+        """
+        # Ensure trampoline context keys are registered
+        self.ensure_context_keys()
