@@ -208,10 +208,10 @@ repos:
     hooks:
       - id: pytest
         name: PyTest with Coverage Check
-        entry: poetry run poe pytest
+        entry: poetry run poe pytest-coverage
         language: system
         types: [python]
-        description: Run pytest tests with coverage checking
+        description: Run pytest tests with coverage
         pass_filenames: false
         always_run: true
         args: []

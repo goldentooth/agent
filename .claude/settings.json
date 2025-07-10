@@ -53,6 +53,10 @@
       "Bash(SKIP:*)",
       "Edit(src/pyrightconfig.json)",
       "Edit(tests/pyrightconfig.json)",
+      "Edit(.coveragerc)",
+      "Edit(.pre-commit-config.yaml)",
+      "Edit(mypy.ini)",
+      "Edit(pyproject.toml)",
       "Edit(pytest.ini)"
     ]
   }

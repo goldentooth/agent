@@ -41,34 +41,6 @@ src/
 
 ### Phase 2: Context-Flow Integration Package
 
-#### 9. Flow Integration Core (`src/context_flow/integration.py`)
-
-##### 9.1 Exception Classes
-- **Commit 111**: `ContextFlowError` exception class
-- **Commit 112**: `MissingRequiredKeyError` exception class
-- **Commit 113**: `ContextTypeMismatchError` exception class
-
-##### 9.2 Utility Functions
-- **Commit 114**: `_single_item_stream` function
-- **Commit 115**: `run_flow_with_input` function
-- **Commit 116**: `extend_flow_with_context` function
-- **Commit 117**: `context_flow` decorator function
-
-##### 9.3 Context-Flow Bridge Methods
-- **Commit 118**: `Context.as_flow` method (Flow-dependent)
-- **Commit 119**: `Context.global_changes_as_flow` method (Flow-dependent)
-
-##### 9.4 ContextFlowCombinators Class
-- **Commit 120**: `ContextFlowCombinators.get_key` method
-- **Commit 121**: `ContextFlowCombinators.set_key` method
-- **Commit 122**: `ContextFlowCombinators.require_key` method
-- **Commit 123**: `ContextFlowCombinators.optional_key` method
-- **Commit 124**: `ContextFlowCombinators.move_key` method
-- **Commit 125**: `ContextFlowCombinators.copy_key` method
-- **Commit 126**: `ContextFlowCombinators.forget_key` method
-- **Commit 127**: `ContextFlowCombinators.require_keys` method
-- **Commit 128**: `ContextFlowCombinators.transform_key` method
-
 #### 10. Trampoline System (`src/context_flow/trampoline.py`)
 
 ##### 10.1 Utility Functions

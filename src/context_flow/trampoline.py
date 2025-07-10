@@ -10,6 +10,9 @@ from collections.abc import AsyncGenerator, Callable
 from typing import Any, TypeVar
 
 from context.key import ContextKey
+from context.main import Context
+from context_flow.integration import ContextFlowCombinators
+from flowengine.flow import Flow
 from goldentooth_agent.core.background_loop import run_in_background
 
 __all__ = [
@@ -18,6 +21,7 @@ __all__ = [
     "SHOULD_EXIT_KEY",
     "SHOULD_BREAK_KEY",
     "SHOULD_SKIP_KEY",
+    "TrampolineFlowCombinators",
 ]
 
 T = TypeVar("T")
@@ -222,3 +226,53 @@ def extend_flow_with_trampoline() -> None:
     Flow.as_single_stream = as_single_stream  # type: ignore[attr-defined]
     Flow.repeat_until = repeat_until  # type: ignore[attr-defined]
     Flow.exit_on = exit_on  # type: ignore[attr-defined]
+
+
+class TrampolineFlowCombinators:
+    """Flow combinators for trampoline-style execution patterns.
+
+    This class provides static methods for creating Flow objects that work with
+    trampoline execution patterns, including setting and checking control flow
+    signals like exit, break, and skip flags in the context.
+
+    All methods are static and return Flow[Context, Context] objects that can
+    be chained and composed with other flows for complex execution patterns.
+    """
+
+    @staticmethod
+    def set_should_exit(value: bool = True) -> Flow[Context, Context]:
+        """Create a Flow that sets the exit signal in the context.
+
+        This method creates a Flow that sets the SHOULD_EXIT_KEY in the context
+        to signal that trampoline execution should terminate. When this flag is
+        set to True, trampoline loops will exit cleanly after the current
+        iteration completes.
+
+        Args:
+            value: Whether to signal exit (default: True). Set to True to
+                signal termination, False to clear the exit signal.
+
+        Returns:
+            A Flow[Context, Context] that sets the exit flag and returns the
+            updated context with the flag set to the specified value.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+
+            # Create a flow to signal exit
+            exit_flow = TrampolineFlowCombinators.set_should_exit(True)
+
+            # Use in a flow chain
+            context = Context()
+            result_context = exit_flow.run_single(context)
+            # result_context will have the exit flag set to True
+            ```
+
+        Note:
+            This method uses ContextFlowCombinators.set_key() internally to
+            create a type-safe flow that sets the SHOULD_EXIT_KEY. The returned
+            flow maintains context immutability by creating new Context instances.
+        """
+        return ContextFlowCombinators.set_key(SHOULD_EXIT_KEY, value)
