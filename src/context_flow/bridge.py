@@ -228,6 +228,53 @@ class ContextFlowBridge:
             if signal_name not in self._trampoline_keys:
                 self._trampoline_keys[signal_name] = context_key
 
+    def get_trampoline_key(self, signal_name: str, default: str | None = None) -> str:
+        """Get the context key for a registered trampoline signal.
+
+        This method retrieves the context key associated with a trampoline control
+        signal. The signal names correspond to the control signals registered via
+        ensure_context_keys() or manually added to the bridge registry.
+
+        Args:
+            signal_name: The name of the trampoline signal to retrieve
+            default: Optional default value to return if the signal is not found
+
+        Returns:
+            The context key string associated with the signal name
+
+        Raises:
+            KeyError: If the signal name is not found and no default is provided
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+
+            bridge = ContextFlowBridge()
+            bridge.ensure_context_keys()
+
+            # Get standard trampoline control keys
+            exit_key = bridge.get_trampoline_key("should_exit")
+            break_key = bridge.get_trampoline_key("should_break")
+            skip_key = bridge.get_trampoline_key("should_skip")
+
+            # Use with default value for safety
+            custom_key = bridge.get_trampoline_key("custom_signal", "default.key")
+            ```
+
+        Note:
+            This method provides safe access to the internal _trampoline_keys
+            registry while supporting both registered standard signals and
+            custom signals added by users. The default parameter enables
+            graceful handling of missing keys without exceptions.
+        """
+        if default is not None:
+            return self._trampoline_keys.get(signal_name, default)
+
+        if signal_name not in self._trampoline_keys:
+            raise KeyError(f"Trampoline key '{signal_name}' not found")
+
+        return self._trampoline_keys[signal_name]
+
     def register_trampoline_support(self) -> None:
         """Register trampoline support with the bridge."""
         # Placeholder for trampoline registration

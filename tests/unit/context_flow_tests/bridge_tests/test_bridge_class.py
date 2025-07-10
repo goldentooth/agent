@@ -1,170 +1,6 @@
-"""Tests for context_flow.bridge module."""
+"""Tests for context_flow.bridge ContextFlowBridge class methods."""
 
-import pytest
-
-
-class TestInitializeContextIntegration:
-    """Test cases for initialize_context_integration function."""
-
-    def test_initialize_context_integration_import(self) -> None:
-        """Test that initialize_context_integration can be imported."""
-        from context_flow.bridge import initialize_context_integration
-
-        # Function should be available
-        assert callable(initialize_context_integration)
-
-    def test_initialize_context_integration_basic_functionality(self) -> None:
-        """Test that initialize_context_integration executes without error."""
-        from context_flow.bridge import initialize_context_integration
-
-        # Should execute without raising exceptions
-        initialize_context_integration()
-
-    def test_initialize_context_integration_idempotent(self) -> None:
-        """Test that initialize_context_integration is idempotent."""
-        from context_flow.bridge import initialize_context_integration
-
-        # First call should succeed
-        initialize_context_integration()
-
-        # Second call should also succeed without issues
-        initialize_context_integration()
-
-        # Multiple calls should be safe
-        for _ in range(3):
-            initialize_context_integration()
-
-    def test_initialize_context_integration_creates_bridge_instance(self) -> None:
-        """Test that initialization creates the global bridge instance."""
-        from context_flow.bridge import initialize_context_integration
-
-        # Initialize the bridge
-        initialize_context_integration()
-
-        # Bridge instance should exist after initialization
-        from context_flow.bridge import _bridge_instance
-
-        assert _bridge_instance is not None
-        assert hasattr(_bridge_instance, "register_trampoline_support")
-
-        # Store the instance to verify idempotency
-        first_instance = _bridge_instance
-
-        # Call again - should be same instance
-        initialize_context_integration()
-
-        from context_flow.bridge import _bridge_instance as second_instance
-
-        assert second_instance is first_instance
-
-    def test_initialize_context_integration_sets_up_extensions(self) -> None:
-        """Test that initialization sets up Flow and Context extensions."""
-        from context_flow.bridge import initialize_context_integration
-        from flowengine.flow import Flow
-
-        # Initialize the bridge
-        initialize_context_integration()
-
-        # Flow class should have trampoline methods added
-        assert hasattr(Flow, "run_single")
-        assert hasattr(Flow, "as_single_stream")
-        assert hasattr(Flow, "repeat_until")
-        assert hasattr(Flow, "exit_on")
-
-        # Methods should be callable
-        assert callable(getattr(Flow, "run_single"))
-        assert callable(getattr(Flow, "as_single_stream"))
-        assert callable(getattr(Flow, "repeat_until"))
-        assert callable(getattr(Flow, "exit_on"))
-
-    def test_initialize_context_integration_documentation(self) -> None:
-        """Test that initialize_context_integration has proper documentation."""
-        from context_flow.bridge import initialize_context_integration
-
-        # Function should have docstring
-        assert initialize_context_integration.__doc__ is not None
-        assert len(initialize_context_integration.__doc__.strip()) > 0
-
-        # Docstring should describe the function purpose
-        docstring = initialize_context_integration.__doc__.lower()
-        assert "initialize" in docstring
-        assert "bridge" in docstring
-        assert "integration" in docstring
-
-
-class TestGetContextBridge:
-    """Test cases for get_context_bridge function."""
-
-    def test_get_context_bridge_import(self) -> None:
-        """Test that get_context_bridge can be imported."""
-        from context_flow.bridge import get_context_bridge
-
-        # Function should be available
-        assert callable(get_context_bridge)
-
-    def test_get_context_bridge_returns_bridge_instance(self) -> None:
-        """Test that get_context_bridge returns a ContextFlowBridge instance."""
-        from context_flow.bridge import get_context_bridge
-
-        bridge = get_context_bridge()
-
-        # Should return a bridge instance
-        assert bridge is not None
-        assert hasattr(bridge, "register_trampoline_support")
-        assert callable(getattr(bridge, "register_trampoline_support"))
-
-    def test_get_context_bridge_returns_same_instance(self) -> None:
-        """Test that get_context_bridge returns the same instance consistently."""
-        from context_flow.bridge import get_context_bridge
-
-        bridge1 = get_context_bridge()
-        bridge2 = get_context_bridge()
-
-        # Should return the same instance (singleton pattern)
-        assert bridge1 is bridge2
-
-    def test_get_context_bridge_initializes_if_needed(self) -> None:
-        """Test that get_context_bridge initializes the bridge if not already done."""
-        from context_flow.bridge import get_context_bridge
-
-        # Get bridge (should initialize automatically)
-        bridge = get_context_bridge()
-
-        # Bridge should be available
-        assert bridge is not None
-
-        # Should have initialized the global instance
-        from context_flow.bridge import _bridge_instance
-
-        assert _bridge_instance is not None
-        assert _bridge_instance is bridge
-
-    def test_get_context_bridge_documentation(self) -> None:
-        """Test that get_context_bridge has proper documentation."""
-        from context_flow.bridge import get_context_bridge
-
-        # Function should have docstring
-        assert get_context_bridge.__doc__ is not None
-        assert len(get_context_bridge.__doc__.strip()) > 0
-
-        # Docstring should describe the function purpose
-        docstring = get_context_bridge.__doc__.lower()
-        assert "get" in docstring or "access" in docstring
-        assert "bridge" in docstring
-        assert "global" in docstring
-
-    def test_get_context_bridge_type_annotation(self) -> None:
-        """Test that get_context_bridge has proper return type annotation."""
-        import inspect
-
-        from context_flow.bridge import get_context_bridge
-
-        # Get function signature
-        signature = inspect.signature(get_context_bridge)
-
-        # Should have return annotation
-        assert signature.return_annotation is not None
-        assert "ContextFlowBridge" in str(signature.return_annotation)
+import inspect
 
 
 class TestContextFlowBridgeInit:
@@ -366,4 +202,107 @@ class TestContextFlowBridgeEnsureContextKeys:
         docstring = bridge.ensure_context_keys.__doc__.lower()
         assert "ensure" in docstring or "register" in docstring
         assert "context" in docstring
+        assert "key" in docstring
+
+
+class TestContextFlowBridgeGetTrampolineKey:
+    """Test cases for ContextFlowBridge.get_trampoline_key method."""
+
+    def test_get_trampoline_key_import(self) -> None:
+        """Test that get_trampoline_key method exists and is callable."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should exist and be callable
+        assert hasattr(bridge, "get_trampoline_key")
+        assert callable(getattr(bridge, "get_trampoline_key"))
+
+    def test_get_trampoline_key_returns_registered_keys(self) -> None:
+        """Test that get_trampoline_key returns properly registered keys."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+        bridge.ensure_context_keys()
+
+        # Should return the registered trampoline keys
+        exit_key = bridge.get_trampoline_key("should_exit")
+        break_key = bridge.get_trampoline_key("should_break")
+        skip_key = bridge.get_trampoline_key("should_skip")
+
+        assert exit_key == "context_flow.should_exit"
+        assert break_key == "context_flow.should_break"
+        assert skip_key == "context_flow.should_skip"
+
+    def test_get_trampoline_key_missing_key_raises_error(self) -> None:
+        """Test that get_trampoline_key raises KeyError for missing keys."""
+        import pytest
+
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Should raise KeyError for missing key
+        with pytest.raises(KeyError, match="Trampoline key 'nonexistent' not found"):
+            bridge.get_trampoline_key("nonexistent")
+
+    def test_get_trampoline_key_works_with_custom_keys(self) -> None:
+        """Test that get_trampoline_key works with custom registered keys."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register custom key
+        bridge._trampoline_keys["custom_signal"] = "custom.signal.key"
+
+        # Should return the custom key
+        custom_key = bridge.get_trampoline_key("custom_signal")
+        assert custom_key == "custom.signal.key"
+
+    def test_get_trampoline_key_with_default_value(self) -> None:
+        """Test that get_trampoline_key supports default values."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Should return default value for missing key
+        default_key = bridge.get_trampoline_key("missing_key", "default_value")
+        assert default_key == "default_value"
+
+        # Should return actual value when key exists
+        bridge._trampoline_keys["existing_key"] = "existing.value"
+        existing_key = bridge.get_trampoline_key("existing_key", "default_value")
+        assert existing_key == "existing.value"
+
+    def test_get_trampoline_key_type_annotations(self) -> None:
+        """Test that get_trampoline_key has proper type annotations."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Get method signature
+        signature = inspect.signature(bridge.get_trampoline_key)
+
+        # Should have proper parameter annotations
+        params = signature.parameters
+        assert "signal_name" in params
+        assert "default" in params
+
+        # Should have return annotation
+        assert signature.return_annotation is not None
+
+    def test_get_trampoline_key_documentation(self) -> None:
+        """Test that get_trampoline_key has proper documentation."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should have docstring
+        assert bridge.get_trampoline_key.__doc__ is not None
+        assert len(bridge.get_trampoline_key.__doc__.strip()) > 0
+
+        # Docstring should describe the method purpose
+        docstring = bridge.get_trampoline_key.__doc__.lower()
+        assert "get" in docstring or "retrieve" in docstring
+        assert "trampoline" in docstring
         assert "key" in docstring
