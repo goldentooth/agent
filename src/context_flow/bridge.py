@@ -180,6 +180,54 @@ class ContextFlowBridge:
         # Protocol registry for cross-system communication
         self._protocols: dict[str, dict[str, str]] = {}
 
+    def ensure_context_keys(self) -> None:
+        """Ensure that required Context keys are registered for trampoline operations.
+
+        This method registers the standard trampoline control signal keys that enable
+        Context-Flow integration. These keys are used by trampoline execution patterns
+        to control flow behavior through context state changes.
+
+        The following keys are registered:
+        - should_exit: Controls early termination of trampoline execution
+        - should_break: Controls breaking out of trampoline iteration loops
+        - should_skip: Controls skipping of trampoline execution steps
+
+        This method is idempotent - calling it multiple times has no additional
+        effect beyond the first call. Existing custom keys are preserved.
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+
+            bridge = ContextFlowBridge()
+
+            # Register standard trampoline control keys
+            bridge.ensure_context_keys()
+
+            # Keys are now available for trampoline operations
+            exit_key = bridge._trampoline_keys["should_exit"]
+            break_key = bridge._trampoline_keys["should_break"]
+            skip_key = bridge._trampoline_keys["should_skip"]
+            ```
+
+        Note:
+            The registered keys follow the naming convention "context_flow.{signal}"
+            to provide clear namespacing and avoid conflicts with user-defined
+            context keys. All keys are stored in the _trampoline_keys registry
+            for efficient lookup during trampoline execution.
+        """
+        # Register standard trampoline control signal keys
+        trampoline_signals = {
+            "should_exit": "context_flow.should_exit",
+            "should_break": "context_flow.should_break",
+            "should_skip": "context_flow.should_skip",
+        }
+
+        # Add keys if not already present (idempotent)
+        for signal_name, context_key in trampoline_signals.items():
+            if signal_name not in self._trampoline_keys:
+                self._trampoline_keys[signal_name] = context_key
+
     def register_trampoline_support(self) -> None:
         """Register trampoline support with the bridge."""
         # Placeholder for trampoline registration

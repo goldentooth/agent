@@ -265,3 +265,105 @@ class TestContextFlowBridgeInit:
         docstring = ContextFlowBridge.__init__.__doc__.lower()
         assert "initialize" in docstring
         assert "bridge" in docstring
+
+
+class TestContextFlowBridgeEnsureContextKeys:
+    """Test cases for ContextFlowBridge.ensure_context_keys method."""
+
+    def test_ensure_context_keys_import(self) -> None:
+        """Test that ensure_context_keys method exists and is callable."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should exist and be callable
+        assert hasattr(bridge, "ensure_context_keys")
+        assert callable(getattr(bridge, "ensure_context_keys"))
+
+    def test_ensure_context_keys_registers_trampoline_keys(self) -> None:
+        """Test that ensure_context_keys registers required trampoline control keys."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Before calling, trampoline keys should be empty
+        assert len(bridge._trampoline_keys) == 0
+
+        # Call ensure_context_keys
+        bridge.ensure_context_keys()
+
+        # Should register the standard trampoline control keys
+        expected_keys = ["should_exit", "should_break", "should_skip"]
+        for key in expected_keys:
+            assert key in bridge._trampoline_keys
+            assert isinstance(bridge._trampoline_keys[key], str)
+            assert len(bridge._trampoline_keys[key]) > 0
+
+    def test_ensure_context_keys_idempotent(self) -> None:
+        """Test that ensure_context_keys is idempotent - safe to call multiple times."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Call multiple times
+        bridge.ensure_context_keys()
+        first_keys = dict(bridge._trampoline_keys)
+
+        bridge.ensure_context_keys()
+        second_keys = dict(bridge._trampoline_keys)
+
+        bridge.ensure_context_keys()
+        third_keys = dict(bridge._trampoline_keys)
+
+        # Should be identical across calls
+        assert first_keys == second_keys == third_keys
+
+    def test_ensure_context_keys_proper_key_names(self) -> None:
+        """Test that ensure_context_keys creates properly formatted key names."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+        bridge.ensure_context_keys()
+
+        # Keys should follow the expected naming pattern
+        assert bridge._trampoline_keys["should_exit"] == "context_flow.should_exit"
+        assert bridge._trampoline_keys["should_break"] == "context_flow.should_break"
+        assert bridge._trampoline_keys["should_skip"] == "context_flow.should_skip"
+
+    def test_ensure_context_keys_preserves_existing_keys(self) -> None:
+        """Test that ensure_context_keys preserves any existing custom keys."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Add some custom keys first
+        bridge._trampoline_keys["custom_key"] = "custom.value"
+        bridge._context_keys["user_defined"] = "user.defined.key"
+
+        # Call ensure_context_keys
+        bridge.ensure_context_keys()
+
+        # Custom keys should still be present
+        assert bridge._trampoline_keys["custom_key"] == "custom.value"
+        assert bridge._context_keys["user_defined"] == "user.defined.key"
+
+        # Standard keys should also be present
+        assert "should_exit" in bridge._trampoline_keys
+        assert "should_break" in bridge._trampoline_keys
+        assert "should_skip" in bridge._trampoline_keys
+
+    def test_ensure_context_keys_documentation(self) -> None:
+        """Test that ensure_context_keys has proper documentation."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should have docstring
+        assert bridge.ensure_context_keys.__doc__ is not None
+        assert len(bridge.ensure_context_keys.__doc__.strip()) > 0
+
+        # Docstring should describe the method purpose
+        docstring = bridge.ensure_context_keys.__doc__.lower()
+        assert "ensure" in docstring or "register" in docstring
+        assert "context" in docstring
+        assert "key" in docstring
