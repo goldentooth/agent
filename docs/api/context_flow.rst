@@ -32,3 +32,43 @@ context\_flow.bridge module
    :members:
    :undoc-members:
    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   context_flow.trampoline
+
+context\_flow.trampoline.constants module
+-----------------------------------------
+
+.. automodule:: context_flow.trampoline.constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+context\_flow.trampoline.flag\_combinators module
+-------------------------------------------------
+
+.. automodule:: context_flow.trampoline.flag_combinators
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+context\_flow.trampoline.execution\_combinators module
+------------------------------------------------------
+
+.. automodule:: context_flow.trampoline.execution_combinators
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+context\_flow.trampoline.flow\_extensions module
+------------------------------------------------
+
+.. automodule:: context_flow.trampoline.flow_extensions
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -80,3 +80,43 @@ context.transformations\_manager module
    :members:
    :undoc-members:
    :show-inheritance:
+
+context.computed module
+-----------------------
+
+.. automodule:: context.computed
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+context.snapshots module
+------------------------
+
+.. automodule:: context.snapshots
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+context.nested\_operations module
+---------------------------------
+
+.. automodule:: context.nested_operations
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+context.search\_operations module
+---------------------------------
+
+.. automodule:: context.search_operations
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+context.observers module
+------------------------
+
+.. automodule:: context.observers
+   :members:
+   :undoc-members:
+   :show-inheritance:
