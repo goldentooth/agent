@@ -997,3 +997,103 @@ class TrampolineFlowCombinators:
                     yield context
 
         return Flow(_conditional_flow, name="conditional_flow")
+
+    @staticmethod
+    def skip_if(
+        predicate: Callable[[Context], bool],
+        flow: Flow[Context, Context],
+    ) -> Flow[Context, Context]:
+        """Create a Flow that conditionally skips execution based on context predicate.
+
+        This method creates a Flow that evaluates a predicate function on the input
+        Context and either executes the provided flow or skips it (passing through
+        the original context unchanged). When the predicate returns True, the flow
+        is skipped and the original context is passed through. When the predicate
+        returns False, the flow is executed normally.
+
+        This is useful for implementing conditional execution patterns where certain
+        flows should be bypassed based on context state, such as skipping expensive
+        operations when they're not needed or avoiding processing when certain
+        conditions are already met.
+
+        Args:
+            predicate: Function that takes a Context and returns bool. When True,
+                the flow is skipped and context passed through unchanged. When False,
+                the flow is executed normally. Should be a pure function without side effects.
+            flow: Flow[Context, Context] to execute when predicate returns False.
+                This flow will receive the original context as input when executed.
+
+        Returns:
+            A Flow[Context, Context] that conditionally executes the flow based on
+            the predicate evaluation.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+            from flowengine.flow import Flow
+
+            # Create predicate that checks if processing should be skipped
+            def already_processed(ctx: Context) -> bool:
+                return ctx.get("status", "") == "completed"
+
+            # Create expensive processing flow
+            def expensive_processing(ctx: Context) -> Context:
+                result = ctx.fork()
+                result["status"] = "completed"
+                result["processed_data"] = "expensive_result"
+                return result
+
+            process_flow = Flow.from_sync_fn(expensive_processing)
+
+            # Create skip_if flow
+            skip_if_processed = TrampolineFlowCombinators.skip_if(
+                already_processed, process_flow
+            )
+
+            # Execute with already completed context (will skip)
+            context1 = Context()
+            context1["status"] = "completed"
+            result1 = skip_if_processed.run_single(context1)
+            # result1 will be unchanged (no processing occurred)
+
+            # Execute with pending context (will process)
+            context2 = Context()
+            context2["status"] = "pending"
+            result2 = skip_if_processed.run_single(context2)
+            # result2 will have status="completed" and processed_data
+            ```
+
+        Note:
+            The skip_if pattern is useful for:
+            - Avoiding expensive operations when they're not needed
+            - Conditional processing based on context state
+            - Implementing caching-like behavior in flow chains
+            - Skipping redundant operations in trampoline loops
+
+            The predicate function should be deterministic and avoid side effects
+            to ensure predictable skipping behavior. When skipped, the original
+            context is passed through completely unchanged, preserving all data
+            and maintaining context immutability.
+        """
+
+        async def _skip_if_flow(
+            stream: AsyncGenerator[Context, None]
+        ) -> AsyncGenerator[Context, None]:
+            """Flow that conditionally skips execution based on context predicate."""
+            async for context in stream:
+                # Evaluate predicate on the context
+                if predicate(context):
+                    # Skip execution, pass through original context unchanged
+                    yield context
+                else:
+                    # Execute the flow normally
+                    flow_stream = _async_iter_from_item(context)
+                    result_stream = flow(flow_stream)
+
+                    # Yield results from flow execution
+                    async for result_context in result_stream:
+                        yield result_context
+                        break  # Take first result only
+
+        return Flow(_skip_if_flow, name="skip_if")
