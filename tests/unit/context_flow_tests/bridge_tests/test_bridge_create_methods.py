@@ -457,3 +457,164 @@ class TestContextFlowBridgeCreateSetSkipMethod:
         docstring = bridge._create_set_skip_method.__doc__.lower()
         assert "create" in docstring or "method" in docstring
         assert "skip" in docstring
+
+
+class TestContextFlowBridgeCreateCheckExitMethod:
+    """Test cases for ContextFlowBridge._create_check_exit_method method."""
+
+    def test_create_check_exit_method_import(self) -> None:
+        """Test that _create_check_exit_method exists and is callable."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should exist and be callable
+        assert hasattr(bridge, "_create_check_exit_method")
+        assert callable(getattr(bridge, "_create_check_exit_method"))
+
+    def test_create_check_exit_method_returns_callable(self) -> None:
+        """Test that _create_check_exit_method returns a callable function."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+        bridge.register_trampoline_support()
+
+        # Should return a callable function
+        check_exit_func = bridge._create_check_exit_method()
+        assert callable(check_exit_func)
+
+    def test_create_check_exit_method_checks_context_value(self) -> None:
+        """Test that the returned function checks exit signal in context."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+        bridge.register_trampoline_support()
+
+        # Create mock context with get and __contains__ methods
+        class MockContext:
+            def __init__(self) -> None:
+                super().__init__()
+                self.values: dict[str, bool] = {}
+
+            def __contains__(self, key: str) -> bool:
+                return key in self.values
+
+            def get(self, key: str, default: bool = False) -> bool:
+                return self.values.get(key, default)
+
+            def set(self, key: str, value: bool) -> None:
+                self.values[key] = value
+
+        context = MockContext()
+        check_exit_func = bridge._create_check_exit_method()
+
+        # Initially should return False
+        assert check_exit_func(None, context) is False
+
+        # Set exit signal to True
+        exit_key = bridge.get_trampoline_key("should_exit")
+        context.set(exit_key, True)
+
+        # Should now return True
+        assert check_exit_func(None, context) is True
+
+    def test_create_check_exit_method_with_false_value(self) -> None:
+        """Test checking exit signal when set to False."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+        bridge.register_trampoline_support()
+
+        class MockContext:
+            def __init__(self) -> None:
+                super().__init__()
+                self.values: dict[str, bool] = {}
+
+            def __contains__(self, key: str) -> bool:
+                return key in self.values
+
+            def get(self, key: str, default: bool = False) -> bool:
+                return self.values.get(key, default)
+
+            def set(self, key: str, value: bool) -> None:
+                self.values[key] = value
+
+        context = MockContext()
+        check_exit_func = bridge._create_check_exit_method()
+
+        # Set exit signal to False
+        exit_key = bridge.get_trampoline_key("should_exit")
+        context.set(exit_key, False)
+
+        # Should return False
+        assert check_exit_func(None, context) is False
+
+    def test_create_check_exit_method_missing_key(self) -> None:
+        """Test checking exit signal when key is not in context."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+        bridge.register_trampoline_support()
+
+        class MockContext:
+            def __init__(self) -> None:
+                super().__init__()
+                self.values: dict[str, bool] = {}
+
+            def __contains__(self, key: str) -> bool:
+                return key in self.values
+
+            def get(self, key: str, default: bool = False) -> bool:
+                return self.values.get(key, default)
+
+        context = MockContext()
+        check_exit_func = bridge._create_check_exit_method()
+
+        # Should return False when key is not present
+        assert check_exit_func(None, context) is False
+
+    def test_create_check_exit_method_handles_missing_methods(self) -> None:
+        """Test graceful handling when context lacks required methods."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+        bridge.register_trampoline_support()
+
+        class MockContextWithoutMethods:
+            def __init__(self) -> None:
+                super().__init__()
+
+        context = MockContextWithoutMethods()
+        check_exit_func = bridge._create_check_exit_method()
+
+        # Should return False when context lacks required methods
+        assert check_exit_func(None, context) is False
+
+    def test_create_check_exit_method_type_annotations(self) -> None:
+        """Test that _create_check_exit_method has proper type annotations."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Check method annotations
+        method = getattr(bridge, "_create_check_exit_method")
+        assert hasattr(method, "__annotations__")
+
+        # Should have return annotation
+        annotations = method.__annotations__
+        assert "return" in annotations
+
+    def test_create_check_exit_method_documentation(self) -> None:
+        """Test that _create_check_exit_method has proper documentation."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should have docstring
+        assert bridge._create_check_exit_method.__doc__ is not None
+        assert len(bridge._create_check_exit_method.__doc__.strip()) > 0
+
+        # Docstring should describe the method purpose
+        docstring = bridge._create_check_exit_method.__doc__.lower()
+        assert "create" in docstring or "method" in docstring or "check" in docstring
+        assert "exit" in docstring

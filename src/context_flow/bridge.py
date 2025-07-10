@@ -635,3 +635,72 @@ class ContextFlowBridge:
                 context.set(skip_key, value)
 
         return set_should_skip
+
+    def _create_check_exit_method(self) -> Callable[[Any, Any], bool]:
+        """Create method for checking exit signal in context.
+
+        This method creates a callable function that can be used to check if the exit
+        signal has been set in a context instance. The exit signal is used by trampoline
+        execution patterns to determine if execution should terminate early.
+
+        Returns:
+            A callable function that accepts (self, context) parameters and returns
+            True if the exit signal is set in the provided context instance
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+            from context.main import Context
+
+            bridge = ContextFlowBridge()
+            bridge.register_trampoline_support()
+
+            # Get the exit checker method
+            check_exit = bridge._create_check_exit_method()
+
+            # Use with a context instance
+            context = Context()
+
+            # Check if exit was signaled (should be False initially)
+            should_exit = check_exit(None, context)  # Returns False
+
+            # Set exit signal and check again
+            exit_key = bridge.get_trampoline_key("should_exit")
+            context.set(exit_key, True)
+            should_exit = check_exit(None, context)  # Returns True
+            ```
+
+        Note:
+            This method returns a function that can be used to check the exit
+            signal in any context instance. The returned function follows the
+            pattern expected by Flow system method registration, accepting
+            a self parameter (which is ignored) and a context instance, returning
+            a boolean indicating the signal state.
+
+            The method uses the trampoline key registered by ensure_context_keys()
+            to maintain consistency with the bridge's key management system.
+            If the key is not found in the context, it returns False by default.
+        """
+        # Get the exit trampoline key
+        exit_key = self.get_trampoline_key("should_exit")
+
+        def check_should_exit(_: Any, context: Any) -> bool:
+            """Check if exit has been signaled in the context.
+
+            Args:
+                _: Ignored self parameter (for compatibility)
+                context: Context instance to check the signal in
+
+            Returns:
+                True if exit signal is set to True, False otherwise
+            """
+            if (
+                exit_key
+                and hasattr(context, "__contains__")
+                and hasattr(context, "get")
+            ):
+                if exit_key in context:
+                    return bool(context.get(exit_key, False))
+            return False
+
+        return check_should_exit
