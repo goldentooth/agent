@@ -675,3 +675,99 @@ class TrampolineFlowCombinators:
                 yield current_context
 
         return Flow(_exitable_chain_flow, name="exitable_chain")
+
+    @staticmethod
+    def trampoline(flow: Flow[Context, Context]) -> Flow[Context, Context]:
+        """Create a Flow that repeatedly executes a flow until exit is signaled.
+
+        This method creates a Flow that implements a trampoline execution pattern,
+        repeatedly executing the given flow and feeding its output back as input
+        for the next iteration. The loop continues until SHOULD_EXIT_KEY is set
+        to True in the context. If SHOULD_BREAK_KEY is set, the loop restarts
+        with the original input context.
+
+        Args:
+            flow: A Flow[Context, Context] that transforms context. This flow
+                will be executed repeatedly, with each iteration's output
+                becoming the next iteration's input.
+
+        Returns:
+            A Flow[Context, Context] that implements the trampoline pattern,
+            yielding the final context after all iterations complete.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+            from flowengine.flow import Flow
+
+            # Create a flow that increments a counter until it reaches 10
+            def increment_until_10(ctx: Context) -> Context:
+                result = ctx.fork()
+                count = ctx.get("count", 0)
+                result["count"] = count + 1
+                if count >= 9:  # Will be 10 after increment
+                    result[SHOULD_EXIT_KEY.path] = True
+                return result
+
+            # Create trampoline flow
+            increment_flow = Flow.from_sync_fn(increment_until_10)
+            trampoline = TrampolineFlowCombinators.trampoline(increment_flow)
+
+            # Execute trampoline
+            context = Context()
+            context["count"] = 0
+            result = trampoline.run_single(context)
+            # result["count"] == 10
+            ```
+
+        Note:
+            The trampoline pattern is useful for:
+            - Iterative algorithms that process until convergence
+            - State machines with multiple transitions
+            - Recursive-like computations without stack overflow
+            - Algorithms that need multiple transformation passes
+
+            Control signals:
+            - SHOULD_EXIT_KEY=True: Stops iteration and yields final result
+            - SHOULD_BREAK_KEY=True: Restarts with original input (clears break flag)
+        """
+
+        async def _trampoline_flow(
+            stream: AsyncGenerator[Context, None]
+        ) -> AsyncGenerator[Context, None]:
+            """Flow that repeatedly executes a flow until exit is signaled."""
+            async for initial_context in stream:
+                original_context = initial_context
+                current_context = initial_context
+
+                # Trampoline loop
+                while True:
+                    # Execute the flow with current context
+                    flow_stream = _async_iter_from_item(current_context)
+                    result_stream = flow(flow_stream)
+
+                    # Get result from flow
+                    flow_result = None
+                    async for result_context in result_stream:
+                        flow_result = result_context
+                        break  # Take first result
+
+                    # Update context only if flow produced a result
+                    if flow_result is not None:
+                        current_context = flow_result
+
+                    # Check for exit signal
+                    should_exit = current_context.get(SHOULD_EXIT_KEY.path, False)
+                    if should_exit:
+                        yield current_context
+                        return
+
+                    # Check for break signal
+                    should_break = current_context.get(SHOULD_BREAK_KEY.path, False)
+                    if should_break:
+                        # Clear break flag and restart with original context
+                        current_context = original_context.fork()
+                        current_context[SHOULD_BREAK_KEY.path] = False
+
+        return Flow(_trampoline_flow, name="trampoline")
