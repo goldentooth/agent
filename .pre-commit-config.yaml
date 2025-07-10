@@ -145,55 +145,28 @@ repos:
   # File length validation (enforce guideline #4)
   - repo: local
     hooks:
-      - id: file-length-warnings
-        name: File Length Warning Check
-        entry: poetry run poe file-length-warnings
-        language: system
-        description: Show proactive warnings for files approaching size limits
-        pass_filenames: false
-        always_run: true
-        verbose: true
 
       - id: file-length-check
         name: File Length Validation
         entry: poetry run poe file-length
         language: system
-        description: Ensure files don't exceed 1000 lines (guideline #4)
+        description: Ensure files don't exceed 1000 lines (guideline \#4)
         pass_filenames: false
         always_run: true
-
-      - id: module-size-warnings
-        name: Module Size Warning Check
-        entry: poetry run poe module-size-warnings
-        language: system
-        description: Show proactive warnings for modules approaching size limits
-        pass_filenames: false
-        always_run: true
-        verbose: true
 
       - id: module-size-check
         name: Module Size Validation
         entry: poetry run poe module-size
         language: system
-        description: Ensure modules don't exceed 5000 lines (guideline #5)
+        description: Ensure modules don't exceed 5000 lines (guideline \#5)
         pass_filenames: false
         always_run: true
-
-      # Function length validation (enforce guideline #3)
-      - id: function-length-warnings
-        name: Function Length Warning Check
-        entry: poetry run poe function-length-warnings
-        language: system
-        description: Show proactive warnings for functions approaching size limits
-        pass_filenames: false
-        always_run: true
-        verbose: true
 
       - id: function-length-check
         name: Function Length Validation
         entry: poetry run poe function-length
         language: system
-        description: Ensure functions don't exceed 15 lines (guideline #3)
+        description: Ensure functions don't exceed 15 lines (guideline \#3)
         pass_filenames: false
         always_run: true
 
@@ -235,10 +208,10 @@ repos:
     hooks:
       - id: pytest
         name: PyTest with Coverage Check
-        entry: poetry run poe pytest
+        entry: poetry run poe pytest-coverage
         language: system
         types: [python]
-        description: Run pytest tests with coverage checking
+        description: Run pytest tests with coverage
         pass_filenames: false
         always_run: true
         args: []

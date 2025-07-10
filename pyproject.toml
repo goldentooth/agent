@@ -63,6 +63,7 @@ radon = "^6.0.1"
 
 [tool.poe.tasks]
 pytest = "pytest"
+pytest-coverage = "pytest --cov=src"
 mypy = "mypy"
 pyright-src = "pyright --project src"
 pyright-tests = "pyright --project tests"
@@ -171,24 +172,6 @@ module = [
     "pytest.*",
 ]
 ignore_missing_imports = true
-
-# Relaxed type checking for test code
-[[tool.mypy.overrides]]
-module = ["tests.*"]
-# Less strict type checking for tests
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-disallow_untyped_decorators = false
-check_untyped_defs = false
-disallow_any_generics = false
-disallow_any_unimported = false
-# Allow Any types in tests
-disallow_any_explicit = false
-disallow_any_decorated = false
-disallow_subclassing_any = false
-# Be more permissive with test code
-warn_return_any = false
-warn_unused_ignores = false
 
 # Black code formatting configuration
 [tool.black]

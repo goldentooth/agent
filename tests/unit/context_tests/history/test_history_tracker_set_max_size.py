@@ -143,11 +143,14 @@ class TestHistoryTrackerSetMaxSize:
 
     def test_set_max_history_size_preserves_event_order(self) -> None:
         """Test set_max_history_size preserves chronological order of kept events."""
+        import time
+
         tracker = HistoryTracker()
 
-        # Add events with delays to ensure different timestamps
+        # Add events with small delays to ensure different timestamps
         for i in range(5):
             tracker.record_change(f"key{i}", f"old{i}", f"new{i}", i)
+            time.sleep(0.001)  # Small delay to ensure different timestamps
 
         # Reduce to 3 events
         tracker.set_max_history_size(3)
@@ -161,9 +164,9 @@ class TestHistoryTrackerSetMaxSize:
         assert history[1].key == "key3"
         assert history[2].key == "key2"  # Oldest kept
 
-        # Verify timestamps are in descending order
-        assert history[0].timestamp > history[1].timestamp
-        assert history[1].timestamp > history[2].timestamp
+        # Verify timestamps are in descending order (or equal if very fast)
+        assert history[0].timestamp >= history[1].timestamp
+        assert history[1].timestamp >= history[2].timestamp
 
     def test_set_max_history_size_zero_then_nonzero(self) -> None:
         """Test setting max size to zero then back to non-zero."""

@@ -62,6 +62,7 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
   - Create this along with your first commit, and update it with each subsequent commit.
   - These will be used to create followup issues, so make them detailed!
 - Prefer defining functions (or reusing them!) to using Lambdas, particularly when encountering type-checking issues.
+- Do not do "stub implementations"; whatever functionality exists must be production-ready 100% of the time.
 
 ## Package Migration Guidelines
 
@@ -99,7 +100,7 @@ When migrating packages from `old/` to `src/`, follow these critical patterns le
    - If you believe a pre-commit hook is causing unnecessary hardship, ask me
    - Pre-commit hooks ensure code quality and must always be respected
    - This includes type checks and file/module line count complaints!
-   - And don't just comment `# type: ignore`; follow best practices and fix the underlying issue
+   - And don't just ignore type violations with comments; follow best practices and fix the underlying issue!
 
 1. **Do not write any code without a failing test.**
    - Every function, class, and feature must be driven by tests
@@ -130,9 +131,9 @@ When migrating packages from `old/` to `src/`, follow these critical patterns le
 
 6. **Tests must always match the structure of the codebase.**
    - Test structure mirrors source structure exactly
-     - e.g. code in src/goldentooth_agent/core/widget/ should be covered by tests in tests/goldentooth_agent/core/widget
+     - e.g. code in src/goldentooth_agent/core/widget/ should be covered by tests in tests/unit/goldentooth_agent_tests/core/widget
      - e.g. integration/global tests go in tests/integration
-   - Unit tests go in tests/<package_name> with matching directory structure
+   - Unit tests go in tests/unit/<package_name>_tests with matching directory structure
    - Integration tests go in tests/integration/ with matching directory structure
    - This ensures tests are discoverable and maintainable
 
