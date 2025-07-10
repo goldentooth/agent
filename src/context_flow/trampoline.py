@@ -314,3 +314,41 @@ class TrampolineFlowCombinators:
             flow maintains context immutability by creating new Context instances.
         """
         return ContextFlowCombinators.set_key(SHOULD_BREAK_KEY, value)
+
+    @staticmethod
+    def set_should_skip(value: bool = True) -> Flow[Context, Context]:
+        """Create a Flow that sets the skip signal in the context.
+
+        This method creates a Flow that sets the SHOULD_SKIP_KEY in the context
+        to signal that trampoline execution should skip certain operations.
+        When this flag is set to True, trampoline loops will skip specific
+        operations or processing steps as determined by the trampoline logic.
+
+        Args:
+            value: Whether to signal skip (default: True). Set to True to
+                signal skip operations, False to clear the skip signal.
+
+        Returns:
+            A Flow[Context, Context] that sets the skip flag and returns the
+            updated context with the flag set to the specified value.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+
+            # Create a flow to signal skip
+            skip_flow = TrampolineFlowCombinators.set_should_skip(True)
+
+            # Use in a flow chain
+            context = Context()
+            result_context = skip_flow.run_single(context)
+            # result_context will have the skip flag set to True
+            ```
+
+        Note:
+            This method uses ContextFlowCombinators.set_key() internally to
+            create a type-safe flow that sets the SHOULD_SKIP_KEY. The returned
+            flow maintains context immutability by creating new Context instances.
+        """
+        return ContextFlowCombinators.set_key(SHOULD_SKIP_KEY, value)
