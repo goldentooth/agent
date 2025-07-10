@@ -352,3 +352,55 @@ class TrampolineFlowCombinators:
             flow maintains context immutability by creating new Context instances.
         """
         return ContextFlowCombinators.set_key(SHOULD_SKIP_KEY, value)
+
+    @staticmethod
+    def check_should_exit() -> Flow[Context, bool]:
+        """Create a Flow that checks the exit signal in the context.
+
+        This method creates a Flow that checks the SHOULD_EXIT_KEY in the context
+        and returns its boolean value. If the key is not present in the context,
+        it returns False (indicating no exit signal). This method is used by
+        trampoline loops to determine whether execution should terminate.
+
+        Returns:
+            A Flow[Context, bool] that reads the exit flag from the context
+            and returns True if exit is signaled, False otherwise.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+
+            # Create a flow to check exit signal
+            check_flow = TrampolineFlowCombinators.check_should_exit()
+
+            # Use with a context that has the exit flag set
+            context = Context()
+            context[SHOULD_EXIT_KEY.path] = True
+            result = check_flow.run_single(context)
+            # result will be True
+
+            # Use with a context without the flag
+            empty_context = Context()
+            result = check_flow.run_single(empty_context)
+            # result will be False (default)
+            ```
+
+        Note:
+            This method uses ContextFlowCombinators.get_key() internally to
+            safely extract the SHOULD_EXIT_KEY value with False as the default.
+            The returned Flow yields boolean values directly, not Context objects.
+        """
+        # Create a wrapper flow that ensures bool type
+        base_flow = ContextFlowCombinators.get_key(SHOULD_EXIT_KEY, False)
+
+        async def _check_exit_flow(
+            stream: AsyncGenerator[Context, None]
+        ) -> AsyncGenerator[bool, None]:
+            """Wrapper flow that ensures bool return type."""
+            result_stream = base_flow(stream)
+            async for result in result_stream:
+                # Cast to bool since we know default=False ensures non-None result
+                yield bool(result) if result is not None else False
+
+        return Flow(_check_exit_flow, name="check_should_exit")
