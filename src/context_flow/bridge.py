@@ -520,3 +520,61 @@ class ContextFlowBridge:
                 context.set(exit_key, value)
 
         return set_should_exit
+
+    def _create_set_break_method(self) -> Callable[[Any, Any, bool], None]:
+        """Create method for setting break signal in context.
+
+        This method creates a callable function that can be used to set the break
+        signal in a context instance. The break signal is used by trampoline
+        execution patterns to indicate that the current iteration should be
+        broken or restarted.
+
+        Returns:
+            A callable function that accepts (self, context, value) parameters
+            and sets the break signal in the provided context instance
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+            from context.main import Context
+
+            bridge = ContextFlowBridge()
+            bridge.register_trampoline_support()
+
+            # Get the break setter method
+            set_break = bridge._create_set_break_method()
+
+            # Use with a context instance
+            context = Context()
+            set_break(None, context, True)  # Set break signal
+
+            # Check if break was signaled
+            break_key = bridge.get_trampoline_key("should_break")
+            should_break = context.get(break_key, False)
+            ```
+
+        Note:
+            This method returns a function that can be used to set the break
+            signal in any context instance. The returned function follows the
+            pattern expected by Flow system method registration, accepting
+            a self parameter (which is ignored), a context instance, and a
+            boolean value indicating the signal state.
+
+            The method uses the trampoline key registered by ensure_context_keys()
+            to maintain consistency with the bridge's key management system.
+        """
+        # Get the break trampoline key
+        break_key = self.get_trampoline_key("should_break")
+
+        def set_should_break(_: Any, context: Any, value: bool = True) -> None:
+            """Set the break signal in the context.
+
+            Args:
+                _: Ignored self parameter (for compatibility)
+                context: Context instance to set the signal in
+                value: Boolean value for the break signal (default: True)
+            """
+            if break_key and hasattr(context, "set"):
+                context.set(break_key, value)
+
+        return set_should_break
