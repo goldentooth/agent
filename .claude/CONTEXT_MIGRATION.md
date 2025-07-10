@@ -41,15 +41,6 @@ src/
 
 ### Phase 2: Context-Flow Integration Package
 
-#### 10. Trampoline System (`src/context_flow/trampoline.py`)
-
-##### 10.3 TrampolineFlowCombinators Class
-- **Commit 142**: `TrampolineFlowCombinators.exitable_chain` method
-- **Commit 143**: `TrampolineFlowCombinators.trampoline` method
-- **Commit 144**: `TrampolineFlowCombinators.trampoline_chain` method
-- **Commit 145**: `TrampolineFlowCombinators.conditional_flow` method
-- **Commit 146**: `TrampolineFlowCombinators.skip_if` method
-
 #### 11. Context-Flow Bridge (`src/context_flow/bridge.py`)
 
 ##### 11.1 Utility Functions
