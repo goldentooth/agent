@@ -771,3 +771,133 @@ class TrampolineFlowCombinators:
                         current_context[SHOULD_BREAK_KEY.path] = False
 
         return Flow(_trampoline_flow, name="trampoline")
+
+    @staticmethod
+    def trampoline_chain(*flows: Flow[Context, Context]) -> Flow[Context, Context]:
+        """Create a Flow that cycles through multiple flows until exit is signaled.
+
+        This method creates a Flow that executes multiple flows in a repeating cycle,
+        cycling back to the first flow after the last one completes. The cycle
+        continues until SHOULD_EXIT_KEY is set to True. If SHOULD_BREAK_KEY is set,
+        the cycle restarts from the first flow with the original input context.
+
+        This combines the sequential execution of exitable_chain with the repetitive
+        nature of trampoline, making it ideal for multi-stage iterative algorithms,
+        complex state machines, and cyclic processing workflows.
+
+        Args:
+            *flows: Variable number of Flow[Context, Context] objects to execute
+                in a repeating cycle. Each flow should take a Context and return a Context.
+
+        Returns:
+            A Flow[Context, Context] that executes the flows in a repeating cycle
+            until exit is signaled.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+            from flowengine.flow import Flow
+
+            # Create multi-stage processing flows
+            def validate_flow(ctx: Context) -> Context:
+                result = ctx.fork()
+                data = ctx.get("data", [])
+                result["validated"] = len(data) > 0
+                return result
+
+            def transform_flow(ctx: Context) -> Context:
+                result = ctx.fork()
+                if ctx.get("validated", False):
+                    result["transformed"] = True
+                return result
+
+            def optimize_flow(ctx: Context) -> Context:
+                result = ctx.fork()
+                iterations = ctx.get("iterations", 0) + 1
+                result["iterations"] = iterations
+                # Exit after 3 complete cycles
+                if iterations >= 9:  # 3 cycles * 3 flows = 9 iterations
+                    result[SHOULD_EXIT_KEY.path] = True
+                return result
+
+            # Create flows
+            validate = Flow.from_sync_fn(validate_flow)
+            transform = Flow.from_sync_fn(transform_flow)
+            optimize = Flow.from_sync_fn(optimize_flow)
+
+            # Create cycling chain
+            chain = TrampolineFlowCombinators.trampoline_chain(
+                validate, transform, optimize
+            )
+
+            # Execute chain
+            context = Context()
+            context["data"] = [1, 2, 3]
+            result = chain.run_single(context)
+            # Executes: validate → transform → optimize → validate → transform → optimize → ...
+            ```
+
+        Note:
+            The trampoline_chain pattern is useful for:
+            - Multi-stage iterative algorithms with distinct phases
+            - State machines with multiple states that cycle
+            - Complex validation/processing loops
+            - Optimization algorithms with multiple phases
+
+            Control signals:
+            - SHOULD_EXIT_KEY=True: Terminates the entire cycle immediately
+            - SHOULD_BREAK_KEY=True: Restarts from first flow with original context
+            Empty flows list returns the input context unchanged.
+        """
+        if not flows:
+            # Return identity flow for empty flows list
+            return Flow.identity()
+
+        async def _trampoline_chain_flow(
+            stream: AsyncGenerator[Context, None]
+        ) -> AsyncGenerator[Context, None]:
+            """Flow that cycles through flows repeatedly until exit is signaled."""
+            async for initial_context in stream:
+                original_context = initial_context
+                current_context = initial_context
+                flow_index = 0  # Track current position in the flow cycle
+
+                # Trampoline cycle loop
+                while True:
+                    # Get current flow (cycle through flows)
+                    current_flow = flows[flow_index]
+
+                    # Execute current flow
+                    flow_stream = _async_iter_from_item(current_context)
+                    result_stream = current_flow(flow_stream)
+
+                    # Get result from flow
+                    flow_result = None
+                    async for result_context in result_stream:
+                        flow_result = result_context
+                        break  # Take first result
+
+                    # Update context only if flow produced a result
+                    if flow_result is not None:
+                        current_context = flow_result
+
+                    # Check for exit signal
+                    should_exit = current_context.get(SHOULD_EXIT_KEY.path, False)
+                    if should_exit:
+                        yield current_context
+                        return
+
+                    # Check for break signal
+                    should_break = current_context.get(SHOULD_BREAK_KEY.path, False)
+                    if should_break:
+                        # Clear break flag and restart cycle with original context
+                        current_context = original_context.fork()
+                        current_context[SHOULD_BREAK_KEY.path] = False
+                        flow_index = 0  # Reset to first flow
+                        continue
+
+                    # Move to next flow in cycle
+                    flow_index = (flow_index + 1) % len(flows)
+
+        return Flow(_trampoline_chain_flow, name="trampoline_chain")

@@ -779,8 +779,81 @@ This retrospective tracks the migration of the Context system from `old/goldento
 - **Challenges**: None - followed established pattern from clear_break_flag
 - **Key Learning**: Clear flag methods provide explicit semantics for trampoline control flow
 
+### Commit #142: TrampolineFlowCombinators.exitable_chain method
+- **Date**: 2025-01-10
+- **Files Modified**:
+  - `src/context_flow/trampoline.py` - Added exitable_chain method
+  - `tests/integration/test_trampoline_exitable_chain.py` - Complete test suite (15 test cases)
+  - `.claude/CONTEXT_MIGRATION.md` - Migration tracking
+  - `.claude/retros/context-migration.md` - Progress documentation
+- **Implementation Details**:
+  - Executes flows sequentially with support for exit and break signals
+  - SHOULD_EXIT_KEY=True: Terminates chain immediately
+  - SHOULD_BREAK_KEY=True: Restarts chain from beginning (clears break flag)
+  - Empty flows list returns identity flow
+  - Maintains context immutability through proper forking
+  - Complex restart loop handling with proper signal checking
+- **Test Coverage**: 100% coverage of exitable_chain method (15 comprehensive test cases)
+- **Test Cases Cover**:
+  - Import verification and method signature checking
+  - Flow type verification and empty flows handling
+  - Single flow and multiple flows sequential execution
+  - Exit signal early termination behavior
+  - Break signal restart behavior with execution counting
+  - Context data preservation across flows
+  - Static method behavior and flow composition
+  - Documentation and naming verification
+  - Context immutability maintenance
+  - Complex multiple breaks and restart scenarios
+- **Pre-commit Status**: All hooks passed ✅ (with function length refactoring)
+- **Challenges Encountered**:
+  - Context API inconsistency: `.set()` method returning None instead of new context
+  - Resolved by switching from method chaining to explicit `.fork()` pattern
+  - Multiple function length violations requiring helper method extraction
+  - MyPy type annotation issues in test file resolved with TYPE_CHECKING imports
+- **Key Learnings**:
+  - Context immutability requires explicit `.fork()` pattern, not method chaining
+  - Complex test scenarios benefit from helper method extraction for maintainability
+  - Trampoline patterns require careful signal handling and restart logic
+  - TYPE_CHECKING imports essential for test file type annotations
+
+### Commit #143: TrampolineFlowCombinators.trampoline method
+- **Date**: 2025-01-10
+- **Files Modified**:
+  - `src/context_flow/trampoline.py` - Added trampoline method with comprehensive documentation
+  - `tests/integration/test_trampoline_trampoline.py` - Complete test suite (14 test cases)
+- **Implementation Details**:
+  - Repeatedly executes a single flow, feeding output back as input for next iteration
+  - SHOULD_EXIT_KEY=True: Stops iteration and yields final result
+  - SHOULD_BREAK_KEY=True: Restarts with original input (clears break flag)
+  - Classic trampoline pattern for iterative algorithms without stack overflow
+  - Ideal for state machines, convergence algorithms, and recursive-like patterns
+  - Maintains context immutability through proper forking
+- **Test Coverage**: 100% coverage of trampoline method (14 comprehensive test cases)
+- **Test Cases Cover**:
+  - Import verification and method signature checking
+  - Flow type verification and single flow handling
+  - Single and multiple iteration patterns with exit conditions
+  - Break signal restart behavior with execution tracking
+  - Context data preservation and accumulation across iterations
+  - Static method behavior and flow composition
+  - Documentation and naming verification
+  - Context immutability maintenance
+  - State machine implementation patterns
+  - Convergence algorithm demonstrations
+- **Pre-commit Status**: All hooks passed ✅ (with function length refactoring)
+- **Challenges Encountered**:
+  - MyPy type annotation issues with `ctx.get()` returning `Any | None`
+  - Resolved by using `(ctx.get("key", default) or default)` pattern for type safety
+  - Function length violation in composition test requiring helper method extraction
+- **Key Learnings**:
+  - Trampoline patterns enable iterative execution without recursion stack issues
+  - `ctx.get()` returns `Any | None` requiring explicit type handling for operations
+  - Helper method extraction improves test maintainability and readability
+  - Comprehensive test scenarios validate real-world usage patterns
+
 ## Next Steps
-1. Continue with Commit #142: TrampolineFlowCombinators.exitable_chain method
+1. Continue with Commit #144: TrampolineFlowCombinators.trampoline_chain method
 2. Maintain one function per commit approach
-3. Move to advanced trampoline patterns implementation
+3. Complete remaining trampoline pattern implementations
 4. Continue with Phase 2 context-flow integration package
