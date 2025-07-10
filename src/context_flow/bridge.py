@@ -578,3 +578,60 @@ class ContextFlowBridge:
                 context.set(break_key, value)
 
         return set_should_break
+
+    def _create_set_skip_method(self) -> Callable[[Any, Any, bool], None]:
+        """Create method for setting skip signal in context.
+
+        This method creates a callable function that can be used to set the skip
+        signal in a context instance. The skip signal is used by trampoline
+        execution patterns to indicate that certain operations should be skipped.
+
+        Returns:
+            A callable function that accepts (self, context, value) parameters
+            and sets the skip signal in the provided context instance
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+            from context.main import Context
+
+            bridge = ContextFlowBridge()
+            bridge.register_trampoline_support()
+
+            # Get the skip setter method
+            set_skip = bridge._create_set_skip_method()
+
+            # Use with a context instance
+            context = Context()
+            set_skip(None, context, True)  # Set skip signal
+
+            # Check if skip was signaled
+            skip_key = bridge.get_trampoline_key("should_skip")
+            should_skip = context.get(skip_key, False)
+            ```
+
+        Note:
+            This method returns a function that can be used to set the skip
+            signal in any context instance. The returned function follows the
+            pattern expected by Flow system method registration, accepting
+            a self parameter (which is ignored), a context instance, and a
+            boolean value indicating the signal state.
+
+            The method uses the trampoline key registered by ensure_context_keys()
+            to maintain consistency with the bridge's key management system.
+        """
+        # Get the skip trampoline key
+        skip_key = self.get_trampoline_key("should_skip")
+
+        def set_should_skip(_: Any, context: Any, value: bool = True) -> None:
+            """Set the skip signal in the context.
+
+            Args:
+                _: Ignored self parameter (for compatibility)
+                context: Context instance to set the signal in
+                value: Boolean value for the skip signal (default: True)
+            """
+            if skip_key and hasattr(context, "set"):
+                context.set(skip_key, value)
+
+        return set_should_skip
