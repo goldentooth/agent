@@ -8,7 +8,7 @@ Welcome to the Goldentooth Agent documentation. This is a sophisticated AI agent
    :caption: Contents:
 
    overview
-   flowengine
+   flow
    context-migration
    api/modules
    background/index
@@ -49,7 +49,7 @@ The Flow Engine migration is **complete** ✅ and Context System migration is **
 
 * **Flow Integration** (``src/context_flow/``) - Seamless Flow Engine integration
 * **Trampoline System** - Advanced flow control patterns **[CURRENT]**
-  
+
   * ✅ Utility functions and context keys (Commits #129-133)
   * ✅ Control flow setters (set_should_exit, set_should_break, set_should_skip)
   * ✅ Control flow checkers (check_should_exit, check_should_break, check_should_skip)
@@ -65,7 +65,7 @@ The Flow Engine migration is **complete** ✅ and Context System migration is **
 * ✅ **67+ flow combinators** with full type safety
 * ✅ **150+ test cases** with 96%+ test coverage for Flow Engine
 * ✅ **100% type safety** - Full Pyright/MyPy compliance
-* ✅ **Zero dependencies** - Standalone flowengine package
+* ✅ **Zero dependencies** - Standalone flow package
 * ✅ **TDD approach** - Every function/method individually tested
 * ✅ **50+ test files** covering all functionality
 
@@ -76,13 +76,13 @@ The system is organized into several core modules:
 
 **Current Architecture**
 
-* **Flow Engine** (``flowengine``) - Functional reactive stream processing [**COMPLETE ✅**]
+* **Flow Engine** (``flow``) - Functional reactive stream processing [**COMPLETE ✅**]
 
-  * ``flowengine.flow`` - Core Flow class with 23+ methods
-  * ``flowengine.combinators`` - 67+ stream processing functions across 8 categories
-  * ``flowengine.observability`` - Performance monitoring and analysis
-  * ``flowengine.exceptions`` - Flow-specific error types
-  * ``flowengine.protocols`` - Type protocols for the flow system
+  * ``flow.flow`` - Core Flow class with 23+ methods
+  * ``flow.combinators`` - 67+ stream processing functions across 8 categories
+  * ``flow.observability`` - Performance monitoring and analysis
+  * ``flow.exceptions`` - Flow-specific error types
+  * ``flow.protocols`` - Type protocols for the flow system
 
 * **Context System** (``context``, ``context_flow``) - Hierarchical context management [**MIGRATING 🔄**]
 
@@ -179,9 +179,9 @@ Flow Engine Example
 
 .. code-block:: python
 
-   from flowengine import Flow
-   from flowengine.combinators import (
-       batch_stream, debounce_stream, parallel_stream, 
+   from flow import Flow
+   from flow.combinators import (
+       batch_stream, debounce_stream, parallel_stream,
        retry_stream, circuit_breaker_stream
    )
 

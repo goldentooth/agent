@@ -20,7 +20,7 @@ Development Commands
    # Testing
    poetry run poe pytest                   # Run all tests
    poetry run poe pytest --cov             # Run tests with coverage
-   poetry run poe pytest tests/flowengine  # Run Flow Engine tests
+   poetry run poe pytest tests/flow  # Run Flow Engine tests
    poetry run poe pytest tests/integration # Run integration tests
 
    # Type checking
@@ -46,7 +46,7 @@ The project has completed its migration to a modern, type-safe architecture:
 .. code-block:: text
 
    src/
-   ├── flowengine/                    # Flow Engine (COMPLETE ✅)
+   ├── flow/                    # Flow Engine (COMPLETE ✅)
    │   ├── __init__.py               # Package exports
    │   ├── flow.py                   # Core Flow class (23+ methods)
    │   ├── exceptions.py             # Flow-specific errors
@@ -77,7 +77,7 @@ Tests mirror the source structure exactly:
 .. code-block:: text
 
    tests/
-   ├── flowengine/                   # Flow Engine tests
+   ├── flow/                   # Flow Engine tests
    │   ├── combinators/             # Combinator tests
    │   │   ├── test_*.py           # Individual combinator tests
    │   ├── observability/           # Observability tests
@@ -193,8 +193,8 @@ Import Standards:
    from antidote import inject, injectable
 
    # Local imports last
-   from flowengine import Flow
-   from flowengine.combinators import map_stream, filter_stream
+   from flow import Flow
+   from flow.combinators import map_stream, filter_stream
 
 Naming Conventions:
 
@@ -242,17 +242,17 @@ Adding New Combinators:
 
    # Template for new combinators
    from typing import TypeVar, Callable, AsyncIterator
-   from flowengine.protocols import StreamTransform
+   from flow.protocols import StreamTransform
 
    T = TypeVar("T")
    R = TypeVar("R")
 
    def new_combinator(param: SomeType) -> StreamTransform[T, R]:
        """Brief description of the combinator.
-       
+
        Args:
            param: Description of the parameter
-           
+
        Returns:
            Stream transform function
        """
@@ -260,7 +260,7 @@ Adding New Combinators:
            async for item in stream:
                # Process item
                yield processed_item
-       
+
        return transform
 
 Testing New Combinators:
@@ -458,20 +458,20 @@ Common Issues
 .. code-block:: bash
 
    # Run specific test file
-   poetry run poe pytest tests/flowengine/test_flow.py
+   poetry run poe pytest tests/flow/test_flow.py
 
    # Run with verbose output
    poetry run poe pytest -v
 
    # Run with coverage
-   poetry run poe pytest --cov=src/flowengine
+   poetry run poe pytest --cov=src/flow
 
 **Performance Issues:**
 
 .. code-block:: bash
 
    # Profile Flow Engine performance
-   poetry run poe pytest tests/flowengine/test_performance.py
+   poetry run poe pytest tests/flow/test_performance.py
 
    # Check for memory leaks
    poetry run poe pytest --memray
@@ -481,7 +481,7 @@ Flow Engine Debugging:
 .. code-block:: python
 
    # Use observability combinators for debugging
-   from flowengine.combinators import log_stream, trace_stream, inspect_stream
+   from flow.combinators import log_stream, trace_stream, inspect_stream
 
    debug_pipeline = (
        Flow.identity()

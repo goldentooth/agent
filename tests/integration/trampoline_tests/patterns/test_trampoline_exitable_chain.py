@@ -8,7 +8,7 @@ from context.main import Context
 from context_flow.trampoline import SHOULD_BREAK_KEY, SHOULD_EXIT_KEY
 
 if TYPE_CHECKING:
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
 
 class TestTrampolineFlowCombinatorsExitableChain:
@@ -40,7 +40,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
     def test_exitable_chain_returns_flow(self) -> None:
         """Test that exitable_chain returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Test that it returns a Flow
         flow = TrampolineFlowCombinators.exitable_chain()
@@ -66,7 +66,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
         """Test that exitable_chain with single flow executes correctly."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create single flow that modifies context
         def flow1_fn(ctx: Context) -> Context:
@@ -88,7 +88,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
         """Test that exitable_chain executes flows sequentially."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flows that modify context sequentially
         def flow1_fn(ctx: Context) -> Context:
@@ -122,7 +122,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
         """Test that exitable_chain exits early when exit signal is set."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flows where second flow sets exit signal
         def flow1_fn(ctx: Context) -> Context:
@@ -250,7 +250,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
         """Test that exitable_chain maintains context immutability."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flow that modifies context
         def flow1_fn(ctx: Context) -> Context:
@@ -305,7 +305,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
         self,
     ) -> tuple["Flow[Context, Context]", "Flow[Context, Context]"]:
         """Create simple step flows for testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def flow1_fn(ctx: Context) -> Context:
             result = ctx.fork()
@@ -323,7 +323,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
         self,
     ) -> tuple["Flow[Context, Context]", "Flow[Context, Context]"]:
         """Create prefix and suffix flows for composition testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def prefix_fn(ctx: Context) -> Context:
             result = ctx.fork()
@@ -343,7 +343,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
         "Flow[Context, Context]", "Flow[Context, Context]", "Flow[Context, Context]"
     ]:
         """Create flows that add data to context."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def flow1_fn(ctx: Context) -> Context:
             result = ctx.fork()
@@ -370,7 +370,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
         self, step_name: str, execution_log: list[str], break_on_count: int = 0
     ) -> "Flow[Context, Context]":
         """Create a logging flow that tracks execution and optionally breaks."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def flow_fn(ctx: Context) -> Context:
             count = len([x for x in execution_log if x == step_name])
@@ -391,7 +391,7 @@ class TestTrampolineFlowCombinatorsExitableChain:
         self,
     ) -> tuple["Flow[Context, Context]", "Flow[Context, Context]", dict[str, int]]:
         """Create flows that count executions and break on first flow2 execution."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         execution_count = {"flow1": 0, "flow2": 0}
 

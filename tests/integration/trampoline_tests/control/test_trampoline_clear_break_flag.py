@@ -37,7 +37,7 @@ class TestTrampolineFlowCombinatorsClearBreakFlag:
     def test_clear_break_flag_returns_flow(self) -> None:
         """Test that clear_break_flag returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Test that it returns a Flow
         flow = TrampolineFlowCombinators.clear_break_flag()
@@ -125,7 +125,7 @@ class TestTrampolineFlowCombinatorsClearBreakFlag:
     def test_clear_break_flag_flow_composition(self) -> None:
         """Test that clear_break_flag flows can be composed with other flows."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create a flow that sets break flag
         set_break_flow = TrampolineFlowCombinators.set_should_break(True)
@@ -242,7 +242,7 @@ class TestTrampolineFlowCombinatorsClearBreakFlag:
     def test_clear_break_flag_integration_with_checkers(self) -> None:
         """Test that clear_break_flag works with break flag checkers."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flows
         set_break_flow = TrampolineFlowCombinators.set_should_break(True)

@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 
 from context_flow.integration import _single_item_stream, run_flow_with_input
-from flowengine.flow import Flow
+from flow.flow import Flow
 
 
 class TestSingleItemStream:

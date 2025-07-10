@@ -6,7 +6,7 @@ import pytest
 
 from context.main import Context
 from context_flow.integration import global_changes_as_flow
-from flowengine.flow import Flow
+from flow.flow import Flow
 
 
 class TestGlobalChangesAsFlow:

@@ -44,7 +44,7 @@ class TestTrampolineFlowCombinatorsSetShouldExit:
     def test_set_should_exit_returns_flow(self) -> None:
         """Test that set_should_exit returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Test with default value
         flow = TrampolineFlowCombinators.set_should_exit()
@@ -167,7 +167,7 @@ class TestTrampolineFlowCombinatorsSetShouldExit:
     def test_set_should_exit_flow_composition(self) -> None:
         """Test that set_should_exit flows can be composed with other flows."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create a simple transformation flow
         def add_data_flow(stream: Any) -> Any:
@@ -346,7 +346,7 @@ class TestTrampolineFlowCombinatorsSetShouldBreak:
     def test_set_should_break_returns_flow(self) -> None:
         """Test that set_should_break returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Test with default value
         flow = TrampolineFlowCombinators.set_should_break()
@@ -469,7 +469,7 @@ class TestTrampolineFlowCombinatorsSetShouldBreak:
     def test_set_should_break_flow_composition(self) -> None:
         """Test that set_should_break flows can be composed with other flows."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create a simple transformation flow
         def add_data_flow(stream: Any) -> Any:
@@ -648,7 +648,7 @@ class TestTrampolineFlowCombinatorsSetShouldSkip:
     def test_set_should_skip_returns_flow(self) -> None:
         """Test that set_should_skip returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Test with default value
         flow = TrampolineFlowCombinators.set_should_skip()
@@ -771,7 +771,7 @@ class TestTrampolineFlowCombinatorsSetShouldSkip:
     def test_set_should_skip_flow_composition(self) -> None:
         """Test that set_should_skip flows can be composed with other flows."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create a simple transformation flow
         def add_data_flow(stream: Any) -> Any:

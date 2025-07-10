@@ -8,7 +8,7 @@ from context.main import Context
 from context_flow.trampoline import SHOULD_BREAK_KEY, SHOULD_EXIT_KEY
 
 if TYPE_CHECKING:
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
 
 class TestTrampolineFlowCombinatorsTramplineChain:
@@ -40,7 +40,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
     def test_trampoline_chain_returns_flow(self) -> None:
         """Test that trampoline_chain returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create test flows
         flow1: "Flow[Context, Context]" = Flow.from_sync_fn(lambda ctx: ctx)
@@ -70,7 +70,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
         """Test trampoline_chain with single flow that cycles until exit."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flow that increments counter and exits at 5
         def counting_flow(ctx: Context) -> Context:
@@ -198,7 +198,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
     def test_trampoline_chain_flow_naming(self) -> None:
         """Test that trampoline_chain creates flows with descriptive names."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create test flows
         flow1: "Flow[Context, Context]" = Flow.from_sync_fn(lambda ctx: ctx)
@@ -214,7 +214,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
         """Test that trampoline_chain maintains context immutability."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def modifying_flow(ctx: Context) -> Context:
             result = ctx.fork()
@@ -243,7 +243,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
         """Test trampoline_chain implementing a multi-state machine."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def state_init(ctx: Context) -> Context:
             result = ctx.fork()
@@ -310,7 +310,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
     # Helper methods for flow creation
     def _create_cycle_flows(self) -> list["Flow[Context, Context]"]:
         """Create flows that cycle and exit after 2 cycles."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def flow_1(ctx: Context) -> Context:
             result = ctx.fork()
@@ -333,7 +333,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
         self,
     ) -> tuple["Flow[Context, Context]", "Flow[Context, Context]"]:
         """Create setup and cleanup flows for composition testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def setup_flow(ctx: Context) -> Context:
             result = ctx.fork()
@@ -354,7 +354,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
         "Flow[Context, Context]", "Flow[Context, Context]", "Flow[Context, Context]"
     ]:
         """Create stage flows for data preservation testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def stage_1(ctx: Context) -> Context:
             result = ctx.fork()
@@ -392,7 +392,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
         "Flow[Context, Context]", "Flow[Context, Context]", "Flow[Context, Context]"
     ]:
         """Create optimization flows for algorithm testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def analyze_phase(ctx: Context) -> Context:
             result = ctx.fork()
@@ -433,7 +433,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
         "Flow[Context, Context]", "Flow[Context, Context]", "Flow[Context, Context]"
     ]:
         """Create ABC flows that log execution and exit after 6 executions."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def flow_a(ctx: Context) -> Context:
             execution_log.append("A")
@@ -468,7 +468,7 @@ class TestTrampolineFlowCombinatorsTramplineChain:
         "Flow[Context, Context]", "Flow[Context, Context]", "Flow[Context, Context]"
     ]:
         """Create flows that test break/restart behavior."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def flow_a(ctx: Context) -> Context:
             execution_log.append("A")

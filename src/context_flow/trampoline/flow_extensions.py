@@ -31,7 +31,7 @@ def extend_flow_with_trampoline() -> None:
 
     Example:
         ```python
-        from flowengine.flow import Flow
+        from flow.flow import Flow
         from context_flow.trampoline import extend_flow_with_trampoline
 
         # Extend Flow class with trampoline methods
@@ -42,7 +42,7 @@ def extend_flow_with_trampoline() -> None:
         result = flow.run_single("input")
         ```
     """
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
     def run_single(self: "Flow[Any, Any]", item: Any) -> Any:
         """Execute this flow with a single item and return the first result.

@@ -40,10 +40,10 @@ Current Architecture (Migration Complete)
    │   │   ├── execution_combinators.py # Execution patterns
    │   │   └── flow_extensions.py   # Flow class extensions
    │   └── py.typed                  # Type marker
-   ├── flowengine/                    # Flow Engine (COMPLETE ✅)
+   ├── flow/                    # Flow Engine (COMPLETE ✅)
    │   ├── __init__.py               # Package exports
    │   ├── flow.py                   # Core Flow class (23+ methods)
-   │   ├── exceptions.py             # Flow-specific errors 
+   │   ├── exceptions.py             # Flow-specific errors
    │   ├── protocols.py              # Type protocols
    │   ├── observability/            # Performance monitoring
    │   │   ├── __init__.py          # Observability exports
@@ -167,7 +167,7 @@ Flow Engine Features (Complete)
 * ✅ **67+ combinators** implemented with full type safety
 * ✅ **150+ test cases** with 96%+ test coverage
 * ✅ **100% type safety** - Full Pyright/MyPy compliance
-* ✅ **Zero dependencies** - Standalone flowengine package
+* ✅ **Zero dependencies** - Standalone flow package
 * ✅ **33 source files** with comprehensive functionality
 * ✅ **50 test files** covering all functionality
 
@@ -248,7 +248,7 @@ Required annotations:
    # ✅ Required: Generic type variables
    T = TypeVar("T")
    R = TypeVar("R")
-   
+
    def transform(flow: Flow[T], fn: Callable[[T], R]) -> Flow[R]:
        ...
 
@@ -286,12 +286,12 @@ Usage Examples
 
 .. code-block:: python
 
-   from flowengine import Flow
-   
+   from flow import Flow
+
    # Create flows from functions
    double_flow = Flow.from_sync_fn(lambda x: x * 2)
    filter_even = Flow.identity().filter(lambda x: x % 2 == 0)
-   
+
    # Compose flows
    pipeline = double_flow >> filter_even
 
@@ -299,11 +299,11 @@ Usage Examples
 
 .. code-block:: python
 
-   from flowengine.combinators import (
+   from flow.combinators import (
        batch_stream, debounce_stream, parallel_stream,
        retry_stream, circuit_breaker_stream
    )
-   
+
    # Create robust data processing pipeline
    pipeline = (
        Flow.identity()
@@ -318,11 +318,11 @@ Usage Examples
 
 .. code-block:: python
 
-   from flowengine.combinators import (
+   from flow.combinators import (
        log_stream, trace_stream, metrics_stream,
        recover_stream, materialize_stream
    )
-   
+
    # Observable and resilient pipeline
    pipeline = (
        Flow.identity()

@@ -7,7 +7,7 @@ import pytest
 from context.main import Context
 
 if TYPE_CHECKING:
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
 
 class TestTrampolineFlowCombinatorsConditionalFlow:
@@ -40,7 +40,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
     def test_conditional_flow_returns_flow(self) -> None:
         """Test that conditional_flow returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create test flows
         then_flow: "Flow[Context, Context]" = Flow.from_sync_fn(lambda ctx: ctx)
@@ -54,7 +54,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         """Test that conditional_flow executes then_flow when predicate is True."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create predicate that always returns True
         def always_true(ctx: Context) -> bool:
@@ -81,7 +81,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         """Test that conditional_flow executes else_flow when predicate is False."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create predicate that always returns False
         def always_false(ctx: Context) -> bool:
@@ -117,7 +117,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         """Test that conditional_flow passes through context when predicate is False and no else_flow."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create predicate that always returns False
         def always_false(ctx: Context) -> bool:
@@ -175,7 +175,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         """Test that conditional_flow preserves existing context data."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create simple predicate and flows
         predicate = lambda ctx: ctx.get("execute", False)
@@ -245,7 +245,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
     def test_conditional_flow_flow_naming(self) -> None:
         """Test that conditional_flow creates flows with descriptive names."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create test flows
         predicate = lambda ctx: True
@@ -261,7 +261,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         """Test that conditional_flow maintains context immutability."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flow that modifies context
         def modify_fn(ctx: Context) -> Context:
@@ -316,7 +316,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         """Test conditional_flow behavior with predicate errors."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create predicate that may raise exception
         def error_predicate(ctx: Context) -> bool:
@@ -374,7 +374,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         Callable[[Context], bool], "Flow[Context, Context]", "Flow[Context, Context]"
     ]:
         """Create flows for composition testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def predicate(ctx: Context) -> bool:
             return bool(ctx.get("condition", False) or False)
@@ -395,7 +395,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         self,
     ) -> tuple["Flow[Context, Context]", "Flow[Context, Context]"]:
         """Create prefix and suffix flows for composition testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def prefix_fn(ctx: Context) -> Context:
             result = ctx.fork()
@@ -415,7 +415,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         Callable[[Context], bool], "Flow[Context, Context]", "Flow[Context, Context]"
     ]:
         """Create priority-based predicate and flows for testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def complex_predicate(ctx: Context) -> bool:
             priority = ctx.get("priority", 0) or 0
@@ -443,7 +443,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         Callable[[Context], bool], "Flow[Context, Context]", "Flow[Context, Context]"
     ]:
         """Create status-based predicate and flows for testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def needs_processing(ctx: Context) -> bool:
             return ctx.get("status", "") == "pending"
@@ -470,7 +470,7 @@ class TestTrampolineFlowCombinatorsConditionalFlow:
         Callable[[Context], bool], "Flow[Context, Context]", "Flow[Context, Context]"
     ]:
         """Create math-based predicate and flows for testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def is_even(ctx: Context) -> bool:
             number = ctx.get("number", 0) or 0

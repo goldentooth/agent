@@ -21,7 +21,7 @@ from .flow_extensions import extend_flow_with_trampoline
 
 if TYPE_CHECKING:
     from context.main import Context
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
 __all__ = [
     "async_iter_from_item",
@@ -112,7 +112,7 @@ class TrampolineFlowCombinators:
             ```python
             from context.main import Context
             from context_flow.trampoline.execution_combinators import ExecutionCombinators
-            from flowengine.flow import Flow
+            from flow.flow import Flow
 
             # Create individual flows
             flow1 = Flow.from_sync_fn(lambda ctx: ctx.set("step", 1))
@@ -159,7 +159,7 @@ class TrampolineFlowCombinators:
             ```python
             from context.main import Context
             from context_flow.trampoline.execution_combinators import ExecutionCombinators
-            from flowengine.flow import Flow
+            from flow.flow import Flow
 
             # Create a flow that increments a counter until it reaches 10
             def increment_until_10(ctx: Context) -> Context:
@@ -219,7 +219,7 @@ class TrampolineFlowCombinators:
             ```python
             from context.main import Context
             from context_flow.trampoline.execution_combinators import ExecutionCombinators
-            from flowengine.flow import Flow
+            from flow.flow import Flow
 
             # Create multi-stage processing flows
             def validate_flow(ctx: Context) -> Context:

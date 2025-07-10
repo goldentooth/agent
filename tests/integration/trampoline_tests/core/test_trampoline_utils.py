@@ -261,7 +261,7 @@ class TestExtendFlowWithTrampoline:
 
     def test_extend_flow_with_trampoline_basic_functionality(self) -> None:
         """Test that extend_flow_with_trampoline adds trampoline methods to Flow class."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Store original methods to restore later
         original_methods = {}
@@ -301,7 +301,7 @@ class TestExtendFlowWithTrampoline:
     def test_extend_flow_with_trampoline_run_single_method(self) -> None:
         """Test that the added run_single method works correctly."""
         from context.main import Context
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Store original method to restore later
         original_run_single = getattr(Flow, "run_single", None)
@@ -335,7 +335,7 @@ class TestExtendFlowWithTrampoline:
 
     def test_extend_flow_with_trampoline_as_single_stream_method(self) -> None:
         """Test that the added as_single_stream method works correctly."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Store original method to restore later
         original_as_single_stream = getattr(Flow, "as_single_stream", None)
@@ -370,7 +370,7 @@ class TestExtendFlowWithTrampoline:
 
     def test_extend_flow_with_trampoline_repeat_until_method(self) -> None:
         """Test that the added repeat_until method works correctly."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Store original method to restore later
         original_repeat_until = getattr(Flow, "repeat_until", None)
@@ -407,7 +407,7 @@ class TestExtendFlowWithTrampoline:
 
     def test_extend_flow_with_trampoline_exit_on_method(self) -> None:
         """Test that the added exit_on method works correctly."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Store original method to restore later
         original_exit_on = getattr(Flow, "exit_on", None)
@@ -444,7 +444,7 @@ class TestExtendFlowWithTrampoline:
 
     def test_extend_flow_with_trampoline_multiple_calls(self) -> None:
         """Test that extend_flow_with_trampoline can be called multiple times safely."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Store original methods to restore later
         original_methods = {}
@@ -480,7 +480,7 @@ class TestExtendFlowWithTrampoline:
 
     def test_extend_flow_with_trampoline_preserves_existing_methods(self) -> None:
         """Test that extend_flow_with_trampoline preserves existing Flow methods."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Store original methods to restore later
         original_methods = {}
@@ -521,7 +521,7 @@ class TestExtendFlowWithTrampoline:
         """Test that the added methods have proper signatures."""
         import inspect
 
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Store original methods to restore later
         original_methods = {}
@@ -567,7 +567,7 @@ class TestExtendFlowWithTrampoline:
 
     def test_extend_flow_with_trampoline_documentation(self) -> None:
         """Test that the added methods have proper documentation."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Store original methods to restore later
         original_methods = {}

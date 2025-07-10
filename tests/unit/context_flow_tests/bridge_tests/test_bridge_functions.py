@@ -62,7 +62,7 @@ class TestInitializeContextIntegration:
     def test_initialize_context_integration_sets_up_extensions(self) -> None:
         """Test that initialization sets up Flow and Context extensions."""
         from context_flow.bridge import initialize_context_integration
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Initialize the bridge
         initialize_context_integration()

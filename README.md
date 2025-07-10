@@ -14,7 +14,7 @@ The system emphasizes **type safety**, **performance**, **security**, and **deve
 
 The system is organized into several key modules:
 
-#### **Flow Engine (`flowengine/`)** ✅ **COMPLETE**
+#### **Flow Engine (`flow/`)** ✅ **COMPLETE**
 - **`Flow`** - Core reactive stream processing class with 23+ methods
 - **Combinators** - 67+ stream processing functions across 8 categories:
   - **Basic** (13 functions): map, filter, compose, collect, etc.
@@ -50,7 +50,7 @@ The system is organized into several key modules:
 - **🔒 Type Safety**: Full Pyright/MyPy compliance with strict type checking
 - **⚡ Performance**: Async-first design with efficient stream processing
 - **🧩 Composability**: Functional programming patterns with 67+ combinators
-- **🔧 Zero Dependencies**: Standalone flowengine with minimal external dependencies
+- **🔧 Zero Dependencies**: Standalone flow with minimal external dependencies
 - **🧪 Test Coverage**: 96%+ test coverage with 150+ test cases
 - **📊 Observability**: Built-in tracing, metrics, and monitoring
 - **🛡️ Error Handling**: Comprehensive error recovery and circuit breaker patterns
@@ -110,7 +110,7 @@ goldentooth-agent --help
 ### Flow Engine Programming
 
 ```python
-from flowengine import Flow
+from flow import Flow
 
 # Create flows from functions
 double_flow = Flow.from_sync_fn(lambda x: x * 2)
@@ -131,8 +131,8 @@ items = [item async for item in result]  # [0, 2, 4, 6, 8]
 ### Advanced Flow Patterns
 
 ```python
-from flowengine import Flow
-from flowengine.combinators import (
+from flow import Flow
+from flow.combinators import (
     batch_stream, debounce_stream, parallel_stream,
     retry_stream, circuit_breaker_stream
 )
@@ -268,7 +268,7 @@ The Context system has been completely rewritten from the ground up with:
 - **150+ test cases** with 96%+ test coverage for Flow Engine
 - **100% test coverage** for all Context system components
 - **100% type safety** - Full Pyright/MyPy compliance
-- **Zero dependencies** - Standalone flowengine package
+- **Zero dependencies** - Standalone flow package
 - **Comprehensive testing** - Every function/method individually tested
 
 ### 🧪 Test Coverage

@@ -14,7 +14,7 @@ from goldentooth_agent.core.background_loop import run_in_background
 if TYPE_CHECKING:
     from context.key import ContextKey
     from context.main import Context
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
 __all__ = [
     "ContextFlowError",
@@ -81,7 +81,7 @@ def extend_flow_with_context() -> None:
     This function adds convenience methods to the Flow class that make it easier
     to work with context-flow integration patterns.
     """
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
     def run(self: "Flow[Any, Any]", input_item: Any) -> Any:
         """Run this flow with a single input and return the first result.
@@ -129,7 +129,7 @@ def context_flow(
         MissingRequiredKeyError: When required context keys are missing.
         ContextTypeMismatchError: When context values don't match expected types.
     """
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
     def decorator(func: Callable[..., Any]) -> "Flow[Any, Any]":
         """Decorator that creates a context-aware flow."""
@@ -201,7 +201,7 @@ def as_flow(context: "Context", key: str, use_async: bool = True) -> "Flow[None,
     Returns:
         Flow that yields new values when the key changes
     """
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
     # For now, create a minimal Flow that returns the current value
     # This is a placeholder implementation to pass initial tests
@@ -225,7 +225,7 @@ def global_changes_as_flow(
     Returns:
         Flow that yields change data when any key changes
     """
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
     # For now, create a minimal Flow that returns empty change data
     # This is a placeholder implementation to pass initial tests
@@ -286,7 +286,7 @@ class ContextFlowCombinators:
             # result is "Alice"
             ```
         """
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         async def _get_key_flow(
             stream: AsyncGenerator["Context", None]
@@ -357,7 +357,7 @@ class ContextFlowCombinators:
             # result_context["user.name"] == "Alice"
             ```
         """
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         async def _set_key_flow(
             stream: AsyncGenerator["Context", None]
@@ -433,7 +433,7 @@ class ContextFlowCombinators:
             # result is "Alice"
             ```
         """
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         async def _require_key_flow(
             stream: AsyncGenerator["Context", None]
@@ -507,7 +507,7 @@ class ContextFlowCombinators:
             # result is None
             ```
         """
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         async def _optional_key_flow(
             stream: AsyncGenerator["Context", None]
@@ -581,7 +581,7 @@ class ContextFlowCombinators:
             # "old.location" not in result
             ```
         """
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         async def _move_key_flow(
             stream: AsyncGenerator["Context", None]
@@ -680,7 +680,7 @@ class ContextFlowCombinators:
             # result["original.data"] == "Important"  # Still exists
             ```
         """
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         async def _copy_key_flow(
             stream: AsyncGenerator["Context", None]
@@ -769,7 +769,7 @@ class ContextFlowCombinators:
             # result["permanent"] == "keep_me"
             ```
         """
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         async def _forget_key_flow(
             stream: AsyncGenerator["Context", None]
@@ -831,7 +831,7 @@ class ContextFlowCombinators:
             # result is the same context with validation passed
             ```
         """
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         async def _require_keys_flow(
             stream: AsyncGenerator["Context", None]
@@ -899,7 +899,7 @@ class ContextFlowCombinators:
             # result["user.name"] == "Alice"
             ```
         """
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         async def _transform_key_flow(
             stream: AsyncGenerator["Context", None]

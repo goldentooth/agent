@@ -8,7 +8,7 @@ from context.main import Context
 from context_flow.trampoline import SHOULD_BREAK_KEY, SHOULD_EXIT_KEY
 
 if TYPE_CHECKING:
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
 
 class TestTrampolineFlowCombinatorsTrampoline:
@@ -40,7 +40,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
     def test_trampoline_returns_flow(self) -> None:
         """Test that trampoline returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create a simple flow
         test_flow: "Flow[Context, Context]" = Flow.from_sync_fn(lambda ctx: ctx)
@@ -53,7 +53,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
         """Test trampoline with flow that exits on first iteration."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flow that sets exit immediately
         def exit_flow(ctx: Context) -> Context:
@@ -76,7 +76,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
         """Test trampoline that executes multiple iterations before exit."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create counting flow that exits at 5
         def counting_flow(ctx: Context) -> Context:
@@ -102,7 +102,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
         """Test that trampoline restarts with original context on break signal."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Track execution history
         execution_log: list[int] = []
@@ -139,7 +139,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
         """Test that trampoline preserves context data across iterations."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flow that accumulates data
         def accumulator_flow(ctx: Context) -> Context:
@@ -215,7 +215,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
     def test_trampoline_flow_naming(self) -> None:
         """Test that trampoline creates flows with descriptive names."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create test flow
         test_flow: "Flow[Context, Context]" = Flow.from_sync_fn(lambda ctx: ctx)
@@ -230,7 +230,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
         """Test that trampoline maintains context immutability."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flow that modifies context
         def modifying_flow(ctx: Context) -> Context:
@@ -260,7 +260,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
         """Test trampoline implementing a simple state machine."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create state machine flow
         def state_machine_flow(ctx: Context) -> Context:
@@ -297,7 +297,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
         """Test trampoline for iterative convergence algorithm."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flow that converges to a value
         def convergence_flow(ctx: Context) -> Context:
@@ -335,7 +335,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
     # Helper methods for flow creation
     def _create_increment_flow(self) -> "Flow[Context, Context]":
         """Create flow that increments count and exits at 3."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def increment_flow(ctx: Context) -> Context:
             result = ctx.fork()
@@ -351,7 +351,7 @@ class TestTrampolineFlowCombinatorsTrampoline:
         self,
     ) -> tuple["Flow[Context, Context]", "Flow[Context, Context]"]:
         """Create prefix and suffix flows for composition testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def prefix_flow(ctx: Context) -> Context:
             result = ctx.fork()

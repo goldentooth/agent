@@ -37,7 +37,7 @@ class TestTrampolineFlowCombinatorsCheckShouldBreak:
     def test_check_should_break_returns_flow(self) -> None:
         """Test that check_should_break returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Test that it returns a Flow
         flow = TrampolineFlowCombinators.check_should_break()
@@ -122,7 +122,7 @@ class TestTrampolineFlowCombinatorsCheckShouldBreak:
     def test_check_should_break_flow_composition(self) -> None:
         """Test that check_should_break flows can be composed with other flows."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create a flow that sets break flag
         set_break_flow = TrampolineFlowCombinators.set_should_break(True)

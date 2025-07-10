@@ -37,7 +37,7 @@ class TestTrampolineFlowCombinatorsCheckShouldSkip:
     def test_check_should_skip_returns_flow(self) -> None:
         """Test that check_should_skip returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Test that it returns a Flow
         flow = TrampolineFlowCombinators.check_should_skip()
@@ -122,7 +122,7 @@ class TestTrampolineFlowCombinatorsCheckShouldSkip:
     def test_check_should_skip_flow_composition(self) -> None:
         """Test that check_should_skip flows can be composed with other flows."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create a flow that sets skip flag
         set_skip_flow = TrampolineFlowCombinators.set_should_skip(True)

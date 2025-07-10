@@ -11,7 +11,7 @@ from collections.abc import AsyncGenerator
 
 from context.main import Context
 from context_flow.integration import ContextFlowCombinators
-from flowengine.flow import Flow
+from flow.flow import Flow
 
 from .constants import SHOULD_BREAK_KEY, SHOULD_EXIT_KEY, SHOULD_SKIP_KEY
 

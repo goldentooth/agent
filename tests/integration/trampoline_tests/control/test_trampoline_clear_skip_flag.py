@@ -37,7 +37,7 @@ class TestTrampolineFlowCombinatorsClearSkipFlag:
     def test_clear_skip_flag_returns_flow(self) -> None:
         """Test that clear_skip_flag returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Test that it returns a Flow
         flow = TrampolineFlowCombinators.clear_skip_flag()
@@ -125,7 +125,7 @@ class TestTrampolineFlowCombinatorsClearSkipFlag:
     def test_clear_skip_flag_flow_composition(self) -> None:
         """Test that clear_skip_flag flows can be composed with other flows."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create a flow that sets skip flag
         set_skip_flow = TrampolineFlowCombinators.set_should_skip(True)
@@ -242,7 +242,7 @@ class TestTrampolineFlowCombinatorsClearSkipFlag:
     def test_clear_skip_flag_integration_with_checkers(self) -> None:
         """Test that clear_skip_flag works with skip flag checkers."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flows
         set_skip_flow = TrampolineFlowCombinators.set_should_skip(True)

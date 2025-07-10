@@ -7,7 +7,7 @@ import pytest
 from context.main import Context
 
 if TYPE_CHECKING:
-    from flowengine.flow import Flow
+    from flow.flow import Flow
 
 
 class TestTrampolineFlowCombinatorsSkipIf:
@@ -40,7 +40,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
     def test_skip_if_returns_flow(self) -> None:
         """Test that skip_if returns a Flow object."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create test flow
         test_flow: "Flow[Context, Context]" = Flow.from_sync_fn(lambda ctx: ctx)
@@ -54,7 +54,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         """Test that skip_if skips flow execution when predicate is True."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create predicate that always returns True (always skip)
         def always_skip(ctx: Context) -> bool:
@@ -84,7 +84,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         """Test that skip_if executes flow when predicate is False."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create predicate that always returns False (never skip)
         def never_skip(ctx: Context) -> bool:
@@ -126,7 +126,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         """Test that skip_if preserves existing context data in both cases."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flow that adds data
         def add_data_fn(ctx: Context) -> Context:
@@ -193,7 +193,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
     def test_skip_if_flow_naming(self) -> None:
         """Test that skip_if creates flows with descriptive names."""
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create test flows
         predicate = lambda ctx: True
@@ -209,7 +209,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         """Test that skip_if maintains context immutability."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create flow that modifies context
         def modify_fn(ctx: Context) -> Context:
@@ -272,7 +272,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         """Test skip_if behavior with predicate errors."""
         from context_flow.integration import run_flow_with_input
         from context_flow.trampoline import TrampolineFlowCombinators
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Create predicate that may raise exception
         def error_predicate(ctx: Context) -> bool:
@@ -346,7 +346,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         self,
     ) -> tuple[Callable[[Context], bool], "Flow[Context, Context]"]:
         """Create cache-checking flows for testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def is_cached(ctx: Context) -> bool:
             return ctx.get("status", "") == "cached"
@@ -371,7 +371,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         self,
     ) -> tuple[Callable[[Context], bool], "Flow[Context, Context]"]:
         """Create simple predicate and flow for testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def should_skip(ctx: Context) -> bool:
             return bool(ctx.get("should_skip", False))
@@ -387,7 +387,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         self,
     ) -> tuple["Flow[Context, Context]", "Flow[Context, Context]"]:
         """Create prefix and suffix flows for composition testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def prefix_fn(ctx: Context) -> Context:
             result = ctx.fork()
@@ -405,7 +405,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         self, operation_calls: dict[str, int]
     ) -> tuple[Callable[[Context], bool], "Flow[Context, Context]"]:
         """Create expensive operation flows for testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def is_cached(ctx: Context) -> bool:
             return ctx.get("status", "") == "cached"
@@ -423,7 +423,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         self,
     ) -> tuple[Callable[[Context], bool], "Flow[Context, Context]"]:
         """Create toggle-based flows for testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def should_skip(ctx: Context) -> bool:
             return bool(ctx.get("skip", False))
@@ -439,7 +439,7 @@ class TestTrampolineFlowCombinatorsSkipIf:
         self,
     ) -> tuple[Callable[[Context], bool], "Flow[Context, Context]"]:
         """Create caching pattern flows for testing."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         def has_result(ctx: Context) -> bool:
             return "result" in ctx

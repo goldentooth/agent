@@ -137,8 +137,8 @@ Development Methodology
 
    Commit #138: Implement TrampolineFlowCombinators.check_should_break method
 
-   Add check_should_break method to TrampolineFlowCombinators class following 
-   the established pattern. This method creates a Flow that checks the 
+   Add check_should_break method to TrampolineFlowCombinators class following
+   the established pattern. This method creates a Flow that checks the
    SHOULD_BREAK_KEY in the context and returns its boolean value.
 
    Key features:
@@ -175,7 +175,7 @@ Usage Examples
 
    from context_flow.integration import ContextFlowCombinators
    from context_flow.trampoline import TrampolineFlowCombinators
-   from flowengine import Flow
+   from flow import Flow
 
    # Create context-aware flows
    increment_flow = ContextFlowCombinators.update_key(
@@ -185,7 +185,7 @@ Usage Examples
 
    # Compose with regular flows
    pipeline = (
-       increment_flow 
+       increment_flow
        >> check_exit_flow
        >> Flow.identity().filter(lambda should_exit: not should_exit)
    )
@@ -206,8 +206,8 @@ Usage Examples
 
    # Compose for complex control flow
    control_flow = (
-       set_break 
-       >> check_break 
+       set_break
+       >> check_break
        >> Flow.identity().filter(lambda should_break: should_break)
        >> set_exit
    )

@@ -15,7 +15,7 @@ from context_flow.trampoline.constants import (
     SHOULD_EXIT_KEY,
     async_iter_from_item,
 )
-from flowengine.flow import Flow
+from flow.flow import Flow
 
 __all__ = [
     "ExecutionCombinators",
@@ -54,7 +54,7 @@ class ExecutionCombinators:
             ```python
             from context.main import Context
             from context_flow.trampoline.execution_combinators import ExecutionCombinators
-            from flowengine.flow import Flow
+            from flow.flow import Flow
 
             # Create individual flows
             flow1 = Flow.from_sync_fn(lambda ctx: ctx.set("step", 1))
@@ -149,7 +149,7 @@ class ExecutionCombinators:
             ```python
             from context.main import Context
             from context_flow.trampoline.execution_combinators import ExecutionCombinators
-            from flowengine.flow import Flow
+            from flow.flow import Flow
 
             # Create a flow that increments a counter until it reaches 10
             def increment_until_10(ctx: Context) -> Context:
@@ -247,7 +247,7 @@ class ExecutionCombinators:
             ```python
             from context.main import Context
             from context_flow.trampoline.execution_combinators import ExecutionCombinators
-            from flowengine.flow import Flow
+            from flow.flow import Flow
 
             # Create multi-stage processing flows
             def validate_flow(ctx: Context) -> Context:
@@ -385,7 +385,7 @@ class ExecutionCombinators:
             ```python
             from context.main import Context
             from context_flow.trampoline.execution_combinators import ExecutionCombinators
-            from flowengine.flow import Flow
+            from flow.flow import Flow
 
             # Create predicate that checks if processing is needed
             def needs_processing(ctx: Context) -> bool:
@@ -481,7 +481,7 @@ class ExecutionCombinators:
             ```python
             from context.main import Context
             from context_flow.trampoline.execution_combinators import ExecutionCombinators
-            from flowengine.flow import Flow
+            from flow.flow import Flow
 
             # Create predicate that checks if processing should be skipped
             def already_processed(ctx: Context) -> bool:
