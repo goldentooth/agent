@@ -17,6 +17,7 @@ __all__ = [
     "extend_flow_with_trampoline",
     "SHOULD_EXIT_KEY",
     "SHOULD_BREAK_KEY",
+    "SHOULD_SKIP_KEY",
 ]
 
 T = TypeVar("T")
@@ -27,6 +28,9 @@ SHOULD_EXIT_KEY: ContextKey[bool] = ContextKey(
 )
 SHOULD_BREAK_KEY: ContextKey[bool] = ContextKey(
     "flow.trampoline.should_break", bool, "Signal to break/restart current iteration"
+)
+SHOULD_SKIP_KEY: ContextKey[bool] = ContextKey(
+    "flow.trampoline.should_skip", bool, "Signal to skip certain operations"
 )
 
 
