@@ -901,3 +901,99 @@ class TrampolineFlowCombinators:
                     flow_index = (flow_index + 1) % len(flows)
 
         return Flow(_trampoline_chain_flow, name="trampoline_chain")
+
+    @staticmethod
+    def conditional_flow(
+        predicate: Callable[[Context], bool],
+        then_flow: Flow[Context, Context],
+        else_flow: Flow[Context, Context] | None = None,
+    ) -> Flow[Context, Context]:
+        """Create a Flow that conditionally applies flows based on context predicate.
+
+        This method creates a Flow that evaluates a predicate function on the input
+        Context and applies either the then_flow or else_flow accordingly. This enables
+        context-aware branching logic in trampoline execution patterns.
+
+        The predicate function receives the Context object and should return True to
+        execute the then_flow, or False to execute the else_flow. If no else_flow is
+        provided and the predicate returns False, the original context is passed through
+        unchanged.
+
+        Args:
+            predicate: Function that takes a Context and returns bool to determine
+                which flow to execute. Should be a pure function without side effects.
+            then_flow: Flow[Context, Context] to execute when predicate returns True.
+                This flow will receive the original context as input.
+            else_flow: Optional Flow[Context, Context] to execute when predicate returns
+                False. If None, the original context is passed through unchanged.
+
+        Returns:
+            A Flow[Context, Context] that conditionally executes flows based on the
+            predicate evaluation.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+            from flowengine.flow import Flow
+
+            # Create predicate that checks if processing is needed
+            def needs_processing(ctx: Context) -> bool:
+                return ctx.get("status", "") != "completed"
+
+            # Create conditional flows
+            process_flow = Flow.from_sync_fn(lambda ctx: ctx.fork().set("status", "completed"))
+            skip_flow = Flow.from_sync_fn(lambda ctx: ctx.fork().set("skipped", True))
+
+            # Create conditional flow
+            conditional = TrampolineFlowCombinators.conditional_flow(
+                needs_processing, process_flow, skip_flow
+            )
+
+            # Execute conditional flow
+            context = Context()
+            context["status"] = "pending"
+            result = conditional.run_single(context)
+            # result will have status="completed" since predicate returned True
+            ```
+
+        Note:
+            The conditional_flow pattern is useful for:
+            - Context-based branching logic in trampoline execution
+            - Skip/process decisions based on context state
+            - Routing flows based on context conditions
+            - Implementing state-dependent flow execution
+
+            The predicate function should be deterministic and avoid side effects
+            to ensure predictable flow behavior in trampoline patterns.
+        """
+
+        async def _conditional_flow(
+            stream: AsyncGenerator[Context, None]
+        ) -> AsyncGenerator[Context, None]:
+            """Flow that conditionally applies flows based on context predicate."""
+            async for context in stream:
+                # Evaluate predicate on the context
+                if predicate(context):
+                    # Execute then_flow
+                    then_stream = _async_iter_from_item(context)
+                    result_stream = then_flow(then_stream)
+
+                    # Yield results from then_flow
+                    async for result_context in result_stream:
+                        yield result_context
+                        break  # Take first result only
+                elif else_flow is not None:
+                    # Execute else_flow
+                    else_stream = _async_iter_from_item(context)
+                    result_stream = else_flow(else_stream)
+
+                    # Yield results from else_flow
+                    async for result_context in result_stream:
+                        yield result_context
+                        break  # Take first result only
+                else:
+                    # No else_flow provided, pass through original context
+                    yield context
+
+        return Flow(_conditional_flow, name="conditional_flow")
