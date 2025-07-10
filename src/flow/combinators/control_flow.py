@@ -61,13 +61,19 @@ def if_then_stream(
             if predicate(item):
                 # Apply then_flow to a single-item stream
                 single_item_stream = _create_single_item_stream(item)
-                async for result in then_flow(single_item_stream):
-                    yield result
+                try:
+                    async for result in then_flow(single_item_stream):
+                        yield result
+                finally:
+                    await single_item_stream.aclose()
             elif else_flow is not None:
                 # Apply else_flow to a single-item stream
                 single_item_stream = _create_single_item_stream(item)
-                async for result in else_flow(single_item_stream):
-                    yield result
+                try:
+                    async for result in else_flow(single_item_stream):
+                        yield result
+                finally:
+                    await single_item_stream.aclose()
             # If no else_flow and predicate is False, item is filtered out
 
     async def _create_single_item_stream(item: Input) -> AsyncGenerator[Input, None]:
@@ -97,9 +103,13 @@ def retry_stream(n: int, flow: Flow[Input, Output]) -> Flow[Input, Output]:
                 try:
                     # Apply flow to a single-item stream
                     single_item_stream = _create_single_item_stream(item)
-                    async for result in flow(single_item_stream):
-                        yield result
-                    break  # Success, move to next item
+                    try:
+                        async for result in flow(single_item_stream):
+                            yield result
+                        break  # Success, move to next item
+                    finally:
+                        # Ensure async generator is properly closed
+                        await single_item_stream.aclose()
                 except Exception as e:
                     last_exception = e
                     if attempt < n:  # Still have retries left
@@ -170,8 +180,11 @@ def switch_stream(
             if target_flow is not None:
                 # Apply target flow to a single-item stream
                 single_item_stream = _create_single_item_stream(item)
-                async for result in target_flow(single_item_stream):
-                    yield result
+                try:
+                    async for result in target_flow(single_item_stream):
+                        yield result
+                finally:
+                    await single_item_stream.aclose()
             # If no matching case and no default, item is filtered out
 
     async def _create_single_item_stream(item: Input) -> AsyncGenerator[Input, None]:
@@ -234,8 +247,11 @@ def while_condition_stream(
 
             # Apply transform to a single-item stream
             single_item_stream = _create_single_item_stream(item)
-            async for result in transform(single_item_stream):
-                yield result
+            try:
+                async for result in transform(single_item_stream):
+                    yield result
+            finally:
+                await single_item_stream.aclose()
 
     async def _create_single_item_stream(item: Input) -> AsyncGenerator[Input, None]:
         """Create a single-item stream."""
