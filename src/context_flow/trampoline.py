@@ -9,14 +9,21 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator, Callable
 from typing import Any, TypeVar
 
+from context.key import ContextKey
 from goldentooth_agent.core.background_loop import run_in_background
 
 __all__ = [
     "_async_iter_from_item",
     "extend_flow_with_trampoline",
+    "SHOULD_EXIT_KEY",
 ]
 
 T = TypeVar("T")
+
+# Control flow context keys
+SHOULD_EXIT_KEY: ContextKey[bool] = ContextKey(
+    "flow.trampoline.should_exit", bool, "Signal to exit trampoline loop"
+)
 
 
 async def _async_iter_from_item(item: T) -> AsyncGenerator[T, None]:
