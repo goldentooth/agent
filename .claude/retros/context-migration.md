@@ -725,8 +725,62 @@ This retrospective tracks the migration of the Context system from `old/goldento
 - **Challenges**: None - straightforward implementation following established pattern
 - **Key Learning**: Consistent patterns across similar methods enable rapid implementation
 
+### Commit #140: TrampolineFlowCombinators.clear_break_flag method
+- **Date**: 2025-07-10
+- **Files Modified**:
+  - `src/context_flow/trampoline.py` - Added clear_break_flag method
+  - `tests/integration/test_trampoline_clear_break_flag.py` - Created comprehensive test file
+- **Implementation Details**:
+  - Creates Flow that clears SHOULD_BREAK_KEY by setting it to False
+  - Convenience method equivalent to set_should_break(False) with explicit semantics
+  - Uses ContextFlowCombinators.set_key() internally for consistent infrastructure
+  - Returns Flow[Context, Context] maintaining type safety and immutability
+  - Provides better semantic clarity for clearing vs setting break flags
+  - Comprehensive documentation with usage examples
+- **Test Coverage**: 100% coverage of clear_break_flag method (15 test cases)
+- **Test Cases Cover**:
+  - Basic import verification and method signature checking
+  - Flag clearing scenarios (from True, False, missing states)
+  - Context data preservation and immutability verification
+  - Static method behavior and flow composition
+  - Equivalence testing with set_should_break(False)
+  - Integration testing with other trampoline methods
+  - Documentation and naming verification
+  - Multiple execution scenarios with different initial states
+- **Refactoring**: Condensed test function to meet 15-statement limit requirement
+- **Pre-commit Status**: All hooks passed ✅
+- **Challenges**: Minor function length violation resolved through test refactoring
+- **Key Learning**: Clear flag methods provide explicit semantics for flag management
+
+### Commit #141: TrampolineFlowCombinators.clear_skip_flag method
+- **Date**: 2025-07-10
+- **Files Modified**:
+  - `src/context_flow/trampoline.py` - Added clear_skip_flag method
+  - `tests/integration/test_trampoline_clear_skip_flag.py` - Created comprehensive test file
+- **Implementation Details**:
+  - Creates Flow that clears SHOULD_SKIP_KEY by setting it to False
+  - Convenience method equivalent to set_should_skip(False) with explicit semantics
+  - Uses ContextFlowCombinators.set_key() internally for consistent infrastructure
+  - Returns Flow[Context, Context] maintaining type safety and immutability
+  - Provides better semantic clarity for clearing vs setting skip flags
+  - Used by trampoline loops to reset skip state between operations
+  - Comprehensive documentation with usage examples
+- **Test Coverage**: 100% coverage of clear_skip_flag method (15 test cases)
+- **Test Cases Cover**:
+  - Basic import verification and method signature checking
+  - Flag clearing scenarios (from True, False, missing states)
+  - Context data preservation and immutability verification
+  - Static method behavior and flow composition
+  - Equivalence testing with set_should_skip(False)
+  - Integration testing with other trampoline methods
+  - Documentation and naming verification
+  - Multiple execution scenarios with different initial states
+- **Pre-commit Status**: All hooks passed ✅
+- **Challenges**: None - followed established pattern from clear_break_flag
+- **Key Learning**: Clear flag methods provide explicit semantics for trampoline control flow
+
 ## Next Steps
-1. Continue with Commit #140: TrampolineFlowCombinators.clear_break_flag method
+1. Continue with Commit #142: TrampolineFlowCombinators.exitable_chain method
 2. Maintain one function per commit approach
-3. Follow established patterns for trampoline flow combinators
+3. Move to advanced trampoline patterns implementation
 4. Continue with Phase 2 context-flow integration package

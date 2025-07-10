@@ -582,3 +582,96 @@ class TrampolineFlowCombinators:
             Context instances.
         """
         return ContextFlowCombinators.set_key(SHOULD_SKIP_KEY, False)
+
+    @staticmethod
+    def exitable_chain(*flows: Flow[Context, Context]) -> Flow[Context, Context]:
+        """Create a Flow that executes flows sequentially with exit/break support.
+
+        This method creates a Flow that executes a sequence of flows in order,
+        checking for exit and break signals after each flow. If SHOULD_EXIT_KEY
+        is set to True, the chain terminates early. If SHOULD_BREAK_KEY is set
+        to True, the chain restarts from the beginning with the break flag cleared.
+
+        Args:
+            *flows: Variable number of Flow[Context, Context] objects to execute
+                sequentially. Each flow should take a Context and return a Context.
+
+        Returns:
+            A Flow[Context, Context] that executes the flows sequentially with
+            trampoline exit/break support.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+            from flowengine.flow import Flow
+
+            # Create individual flows
+            flow1 = Flow.from_sync_fn(lambda ctx: ctx.set("step", 1))
+            flow2 = Flow.from_sync_fn(lambda ctx: ctx.set("step", 2))
+            flow3 = Flow.from_sync_fn(lambda ctx: ctx.set("step", 3))
+
+            # Create exitable chain
+            chain = TrampolineFlowCombinators.exitable_chain(flow1, flow2, flow3)
+
+            # Execute chain
+            context = Context()
+            result = chain.run_single(context)
+            # All flows executed unless exit/break was signaled
+            ```
+
+        Note:
+            The chain respects exit and break signals:
+            - SHOULD_EXIT_KEY=True: Terminates chain immediately
+            - SHOULD_BREAK_KEY=True: Restarts chain from beginning (clears break flag)
+            Empty flows list returns the input context unchanged.
+        """
+        if not flows:
+            # Return identity flow for empty flows list
+            return Flow.identity()
+
+        async def _exitable_chain_flow(
+            stream: AsyncGenerator[Context, None]
+        ) -> AsyncGenerator[Context, None]:
+            """Flow that executes flows sequentially with exit/break support."""
+            async for initial_context in stream:
+                current_context = initial_context
+
+                # Restart loop for break handling
+                while True:
+                    # Execute flows sequentially
+                    for flow in flows:
+                        # Execute current flow
+                        flow_stream = _async_iter_from_item(current_context)
+                        result_stream = flow(flow_stream)
+
+                        # Get result from flow
+                        flow_result = None
+                        async for result_context in result_stream:
+                            flow_result = result_context
+                            break  # Take first result
+
+                        # Update context only if flow produced a result
+                        if flow_result is not None:
+                            current_context = flow_result
+
+                        # Check for exit signal
+                        should_exit = current_context.get(SHOULD_EXIT_KEY.path, False)
+                        if should_exit:
+                            yield current_context
+                            return
+
+                        # Check for break signal
+                        should_break = current_context.get(SHOULD_BREAK_KEY.path, False)
+                        if should_break:
+                            # Clear break flag and restart chain
+                            current_context = current_context.fork()
+                            current_context[SHOULD_BREAK_KEY.path] = False
+                            break  # Break from flows loop to restart
+                    else:
+                        # All flows completed successfully, exit restart loop
+                        break
+
+                yield current_context
+
+        return Flow(_exitable_chain_flow, name="exitable_chain")

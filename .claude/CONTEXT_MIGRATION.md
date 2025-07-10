@@ -44,14 +44,6 @@ src/
 #### 10. Trampoline System (`src/context_flow/trampoline.py`)
 
 ##### 10.3 TrampolineFlowCombinators Class
-- **Commit 134**: `TrampolineFlowCombinators.set_should_exit` method
-- **Commit 135**: `TrampolineFlowCombinators.set_should_break` method
-- **Commit 136**: `TrampolineFlowCombinators.set_should_skip` method
-- **Commit 137**: `TrampolineFlowCombinators.check_should_exit` method
-- **Commit 138**: `TrampolineFlowCombinators.check_should_break` method
-- **Commit 139**: `TrampolineFlowCombinators.check_should_skip` method
-- **Commit 140**: `TrampolineFlowCombinators.clear_break_flag` method
-- **Commit 141**: `TrampolineFlowCombinators.clear_skip_flag` method
 - **Commit 142**: `TrampolineFlowCombinators.exitable_chain` method
 - **Commit 143**: `TrampolineFlowCombinators.trampoline` method
 - **Commit 144**: `TrampolineFlowCombinators.trampoline_chain` method
