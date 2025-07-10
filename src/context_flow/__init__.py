@@ -16,6 +16,7 @@ from context_flow.bridge import (
     initialize_context_integration,
 )
 from context_flow.integration import ContextFlowCombinators
+from context_flow.schema import AgentInput, AgentOutput, ContextFlowSchema
 from context_flow.trampoline import (
     TrampolineFlowCombinators,
     extend_flow_with_trampoline,
@@ -29,6 +30,10 @@ __all__ = [
     "ContextFlowBridge",
     "get_context_bridge",
     "initialize_context_integration",
+    # Schema system for Flow-Context integration
+    "ContextFlowSchema",
+    "AgentInput",
+    "AgentOutput",
     # Trampoline functionality for advanced flow control
     "FlagCombinators",
     "TrampolineFlowCombinators",
