@@ -464,3 +464,149 @@ class TestContextFlowBridgeRegisterProtocol:
 
         # Should have return annotation
         assert signature.return_annotation is not None
+
+
+class TestContextFlowBridgeGetProtocol:
+    """Test cases for ContextFlowBridge.get_protocol method."""
+
+    def test_get_protocol_import(self) -> None:
+        """Test that get_protocol method exists and is callable."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should exist and be callable
+        assert hasattr(bridge, "get_protocol")
+        assert callable(getattr(bridge, "get_protocol"))
+
+    def test_get_protocol_returns_registered_protocols(self) -> None:
+        """Test that get_protocol returns properly registered protocols."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register a protocol
+        bridge.register_protocol("test_protocol", "1.0", {"feature": "test"})
+
+        # Should return the registered protocol
+        protocol = bridge.get_protocol("test_protocol")
+        assert protocol["version"] == "1.0"
+        assert protocol["feature"] == "test"
+
+    def test_get_protocol_missing_protocol_raises_error(self) -> None:
+        """Test that get_protocol raises KeyError for missing protocols."""
+        import pytest
+
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Should raise KeyError for missing protocol
+        with pytest.raises(KeyError, match="Protocol 'nonexistent' not found"):
+            bridge.get_protocol("nonexistent")
+
+    def test_get_protocol_with_default_value(self) -> None:
+        """Test that get_protocol supports default values."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Should return default value for missing protocol
+        default_protocol = {"version": "0.0.0", "status": "default"}
+        result = bridge.get_protocol("missing_protocol", default_protocol)
+        assert result == default_protocol
+
+        # Should return actual value when protocol exists
+        bridge.register_protocol("existing_protocol", "1.0", {"type": "real"})
+        existing = bridge.get_protocol("existing_protocol", default_protocol)
+        assert existing["version"] == "1.0"
+        assert existing["type"] == "real"
+        assert existing != default_protocol
+
+    def test_get_protocol_returns_copy_not_reference(self) -> None:
+        """Test that get_protocol returns a copy to prevent modification."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register a protocol
+        bridge.register_protocol("test_protocol", "1.0", {"feature": "original"})
+
+        # Get protocol and modify it
+        protocol = bridge.get_protocol("test_protocol")
+        protocol["feature"] = "modified"
+        protocol["new_field"] = "added"
+
+        # Original protocol should be unchanged
+        original = bridge.get_protocol("test_protocol")
+        assert original["feature"] == "original"
+        assert "new_field" not in original
+
+    def test_get_protocol_works_with_complex_protocols(self) -> None:
+        """Test that get_protocol works with complex protocol metadata."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register complex protocol
+        metadata = {
+            "features": "trampoline,context,flow",
+            "compatibility": ">=1.0,<2.0",
+            "description": "Complex integration protocol",
+            "author": "bridge_team",
+        }
+        bridge.register_protocol("complex_protocol", "1.2.3", metadata)
+
+        # Should return complete protocol data
+        protocol = bridge.get_protocol("complex_protocol")
+        assert protocol["version"] == "1.2.3"
+        assert protocol["features"] == "trampoline,context,flow"
+        assert protocol["compatibility"] == ">=1.0,<2.0"
+        assert protocol["description"] == "Complex integration protocol"
+        assert protocol["author"] == "bridge_team"
+
+    def test_get_protocol_handles_empty_metadata(self) -> None:
+        """Test that get_protocol handles protocols with empty metadata."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register protocol with empty metadata
+        bridge.register_protocol("minimal_protocol", "1.0", {})
+
+        # Should return protocol with only version
+        protocol = bridge.get_protocol("minimal_protocol")
+        assert protocol["version"] == "1.0"
+        assert len(protocol) == 1
+
+    def test_get_protocol_type_annotations(self) -> None:
+        """Test that get_protocol has proper type annotations."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Get method signature
+        signature = inspect.signature(bridge.get_protocol)
+
+        # Should have proper parameter annotations
+        params = signature.parameters
+        assert "name" in params
+        assert "default" in params
+
+        # Should have return annotation
+        assert signature.return_annotation is not None
+
+    def test_get_protocol_documentation(self) -> None:
+        """Test that get_protocol has proper documentation."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should have docstring
+        assert bridge.get_protocol.__doc__ is not None
+        assert len(bridge.get_protocol.__doc__.strip()) > 0
+
+        # Docstring should describe the method purpose
+        docstring = bridge.get_protocol.__doc__.lower()
+        assert "get" in docstring or "retrieve" in docstring
+        assert "protocol" in docstring

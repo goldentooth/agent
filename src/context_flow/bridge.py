@@ -329,6 +329,64 @@ class ContextFlowBridge:
         # Register the protocol in the registry
         self._protocols[name] = protocol_data
 
+    def get_protocol(
+        self, name: str, default: dict[str, str] | None = None
+    ) -> dict[str, str]:
+        """Get a registered protocol by name.
+
+        This method retrieves protocol information that was previously registered
+        via register_protocol(). It returns a copy of the protocol data to prevent
+        external modification of the bridge's internal registry.
+
+        Args:
+            name: The unique name identifier for the protocol to retrieve
+            default: Optional default protocol data to return if not found
+
+        Returns:
+            A copy of the protocol data dictionary containing version and metadata
+
+        Raises:
+            KeyError: If the protocol name is not found and no default is provided
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+
+            bridge = ContextFlowBridge()
+
+            # Register a protocol first
+            bridge.register_protocol("integration_v1", "1.0", {
+                "features": "trampoline,context",
+                "compatibility": ">=1.0,<2.0"
+            })
+
+            # Retrieve the protocol
+            protocol = bridge.get_protocol("integration_v1")
+            version = protocol["version"]  # "1.0"
+            features = protocol["features"]  # "trampoline,context"
+
+            # Safe retrieval with default
+            fallback = {"version": "0.0.0", "status": "unavailable"}
+            protocol = bridge.get_protocol("unknown_protocol", fallback)
+            ```
+
+        Note:
+            This method returns a copy of the protocol data, not a reference
+            to the internal registry. This prevents external code from accidentally
+            modifying the bridge's protocol definitions. If you need to update
+            a protocol, use register_protocol() with the same name.
+        """
+        if default is not None:
+            protocol_data = self._protocols.get(name, default)
+            # Return a copy to prevent external modification
+            return dict(protocol_data)
+
+        if name not in self._protocols:
+            raise KeyError(f"Protocol '{name}' not found")
+
+        # Return a copy to prevent external modification
+        return dict(self._protocols[name])
+
     def register_trampoline_support(self) -> None:
         """Register trampoline support with the bridge."""
         # Placeholder for trampoline registration
