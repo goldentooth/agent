@@ -43,15 +43,6 @@ src/
 
 #### 10. Trampoline System (`src/context_flow/trampoline.py`)
 
-##### 10.1 Utility Functions
-- **Commit 129**: `_async_iter_from_item` function
-- **Commit 130**: `extend_flow_with_trampoline` function
-
-##### 10.2 Context Keys
-- **Commit 131**: `SHOULD_EXIT_KEY` constant
-- **Commit 132**: `SHOULD_BREAK_KEY` constant
-- **Commit 133**: `SHOULD_SKIP_KEY` constant
-
 ##### 10.3 TrampolineFlowCombinators Class
 - **Commit 134**: `TrampolineFlowCombinators.set_should_exit` method
 - **Commit 135**: `TrampolineFlowCombinators.set_should_break` method

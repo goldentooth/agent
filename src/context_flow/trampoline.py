@@ -510,3 +510,39 @@ class TrampolineFlowCombinators:
                 yield bool(result) if result is not None else False
 
         return Flow(_check_skip_flow, name="check_should_skip")
+
+    @staticmethod
+    def clear_break_flag() -> Flow[Context, Context]:
+        """Create a Flow that clears the break signal in the context.
+
+        This method creates a Flow that sets the SHOULD_BREAK_KEY in the context
+        to False, effectively clearing/resetting the break signal. This is equivalent
+        to calling set_should_break(False) but provides a more explicit method for
+        clearing the flag in trampoline execution patterns.
+
+        Returns:
+            A Flow[Context, Context] that clears the break flag and returns the
+            updated context with the break flag set to False.
+
+        Example:
+            ```python
+            from context.main import Context
+            from context_flow.trampoline import TrampolineFlowCombinators
+
+            # Create a flow to clear the break flag
+            clear_flow = TrampolineFlowCombinators.clear_break_flag()
+
+            # Use in a flow chain
+            context = Context()
+            context[SHOULD_BREAK_KEY.path] = True  # Flag is set
+            result_context = clear_flow.run_single(context)
+            # result_context will have the break flag set to False
+            ```
+
+        Note:
+            This method uses ContextFlowCombinators.set_key() internally to
+            create a type-safe flow that sets the SHOULD_BREAK_KEY to False.
+            The returned flow maintains context immutability by creating new
+            Context instances.
+        """
+        return ContextFlowCombinators.set_key(SHOULD_BREAK_KEY, False)

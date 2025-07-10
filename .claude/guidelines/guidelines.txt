@@ -57,6 +57,7 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
   - These will be used to create followup issues, so make them detailed!
 - Prefer defining functions (or reusing them!) to using Lambdas, particularly when encountering type-checking issues.
 - Do not do "stub implementations"; whatever functionality exists must be production-ready 100% of the time.
+- If you go to commit your changes and find an unexpected file has been modified, go ahead and include that in the commit.
 
 ## Package Migration Guidelines
 
