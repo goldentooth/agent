@@ -275,6 +275,60 @@ class ContextFlowBridge:
 
         return self._trampoline_keys[signal_name]
 
+    def register_protocol(
+        self, name: str, version: str, metadata: dict[str, str]
+    ) -> None:
+        """Register a protocol for Context-Flow cross-system communication.
+
+        This method registers communication protocols that enable integration
+        between Context and Flow systems. Protocols define the interface and
+        capabilities for cross-system operations, version compatibility,
+        and feature sets.
+
+        Args:
+            name: The unique name identifier for the protocol
+            version: The semantic version string for the protocol
+            metadata: Additional protocol metadata and configuration options
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+
+            bridge = ContextFlowBridge()
+
+            # Register a simple protocol
+            bridge.register_protocol("basic_flow", "1.0", {
+                "features": "trampoline,context",
+                "compatibility": ">=1.0,<2.0"
+            })
+
+            # Register with complex metadata
+            metadata = {
+                "description": "Advanced trampoline integration",
+                "author": "context_flow_team",
+                "features": "trampoline,context,flow,async",
+                "compatibility": ">=1.2.0",
+                "documentation": "https://docs.example.com/protocols/advanced"
+            }
+            bridge.register_protocol("advanced_integration", "1.2.3", metadata)
+            ```
+
+        Note:
+            Protocol registration enables the bridge to understand the capabilities
+            and requirements of different integration components. The version and
+            metadata information is used for compatibility checking and feature
+            discovery during cross-system communication setup.
+
+            Registering a protocol with the same name will overwrite the existing
+            registration, allowing for protocol updates and version management.
+        """
+        # Create protocol entry with version and metadata
+        protocol_data = {"version": version}
+        protocol_data.update(metadata)
+
+        # Register the protocol in the registry
+        self._protocols[name] = protocol_data
+
     def register_trampoline_support(self) -> None:
         """Register trampoline support with the bridge."""
         # Placeholder for trampoline registration

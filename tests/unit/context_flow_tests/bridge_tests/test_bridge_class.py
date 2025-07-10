@@ -306,3 +306,161 @@ class TestContextFlowBridgeGetTrampolineKey:
         assert "get" in docstring or "retrieve" in docstring
         assert "trampoline" in docstring
         assert "key" in docstring
+
+
+class TestContextFlowBridgeRegisterProtocol:
+    """Test cases for ContextFlowBridge.register_protocol method."""
+
+    def test_register_protocol_import(self) -> None:
+        """Test that register_protocol method exists and is callable."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should exist and be callable
+        assert hasattr(bridge, "register_protocol")
+        assert callable(getattr(bridge, "register_protocol"))
+
+    def test_register_protocol_basic_registration(self) -> None:
+        """Test that register_protocol registers protocols correctly."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Before registration, protocols should be empty
+        assert len(bridge._protocols) == 0
+
+        # Register a protocol
+        bridge.register_protocol("test_protocol", "1.0", {"feature": "test"})
+
+        # Protocol should be registered
+        assert "test_protocol" in bridge._protocols
+        assert bridge._protocols["test_protocol"]["version"] == "1.0"
+        assert bridge._protocols["test_protocol"]["feature"] == "test"
+
+    def test_register_protocol_multiple_protocols(self) -> None:
+        """Test that register_protocol can register multiple protocols."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register multiple protocols
+        bridge.register_protocol("protocol_a", "1.0", {"type": "flow"})
+        bridge.register_protocol("protocol_b", "2.0", {"type": "context"})
+        bridge.register_protocol("protocol_c", "1.5", {"type": "integration"})
+
+        # All protocols should be registered
+        assert len(bridge._protocols) == 3
+        assert "protocol_a" in bridge._protocols
+        assert "protocol_b" in bridge._protocols
+        assert "protocol_c" in bridge._protocols
+
+        # Each should have correct data
+        assert bridge._protocols["protocol_a"]["version"] == "1.0"
+        assert bridge._protocols["protocol_a"]["type"] == "flow"
+        assert bridge._protocols["protocol_b"]["version"] == "2.0"
+        assert bridge._protocols["protocol_b"]["type"] == "context"
+
+    def test_register_protocol_overwrites_existing(self) -> None:
+        """Test that register_protocol overwrites existing protocols."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register initial protocol
+        bridge.register_protocol("test_protocol", "1.0", {"feature": "old"})
+        assert bridge._protocols["test_protocol"]["feature"] == "old"
+
+        # Register same protocol with new data
+        bridge.register_protocol("test_protocol", "2.0", {"feature": "new"})
+
+        # Should be overwritten
+        assert bridge._protocols["test_protocol"]["version"] == "2.0"
+        assert bridge._protocols["test_protocol"]["feature"] == "new"
+
+    def test_register_protocol_empty_metadata(self) -> None:
+        """Test that register_protocol works with empty metadata."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register protocol with empty metadata
+        bridge.register_protocol("minimal_protocol", "1.0", {})
+
+        # Should be registered with only version
+        assert "minimal_protocol" in bridge._protocols
+        assert bridge._protocols["minimal_protocol"]["version"] == "1.0"
+        assert len(bridge._protocols["minimal_protocol"]) == 1
+
+    def test_register_protocol_complex_metadata(self) -> None:
+        """Test that register_protocol handles complex metadata."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register protocol with complex metadata
+        metadata = {
+            "features": "trampoline,context,flow",
+            "compatibility": ">=1.0,<2.0",
+            "description": "Advanced integration protocol",
+            "author": "bridge_system",
+        }
+        bridge.register_protocol("complex_protocol", "1.2.3", metadata)
+
+        # Should store all metadata plus version
+        protocol = bridge._protocols["complex_protocol"]
+        assert protocol["version"] == "1.2.3"
+        assert protocol["features"] == "trampoline,context,flow"
+        assert protocol["compatibility"] == ">=1.0,<2.0"
+        assert protocol["description"] == "Advanced integration protocol"
+        assert protocol["author"] == "bridge_system"
+
+    def test_register_protocol_preserves_other_protocols(self) -> None:
+        """Test that register_protocol preserves existing protocols."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Register first protocol
+        bridge.register_protocol("protocol_1", "1.0", {"type": "first"})
+
+        # Register second protocol
+        bridge.register_protocol("protocol_2", "2.0", {"type": "second"})
+
+        # Both should exist
+        assert len(bridge._protocols) == 2
+        assert bridge._protocols["protocol_1"]["type"] == "first"
+        assert bridge._protocols["protocol_2"]["type"] == "second"
+
+    def test_register_protocol_documentation(self) -> None:
+        """Test that register_protocol has proper documentation."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Method should have docstring
+        assert bridge.register_protocol.__doc__ is not None
+        assert len(bridge.register_protocol.__doc__.strip()) > 0
+
+        # Docstring should describe the method purpose
+        docstring = bridge.register_protocol.__doc__.lower()
+        assert "register" in docstring
+        assert "protocol" in docstring
+
+    def test_register_protocol_type_annotations(self) -> None:
+        """Test that register_protocol has proper type annotations."""
+        from context_flow.bridge import ContextFlowBridge
+
+        bridge = ContextFlowBridge()
+
+        # Get method signature
+        signature = inspect.signature(bridge.register_protocol)
+
+        # Should have proper parameter annotations
+        params = signature.parameters
+        assert "name" in params
+        assert "version" in params
+        assert "metadata" in params
+
+        # Should have return annotation
+        assert signature.return_annotation is not None
