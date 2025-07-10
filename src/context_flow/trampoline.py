@@ -16,6 +16,7 @@ __all__ = [
     "_async_iter_from_item",
     "extend_flow_with_trampoline",
     "SHOULD_EXIT_KEY",
+    "SHOULD_BREAK_KEY",
 ]
 
 T = TypeVar("T")
@@ -23,6 +24,9 @@ T = TypeVar("T")
 # Control flow context keys
 SHOULD_EXIT_KEY: ContextKey[bool] = ContextKey(
     "flow.trampoline.should_exit", bool, "Signal to exit trampoline loop"
+)
+SHOULD_BREAK_KEY: ContextKey[bool] = ContextKey(
+    "flow.trampoline.should_break", bool, "Signal to break/restart current iteration"
 )
 
 
