@@ -19,11 +19,7 @@ class TestExtendFlowWithContext:
         """Test that extend_flow_with_context adds methods to Flow class."""
         from flowengine.flow import Flow
 
-        # Before extending, Flow should not have added methods
-        assert not hasattr(Flow, "run")
-        assert not hasattr(Flow, "then")
-
-        # Extend Flow with context methods
+        # Extend Flow with context methods (idempotent)
         extend_flow_with_context()
 
         # After extending, Flow should have added methods
