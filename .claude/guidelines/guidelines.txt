@@ -57,6 +57,7 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
   - These will be used to create followup issues, so make them detailed!
 - Prefer defining functions (or reusing them!) to using Lambdas, particularly when encountering type-checking issues.
 - Do not do "stub implementations"; whatever functionality exists must be production-ready 100% of the time.
+- Run pre-commit hooks (repeatedly if necessary, as some of them will format files and then return non-zero) and ensure they pass before attempting to commit; don't attempt to commit multiple times, as that will just ask me for permission multiple times.
 - If you go to commit your changes and find an unexpected file has been modified, go ahead and include that in the commit.
 - If pyright suggests adding a `super().__init__()`, just add the damned thing.
 
