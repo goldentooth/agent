@@ -704,3 +704,141 @@ class ContextFlowBridge:
             return False
 
         return check_should_exit
+
+    def _create_check_break_method(self) -> Callable[[Any, Any], bool]:
+        """Create method for checking break signal in context.
+
+        This method creates a callable function that can be used to check if the break
+        signal has been set in a context instance. The break signal is used by trampoline
+        execution patterns to determine if the current iteration should be broken or restarted.
+
+        Returns:
+            A callable function that accepts (self, context) parameters and returns
+            True if the break signal is set in the provided context instance
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+            from context.main import Context
+
+            bridge = ContextFlowBridge()
+            bridge.register_trampoline_support()
+
+            # Get the break checker method
+            check_break = bridge._create_check_break_method()
+
+            # Use with a context instance
+            context = Context()
+
+            # Check if break was signaled (should be False initially)
+            should_break = check_break(None, context)  # Returns False
+
+            # Set break signal and check again
+            break_key = bridge.get_trampoline_key("should_break")
+            context.set(break_key, True)
+            should_break = check_break(None, context)  # Returns True
+            ```
+
+        Note:
+            This method returns a function that can be used to check the break
+            signal in any context instance. The returned function follows the
+            pattern expected by Flow system method registration, accepting
+            a self parameter (which is ignored) and a context instance, returning
+            a boolean indicating the signal state.
+
+            The method uses the trampoline key registered by ensure_context_keys()
+            to maintain consistency with the bridge's key management system.
+            If the key is not found in the context, it returns False by default.
+        """
+        # Get the break trampoline key
+        break_key = self.get_trampoline_key("should_break")
+
+        def check_should_break(_: Any, context: Any) -> bool:
+            """Check if break has been signaled in the context.
+
+            Args:
+                _: Ignored self parameter (for compatibility)
+                context: Context instance to check the signal in
+
+            Returns:
+                True if break signal is set to True, False otherwise
+            """
+            if (
+                break_key
+                and hasattr(context, "__contains__")
+                and hasattr(context, "get")
+            ):
+                if break_key in context:
+                    return bool(context.get(break_key, False))
+            return False
+
+        return check_should_break
+
+    def _create_check_skip_method(self) -> Callable[[Any, Any], bool]:
+        """Create method for checking skip signal in context.
+
+        This method creates a callable function that can be used to check if the skip
+        signal has been set in a context instance. The skip signal is used by trampoline
+        execution patterns to determine if certain operations should be skipped.
+
+        Returns:
+            A callable function that accepts (self, context) parameters and returns
+            True if the skip signal is set in the provided context instance
+
+        Example:
+            ```python
+            from context_flow.bridge import ContextFlowBridge
+            from context.main import Context
+
+            bridge = ContextFlowBridge()
+            bridge.register_trampoline_support()
+
+            # Get the skip checker method
+            check_skip = bridge._create_check_skip_method()
+
+            # Use with a context instance
+            context = Context()
+
+            # Check if skip was signaled (should be False initially)
+            should_skip = check_skip(None, context)  # Returns False
+
+            # Set skip signal and check again
+            skip_key = bridge.get_trampoline_key("should_skip")
+            context.set(skip_key, True)
+            should_skip = check_skip(None, context)  # Returns True
+            ```
+
+        Note:
+            This method returns a function that can be used to check the skip
+            signal in any context instance. The returned function follows the
+            pattern expected by Flow system method registration, accepting
+            a self parameter (which is ignored) and a context instance, returning
+            a boolean indicating the signal state.
+
+            The method uses the trampoline key registered by ensure_context_keys()
+            to maintain consistency with the bridge's key management system.
+            If the key is not found in the context, it returns False by default.
+        """
+        # Get the skip trampoline key
+        skip_key = self.get_trampoline_key("should_skip")
+
+        def check_should_skip(_: Any, context: Any) -> bool:
+            """Check if skip has been signaled in the context.
+
+            Args:
+                _: Ignored self parameter (for compatibility)
+                context: Context instance to check the signal in
+
+            Returns:
+                True if skip signal is set to True, False otherwise
+            """
+            if (
+                skip_key
+                and hasattr(context, "__contains__")
+                and hasattr(context, "get")
+            ):
+                if skip_key in context:
+                    return bool(context.get(skip_key, False))
+            return False
+
+        return check_should_skip
