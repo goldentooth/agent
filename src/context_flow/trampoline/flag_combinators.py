@@ -190,7 +190,7 @@ class FlagCombinators:
         base_flow = ContextFlowCombinators.get_key(SHOULD_EXIT_KEY, False)
 
         async def _check_exit_flow(
-            stream: AsyncGenerator[Context, None]
+            stream: AsyncGenerator[Context, None],
         ) -> AsyncGenerator[bool, None]:
             """Wrapper flow that ensures bool return type."""
             result_stream = base_flow(stream)
@@ -243,7 +243,7 @@ class FlagCombinators:
         base_flow = ContextFlowCombinators.get_key(SHOULD_BREAK_KEY, False)
 
         async def _check_break_flow(
-            stream: AsyncGenerator[Context, None]
+            stream: AsyncGenerator[Context, None],
         ) -> AsyncGenerator[bool, None]:
             """Wrapper flow that ensures bool return type."""
             result_stream = base_flow(stream)
@@ -296,7 +296,7 @@ class FlagCombinators:
         base_flow = ContextFlowCombinators.get_key(SHOULD_SKIP_KEY, False)
 
         async def _check_skip_flow(
-            stream: AsyncGenerator[Context, None]
+            stream: AsyncGenerator[Context, None],
         ) -> AsyncGenerator[bool, None]:
             """Wrapper flow that ensures bool return type."""
             result_stream = base_flow(stream)

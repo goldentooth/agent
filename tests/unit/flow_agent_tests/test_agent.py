@@ -35,13 +35,13 @@ class TestFlowAgent:
 
         # Create minimal flows for testing
         async def system_flow_impl(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def processing_flow_impl(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
@@ -69,13 +69,13 @@ class TestFlowAgent:
         """Test converting FlowAgent to Flow."""
 
         async def simple_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def simple_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
@@ -98,14 +98,14 @@ class TestFlowAgent:
 
         # Create a simple echo agent
         async def echo_system_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """System flow that passes context through unchanged."""
             async for context in stream:
                 yield context
 
         async def echo_processing_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Processing flow that echoes the input message."""
             async for context in stream:
@@ -140,14 +140,14 @@ class TestFlowAgent:
 
         # Create a simple echo agent that just returns the input message
         async def echo_system_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """System flow that passes context through unchanged."""
             async for context in stream:
                 yield context
 
         async def echo_processing_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Processing flow that echoes the input message."""
             async for context in stream:
@@ -192,7 +192,7 @@ class TestFlowAgent:
 
         # Create a system flow that adds a system prompt to context
         async def system_prompt_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 # Add system prompt to context
@@ -209,7 +209,7 @@ class TestFlowAgent:
 
         # Create processing flow that uses the system prompt
         async def prompt_aware_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 SYSTEM_PROMPT_KEY = ContextKey.create(
@@ -259,7 +259,7 @@ class TestFlowAgent:
 
         # Create a memory-aware system flow
         async def memory_system_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 MESSAGES_KEY = ContextKey.create(
@@ -280,7 +280,7 @@ class TestFlowAgent:
 
         # Create processing flow that uses message history
         async def memory_processing_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 MESSAGES_KEY = ContextKey.create(
@@ -335,7 +335,7 @@ class TestFlowAgent:
         """Test FlowAgent input/output validation."""
 
         async def simple_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for item in stream:
                 yield item
@@ -357,13 +357,13 @@ class TestFlowAgent:
         """Test FlowAgent error handling."""
 
         async def error_system_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def error_processing_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for _context in stream:
                 # Need to yield something to make this an async generator
@@ -395,13 +395,13 @@ class TestFlowAgent:
         """Test FlowAgent run method error handling."""
 
         async def error_system_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def error_processing_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for _context in stream:
                 if False:
@@ -428,13 +428,13 @@ class TestFlowAgent:
 
         # Create a simple agent
         async def simple_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def simple_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 input_data = AgentInput.from_context(context)
@@ -452,7 +452,7 @@ class TestFlowAgent:
 
         # Create a post-processing flow
         async def post_processor(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for output in stream:
                 # Add exclamation mark to response
@@ -481,13 +481,13 @@ class TestFlowAgent:
         """Test FlowAgent handling multiple inputs in sequence."""
 
         async def batch_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def batch_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 input_data = AgentInput.from_context(context)
@@ -530,13 +530,13 @@ class TestFlowAgent:
         """Test FlowAgent fallback when output schema is missing from context."""
 
         async def simple_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def empty_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Processing flow that doesn't put output schema in context."""
             async for context in stream:
@@ -565,7 +565,7 @@ class TestFlowAgent:
         """Test FlowAgent when system flow produces no results."""
 
         async def empty_system_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """System flow that produces no results."""
             # Consume the stream but don't yield anything
@@ -576,7 +576,7 @@ class TestFlowAgent:
             yield  # Make it an async generator
 
         async def simple_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 input_data = AgentInput.from_context(context)
@@ -604,13 +604,13 @@ class TestFlowAgent:
         """Test FlowAgent when processing flow produces no results."""
 
         async def simple_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def empty_processing_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Processing flow that produces no results."""
             # Consume the stream but don't yield anything
@@ -641,13 +641,13 @@ class TestFlowAgent:
         """Test FlowAgent input validation and conversion."""
 
         async def simple_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def simple_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 input_data = AgentInput.from_context(context)
@@ -675,13 +675,13 @@ class TestFlowAgent:
         """Test FlowAgent output validation and conversion."""
 
         async def simple_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def dict_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Processing flow that puts dict in context instead of schema."""
             async for context in stream:
@@ -747,13 +747,13 @@ class TestFlowAgent:
         ComplexOutput = self._create_complex_output_schema()
 
         async def simple_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def no_output_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Processing flow that doesn't put output schema in context."""
             async for context in stream:
@@ -790,13 +790,13 @@ class TestFlowAgent:
             special_field: str = Field(..., description="Special required field")
 
         async def simple_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def no_output_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Processing flow that doesn't put output schema in context."""
             async for context in stream:
@@ -825,13 +825,13 @@ class TestFlowAgent:
         """Test FlowAgent output validation when context contains dict instead of schema."""
 
         async def simple_system(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             async for context in stream:
                 yield context
 
         async def dict_output_processing(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Processing flow that puts dict data in context."""
             async for context in stream:

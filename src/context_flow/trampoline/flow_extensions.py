@@ -92,7 +92,7 @@ def extend_flow_with_trampoline() -> None:
         """
 
         async def _single_stream_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Flow that processes single item ignoring input stream."""
             # Ignore the input stream and process our single item
@@ -125,7 +125,7 @@ def extend_flow_with_trampoline() -> None:
         """
 
         async def _repeat_until_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Flow that repeats until condition is met."""
             async for initial_item in stream:
@@ -166,7 +166,7 @@ def extend_flow_with_trampoline() -> None:
         """
 
         async def _exit_on_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Flow that exits when condition is met."""
             result_stream = self(stream)

@@ -81,7 +81,7 @@ def event_bridge(
         target_flow = SyncEventFlow[Any](to_event)
 
     async def _bridge_stream(
-        _: AsyncGenerator[None, None]
+        _: AsyncGenerator[None, None],
     ) -> AsyncGenerator[None, None]:
         """Bridge events from source to target."""
         source_events = source_flow.as_flow()
@@ -158,7 +158,7 @@ def event_transform(
     base_flow = event_flow.as_flow()
 
     async def _transform_stream(
-        _: AsyncGenerator[None, None]
+        _: AsyncGenerator[None, None],
     ) -> AsyncGenerator[Any, None]:
         """Transform events with the given function."""
 

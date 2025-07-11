@@ -136,7 +136,7 @@ def context_flow(
         flow_name = name or func.__name__
 
         async def context_aware_flow(
-            stream: AsyncGenerator[Any, None]
+            stream: AsyncGenerator[Any, None],
         ) -> AsyncGenerator[Any, None]:
             """Context-aware flow implementation."""
             from context.main import Context
@@ -289,7 +289,7 @@ class ContextFlowCombinators:
         from flow.flow import Flow
 
         async def _get_key_flow(
-            stream: AsyncGenerator["Context", None]
+            stream: AsyncGenerator["Context", None],
         ) -> AsyncGenerator[T | None, None]:
             """Internal flow implementation for key extraction."""
             async for context in stream:
@@ -360,7 +360,7 @@ class ContextFlowCombinators:
         from flow.flow import Flow
 
         async def _set_key_flow(
-            stream: AsyncGenerator["Context", None]
+            stream: AsyncGenerator["Context", None],
         ) -> AsyncGenerator["Context", None]:
             """Internal flow implementation for key setting."""
             async for context in stream:
@@ -436,7 +436,7 @@ class ContextFlowCombinators:
         from flow.flow import Flow
 
         async def _require_key_flow(
-            stream: AsyncGenerator["Context", None]
+            stream: AsyncGenerator["Context", None],
         ) -> AsyncGenerator[T, None]:
             """Internal flow implementation for required key extraction."""
             async for context in stream:
@@ -510,7 +510,7 @@ class ContextFlowCombinators:
         from flow.flow import Flow
 
         async def _optional_key_flow(
-            stream: AsyncGenerator["Context", None]
+            stream: AsyncGenerator["Context", None],
         ) -> AsyncGenerator[T | None, None]:
             """Internal flow implementation for optional key extraction."""
             async for context in stream:
@@ -584,7 +584,7 @@ class ContextFlowCombinators:
         from flow.flow import Flow
 
         async def _move_key_flow(
-            stream: AsyncGenerator["Context", None]
+            stream: AsyncGenerator["Context", None],
         ) -> AsyncGenerator["Context", None]:
             """Internal flow implementation for key moving."""
             async for context in stream:
@@ -683,7 +683,7 @@ class ContextFlowCombinators:
         from flow.flow import Flow
 
         async def _copy_key_flow(
-            stream: AsyncGenerator["Context", None]
+            stream: AsyncGenerator["Context", None],
         ) -> AsyncGenerator["Context", None]:
             """Internal flow implementation for key copying."""
             async for context in stream:
@@ -772,7 +772,7 @@ class ContextFlowCombinators:
         from flow.flow import Flow
 
         async def _forget_key_flow(
-            stream: AsyncGenerator["Context", None]
+            stream: AsyncGenerator["Context", None],
         ) -> AsyncGenerator["Context", None]:
             """Internal flow implementation for key removal."""
             async for context in stream:
@@ -834,7 +834,7 @@ class ContextFlowCombinators:
         from flow.flow import Flow
 
         async def _require_keys_flow(
-            stream: AsyncGenerator["Context", None]
+            stream: AsyncGenerator["Context", None],
         ) -> AsyncGenerator["Context", None]:
             """Internal flow implementation for multiple key validation."""
             async for context in stream:
@@ -902,7 +902,7 @@ class ContextFlowCombinators:
         from flow.flow import Flow
 
         async def _transform_key_flow(
-            stream: AsyncGenerator["Context", None]
+            stream: AsyncGenerator["Context", None],
         ) -> AsyncGenerator["Context", None]:
             """Internal flow implementation for key transformation."""
             async for context in stream:
