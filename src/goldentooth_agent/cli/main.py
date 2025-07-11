@@ -3,6 +3,7 @@
 This module sets up the primary Typer application and registers all command groups.
 """
 
+from importlib.metadata import version as get_version
 from typing import Annotated
 
 import typer
@@ -18,6 +19,16 @@ load_dotenv()
 
 # Create console for rich output
 console = Console()
+
+
+def get_package_version() -> str:
+    """Get the package version from metadata."""
+    try:
+        return get_version("goldentooth-agent")
+    except Exception:
+        # Fallback to unknown if package is not installed
+        return "unknown"
+
 
 # Main CLI application
 app = typer.Typer(
@@ -37,7 +48,8 @@ and intelligent workflow automation.
 def version_callback(value: bool) -> None:
     """Print version information."""
     if value:
-        console.print("🦷 Goldentooth Agent v0.1.0")
+        pkg_version = get_package_version()
+        console.print(f"🦷 Goldentooth Agent v{pkg_version}")
         raise typer.Exit()
 
 
