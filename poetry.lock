@@ -675,6 +675,21 @@ files = [
 toml = ["tomli ; python_full_version <= \"3.11.0a6\""]
 
 [[package]]
+name = "coverage-threshold"
+version = "0.6.2"
+description = "Tools for coverage threshold limits"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "coverage_threshold-0.6.2-py3-none-any.whl", hash = "sha256:2610daf03a04c0bed7d64b9aff70616ef204c6ca989965f4fd296c351d897626"},
+    {file = "coverage_threshold-0.6.2.tar.gz", hash = "sha256:a56bfd6148a01177776f28fcabd754d1ee34ad5c112366c5e346ad1c12ad1fd8"},
+]
+
+[package.dependencies]
+toml = ">=0.10.2"
+
+[[package]]
 name = "cryptography"
 version = "45.0.5"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
@@ -3028,6 +3043,18 @@ requests = ">=2.26.0"
 blobfile = ["blobfile (>=2)"]
 
 [[package]]
+name = "toml"
+version = "0.10.2"
+description = "Python Library for Tom's Obvious, Minimal Language"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+groups = ["main"]
+files = [
+    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
+    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
+]
+
+[[package]]
 name = "tqdm"
 version = "4.67.1"
 description = "Fast, Extensible Progress Meter"
@@ -3625,4 +3652,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<4.0"
-content-hash = "2d7121bbd6f2ba48b3a7b707641268086576ff4faf45f82802fcedd72d384374"
+content-hash = "d91c3fc13f44d207b6bc4f433538254bee663201496d25218b0aa7efe674e8f7"

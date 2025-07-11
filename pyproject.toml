@@ -29,6 +29,7 @@ dependencies = [
     "numpy (>=1.24.0,<2.0.0)",
     "PyGithub (>=2.1.0,<3.0.0)",
     "tiktoken (>=0.5.0,<1.0.0)",
+    "coverage-threshold (>=0.6.2,<0.7.0)",
 ]
 [tool.poetry]
 packages = [
@@ -72,6 +73,7 @@ radon = "^6.0.1"
 [tool.poe.tasks]
 pytest = "pytest"
 pytest-coverage = "pytest --cov=src"
+pytest-coverage-threshold = "coverage-threshold"
 mypy = "mypy"
 pyright-src = "pyright --project src"
 pyright-tests = "pyright --project tests"
@@ -276,6 +278,14 @@ ignore_names = [
     "stream",
 ]
 exclude = ["tests/", "examples/", "build/", "dist/", "__pycache__/"]
+
+[tool.coverage-threshold]
+line_coverage_min = 90
+branch_coverage_min = 90
+combined_coverage_min = 90
+file_line_coverage_min = 90
+file_branch_coverage_min = 90
+file_combined_coverage_min = 90
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

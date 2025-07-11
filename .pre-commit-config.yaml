@@ -216,6 +216,17 @@ repos:
         always_run: true
         args: []
 
+  - repo: local
+    hooks:
+      - id: pytest-coverage-threshold
+        name: Coverage Threshold Check
+        entry: poetry run poe pytest-coverage-threshold
+        language: system
+        types: [python]
+        description: Check code coverage against thresholds
+        pass_filenames: false
+        always_run: true
+
   # Security checks
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.10
