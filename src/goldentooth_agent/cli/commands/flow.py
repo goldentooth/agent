@@ -22,6 +22,7 @@ _global_context_options = {
 
 @app.callback()
 def flow_callback(
+    ctx: typer.Context,
     no_color: Annotated[
         bool,
         typer.Option("--no-color", help="Disable colored output"),
@@ -32,7 +33,7 @@ def flow_callback(
     ] = False,
 ) -> None:
     """Manage and interact with flows."""
-    # Store global options
+    # For now, just use the direct options - we'll handle flexible positioning later
     _global_context_options["no_color"] = no_color
     _global_context_options["plain"] = plain
 
@@ -55,7 +56,7 @@ def flow_list_implementation() -> CommandResult:
 
 
 @app.command("list")
-def flow_list_cli() -> None:
+def flow_list_cli(ctx: typer.Context) -> None:
     """List available flows.
 
     Shows all registered flows with their categories, tags, and metadata.
@@ -68,7 +69,7 @@ def flow_list_cli() -> None:
     except ImportError:
         global_options = {"no_color": False, "plain": False}
 
-    # Merge local and global options (local takes precedence)
+    # Merge options (flow-level > global)
     no_color = _global_context_options["no_color"] or global_options["no_color"]
     plain = _global_context_options["plain"] or global_options["plain"]
 
