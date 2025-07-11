@@ -60,3 +60,27 @@ class TestMainCLI:
         assert result.exit_code == 0
         assert "flow" in result.output.lower()
         assert "List available flows" in result.output
+
+    def test_global_color_options_available(self) -> None:
+        """Test that global color options are available in main CLI."""
+        result = self.runner.invoke(app, ["--help"])
+
+        assert result.exit_code == 0
+        assert "--no-color" in result.output
+        assert "--plain" in result.output
+        assert "Disable colored output" in result.output
+        assert "Use plain text output without formatting" in result.output
+
+    def test_global_no_color_option_works(self) -> None:
+        """Test that global --no-color option works with flow command."""
+        result = self.runner.invoke(app, ["--no-color", "flow", "list"])
+
+        assert result.exit_code == 0
+        assert "No flows available" in result.output
+
+    def test_global_plain_option_works(self) -> None:
+        """Test that global --plain option works with flow command."""
+        result = self.runner.invoke(app, ["--plain", "flow", "list"])
+
+        assert result.exit_code == 0
+        assert "No flows available" in result.output

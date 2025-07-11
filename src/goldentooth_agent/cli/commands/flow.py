@@ -60,10 +60,22 @@ def flow_list_cli() -> None:
 
     Shows all registered flows with their categories, tags, and metadata.
     """
-    # Create command context using global options
+    # Get global options from main CLI
+    try:
+        from ..main import get_global_cli_options
+
+        global_options = get_global_cli_options()
+    except ImportError:
+        global_options = {"no_color": False, "plain": False}
+
+    # Merge local and global options (local takes precedence)
+    no_color = _global_context_options["no_color"] or global_options["no_color"]
+    plain = _global_context_options["plain"] or global_options["plain"]
+
+    # Create command context using merged options
     context = CommandContext.from_cli(
-        no_color=_global_context_options["no_color"],
-        plain=_global_context_options["plain"],
+        no_color=no_color,
+        plain=plain,
     )
 
     # Create display manager

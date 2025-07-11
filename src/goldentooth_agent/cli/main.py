@@ -41,15 +41,37 @@ def version_callback(value: bool) -> None:
         raise typer.Exit()
 
 
+# Global state for CLI options
+_global_cli_options = {
+    "no_color": False,
+    "plain": False,
+}
+
+
 @app.callback()
 def main(
     version: Annotated[
         bool,
         typer.Option("--version", "-v", callback=version_callback, help="Show version"),
     ] = False,
+    no_color: Annotated[
+        bool,
+        typer.Option("--no-color", help="Disable colored output"),
+    ] = False,
+    plain: Annotated[
+        bool,
+        typer.Option("--plain", help="Use plain text output without formatting"),
+    ] = False,
 ) -> None:
     """🦷 Goldentooth Agent - AI-powered document processing and chat."""
-    pass
+    # Store global options
+    _global_cli_options["no_color"] = no_color
+    _global_cli_options["plain"] = plain
+
+
+def get_global_cli_options() -> dict[str, bool]:
+    """Get global CLI options for use in subcommands."""
+    return _global_cli_options.copy()
 
 
 # Import and register command groups
