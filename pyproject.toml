@@ -36,6 +36,7 @@ packages = [
     { include = "context", from = "src" },
     { include = "context_flow", from = "src" },
     { include = "flow", from = "src" },
+    { include = "flow_agent", from = "src" },
     { include = "flow_events", from = "src" },
     { include = "git_hooks", from = "src" },
     { include = "goldentooth_agent", from = "src" },
