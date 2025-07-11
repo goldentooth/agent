@@ -80,6 +80,8 @@ class FlowEventLoop:
         try:
             return future.result(timeout=timeout)
         except TimeoutError as e:
+            # Cancel the future to prevent resource leaks
+            future.cancel()
             raise FlowCommandTimeoutError(
                 f"Flow execution timed out after {timeout} seconds"
             ) from e

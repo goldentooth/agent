@@ -13,6 +13,9 @@ from .loop_manager import FlowEventLoop
 
 logger = logging.getLogger(__name__)
 
+# Track cleanup events for debugging - only log in development/debug mode
+_cleanup_events_count = 0
+
 T = TypeVar("T")
 U = TypeVar("U")
 
@@ -27,6 +30,17 @@ def _get_flow_loop() -> FlowEventLoop:
     return _flow_loop
 
 
+def get_cleanup_events_count() -> int:
+    """Get the count of coroutine cleanup events for debugging."""
+    return _cleanup_events_count
+
+
+def reset_cleanup_events_count() -> None:
+    """Reset the cleanup events counter (useful for testing)."""
+    global _cleanup_events_count
+    _cleanup_events_count = 0
+
+
 def run_flow_sync(
     flow: Flow[T, U], input_data: Iterable[T], context: FlowCommandContext
 ) -> FlowCommandResult[list[U]]:
@@ -38,20 +52,17 @@ def run_flow_sync(
         async_gen = _convert_to_async_generator(async_input)
         return await flow.collect()(async_gen)
 
-    # Create coroutine and ensure proper cleanup
+    # Create coroutine and execute with proper error handling
     coro = execute()
     try:
         result = loop.execute_with_timeout(coro, context.execution_timeout)
         return FlowCommandResult[list[U]].success_result(result)
     except Exception as e:
-        # Clean up coroutine if it wasn't consumed
+        # Let the loop manager handle coroutine cleanup
+        # Only track cleanup events for debugging without interfering
         if hasattr(coro, "cr_frame") and getattr(coro, "cr_frame", None) is not None:
-            logger.warning(
-                "Coroutine cleanup triggered: cr_frame is not None after exception. Exception type: %s, message: %s",
-                type(e).__name__,
-                str(e),
-            )
-            coro.close()
+            global _cleanup_events_count
+            _cleanup_events_count += 1
         return FlowCommandResult[list[U]].error_result(str(e))
 
 
