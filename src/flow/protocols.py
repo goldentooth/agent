@@ -20,12 +20,12 @@ class ContextKeyProtocol(Protocol[T_co]):
     @property
     def name(self) -> str:
         """The unique name/identifier for this context key."""
-        ...
+        raise NotImplementedError("Subclasses must implement name property")
 
     @property
     def value_type(self) -> type[T_co]:
         """The type of values this key can store."""
-        ...
+        raise NotImplementedError("Subclasses must implement value_type property")
 
 
 @runtime_checkable
@@ -34,15 +34,15 @@ class ContextProtocol(Protocol):
 
     def get(self, key: ContextKeyProtocol[T]) -> T:  # noqa: ARG002
         """Get a value by key."""
-        ...
+        raise NotImplementedError("Subclasses must implement get method")
 
     def set(self, key: ContextKeyProtocol[T], value: T) -> None:  # noqa: ARG002
         """Set a value by key."""
-        ...
+        raise NotImplementedError("Subclasses must implement set method")
 
     def contains(self, key: ContextKeyProtocol[Any]) -> bool:  # noqa: ARG002
         """Check if key exists in context."""
-        ...
+        raise NotImplementedError("Subclasses must implement contains method")
 
 
 @runtime_checkable
@@ -52,8 +52,8 @@ class FlowProtocol(Protocol[T_co, V]):
     @property
     def name(self) -> str:
         """The name of this flow."""
-        ...
+        raise NotImplementedError("Subclasses must implement name property")
 
     def __call__(self, stream: Any) -> Any:  # noqa: ARG002
         """Execute the flow with the given stream."""
-        ...
+        raise NotImplementedError("Subclasses must implement __call__ method")
