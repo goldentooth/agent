@@ -1,4 +1,6 @@
 [project]
+scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app", gta = "goldentooth_agent.cli.main:app" }
+
 name = "goldentooth-agent"
 version = "0.0.1"
 description = ""
@@ -28,8 +30,6 @@ dependencies = [
     "PyGithub (>=2.1.0,<3.0.0)",
     "tiktoken (>=0.5.0,<1.0.0)",
 ]
-scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app" }
-
 [tool.poetry]
 packages = [
     { include = "context", from = "src" },
