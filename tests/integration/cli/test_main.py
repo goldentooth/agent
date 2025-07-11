@@ -29,7 +29,7 @@ class TestMainCLI:
 
         assert result.exit_code == 0
         assert "Goldentooth Agent" in result.output
-        assert "v0.0.1" in result.output
+        assert "v0.0.2" in result.output
 
     def test_version_short_option(self) -> None:
         """Test short version option."""
