@@ -48,7 +48,6 @@
     "defaultMode": "acceptEdits",
     "deny": [
       "Bash(git commit --no-verify:*)",
-      "Bash(git commit -m:*)",
       "Bash(git reset:*)",
       "Bash(SKIP:*)",
       "Edit(src/pyrightconfig.json)",

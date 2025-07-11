@@ -9,7 +9,7 @@ from context_flow.integration import (
     ContextTypeMismatchError,
     run_flow_with_input,
 )
-from flowengine.flow import Flow
+from flow.flow import Flow
 
 
 class TestSetKey:

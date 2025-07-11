@@ -1,0 +1,184 @@
+# Development Guidelines - Commandments
+
+We're building production-quality code together. Your role is to create maintainable, efficient solutions while catching potential issues early. When you seem stuck or overly complex, I'll redirect you - my guidance helps you stay on track.
+
+These are the fundamental principles that govern all development work on this project. Every line of code, every test, and every commit must adhere to these commandments.
+
+## 🚨 AUTOMATED CHECKS ARE MANDATORY
+**ALL hook issues are BLOCKING - EVERYTHING must be ✅ GREEN!**
+No errors. No formatting issues. No linting problems. Zero tolerance.
+These are not suggestions. Fix ALL issues before continuing.
+
+## CRITICAL WORKFLOW - ALWAYS FOLLOW THIS!
+
+### Research → Plan → Implement
+**NEVER JUMP STRAIGHT TO CODING!** Always follow this sequence:
+1. **Research**: Explore the codebase, understand existing patterns
+2. **Plan**: Create a detailed implementation plan and verify it with me
+3. **Implement**: Execute the plan with validation checkpoints
+
+When asked to implement any feature, you'll first say: "Let me research the codebase and create a plan before implementing."
+
+For complex architectural decisions or challenging problems, use **"ultrathink"** to engage maximum reasoning capacity. Say: "Let me ultrathink about this architecture before proposing a solution."
+
+### USE MULTIPLE AGENTS!
+*Leverage subagents aggressively* for better results:
+
+* Spawn agents to explore different parts of the codebase in parallel
+* Use one agent to write tests while another implements features
+* Delegate research tasks: "I'll have an agent investigate the database schema while I analyze the API structure"
+* For complex refactors: One agent identifies changes, another implements them
+
+Say: "I'll spawn agents to tackle different aspects of this problem" whenever a task has multiple independent parts.
+
+### Reality Checkpoints
+**Stop and validate** at these moments:
+- After implementing a complete feature
+- Before starting a new major component
+- When something feels wrong
+- Before declaring "done"
+- **WHEN HOOKS FAIL WITH ERRORS** ❌
+
+> Why: You can lose track of what's actually working. These checkpoints prevent cascading failures.
+
+### 🚨 CRITICAL: Hook Failures Are BLOCKING
+**When hooks report ANY issues (exit code 2), you MUST:**
+1. **STOP IMMEDIATELY** - Do not continue with other tasks
+2. **FIX ALL ISSUES** - Address every ❌ issue until everything is ✅ GREEN
+3. **VERIFY THE FIX** - Re-run the failed command to confirm it's fixed
+4. **CONTINUE ORIGINAL TASK** - Return to what you were doing before the interrupt
+5. **NEVER IGNORE** - There are NO warnings, only requirements
+
+## The Guidelines
+- Each function/method MUST be in its own commit even if the code already exists. No exceptions!
+- Update README.md and relevant files in docs/ before opening a pull request.
+- Maintain a file in .claude/retros/<initiative-name.md> for each task (i.e. pull request) that you end up performing.
+  - Create this along with your first commit, and update it with each subsequent commit.
+  - These will be used to create followup issues, so make them detailed!
+- Prefer defining functions (or reusing them!) to using Lambdas, particularly when encountering type-checking issues.
+- Do not do "stub implementations"; whatever functionality exists must be production-ready 100% of the time.
+- Before you consider work "done," run the pre-commit hooks by themselves with the `pre-commit` command.
+  - This may fail because of formatting checks; if so, retry it.
+  - DO NOT ATTEMPT TO COMMIT UNTIL YOU HAVE RUN `pre-commit` SUCCESSFULLY!!!
+- If pyright suggests adding a `super().__init__()`, just add the damned thing.
+
+## Package Migration Guidelines
+
+When migrating packages from `old/` to `src/`, follow these critical patterns learned from the context migration:
+
+### Test Import Strategy
+- **ALWAYS use relative imports in tests**: `from package.module import Class`
+- **NEVER use absolute src imports**: `from src.package.module import Class` (causes test collection failures)
+- Poetry package structure expects relative imports for proper test collection
+
+### Package Configuration
+- **Immediately add new packages to pyproject.toml** when creating them
+- Add entry: `{ include = "package_name", from = "src" }` to `[tool.poetry] packages`
+- Run `poetry install` after adding packages to update development environment
+- Package imports work through poetry's package management, not direct file imports
+
+### Test Collection and Staging
+- **Always stage test files with correct imports before committing**
+- Pre-commit hooks can stash/restore changes, reverting import fixes
+- Use `git add tests/package/test_file.py` to stage corrected imports
+- Import path consistency is critical for successful test collection during pre-commit
+
+### Coverage During Migration
+- Focus on 100% coverage for individual functions being migrated
+- Global project coverage (90%) may conflict during early migration phases
+- This is acceptable during migration - focus on function-level coverage quality
+
+## The Commandments
+
+0. **Do not ever, ever, under any circumstances, bypass pre-commit checks.**
+   - Never use `git commit --no-verify`
+   - Never create temporary "override" configurations
+   - Never alter configurations to bypass checks
+   - Never use the SKIP environment variable
+   - If you believe a pre-commit hook is causing unnecessary hardship, ask me
+   - Pre-commit hooks ensure code quality and must always be respected
+   - This includes type checks and file/module line count complaints!
+   - And don't just ignore type violations with comments; follow best practices and fix the underlying issue!
+
+1. **Do not write any code without a failing test.**
+   - Every function, class, and feature must be driven by tests
+   - Write the test first, watch it fail, then implement
+   - No exceptions to this rule
+
+2. **Do not write more code than is necessary to pass the test.**
+   - Implement the minimal code required to make tests pass
+   - Avoid over-engineering and premature optimization
+   - Focus on making the test green, not on future possibilities
+
+3. **Do not write functions of more than 15 statements or lines, and try not to write any of more than 10 statements or lines.**
+   - Keep functions small and focused on a single responsibility
+   - If a function exceeds 15 lines, break it into smaller functions
+   - Aim for 10 lines or fewer whenever possible
+
+4. **Do not add anything to a module with more than 1000 lines.**
+   - If you need to add a line to a module with 1000 lines in it, decompose it into smaller modules.
+   - Files must remain manageable and focused
+   - Large files indicate design problems that need addressing
+   - Seek guidance before contributing to bloated files
+
+5. **Do not add anything to a package with more than 5000 lines.**
+   - If you need to add a line to a module in a package with 5000 or more lines in it, decompose it into smaller packages.
+   - Packages must maintain reasonable scope and complexity
+   - Large packages indicate architectural issues
+   - Always consult before adding to oversized packages
+
+6. **Tests must always match the structure of the codebase.**
+   - Test structure mirrors source structure exactly
+     - e.g. code in src/goldentooth_agent/core/widget/ should be covered by tests in tests/unit/goldentooth_agent_tests/core/widget
+     - e.g. integration/global tests go in tests/integration
+   - Unit tests go in tests/unit/<package_name>_tests with matching directory structure
+   - Integration tests go in tests/integration/ with matching directory structure
+   - This ensures tests are discoverable and maintainable
+
+7. **If you are unclear on anything, ask me for guidance.**
+   - Do not go off half-cocked trying to please me.
+   - I will git reset your ass and make you do it again.
+   - Uncertainty requires consultation, not assumption
+   - Better to ask questions than implement incorrectly
+   - Mistakes waste time and effort for everyone
+
+8. **Do not, ever, under any circumstances, run `git reset`.**
+   - Git history is sacred and must be preserved
+   - Work forward through problems, not backward
+   - Use other git commands for corrections when needed
+
+9. **Your work on a task is not done until you have run all the pre-commit hooks, they have passed, and the commit is made with an appropriate and detailed commit message.**
+   - Pre-commit hooks are mandatory, not optional
+   - All hooks must pass before considering work complete
+   - Commit messages must be clear, detailed, and descriptive
+   - No shortcuts on quality gates
+
+10. **You will have all work reviewed, on a line-by-line basis. My standards are high and I demand that you excel at every step.**
+    - Every line of code will be scrutinized
+    - Quality is non-negotiable
+    - Excellence is the minimum acceptable standard
+    - Prepare to defend every decision and implementation choice
+
+11. **It is never appropriate to make large commits. We commit a single change and the tests to cover it.**
+    - That may be a single small function
+    - That may be a single class method
+    - Never make more changes in a single commit than the minimum necessary to be a coherent, tested, validated whole
+    - Each commit must represent the smallest possible unit of work that can stand alone
+    - Large commits make code review impossible and history unclear
+
+12. **Never conflate planned work with completed work. Use the TodoWrite tool to track actual progress.**
+    - Only mark items as "completed" when they are actually implemented and committed
+    - Break down large tasks into individual, trackable units
+    - Use "pending" for work not yet started, "in_progress" for current work, "completed" only for finished work
+    - The TodoWrite tool is your source of truth for progress tracking
+    - Never describe future work as if it's already done
+    - When in doubt about status, check what's actually committed in git
+
+## Enforcement
+
+These commandments are not suggestions—they are requirements. Violations will result in:
+- Code rejection and mandatory rework
+- Extended review cycles
+- Loss of development privileges in severe cases
+
+Excellence through discipline. No exceptions.

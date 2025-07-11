@@ -5526,7 +5526,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/__init__.py": {
+    "src/flow/__init__.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -5605,7 +5605,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/combinators/__init__.py": {
+    "src/flow/combinators/__init__.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -5702,7 +5702,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/combinators/advanced.py": {
+    "src/flow/combinators/advanced.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -8451,7 +8451,7 @@
         "percent_covered_display": "96"
       }
     },
-    "src/flowengine/combinators/aggregation.py": {
+    "src/flow/combinators/aggregation.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -10182,7 +10182,7 @@
         "percent_covered_display": "95"
       }
     },
-    "src/flowengine/combinators/basic.py": {
+    "src/flow/combinators/basic.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -11592,7 +11592,7 @@
         "percent_covered_display": "99"
       }
     },
-    "src/flowengine/combinators/control_flow.py": {
+    "src/flow/combinators/control_flow.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -13712,7 +13712,7 @@
         "percent_covered_display": "91"
       }
     },
-    "src/flowengine/combinators/observability.py": {
+    "src/flow/combinators/observability.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -14585,7 +14585,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/combinators/sources.py": {
+    "src/flow/combinators/sources.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -15067,7 +15067,7 @@
         "percent_covered_display": "96"
       }
     },
-    "src/flowengine/combinators/temporal.py": {
+    "src/flow/combinators/temporal.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -16231,7 +16231,7 @@
         "percent_covered_display": "95"
       }
     },
-    "src/flowengine/combinators/utils.py": {
+    "src/flow/combinators/utils.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -16394,7 +16394,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/exceptions.py": {
+    "src/flow/exceptions.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -16601,7 +16601,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/extensions.py": {
+    "src/flow/extensions.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -18060,7 +18060,7 @@
         "percent_covered_display": "99"
       }
     },
-    "src/flowengine/flow.py": {
+    "src/flow/flow.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -20696,7 +20696,7 @@
         "percent_covered_display": "98"
       }
     },
-    "src/flowengine/observability/__init__.py": {
+    "src/flow/observability/__init__.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -20784,7 +20784,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/observability/analysis.py": {
+    "src/flow/observability/analysis.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -24123,7 +24123,7 @@
         "percent_covered_display": "94"
       }
     },
-    "src/flowengine/observability/debugging.py": {
+    "src/flow/observability/debugging.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -25987,7 +25987,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/observability/health/__init__.py": {
+    "src/flow/observability/health/__init__.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -26066,7 +26066,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/observability/health/checks.py": {
+    "src/flow/observability/health/checks.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -27834,7 +27834,7 @@
         "percent_covered_display": "83"
       }
     },
-    "src/flowengine/observability/health/core.py": {
+    "src/flow/observability/health/core.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -28411,7 +28411,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/observability/health/reporting.py": {
+    "src/flow/observability/health/reporting.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -29712,7 +29712,7 @@
         "percent_covered_display": "95"
       }
     },
-    "src/flowengine/observability/performance.py": {
+    "src/flow/observability/performance.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -31733,7 +31733,7 @@
         "percent_covered_display": "95"
       }
     },
-    "src/flowengine/protocols.py": {
+    "src/flow/protocols.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -32097,7 +32097,7 @@
         "percent_covered_display": "76"
       }
     },
-    "src/flowengine/registry/__init__.py": {
+    "src/flow/registry/__init__.py": {
       "classes": {
         "": {
           "excluded_lines": [],
@@ -32170,7 +32170,7 @@
         "percent_covered_display": "100"
       }
     },
-    "src/flowengine/registry/main.py": {
+    "src/flow/registry/main.py": {
       "classes": {
         "": {
           "excluded_lines": [],

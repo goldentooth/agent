@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 
 from context_flow.integration import ContextFlowCombinators, run_flow_with_input
-from flowengine.flow import Flow
+from flow.flow import Flow
 
 
 class TestForgetKey:

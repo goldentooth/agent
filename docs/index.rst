@@ -8,7 +8,8 @@ Welcome to the Goldentooth Agent documentation. This is a sophisticated AI agent
    :caption: Contents:
 
    overview
-   flowengine
+   flow
+   context-migration
    api/modules
    background/index
    development
@@ -16,11 +17,11 @@ Welcome to the Goldentooth Agent documentation. This is a sophisticated AI agent
 Current Status
 --------------
 
-**Flow Engine Migration: Epic 13 Complete ✅**
+**Context System Migration: Phase 2 In Progress 🔄**
 
-The Flow Engine migration is **complete** with comprehensive type safety and test coverage:
+The Flow Engine migration is **complete** ✅ and Context System migration is **actively in progress**:
 
-**✅ All 13 Epics Complete (100% migration complete)**
+**✅ Flow Engine Migration Complete (13/13 Epics - 100%)**
 
 * **Epic 1-4**: Core infrastructure (package structure, exceptions, protocols, Flow class)
 * **Epic 5**: Utils (2 functions: get_function_name, create_single_item_stream)
@@ -32,29 +33,69 @@ The Flow Engine migration is **complete** with comprehensive type safety and tes
 * **Epic 12**: Control flow combinators (11 functions: retry, recover, circuit_breaker, branch, etc.)
 * **Epic 13**: Advanced combinators (10 functions: parallel, merge, race, zip, chain, etc.)
 
+**🔄 Context System Migration (139/162 Commits Complete - 86%)**
+
+**Phase 1: Core Context Package** ✅ **COMPLETE**
+
+* **Context Core** (``src/context/``) - Full hierarchical context management
+* **Symbol System** - Type-safe symbolic navigation
+* **Context Keys** - Strongly-typed key system with generic support
+* **Context Frames** - Stack-based context frame management
+* **Dependency Graph** - Automatic dependency tracking for computed properties
+* **History Tracking** - Complete change history and rollback capabilities
+* **Snapshot Management** - Context state preservation and restoration
+
+**Phase 2: Context-Flow Integration** 🔄 **IN PROGRESS (139/162)**
+
+* **Flow Integration** (``src/context_flow/``) - Seamless Flow Engine integration
+* **Trampoline System** - Advanced flow control patterns **[CURRENT]**
+
+  * ✅ Utility functions and context keys (Commits #129-133)
+  * ✅ Control flow setters (set_should_exit, set_should_break, set_should_skip)
+  * ✅ Control flow checkers (check_should_exit, check_should_break, check_should_skip)
+  * 🔄 **Current**: Clear flag methods and advanced trampoline patterns
+
+* **Context Bridge** - Integration bridge between Context and Flow systems
+* **Advanced Patterns** - Conditional flows, exitable chains, and more
+
 **Migration Statistics:**
 
-* ✅ **67+ combinators** implemented with full type safety
-* ✅ **150+ test cases** with 96%+ test coverage  
+* ✅ **Flow Engine**: 13/13 Epics Complete (100%)
+* 🔄 **Context System**: 139/162 Commits Complete (86%)
+* ✅ **67+ flow combinators** with full type safety
+* ✅ **150+ test cases** with 96%+ test coverage for Flow Engine
 * ✅ **100% type safety** - Full Pyright/MyPy compliance
-* ✅ **Zero dependencies** - Standalone flowengine package
-* ✅ **33 source files** with comprehensive functionality
-* ✅ **50 test files** covering all functionality
+* ✅ **Zero dependencies** - Standalone flow package
+* ✅ **TDD approach** - Every function/method individually tested
+* ✅ **50+ test files** covering all functionality
 
 Architecture Overview
 ---------------------
 
 The system is organized into several core modules:
 
-**Current Architecture (Migration Complete)**
+**Current Architecture**
 
-* **Flow Engine** (``flowengine``) - Functional reactive stream processing [**COMPLETE ✅**]
+* **Flow Engine** (``flow``) - Functional reactive stream processing [**COMPLETE ✅**]
 
-  * ``flowengine.flow`` - Core Flow class with 23+ methods
-  * ``flowengine.combinators`` - 67+ stream processing functions across 8 categories
-  * ``flowengine.observability`` - Performance monitoring and analysis
-  * ``flowengine.exceptions`` - Flow-specific error types
-  * ``flowengine.protocols`` - Type protocols for the flow system
+  * ``flow.flow`` - Core Flow class with 23+ methods
+  * ``flow.combinators`` - 67+ stream processing functions across 8 categories
+  * ``flow.observability`` - Performance monitoring and analysis
+  * ``flow.exceptions`` - Flow-specific error types
+  * ``flow.protocols`` - Type protocols for the flow system
+
+* **Context System** (``context``, ``context_flow``) - Hierarchical context management [**MIGRATING 🔄**]
+
+  * ``context.main`` - Core Context class with hierarchical data management
+  * ``context.key`` - Type-safe ContextKey system with generic support
+  * ``context.symbol`` - Symbolic navigation and path management
+  * ``context.frame`` - Stack-based context frame management
+  * ``context.dependency_graph`` - Automatic dependency tracking
+  * ``context.history_tracker`` - Change tracking and rollback capabilities
+  * ``context.snapshot_manager`` - Context state preservation and restoration
+  * ``context_flow.integration`` - Seamless Flow Engine integration
+  * ``context_flow.trampoline`` - Advanced flow control and execution patterns
+  * ``context_flow.bridge`` - Integration bridge between systems
 
 * **Agent Core** (``goldentooth_agent``) - Main agent functionality
 
@@ -91,6 +132,29 @@ The Flow Engine provides comprehensive functional reactive programming:
 * **Sources (4 functions)**: range, repeat, empty, start_with
 * **Utils (2 functions)**: Helper functions for flow creation and introspection
 
+Context System Features
+----------------------
+
+The Context System provides hierarchical context management with Flow integration:
+
+**Core Capabilities:**
+
+* **Hierarchical Context**: Tree-structured context with nested scope management
+* **Type-safe Keys**: Strongly-typed ContextKey system with generic support
+* **Computed Properties**: Automatic dependency tracking and lazy evaluation
+* **Change History**: Complete change tracking with rollback capabilities
+* **Snapshot Management**: Context state preservation and restoration
+* **Flow Integration**: Seamless integration with Flow Engine for reactive processing
+
+**Key Components:**
+
+* **Symbol System**: Type-safe symbolic navigation with dot-notation paths
+* **Context Frames**: Stack-based context frame management for scoped operations
+* **Dependency Graph**: Automatic dependency tracking for computed properties
+* **History Tracking**: Complete change history with timestamp-based queries
+* **Trampoline System**: Advanced flow control patterns for iterative execution
+* **Context Bridge**: Integration bridge between Context and Flow systems
+
 Quick Start
 -----------
 
@@ -115,9 +179,9 @@ Flow Engine Example
 
 .. code-block:: python
 
-   from flowengine import Flow
-   from flowengine.combinators import (
-       batch_stream, debounce_stream, parallel_stream, 
+   from flow import Flow
+   from flow.combinators import (
+       batch_stream, debounce_stream, parallel_stream,
        retry_stream, circuit_breaker_stream
    )
 

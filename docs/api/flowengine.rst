@@ -1,9 +1,9 @@
-flowengine package
+flow package
 ==================
 
 The Flow Engine is the core functional programming foundation of Goldentooth Agent, providing reactive stream processing with type-safe composition patterns.
 
-.. automodule:: flowengine
+.. automodule:: flow
    :members:
    :undoc-members:
    :show-inheritance:
@@ -11,27 +11,27 @@ The Flow Engine is the core functional programming foundation of Goldentooth Age
 Submodules
 ----------
 
-flowengine.flow module
+flow.flow module
 ----------------------
 
-.. automodule:: flowengine.flow
+.. automodule:: flow.flow
    :members:
    :undoc-members:
    :show-inheritance:
    :special-members: __init__, __call__, __repr__, __aiter__, __rshift__
 
-flowengine.exceptions module
+flow.exceptions module
 ----------------------------
 
-.. automodule:: flowengine.exceptions
+.. automodule:: flow.exceptions
    :members:
    :undoc-members:
    :show-inheritance:
 
-flowengine.protocols module
+flow.protocols module
 ---------------------------
 
-.. automodule:: flowengine.protocols
+.. automodule:: flow.protocols
    :members:
    :undoc-members:
    :show-inheritance:
@@ -39,34 +39,34 @@ flowengine.protocols module
 Combinators
 -----------
 
-flowengine.combinators package
+flow.combinators package
 ------------------------------
 
-.. automodule:: flowengine.combinators
+.. automodule:: flow.combinators
    :members:
    :undoc-members:
    :show-inheritance:
 
-flowengine.combinators.aggregation module
+flow.combinators.aggregation module
 -----------------------------------------
 
-.. automodule:: flowengine.combinators.aggregation
+.. automodule:: flow.combinators.aggregation
    :members:
    :undoc-members:
    :show-inheritance:
 
-flowengine.combinators.temporal module
+flow.combinators.temporal module
 --------------------------------------
 
-.. automodule:: flowengine.combinators.temporal
+.. automodule:: flow.combinators.temporal
    :members:
    :undoc-members:
    :show-inheritance:
 
-flowengine.combinators.control_flow module
+flow.combinators.control_flow module
 -------------------------------------------
 
-.. automodule:: flowengine.combinators.control_flow
+.. automodule:: flow.combinators.control_flow
    :members:
    :undoc-members:
    :show-inheritance:

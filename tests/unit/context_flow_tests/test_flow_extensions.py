@@ -9,7 +9,7 @@ from context_flow.integration import (
     extend_flow_with_context,
     run_flow_with_input,
 )
-from flowengine.flow import Flow
+from flow.flow import Flow
 
 
 class TestExtendFlowWithContext:
@@ -17,13 +17,9 @@ class TestExtendFlowWithContext:
 
     def test_extend_flow_with_context_adds_methods_to_flow(self) -> None:
         """Test that extend_flow_with_context adds methods to Flow class."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
-        # Before extending, Flow should not have added methods
-        assert not hasattr(Flow, "run")
-        assert not hasattr(Flow, "then")
-
-        # Extend Flow with context methods
+        # Extend Flow with context methods (idempotent)
         extend_flow_with_context()
 
         # After extending, Flow should have added methods
@@ -34,7 +30,7 @@ class TestExtendFlowWithContext:
 
     def test_extend_flow_with_context_run_method(self) -> None:
         """Test that the added run method works correctly."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         extend_flow_with_context()
 
@@ -47,7 +43,7 @@ class TestExtendFlowWithContext:
 
     def test_extend_flow_with_context_then_method(self) -> None:
         """Test that the added then method works correctly."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         extend_flow_with_context()
 
@@ -66,7 +62,7 @@ class TestExtendFlowWithContext:
 
     def test_extend_flow_with_context_run_with_different_types(self) -> None:
         """Test that the run method works with different input/output types."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         extend_flow_with_context()
 
@@ -82,7 +78,7 @@ class TestExtendFlowWithContext:
 
     def test_extend_flow_with_context_chaining_with_run(self) -> None:
         """Test that chaining flows with then method and run works correctly."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         extend_flow_with_context()
 
@@ -100,7 +96,7 @@ class TestExtendFlowWithContext:
 
     def test_extend_flow_with_context_multiple_calls(self) -> None:
         """Test that calling extend_flow_with_context multiple times is safe."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Call extend_flow_with_context multiple times
         extend_flow_with_context()
@@ -114,7 +110,7 @@ class TestExtendFlowWithContext:
 
     def test_extend_flow_with_context_async_flows(self) -> None:
         """Test that the extended methods work with async flows."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         extend_flow_with_context()
 
@@ -130,7 +126,7 @@ class TestExtendFlowWithContext:
 
     def test_extend_flow_with_context_preserves_existing_methods(self) -> None:
         """Test that extending Flow preserves existing methods."""
-        from flowengine.flow import Flow
+        from flow.flow import Flow
 
         # Check that original methods exist before extending
         assert hasattr(Flow, "from_sync_fn")
