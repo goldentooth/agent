@@ -53,10 +53,14 @@ def main(
 
 
 # Import and register command groups
-# TODO: Import command groups as they are implemented
-# from .commands import agents, chat, tools, flow, debug
+from .commands import flow
+
+# Register flow command group
+app.add_typer(flow.app, name="flow")
+
+# TODO: Import other command groups as they are implemented
+# from .commands import agents, chat, tools, debug
 # app.add_typer(agents.app, name="agents")
 # app.add_typer(chat.app, name="chat")
 # app.add_typer(tools.app, name="tools")
-# app.add_typer(flow.app, name="flow")
 # app.add_typer(debug.app, name="debug")

@@ -52,3 +52,11 @@ class TestMainCLI:
         assert result.exit_code == 2  # Missing command error
         assert "Usage:" in result.output
         assert "Missing command" in result.output
+
+    def test_flow_command_available(self) -> None:
+        """Test that flow command is available in main CLI."""
+        result = self.runner.invoke(app, ["flow", "--help"])
+
+        assert result.exit_code == 0
+        assert "flow" in result.output.lower()
+        assert "List available flows" in result.output
