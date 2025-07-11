@@ -10,7 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **IMPORTANT**: This project follows strict development guidelines documented in the `.claude/guidelines/` directory. **Always review relevant guidelines before making changes.**
 
-@.claude/guidelines/guidelines.txt
+@.claude/guidelines/cli-development.md
+@.claude/guidelines/guidelines.md
 
 These guidelines are enforced through pre-commit hooks, CI/CD pipelines, and code review processes.
 
