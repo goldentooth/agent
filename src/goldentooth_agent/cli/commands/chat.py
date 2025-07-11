@@ -3,6 +3,9 @@
 from dataclasses import dataclass
 from typing import Optional, Protocol
 
+from context import Context
+from context_flow.trampoline import SHOULD_EXIT_KEY
+
 
 class InputSource(Protocol):
     """Protocol for input sources (CLI, stdin, agents, tests)."""
@@ -73,3 +76,44 @@ def chat_implementation(
 
         # Display response
         output_handler.display(response)
+
+
+def chat_flow_implementation(
+    context: Context,
+    input_handler: ChatInputHandler,
+    output_handler: OutputHandler,
+    agent_name: str = "echo",
+) -> Context:
+    """Trampoline-based chat implementation using Flow architecture."""
+
+    def chat_step(ctx: Context) -> Context:
+        """Single chat interaction step."""
+        result = ctx.fork()
+
+        # Get user input
+        user_input = input_handler.get_input()
+
+        # Check for exit condition
+        if input_handler.is_exit_command(user_input):
+            result[SHOULD_EXIT_KEY.path] = True
+            return result
+
+        # Process with agent (for now, just echo)
+        if agent_name == "echo":
+            response = f"Echo: {user_input}"
+        else:
+            response = f"Unknown agent: {agent_name}"
+
+        # Display response
+        output_handler.display(response)
+
+        return result
+
+    # For now, implement a synchronous trampoline loop
+    # This follows the trampoline pattern: iterative execution until exit
+    current_ctx = context
+    while True:
+        current_ctx = chat_step(current_ctx)
+        if current_ctx.get(SHOULD_EXIT_KEY.path, False):
+            break
+    return current_ctx
