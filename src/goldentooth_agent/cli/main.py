@@ -10,23 +10,6 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.traceback import install
 
-
-def _extract_color_options_from_context(ctx: typer.Context) -> dict[str, bool]:
-    """Extract color options from unknown arguments in context.
-
-    Args:
-        ctx: Typer context containing unknown arguments
-
-    Returns:
-        Dictionary with no_color and plain boolean values
-    """
-    unknown_args = getattr(ctx, "args", [])
-    return {
-        "no_color": "--no-color" in unknown_args,
-        "plain": "--plain" in unknown_args,
-    }
-
-
 # Configure rich traceback for better error messages
 install(show_locals=True)
 
@@ -47,7 +30,6 @@ and intelligent workflow automation.
     rich_markup_mode="rich",
     pretty_exceptions_enable=True,
     pretty_exceptions_show_locals=False,
-    context_settings={"ignore_unknown_options": True},
 )
 
 
@@ -89,12 +71,9 @@ def main(
     ] = False,
 ) -> None:
     """🦷 Goldentooth Agent - AI-powered document processing and chat."""
-    # Extract color options from unknown arguments
-    extra_options = _extract_color_options_from_context(ctx)
-
-    # Store global options (unknown args take precedence)
-    _global_cli_options["no_color"] = no_color or extra_options["no_color"]
-    _global_cli_options["plain"] = plain or extra_options["plain"]
+    # Store global options
+    _global_cli_options["no_color"] = no_color
+    _global_cli_options["plain"] = plain
 
     # Store context for subcommands
     ctx.obj = _global_cli_options
