@@ -51,3 +51,33 @@ class TestFlowCLI:
 
         assert result.exit_code == 0
         assert "No flows available" in result.output
+
+    def test_flow_list_flexible_positioning_no_color(self) -> None:
+        """Test flow list with --no-color in different positions."""
+        # Before subcommand
+        result = self.runner.invoke(app, ["--no-color", "list"])
+        assert result.exit_code == 0
+        assert "No flows available" in result.output
+
+        # After subcommand (flexible positioning)
+        result = self.runner.invoke(app, ["list", "--no-color"])
+        assert result.exit_code == 0
+        assert "No flows available" in result.output
+
+    def test_flow_list_flexible_positioning_plain(self) -> None:
+        """Test flow list with --plain in different positions."""
+        # Before subcommand
+        result = self.runner.invoke(app, ["--plain", "list"])
+        assert result.exit_code == 0
+        assert "No flows available" in result.output
+
+        # After subcommand (flexible positioning)
+        result = self.runner.invoke(app, ["list", "--plain"])
+        assert result.exit_code == 0
+        assert "No flows available" in result.output
+
+    def test_flow_list_multiple_options_flexible(self) -> None:
+        """Test flow list with multiple options in flexible positions."""
+        result = self.runner.invoke(app, ["list", "--no-color", "--plain"])
+        assert result.exit_code == 0
+        assert "No flows available" in result.output
