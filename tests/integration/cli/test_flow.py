@@ -24,8 +24,7 @@ class TestFlowCLI:
 
     def test_flow_list_empty_registry(self) -> None:
         """Test flow list with empty registry."""
-        # Note: The flow app currently executes list command by default
-        result = self.runner.invoke(app, [])
+        result = self.runner.invoke(app, ["list"])
 
         assert result.exit_code == 0
         assert "No flows available" in result.output
@@ -36,3 +35,19 @@ class TestFlowCLI:
 
         assert result.exit_code == 0
         assert "List available flows" in result.output
+        assert "--no-color" in result.output
+        assert "--plain" in result.output
+
+    def test_flow_list_with_no_color(self) -> None:
+        """Test flow list with --no-color option."""
+        result = self.runner.invoke(app, ["--no-color", "list"])
+
+        assert result.exit_code == 0
+        assert "No flows available" in result.output
+
+    def test_flow_list_with_plain(self) -> None:
+        """Test flow list with --plain option."""
+        result = self.runner.invoke(app, ["--plain", "list"])
+
+        assert result.exit_code == 0
+        assert "No flows available" in result.output
