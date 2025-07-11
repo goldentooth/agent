@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import AsyncGenerator, AsyncIterable, Iterable
 from typing import TypeVar
 
@@ -9,6 +10,8 @@ from flow.flow import Flow
 from ..core.context import FlowCommandContext
 from ..core.result import FlowCommandResult
 from .loop_manager import FlowEventLoop
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -35,10 +38,20 @@ def run_flow_sync(
         async_gen = _convert_to_async_generator(async_input)
         return await flow.collect()(async_gen)
 
+    # Create coroutine and ensure proper cleanup
+    coro = execute()
     try:
-        result = loop.execute_with_timeout(execute(), context.execution_timeout)
+        result = loop.execute_with_timeout(coro, context.execution_timeout)
         return FlowCommandResult[list[U]].success_result(result)
     except Exception as e:
+        # Clean up coroutine if it wasn't consumed
+        if hasattr(coro, "cr_frame") and getattr(coro, "cr_frame", None) is not None:
+            logger.warning(
+                "Coroutine cleanup triggered: cr_frame is not None after exception. Exception type: %s, message: %s",
+                type(e).__name__,
+                str(e),
+            )
+            coro.close()
         return FlowCommandResult[list[U]].error_result(str(e))
 
 

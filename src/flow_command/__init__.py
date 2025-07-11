@@ -1,4 +1,5 @@
 from .async_bridge import FlowEventLoop, run_flow_async, run_flow_sync
+from .cli import FlowDisplay, app, flow_list_cli, flow_run_cli, flow_search_cli
 from .core import (
     FlowCommandContext,
     FlowCommandError,
@@ -27,4 +28,10 @@ __all__ = [
     "flow_list_implementation",
     "flow_run_implementation",
     "flow_search_implementation",
+    # CLI
+    "app",
+    "FlowDisplay",
+    "flow_list_cli",
+    "flow_run_cli",
+    "flow_search_cli",
 ]
