@@ -675,6 +675,49 @@ class TestUtilityFunctions:
         assert result.required_field == "mock_required_field"
 
     @pytest.mark.asyncio
+    async def test_mock_client_no_field_defaults(self) -> None:
+        """Test mock client when schema can be created without field defaults."""
+
+        class SimpleOutput(ContextFlowSchema):
+            """Schema that can be created without arguments."""
+
+            optional_field: str = "default_value"
+
+        client = MockLLMClient()
+
+        messages = [{"role": "user", "content": "Test"}]
+        result = await client.create_completion(
+            response_model=SimpleOutput,
+            messages=messages,
+        )
+
+        assert isinstance(result, SimpleOutput)
+        assert result.optional_field == "default_value"
+
+    @pytest.mark.asyncio
+    async def test_mock_client_unknown_field_type(self) -> None:
+        """Test mock client with unknown field type."""
+        from typing import Union
+
+        class UnknownTypeOutput(ContextFlowSchema):
+            """Schema with unknown field type."""
+
+            unknown_field: Union[str, int, None] = Field(
+                ..., description="Unknown field type"
+            )
+
+        client = MockLLMClient()
+
+        messages = [{"role": "user", "content": "Test"}]
+        result = await client.create_completion(
+            response_model=UnknownTypeOutput,
+            messages=messages,
+        )
+
+        assert isinstance(result, UnknownTypeOutput)
+        assert result.unknown_field is None  # Should default to None for unknown types
+
+    @pytest.mark.asyncio
     async def test_instructor_flow_input_extraction_error(self) -> None:
         """Test InstructorFlow when input extraction fails."""
 

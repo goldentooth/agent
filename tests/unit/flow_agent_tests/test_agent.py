@@ -713,3 +713,152 @@ class TestFlowAgent:
         assert isinstance(result, AgentOutput)
         assert result.response == ""  # Default fallback
         assert result.metadata == {}
+
+    def _create_complex_output_schema(self) -> type[ContextFlowSchema]:
+        """Create test schema with various field types."""
+        from pydantic import Field
+
+        class ComplexOutput(ContextFlowSchema):
+            """Test schema with various field types."""
+
+            str_field: str = Field(..., description="String field")
+            int_field: int = Field(..., description="Integer field")
+            float_field: float = Field(..., description="Float field")
+            bool_field: bool = Field(..., description="Boolean field")
+            list_field: list[str] = Field(..., description="List field")
+            dict_field: dict[str, Any] = Field(..., description="Dict field")
+            none_field: Any = Field(..., description="None field")
+
+        return ComplexOutput
+
+    def _assert_fallback_field_values(self, result: Any) -> None:
+        """Assert fallback field values are correct."""
+        assert result.str_field == ""
+        assert result.int_field == 0
+        assert result.float_field == 0.0
+        assert result.bool_field is False
+        assert result.list_field == []
+        assert result.dict_field == {}
+        assert result.none_field is None
+
+    @pytest.mark.asyncio
+    async def test_flow_agent_fallback_field_types(self) -> None:
+        """Test FlowAgent fallback with different field types."""
+        ComplexOutput = self._create_complex_output_schema()
+
+        async def simple_system(
+            stream: AsyncGenerator[Any, None]
+        ) -> AsyncGenerator[Any, None]:
+            async for context in stream:
+                yield context
+
+        async def no_output_processing(
+            stream: AsyncGenerator[Any, None]
+        ) -> AsyncGenerator[Any, None]:
+            """Processing flow that doesn't put output schema in context."""
+            async for context in stream:
+                yield context
+
+        agent = FlowAgent(
+            name="fallback_agent",
+            input_schema=AgentInput,
+            output_schema=ComplexOutput,
+            system_flow=Flow(simple_system, name="simple_system"),
+            processing_flow=Flow(no_output_processing, name="no_output_processing"),
+        )
+
+        test_input = AgentInput(message="test")
+        result = await agent.run(test_input)
+
+        assert isinstance(result, ComplexOutput)
+        self._assert_fallback_field_values(result)
+
+    @pytest.mark.asyncio
+    async def test_flow_agent_fallback_type_error(self) -> None:
+        """Test FlowAgent fallback when schema cannot be created."""
+        from pydantic import Field
+
+        class UncreatableOutput(ContextFlowSchema):
+            """Test schema that cannot be created with default values."""
+
+            def __init__(self, **data: Any):
+                # Force a TypeError when trying to create with default values
+                if not data.get("special_field"):
+                    raise TypeError("Cannot create without special_field")
+                super().__init__(**data)
+
+            special_field: str = Field(..., description="Special required field")
+
+        async def simple_system(
+            stream: AsyncGenerator[Any, None]
+        ) -> AsyncGenerator[Any, None]:
+            async for context in stream:
+                yield context
+
+        async def no_output_processing(
+            stream: AsyncGenerator[Any, None]
+        ) -> AsyncGenerator[Any, None]:
+            """Processing flow that doesn't put output schema in context."""
+            async for context in stream:
+                # Just pass through without adding output schema
+                yield context
+
+        agent = FlowAgent(
+            name="fallback_error_agent",
+            input_schema=AgentInput,
+            output_schema=UncreatableOutput,
+            system_flow=Flow(simple_system, name="simple_system"),
+            processing_flow=Flow(no_output_processing, name="no_output_processing"),
+        )
+
+        test_input = AgentInput(message="test")
+
+        # Should raise error when fallback cannot be created
+        with pytest.raises(
+            ValueError,
+            match="Output schema not found in context and cannot create fallback",
+        ):
+            await agent.run(test_input)
+
+    @pytest.mark.asyncio
+    async def test_flow_agent_output_validation_conversion(self) -> None:
+        """Test FlowAgent output validation when context contains dict instead of schema."""
+
+        async def simple_system(
+            stream: AsyncGenerator[Any, None]
+        ) -> AsyncGenerator[Any, None]:
+            async for context in stream:
+                yield context
+
+        async def dict_output_processing(
+            stream: AsyncGenerator[Any, None]
+        ) -> AsyncGenerator[Any, None]:
+            """Processing flow that puts dict data in context."""
+            async for context in stream:
+                # Create an AgentOutput from dict then put it in context
+                # This will test the validation/conversion path
+                output_dict = {
+                    "response": "Converted response",
+                    "metadata": {"converted": True},
+                }
+                # Put the dict in context, which will trigger validation
+                output_schema = AgentOutput.model_validate(output_dict)
+                context = output_schema.to_context(context)
+
+                yield context
+
+        agent = FlowAgent(
+            name="validation_agent",
+            input_schema=AgentInput,
+            output_schema=AgentOutput,
+            system_flow=Flow(simple_system, name="simple_system"),
+            processing_flow=Flow(dict_output_processing, name="dict_output_processing"),
+        )
+
+        test_input = AgentInput(message="test")
+        result = await agent.run(test_input)
+
+        # Should convert dict to schema and validate
+        assert isinstance(result, AgentOutput)
+        assert result.response == "Converted response"
+        assert result.metadata == {"converted": True}

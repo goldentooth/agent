@@ -166,6 +166,7 @@ class FlowAgent:
                     ) in self.output_schema.model_fields.items():
                         if field_info.is_required():
                             # Provide sensible defaults for common types
+                            annotation_str = str(field_info.annotation)
                             if field_info.annotation is str:
                                 field_defaults[field_name] = ""
                             elif field_info.annotation is int:
@@ -174,9 +175,15 @@ class FlowAgent:
                                 field_defaults[field_name] = 0.0
                             elif field_info.annotation is bool:
                                 field_defaults[field_name] = False
-                            elif field_info.annotation is list:
+                            elif (
+                                "list" in annotation_str.lower()
+                                or "List" in annotation_str
+                            ):
                                 field_defaults[field_name] = []
-                            elif field_info.annotation is dict:
+                            elif (
+                                "dict" in annotation_str.lower()
+                                or "Dict" in annotation_str
+                            ):
                                 field_defaults[field_name] = {}
                             else:
                                 field_defaults[field_name] = None
