@@ -59,7 +59,7 @@ Say: "I'll spawn agents to tackle different aspects of this problem" whenever a 
 - Do not do "stub implementations"; whatever functionality exists must be production-ready 100% of the time.
 - Before you consider work "done," run the pre-commit hooks by themselves with the `pre-commit` command.
   - This may fail because of formatting checks; if so, retry it.
-  - DO NOT ATTEMPT TO COMMIT UNTIL YOU HAVE RUN `pre-commit` SUCCESSFULLY!!!
+  - DO NOT ATTEMPT TO COMMIT UNTIL YOU HAVE RUN `pre-commit` SUCCESSFULLY ON ALL FILES!!!
 - If pyright suggests adding a `super().__init__()`, just add the damned thing.
 
 ## Package Migration Guidelines

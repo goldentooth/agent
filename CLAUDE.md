@@ -10,6 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **IMPORTANT**: This project follows strict development guidelines documented in the `.claude/guidelines/` directory. **Always review relevant guidelines before making changes.**
 
+DO NOT ATTEMPT TO COMMIT UNTIL YOU HAVE RUN `pre-commit` SUCCESSFULLY ON ALL FILES!!!
+
 @.claude/guidelines/cli-development.md
 @.claude/guidelines/guidelines.md
 
