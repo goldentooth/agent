@@ -2,7 +2,7 @@
 scripts = { goldentooth-agent = "goldentooth_agent.cli.main:app", gta = "goldentooth_agent.cli.main:app" }
 
 name = "goldentooth-agent"
-version = "0.0.1"
+version = "0.0.2"
 description = ""
 authors = [
     { name = "Nate Douglas", email = "ndouglas@users.noreply.github.com" },
