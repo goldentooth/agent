@@ -25,7 +25,7 @@ def flow_list_implementation() -> CommandResult:
     return CommandResult(
         success=True,
         data={"flows": []},
-        formatted_output="No flows available",
+        formatted_output="[dim]No flows available[/dim]",
     )
 
 

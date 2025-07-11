@@ -16,7 +16,8 @@ class TestFlowListImplementation:
         assert isinstance(result, CommandResult)
         assert result.success is True
         assert result.data == {"flows": []}
-        assert result.formatted_output == "No flows available"
+        assert result.formatted_output is not None
+        assert "[dim]No flows available[/dim]" in result.formatted_output
         assert result.error_message is None
         assert result.exit_code == 0
 
