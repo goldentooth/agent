@@ -1,5 +1,7 @@
 """Flow management commands for the CLI."""
 
+from typing import Annotated
+
 import typer
 
 from ..core import CommandContext, CommandResult, Display
@@ -30,13 +32,22 @@ def flow_list_implementation() -> CommandResult:
 
 
 @app.command("list")
-def flow_list_cli() -> None:
+def flow_list_cli(
+    no_color: Annotated[
+        bool,
+        typer.Option("--no-color", help="Disable colored output"),
+    ] = False,
+    plain: Annotated[
+        bool,
+        typer.Option("--plain", help="Use plain text output without formatting"),
+    ] = False,
+) -> None:
     """List available flows.
 
     Shows all registered flows with their categories, tags, and metadata.
     """
     # Create command context
-    context = CommandContext.from_cli()
+    context = CommandContext.from_cli(no_color=no_color, plain=plain)
 
     # Create display manager
     display = Display(context)
