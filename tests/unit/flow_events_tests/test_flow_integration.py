@@ -1,6 +1,6 @@
 """Tests for flow_events.flow_integration module."""
 
-from typing import Any
+from typing import Any, AsyncGenerator
 from unittest.mock import AsyncMock, Mock, call
 
 import pytest

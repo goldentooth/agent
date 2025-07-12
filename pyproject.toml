@@ -280,12 +280,12 @@ ignore_names = [
 exclude = ["tests/", "examples/", "build/", "dist/", "__pycache__/"]
 
 [tool.coverage-threshold]
-line_coverage_min = 30
-branch_coverage_min = 30
-combined_coverage_min = 30
-file_line_coverage_min = 30
-file_branch_coverage_min = 30
-file_combined_coverage_min = 30
+line_coverage_min = 40
+branch_coverage_min = 40
+combined_coverage_min = 40
+file_line_coverage_min = 40
+file_branch_coverage_min = 35
+file_combined_coverage_min = 40
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
