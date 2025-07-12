@@ -6,6 +6,7 @@ from collections.abc import Callable
 from typing import Any, AsyncGenerator, TypeVar
 
 from flow import Flow
+from flow.combinators.utils import empty_stream
 
 from .flow import AsyncEventFlow, EventFlow, SyncEventFlow
 
@@ -86,13 +87,6 @@ def event_bridge(
         """Bridge events from source to target."""
         source_events = source_flow.as_flow()
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            """Create an empty stream for source consumption."""
-            # Create an empty async generator by yielding from an empty list
-            empty_list: list[None] = []
-            for item in empty_list:
-                yield item  # This will never execute but makes it a valid generator
-
         async for event_data in source_events(empty_stream()):
             target_flow.emit(event_data)
             yield None
@@ -122,13 +116,6 @@ def event_filter(
 
     async def _filter_stream(_: AsyncGenerator[None, None]) -> AsyncGenerator[T, None]:
         """Filter events based on predicate."""
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            """Create an empty stream for source consumption."""
-            # Create an empty async generator by yielding from an empty list
-            empty_list: list[None] = []
-            for item in empty_list:
-                yield item  # This will never execute but makes it a valid generator
 
         async for event_data in base_flow(empty_stream()):
             if predicate(event_data):
@@ -161,13 +148,6 @@ def event_transform(
         _: AsyncGenerator[None, None],
     ) -> AsyncGenerator[Any, None]:
         """Transform events with the given function."""
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            """Create an empty stream for source consumption."""
-            # Create an empty async generator by yielding from an empty list
-            empty_list: list[None] = []
-            for item in empty_list:
-                yield item  # This will never execute but makes it a valid generator
 
         async for event_data in base_flow(empty_stream()):
             yield transformer(event_data)

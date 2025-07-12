@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Analysis files
+analyze_duplicates.py
+consolidation_strategy.py
+function_duplication_report.md
+consolidation_strategy.md
+consolidation_opportunities.json
+
 # C extensions
 *.so
 

@@ -1,8 +1,9 @@
 import asyncio
-from typing import AsyncGenerator
+from typing import AsyncGenerator, cast
 
 import pytest
 
+from flow.combinators.utils import empty_stream, empty_typed_stream
 from flow.flow import Flow
 
 
@@ -63,11 +64,9 @@ class TestFlowFromValueFn:
 
         flow = Flow.from_value_fn(add_ten)
 
-        async def empty_stream() -> AsyncGenerator[int, None]:
-            return
-            yield  # pragma: no cover
+        empty_int_stream = cast(AsyncGenerator[int, None], empty_typed_stream())
 
-        result = flow(empty_stream())
+        result = flow(empty_int_stream)
         items = [item async for item in result]
 
         assert items == []
@@ -245,11 +244,9 @@ class TestFlowFromSyncFn:
 
         flow = Flow.from_sync_fn(add_ten)
 
-        async def empty_stream() -> AsyncGenerator[int, None]:
-            return
-            yield  # pragma: no cover
+        empty_int_stream = cast(AsyncGenerator[int, None], empty_typed_stream())
 
-        result = flow(empty_stream())
+        result = flow(empty_int_stream)
         items = [item async for item in result]
 
         assert items == []
@@ -485,11 +482,9 @@ class TestFlowFromEventFn:
 
         flow = Flow.from_event_fn(generate_range)
 
-        async def empty_stream() -> AsyncGenerator[int, None]:
-            return
-            yield  # pragma: no cover
+        empty_int_stream = cast(AsyncGenerator[int, None], empty_typed_stream())
 
-        result = flow(empty_stream())
+        result = flow(empty_int_stream)
         items = [item async for item in result]
 
         assert items == []
@@ -667,9 +662,6 @@ class TestFlowFromIterable:
         data = [1, 2, 3, 4, 5]
         flow = Flow.from_iterable(data)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
-
         result = flow(empty_stream())
         items = [item async for item in result]
 
@@ -681,9 +673,6 @@ class TestFlowFromIterable:
 
         data = ("a", "b", "c")
         flow = Flow.from_iterable(data)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items = [item async for item in result]
@@ -697,9 +686,6 @@ class TestFlowFromIterable:
         data = range(3, 7)
         flow = Flow.from_iterable(data)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
-
         result = flow(empty_stream())
         items = [item async for item in result]
 
@@ -712,9 +698,6 @@ class TestFlowFromIterable:
         data: list[int] = []
         flow = Flow.from_iterable(data)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
-
         result = flow(empty_stream())
         items = [item async for item in result]
 
@@ -726,9 +709,6 @@ class TestFlowFromIterable:
 
         data = (x * 2 for x in range(4))
         flow = Flow.from_iterable(data)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items = [item async for item in result]
@@ -750,9 +730,6 @@ class TestFlowFromIterable:
         string_data = ["hello", "world"]
         string_flow = Flow.from_iterable(string_data)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
-
         result = string_flow(empty_stream())
         items = [item async for item in result]
 
@@ -765,9 +742,6 @@ class TestFlowFromIterable:
 
         data = {"a": 1, "b": 2, "c": 3}
         flow = Flow.from_iterable(data.items())
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items = [item async for item in result]
@@ -787,9 +761,6 @@ class TestFlowFromIterable:
             return x * x
 
         flow = Flow.from_iterable(data).filter(is_even).map(square)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items = [item async for item in result]
@@ -820,9 +791,6 @@ class TestFlowFromIterable:
 
         data = [42]
         flow = Flow.from_iterable(data)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items = [item async for item in result]

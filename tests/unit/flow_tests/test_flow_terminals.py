@@ -2,6 +2,7 @@ from typing import AsyncGenerator
 
 import pytest
 
+from flow.combinators.utils import empty_stream
 from flow.flow import Flow
 
 
@@ -21,10 +22,6 @@ class TestFlowToList:
         flow = Flow(source_fn, name="source")
         collector = flow.to_list()
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = await collector(empty_stream())
 
         assert result == ["hello", "world", "test"]
@@ -43,10 +40,6 @@ class TestFlowToList:
         flow = Flow(empty_source, name="empty")
         collector = flow.to_list()
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = await collector(empty_stream())
 
         assert result == []
@@ -64,10 +57,6 @@ class TestFlowToList:
 
         flow = Flow(sequence_fn, name="sequence")
         collector = flow.to_list()
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = await collector(empty_stream())
 
@@ -92,10 +81,6 @@ class TestFlowToList:
         flow = Flow(source_fn, name="source")
         transformed_flow = flow.filter(is_even).map(square)
         collector = transformed_flow.to_list()
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = await collector(empty_stream())
 
@@ -168,9 +153,6 @@ class TestFlowToList:
         collector = flow.to_list()
 
         # The collector should have the right signature
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = await collector(empty_stream())
 
@@ -202,10 +184,6 @@ class TestFlowForEach:
         flow = Flow(source_fn, name="source")
         consumer = flow.for_each(process_item)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         await consumer(empty_stream())
 
         assert processed_items == ["HELLO", "WORLD", "TEST"]
@@ -229,10 +207,6 @@ class TestFlowForEach:
         flow = Flow(empty_source, name="empty")
         consumer = flow.for_each(process_item)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         await consumer(empty_stream())
 
         assert processed_items == []
@@ -255,10 +229,6 @@ class TestFlowForEach:
 
         flow = Flow(sequence_fn, name="sequence")
         consumer = flow.for_each(process_item)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         await consumer(empty_stream())
 
@@ -289,10 +259,6 @@ class TestFlowForEach:
         flow = Flow(source_fn, name="source")
         transformed_flow = flow.filter(is_even).map(square)
         consumer = transformed_flow.for_each(collect_item)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         await consumer(empty_stream())
 
@@ -345,10 +311,6 @@ class TestFlowForEach:
 
         flow = Flow(source_fn, name="logger")
         consumer = flow.for_each(log_message)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         await consumer(empty_stream())
 
@@ -417,10 +379,6 @@ class TestFlowCollect:
         collector1 = flow.collect()
         collector2 = flow.to_list()
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result1 = await collector1(empty_stream())
         result2 = await collector2(empty_stream())
 
@@ -472,10 +430,6 @@ class TestFlowCollect:
         flow = Flow(source_fn, name="source")
         transformed = flow.filter(is_even).map(square)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         # Using collect
         result = await transformed.collect()(empty_stream())
         assert result == [4, 16]  # 2^2, 4^2
@@ -518,10 +472,6 @@ class TestFlowPreview:
 
         flow = Flow(source_fn, name="source")
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         # Default limit is 10
         result = await flow.preview(empty_stream())
         assert result == list(range(10))
@@ -542,10 +492,6 @@ class TestFlowPreview:
 
         flow = Flow(source_fn, name="small")
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = await flow.preview(empty_stream(), limit=10)
         assert result == [1, 2, 3]
 
@@ -560,10 +506,6 @@ class TestFlowPreview:
             yield  # pragma: no cover
 
         flow = Flow(empty_source, name="empty")
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = await flow.preview(empty_stream(), limit=10)
         assert result == []
@@ -590,10 +532,6 @@ class TestFlowPreview:
 
         flow = Flow(source_fn, name="source")
         transformed = flow.filter(is_even).map(square)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = await transformed.preview(empty_stream(), limit=5)
         assert result == [0, 4, 16, 36, 64]  # 0^2, 2^2, 4^2, 6^2, 8^2
@@ -622,10 +560,6 @@ class TestFlowPreview:
                 yield item
 
         flow = Flow(trackable_fn, name="trackable")
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         # This should close the iterator after getting 5 items
         result = await flow.preview(empty_stream(), limit=5)
@@ -662,10 +596,6 @@ class TestFlowPreview:
                 yield i
 
         flow = Flow(source_fn, name="source")
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = await flow.preview(empty_stream(), limit=0)
         assert result == []
