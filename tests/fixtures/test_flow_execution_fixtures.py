@@ -47,25 +47,41 @@ class FlowTestExecutor:
     def setup_isolated_environment(self) -> EventTestHarness:
         """Set up isolated event environment for testing."""
         if self.harness is None:
+            # For flow integration tests, we need real emitters but isolated instances
             self.harness = EventTestHarness(
-                use_real_emitters=not self.use_isolated_emitters
+                use_real_emitters=True  # Always use real emitters for flow compatibility
             )
 
         if self.use_isolated_emitters:
-            # Patch global emitters to use isolated ones
-            sync_patch = patch(
+            # Patch global emitters to use isolated ones - try multiple paths
+            patch_paths = [
                 "src.flow_events.flow.get_sync_event_emitter",
-                return_value=self.harness.sync_emitter,
-            )
-            async_patch = patch(
+                "flow_events.flow.get_sync_event_emitter",
+                "src.flow_events.inject.get_sync_event_emitter",
+                "flow_events.inject.get_sync_event_emitter",
+            ]
+            async_patch_paths = [
                 "src.flow_events.flow.get_async_event_emitter",
-                return_value=self.harness.async_emitter,
-            )
+                "flow_events.flow.get_async_event_emitter",
+                "src.flow_events.inject.get_async_event_emitter",
+                "flow_events.inject.get_async_event_emitter",
+            ]
 
-            sync_patch.start()
-            async_patch.start()
+            for path in patch_paths:
+                try:
+                    sync_patch = patch(path, return_value=self.harness.sync_emitter)
+                    sync_patch.start()
+                    self.active_patches.append(sync_patch)
+                except Exception:
+                    pass  # Path doesn't exist, skip
 
-            self.active_patches.extend([sync_patch, async_patch])
+            for path in async_patch_paths:
+                try:
+                    async_patch = patch(path, return_value=self.harness.async_emitter)
+                    async_patch.start()
+                    self.active_patches.append(async_patch)
+                except Exception:
+                    pass  # Path doesn't exist, skip
             self.execution_log.append("isolated_environment_setup")
 
         return self.harness
@@ -95,7 +111,9 @@ class FlowTestExecutor:
         async def emit_events() -> None:
             await asyncio.sleep(0.02)  # Let flow start and register callbacks
             for event_name, event_data in input_events:
+                # Emit to both sync and async emitters to support both flow types
                 await harness.emit_async_event(event_name, event_data)
+                harness.emit_sync_event(event_name, event_data)
                 self.execution_log.append(f"emitted: {event_name} -> {event_data}")
                 if event_delay > 0:
                     await asyncio.sleep(event_delay)

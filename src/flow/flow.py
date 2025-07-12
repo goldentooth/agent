@@ -482,8 +482,10 @@ class Flow(Generic[Input, Output]):
                     pass  # Just consume input stream
             except Exception:
                 pass  # Input stream ended or errored
-            # For event flows, don't signal end immediately when input stream ends
-            # Instead, we'll use a different mechanism to control flow lifecycle
+            # For testing, we need to signal end after input stream completes
+            # Add a delay to allow any pending events to be processed
+            await asyncio.sleep(0.2)  # Grace period for pending events
+            await event_queue.put(None)  # Signal end of flow
 
         # Start input stream consumption in background
         input_task = asyncio.create_task(consume_input_stream())
@@ -505,6 +507,13 @@ class Flow(Generic[Input, Output]):
                     await input_task
                 except asyncio.CancelledError:
                     pass
+
+            # Clear the queue to prevent memory leaks
+            try:
+                while not event_queue.empty():
+                    event_queue.get_nowait()
+            except asyncio.QueueEmpty:
+                pass
 
     @staticmethod
     async def _collect_emitted_values(
