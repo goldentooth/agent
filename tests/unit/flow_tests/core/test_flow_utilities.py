@@ -2,6 +2,7 @@ from typing import AsyncGenerator
 
 import pytest
 
+from flow.combinators.utils import empty_stream
 from flow.flow import Flow
 
 
@@ -206,10 +207,6 @@ class TestFlowWithFallback:
         flow = Flow(empty_source, name="empty")
         fallback_flow = flow.with_fallback(42)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = fallback_flow(empty_stream())
         items = [item async for item in result]
 
@@ -227,10 +224,6 @@ class TestFlowWithFallback:
 
         flow = Flow(source_fn, name="source")
         fallback_flow = flow.with_fallback("fallback")
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = fallback_flow(empty_stream())
         items = [item async for item in result]
@@ -272,10 +265,6 @@ class TestFlowWithFallback:
 
         int_flow = Flow(empty_int_source, name="empty_int")
         int_fallback_flow = int_flow.with_fallback(999)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = int_fallback_flow(empty_stream())
         items = [item async for item in result]
@@ -349,10 +338,6 @@ class TestFlowWithFallback:
         flow = Flow(source_fn, name="empty_source")
         chained_flow = flow.with_fallback(5).map(double)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = chained_flow(empty_stream())
         items = [item async for item in result]
 
@@ -371,10 +356,6 @@ class TestFlowWithFallback:
         flow = Flow(empty_source, name="empty")
         chained_flow = flow.with_fallback("first").with_fallback("second")
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = chained_flow(empty_stream())
         items = [item async for item in result]
 
@@ -392,10 +373,6 @@ class TestFlowWithFallback:
 
         flow = Flow(single_source, name="single")
         fallback_flow = flow.with_fallback("fallback")
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = fallback_flow(empty_stream())
         items = [item async for item in result]
@@ -451,10 +428,6 @@ class TestFlowBatch:
         flow = Flow(source_fn, name="source")
         batched_flow = flow.batch(3)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = batched_flow(empty_stream())
         items = [item async for item in result]
 
@@ -473,10 +446,6 @@ class TestFlowBatch:
         flow = Flow(empty_source, name="empty")
         batched_flow = flow.batch(3)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = batched_flow(empty_stream())
         items = [item async for item in result]
 
@@ -493,10 +462,6 @@ class TestFlowBatch:
 
         flow = Flow(single_source, name="single")
         batched_flow = flow.batch(5)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = batched_flow(empty_stream())
         items = [item async for item in result]
@@ -516,10 +481,6 @@ class TestFlowBatch:
         flow = Flow(source_fn, name="source")
         batched_flow = flow.batch(2)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = batched_flow(empty_stream())
         items = [item async for item in result]
 
@@ -538,10 +499,6 @@ class TestFlowBatch:
         flow = Flow(source_fn, name="source")
         batched_flow = flow.batch(1)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = batched_flow(empty_stream())
         items = [item async for item in result]
 
@@ -559,10 +516,6 @@ class TestFlowBatch:
 
         flow = Flow(small_source, name="small")
         batched_flow = flow.batch(5)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = batched_flow(empty_stream())
         items = [item async for item in result]
@@ -625,10 +578,6 @@ class TestFlowBatch:
         flow = Flow(source_fn, name="source")
         chained_flow = flow.batch(3).map(sum_batch)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = chained_flow(empty_stream())
         items = [item async for item in result]
 
@@ -675,10 +624,6 @@ class TestFlowBatch:
         flow = Flow(source_fn, name="source")
         transformed_flow = flow.filter(is_even).map(square).batch(2)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
-
         result = transformed_flow(empty_stream())
         items = [item async for item in result]
 
@@ -700,10 +645,6 @@ class TestFlowBatch:
 
         flow = Flow(source_fn, name="sequence")
         batched_flow = flow.batch(2)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = batched_flow(empty_stream())
         items = [item async for item in result]

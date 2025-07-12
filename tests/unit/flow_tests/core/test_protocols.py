@@ -430,3 +430,101 @@ class TestProtocolErrorHandling:
         # Test that error propagates
         with pytest.raises(KeyError, match="Key not found"):
             context.get(key)
+
+
+class TestProtocolAbstractMethods:
+    """Test protocol abstract method coverage by testing implementations that call super() methods."""
+
+    def test_context_key_protocol_abstract_methods(self) -> None:
+        """Test ContextKeyProtocol abstract method implementations."""
+
+        class IncompleteContextKey(ContextKeyProtocol[str]):
+            """Key implementation that calls super() to hit protocol methods."""
+
+            @property
+            def name(self) -> str:
+                # Call the protocol's abstract method
+                return super().name  # type: ignore[safe-super]
+
+            @property
+            def value_type(self) -> type[str]:
+                # Call the protocol's abstract method
+                return super().value_type  # type: ignore[safe-super]
+
+        key = IncompleteContextKey()
+
+        # These should hit the NotImplementedError lines in the protocol
+        with pytest.raises(
+            NotImplementedError, match="Subclasses must implement name property"
+        ):
+            _ = key.name
+
+        with pytest.raises(
+            NotImplementedError, match="Subclasses must implement value_type property"
+        ):
+            _ = key.value_type
+
+    def test_context_protocol_abstract_methods(self) -> None:
+        """Test ContextProtocol abstract method implementations."""
+
+        class IncompleteContext(ContextProtocol):
+            """Context implementation that calls super() to hit protocol methods."""
+
+            def get(self, key: ContextKeyProtocol[Any]) -> Any:
+                # Call the protocol's abstract method
+                return super().get(key)  # type: ignore[safe-super]
+
+            def set(self, key: ContextKeyProtocol[Any], value: Any) -> None:
+                # Call the protocol's abstract method
+                return super().set(key, value)  # type: ignore[safe-super]
+
+            def contains(self, key: ContextKeyProtocol[Any]) -> bool:
+                # Call the protocol's abstract method
+                return super().contains(key)  # type: ignore[safe-super]
+
+        context = IncompleteContext()
+        key = StringKey()
+
+        # These should hit the NotImplementedError lines in the protocol
+        with pytest.raises(
+            NotImplementedError, match="Subclasses must implement get method"
+        ):
+            context.get(key)
+
+        with pytest.raises(
+            NotImplementedError, match="Subclasses must implement set method"
+        ):
+            context.set(key, "value")
+
+        with pytest.raises(
+            NotImplementedError, match="Subclasses must implement contains method"
+        ):
+            context.contains(key)
+
+    def test_flow_protocol_abstract_methods(self) -> None:
+        """Test FlowProtocol abstract method implementations."""
+
+        class IncompleteFlow(FlowProtocol[str, str]):
+            """Flow implementation that calls super() to hit protocol methods."""
+
+            @property
+            def name(self) -> str:
+                # Call the protocol's abstract method
+                return super().name  # type: ignore[safe-super]
+
+            def __call__(self, stream: Any) -> Any:
+                # Call the protocol's abstract method
+                return super().__call__(stream)  # type: ignore[safe-super]
+
+        flow = IncompleteFlow()
+
+        # These should hit the NotImplementedError lines in the protocol
+        with pytest.raises(
+            NotImplementedError, match="Subclasses must implement name property"
+        ):
+            _ = flow.name
+
+        with pytest.raises(
+            NotImplementedError, match="Subclasses must implement __call__ method"
+        ):
+            flow("test")

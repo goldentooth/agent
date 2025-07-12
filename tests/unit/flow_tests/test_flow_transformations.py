@@ -2,6 +2,7 @@ from typing import AsyncGenerator
 
 import pytest
 
+from flow.combinators.utils import empty_stream
 from flow.flow import Flow
 
 
@@ -23,10 +24,6 @@ class TestFlowMap:
 
         flow = Flow(source_fn, name="source")
         mapped_flow = flow.map(double)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = mapped_flow(empty_stream())
         items = [item async for item in result]
@@ -116,10 +113,6 @@ class TestFlowMap:
 
         flow = Flow(empty_source, name="empty")
         mapped_flow = flow.map(multiply_by_ten)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            return
-            yield  # pragma: no cover
 
         result = mapped_flow(empty_stream())
         items = [item async for item in result]

@@ -3,6 +3,7 @@
 This module sets up the primary Typer application and registers all command groups.
 """
 
+from importlib.metadata import version as get_version
 from typing import Annotated
 
 import typer
@@ -18,6 +19,16 @@ load_dotenv()
 
 # Create console for rich output
 console = Console()
+
+
+def get_package_version() -> str:
+    """Get the package version from metadata."""
+    try:
+        return get_version("goldentooth-agent")
+    except Exception:
+        # Fallback to unknown if package is not installed
+        return "unknown"
+
 
 # Main CLI application
 app = typer.Typer(
@@ -37,26 +48,63 @@ and intelligent workflow automation.
 def version_callback(value: bool) -> None:
     """Print version information."""
     if value:
-        console.print("🦷 Goldentooth Agent v0.1.0")
+        pkg_version = get_package_version()
+        console.print(f"🦷 Goldentooth Agent v{pkg_version}")
         raise typer.Exit()
+
+
+# Global state for CLI options
+_global_cli_options = {
+    "no_color": False,
+    "plain": False,
+}
 
 
 @app.callback()
 def main(
+    ctx: typer.Context,
     version: Annotated[
         bool,
-        typer.Option("--version", "-v", callback=version_callback, help="Show version"),
+        typer.Option(
+            "--version",
+            "-v",
+            callback=version_callback,
+            help="Show version",
+            is_eager=True,
+        ),
+    ] = False,
+    no_color: Annotated[
+        bool,
+        typer.Option("--no-color", help="Disable colored output"),
+    ] = False,
+    plain: Annotated[
+        bool,
+        typer.Option("--plain", help="Use plain text output without formatting"),
     ] = False,
 ) -> None:
     """🦷 Goldentooth Agent - AI-powered document processing and chat."""
-    pass
+    # Store global options
+    _global_cli_options["no_color"] = no_color
+    _global_cli_options["plain"] = plain
+
+    # Store context for subcommands
+    ctx.obj = _global_cli_options
+
+
+def get_global_cli_options() -> dict[str, bool]:
+    """Get global CLI options for use in subcommands."""
+    return _global_cli_options.copy()
 
 
 # Import and register command groups
-# TODO: Import command groups as they are implemented
-# from .commands import agents, chat, tools, flow, debug
+from flow_command.cli import app as flow_app
+
+# Register flow command group using complete flow_command implementation
+app.add_typer(flow_app, name="flow")
+
+# TODO: Import other command groups as they are implemented
+# from .commands import agents, chat, tools, debug
 # app.add_typer(agents.app, name="agents")
 # app.add_typer(chat.app, name="chat")
 # app.add_typer(tools.app, name="tools")
-# app.add_typer(flow.app, name="flow")
 # app.add_typer(debug.app, name="debug")

@@ -81,7 +81,7 @@ class ExecutionCombinators:
             return Flow.identity()
 
         async def _exitable_chain_flow(
-            stream: AsyncGenerator[Context, None]
+            stream: AsyncGenerator[Context, None],
         ) -> AsyncGenerator[Context, None]:
             """Flow that executes flows sequentially with exit/break support."""
             async for initial_context in stream:
@@ -184,7 +184,7 @@ class ExecutionCombinators:
         """
 
         async def _trampoline_flow(
-            stream: AsyncGenerator[Context, None]
+            stream: AsyncGenerator[Context, None],
         ) -> AsyncGenerator[Context, None]:
             """Flow that repeatedly executes a flow until exit is signaled."""
             async for initial_context in stream:
@@ -305,7 +305,7 @@ class ExecutionCombinators:
             return Flow.identity()
 
         async def _trampoline_chain_flow(
-            stream: AsyncGenerator[Context, None]
+            stream: AsyncGenerator[Context, None],
         ) -> AsyncGenerator[Context, None]:
             """Flow that cycles through flows repeatedly until exit is signaled."""
             async for initial_context in stream:
@@ -419,7 +419,7 @@ class ExecutionCombinators:
         """
 
         async def _conditional_flow(
-            stream: AsyncGenerator[Context, None]
+            stream: AsyncGenerator[Context, None],
         ) -> AsyncGenerator[Context, None]:
             """Flow that conditionally applies flows based on context predicate."""
             async for context in stream:
@@ -528,7 +528,7 @@ class ExecutionCombinators:
         """
 
         async def _skip_if_flow(
-            stream: AsyncGenerator[Context, None]
+            stream: AsyncGenerator[Context, None],
         ) -> AsyncGenerator[Context, None]:
             """Flow that conditionally skips execution based on context predicate."""
             async for context in stream:

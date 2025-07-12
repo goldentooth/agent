@@ -328,7 +328,7 @@ class TestRunFlowWithInput:
         """Test run_flow_with_input with a flow that produces no output."""
 
         async def empty_flow(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[str, None]:
             async for _ in stream:
                 pass  # Consume input but yield nothing
@@ -363,7 +363,7 @@ class TestRunFlowWithInput:
         """Test run_flow_with_input with a flow that filters items."""
 
         async def filter_even(
-            stream: AsyncGenerator[int, None]
+            stream: AsyncGenerator[int, None],
         ) -> AsyncGenerator[int, None]:
             async for item in stream:
                 if item % 2 == 0:
@@ -383,7 +383,7 @@ class TestRunFlowWithInput:
         """Test run_flow_with_input with a flow that produces multiple outputs."""
 
         async def duplicate_output(
-            stream: AsyncGenerator[str, None]
+            stream: AsyncGenerator[str, None],
         ) -> AsyncGenerator[str, None]:
             async for item in stream:
                 yield item

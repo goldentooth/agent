@@ -306,28 +306,39 @@ def test_rollback_to_timestamp_exact_timestamp() -> None:
     assert context["key1"] == "value1"
 
 
-def test_rollback_to_timestamp_multiple_keys() -> None:
-    """Test rollback with multiple keys added and modified."""
+def _setup_multiple_keys_context() -> tuple[Context, float]:
+    """Set up context with multiple keys and return checkpoint time."""
     context = Context()
-
-    # Add multiple keys and record checkpoint
     context["key1"] = "value1"
     context["key2"] = "value2"
     context["key3"] = "value3"
+    time.sleep(0.001)  # Ensure checkpoint is after all initial sets
     checkpoint_time = time.time()
+    return context, checkpoint_time
 
-    # Modify all keys and add new one
+
+def _modify_keys_and_add_new(context: Context) -> None:
+    """Modify existing keys and add a new one."""
     context["key1"] = "modified1"
     context["key2"] = "modified2"
     context["key3"] = "modified3"
     context["key4"] = "value4"
 
-    # Rollback and verify all keys restored correctly
-    context.rollback_to_timestamp(checkpoint_time)
+
+def _verify_rollback_results(context: Context) -> None:
+    """Verify rollback restored all keys correctly."""
     assert context["key1"] == "value1"
     assert context["key2"] == "value2"
     assert context["key3"] == "value3"
     assert "key4" not in context
+
+
+def test_rollback_to_timestamp_multiple_keys() -> None:
+    """Test rollback with multiple keys added and modified."""
+    context, checkpoint_time = _setup_multiple_keys_context()
+    _modify_keys_and_add_new(context)
+    context.rollback_to_timestamp(checkpoint_time)
+    _verify_rollback_results(context)
 
 
 def test_rollback_to_timestamp_newly_added_key() -> None:

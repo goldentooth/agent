@@ -15,3 +15,6 @@ omit =
 skip_empty = True
 fail_under = 90
 format = markdown
+
+[json]
+output = coverage.json

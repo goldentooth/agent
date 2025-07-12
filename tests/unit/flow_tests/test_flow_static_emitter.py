@@ -3,6 +3,7 @@ from typing import Any, AsyncGenerator, Callable
 
 import pytest
 
+from flow.combinators.utils import empty_stream
 from flow.flow import Flow
 
 
@@ -20,9 +21,6 @@ class TestFlowFromEmitter:
             callback("event3")
 
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items: list[str] = [item async for item in result]
@@ -42,9 +40,6 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, int] = Flow.from_emitter(register_callback)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
-
         result = flow(empty_stream())
         items: list[int] = [item async for item in result]
 
@@ -60,9 +55,6 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
-
         result = flow(empty_stream())
         items: list[str] = [item async for item in result]
 
@@ -76,9 +68,6 @@ class TestFlowFromEmitter:
             callback("single_value")
 
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items: list[str] = [item async for item in result]
@@ -106,9 +95,6 @@ class TestFlowFromEmitter:
 
         flow: Flow[Any, int] = Flow.from_emitter(register_callback)
 
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
-
         result = flow(empty_stream())
         items: list[int] = [item async for item in result]
 
@@ -130,9 +116,6 @@ class TestFlowFromEmitter:
             return x * x
 
         flow = Flow.from_emitter(register_callback).filter(is_even).map(square)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items: list[int] = [item async for item in result]
@@ -169,9 +152,6 @@ class TestFlowFromEmitter:
             callback("delayed2")
 
         flow: Flow[Any, str] = Flow.from_emitter(register_callback)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items: list[str] = [item async for item in result]
@@ -221,9 +201,6 @@ class TestFlowFromEmitter:
         emitter = EventEmitter()
 
         flow: Flow[Any, dict[str, Any]] = Flow.from_emitter(emitter.register)
-
-        async def empty_stream() -> AsyncGenerator[None, None]:
-            yield None
 
         result = flow(empty_stream())
         items: list[dict[str, Any]] = [item async for item in result]
