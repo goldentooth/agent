@@ -6,6 +6,7 @@ from typing import Any
 from ..async_bridge.execution import run_flow_sync
 from ..core.context import FlowCommandContext
 from ..core.exceptions import FlowCommandError
+from ..core.flow_info import FlowInfo
 from ..core.result import FlowCommandResult
 
 # FlowMetadata not currently used but available for future enhancements
@@ -15,7 +16,7 @@ def flow_list_implementation(
     category: str | None = None,
     tag: str | None = None,
     context: FlowCommandContext | None = None,
-) -> FlowCommandResult[list[str]]:
+) -> FlowCommandResult[list[FlowInfo]]:
     """List available flows with optional filtering."""
     if context is None:
         context = FlowCommandContext.from_test()
@@ -24,31 +25,88 @@ def flow_list_implementation(
         registry = context.flow_registry
 
         # Get all flows
-        flows = registry.list(category=category)
+        flow_names = registry.list(category=category)
 
-        # Tag filtering is not directly supported by the registry API
-        # For now, we'll return flows based on category filter only
-        # TODO: Implement tag filtering by inspecting flow metadata
+        # Build FlowInfo objects with category and tag information
+        flow_infos: list[FlowInfo] = []
 
-        return FlowCommandResult[list[str]].success_result(flows)
+        for flow_name in flow_names:
+            # Find the category for this flow
+            flow_category = None
+            for cat, cat_flows in registry.categories.items():
+                if flow_name in cat_flows:
+                    flow_category = cat
+                    break
+
+            # Find tags for this flow
+            flow_tags: list[str] = []
+            for tag_name, tag_flows in registry.tags.items():
+                if flow_name in tag_flows:
+                    flow_tags.append(tag_name)
+
+            # Get metadata for this flow
+            flow_metadata = registry.metadata.get(flow_name, {})
+
+            flow_info = FlowInfo(
+                name=flow_name,
+                category=flow_category,
+                tags=flow_tags if flow_tags else None,
+                metadata=flow_metadata if flow_metadata else None,
+            )
+            flow_infos.append(flow_info)
+
+        return FlowCommandResult[list[FlowInfo]].success_result(flow_infos)
     except Exception as e:
-        return FlowCommandResult[list[str]].error_result(f"Failed to list flows: {e}")
+        return FlowCommandResult[list[FlowInfo]].error_result(
+            f"Failed to list flows: {e}"
+        )
 
 
 def flow_search_implementation(
     query: str,
     context: FlowCommandContext | None = None,
-) -> FlowCommandResult[list[str]]:
+) -> FlowCommandResult[list[FlowInfo]]:
     """Search flows by name or metadata."""
     if context is None:
         context = FlowCommandContext.from_test()
 
     try:
         registry = context.flow_registry
-        results = registry.search(query)
-        return FlowCommandResult[list[str]].success_result(results)
+        flow_names = registry.search(query)
+
+        # Build FlowInfo objects with category and tag information
+        flow_infos: list[FlowInfo] = []
+
+        for flow_name in flow_names:
+            # Find the category for this flow
+            flow_category = None
+            for cat, cat_flows in registry.categories.items():
+                if flow_name in cat_flows:
+                    flow_category = cat
+                    break
+
+            # Find tags for this flow
+            flow_tags: list[str] = []
+            for tag_name, tag_flows in registry.tags.items():
+                if flow_name in tag_flows:
+                    flow_tags.append(tag_name)
+
+            # Get metadata for this flow
+            flow_metadata = registry.metadata.get(flow_name, {})
+
+            flow_info = FlowInfo(
+                name=flow_name,
+                category=flow_category,
+                tags=flow_tags if flow_tags else None,
+                metadata=flow_metadata if flow_metadata else None,
+            )
+            flow_infos.append(flow_info)
+
+        return FlowCommandResult[list[FlowInfo]].success_result(flow_infos)
     except Exception as e:
-        return FlowCommandResult[list[str]].error_result(f"Failed to search flows: {e}")
+        return FlowCommandResult[list[FlowInfo]].error_result(
+            f"Failed to search flows: {e}"
+        )
 
 
 def flow_run_implementation(

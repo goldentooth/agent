@@ -7,6 +7,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from ..core.context import FlowCommandContext
+from ..core.flow_info import FlowInfo
 from ..core.result import FlowCommandResult
 
 
@@ -32,7 +33,15 @@ class FlowDisplay:
         """Display result in JSON format."""
         import json
 
-        self.console.print(json.dumps(result.to_json(), indent=2))
+        # Convert FlowInfo objects to dictionaries for JSON serialization
+        json_data = result.to_json()
+        if result.data and isinstance(result.data, list):
+            json_data["data"] = [
+                item.to_dict() if isinstance(item, FlowInfo) else item
+                for item in result.data  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+            ]
+
+        self.console.print(json.dumps(json_data, indent=2))
 
     def _show_table_result(self, result: FlowCommandResult[Any]) -> None:
         """Display list result in table format."""
@@ -40,13 +49,33 @@ class FlowDisplay:
             self._show_text_result(result)
             return
 
-        table = Table(title="Flow Results")
-        table.add_column("Name", style="cyan")
-        table.add_column("Status", style="green")
+        # Check if we have FlowInfo objects for enhanced display
+        has_flow_info = result.data and isinstance(result.data[0], FlowInfo)
 
-        for item in result.data:
-            item_str = str(item)
-            table.add_row(item_str, "Available")
+        if has_flow_info:
+            table = Table(title="Flow Registry")
+            table.add_column("Name", style="cyan", no_wrap=True)
+            table.add_column("Category", style="yellow", no_wrap=True)
+            table.add_column("Tags", style="magenta")
+            table.add_column("Status", style="green", no_wrap=True)
+
+            for item in result.data:
+                if isinstance(item, FlowInfo):
+                    table.add_row(
+                        item.name, item.category_display, item.tags_display, "Available"
+                    )
+                else:
+                    # Fallback for non-FlowInfo items
+                    table.add_row(str(item), "", "", "Available")
+        else:
+            # Fallback table for simple string results
+            table = Table(title="Flow Results")
+            table.add_column("Name", style="cyan")
+            table.add_column("Status", style="green")
+
+            for item in result.data:
+                item_str = str(item)
+                table.add_row(item_str, "Available")
 
         self.console.print(table)
 
@@ -64,7 +93,7 @@ class FlowDisplay:
                 else:
                     self.console.print(str(result.data))
             else:
-                self.console.print("No results found.")
+                self.console.print("[dim]No results found.[/dim]")
         else:
             error_panel = Panel(
                 f"[red]Error:[/red] {result.error}",

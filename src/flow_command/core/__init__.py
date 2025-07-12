@@ -4,6 +4,7 @@ from .exceptions import (
     FlowCommandExecutionError,
     FlowCommandTimeoutError,
 )
+from .flow_info import FlowInfo
 from .result import FlowCommandResult
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "FlowCommandError",
     "FlowCommandExecutionError",
     "FlowCommandTimeoutError",
+    "FlowInfo",
 ]

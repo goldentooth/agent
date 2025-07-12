@@ -6,12 +6,18 @@ from .core import (
     FlowCommandExecutionError,
     FlowCommandResult,
     FlowCommandTimeoutError,
+    FlowInfo,
 )
 from .operations import (
     flow_list_implementation,
     flow_run_implementation,
     flow_search_implementation,
 )
+
+# Auto-register sample flows when package is imported
+from .sample_flows import register_sample_flows
+
+register_sample_flows()
 
 __all__ = [
     # Core components
@@ -20,6 +26,7 @@ __all__ = [
     "FlowCommandError",
     "FlowCommandExecutionError",
     "FlowCommandTimeoutError",
+    "FlowInfo",
     # Async bridge
     "FlowEventLoop",
     "run_flow_async",

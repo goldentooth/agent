@@ -62,7 +62,7 @@ class TestFlowDisplay:
         with patch.object(display.console, "print") as mock_print:
             display.show_result(result)
 
-        mock_print.assert_called_once_with("No results found.")
+        mock_print.assert_called_once_with("[dim]No results found.[/dim]")
 
     def test_show_result_text_format_error(self) -> None:
         """FlowDisplay should show error panel for failed results."""

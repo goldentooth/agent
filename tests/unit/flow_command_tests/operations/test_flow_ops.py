@@ -9,6 +9,7 @@ import pytest
 
 from flow_command.core.context import FlowCommandContext
 from flow_command.core.exceptions import FlowCommandError
+from flow_command.core.flow_info import FlowInfo
 from flow_command.core.result import FlowCommandResult
 from flow_command.operations.flow_ops import (
     flow_list_implementation,
@@ -25,39 +26,56 @@ class TestFlowListImplementation:
         context = FlowCommandContext.from_test()
 
         # Mock the registry to return test flows
-        with patch.object(
-            context.flow_registry, "list", return_value=["flow1", "flow2"]
-        ):
+        mock_registry = Mock()
+        mock_registry.list.return_value = ["flow1", "flow2"]
+        mock_registry.categories = {}
+        mock_registry.tags = {}
+        mock_registry.metadata = {}
+
+        with patch.object(context, "flow_registry", mock_registry):
             result = flow_list_implementation(context=context)
 
         assert result.success is True
-        assert result.data == ["flow1", "flow2"]
+        assert result.data is not None
+        assert len(result.data) == 2
+        assert result.data[0].name == "flow1"
+        assert result.data[1].name == "flow2"
         assert result.error is None
 
     def test_flow_list_with_category(self) -> None:
         """flow_list_implementation should filter by category."""
         context = FlowCommandContext.from_test()
 
-        with patch.object(
-            context.flow_registry, "list", return_value=["nlp_flow1", "nlp_flow2"]
-        ) as mock_list:
+        mock_registry = Mock()
+        mock_registry.list.return_value = ["nlp_flow1", "nlp_flow2"]
+        mock_registry.categories = {"nlp": ["nlp_flow1", "nlp_flow2"]}
+        mock_registry.tags = {}
+        mock_registry.metadata = {}
+
+        with patch.object(context, "flow_registry", mock_registry):
             result = flow_list_implementation(category="nlp", context=context)
 
-        mock_list.assert_called_once_with(category="nlp")
+        mock_registry.list.assert_called_once_with(category="nlp")
         assert result.success is True
-        assert result.data == ["nlp_flow1", "nlp_flow2"]
+        assert result.data is not None
+        assert len(result.data) == 2
+        assert all(flow.category == "nlp" for flow in result.data)
 
     def test_flow_list_with_tag_ignored(self) -> None:
         """flow_list_implementation should ignore tag parameter (not implemented)."""
         context = FlowCommandContext.from_test()
 
-        with patch.object(
-            context.flow_registry, "list", return_value=["flow1"]
-        ) as mock_list:
+        mock_registry = Mock()
+        mock_registry.list.return_value = ["flow1"]
+        mock_registry.categories = {}
+        mock_registry.tags = {}
+        mock_registry.metadata = {}
+
+        with patch.object(context, "flow_registry", mock_registry):
             result = flow_list_implementation(tag="test", context=context)
 
         # Tag filtering is not implemented, so it should call list without tag
-        mock_list.assert_called_once_with(category=None)
+        mock_registry.list.assert_called_once_with(category=None)
         assert result.success is True
 
     def test_flow_list_no_context(self) -> None:
@@ -67,12 +85,18 @@ class TestFlowListImplementation:
         ) as mock_from_test:
             mock_context = Mock()
             mock_context.flow_registry.list.return_value = ["flow1"]
+            mock_context.flow_registry.categories = {}
+            mock_context.flow_registry.tags = {}
+            mock_context.flow_registry.metadata = {}
             mock_from_test.return_value = mock_context
 
             result = flow_list_implementation()
 
         mock_from_test.assert_called_once()
         assert result.success is True
+        assert result.data is not None
+        assert len(result.data) == 1
+        assert result.data[0].name == "flow1"
 
     def test_flow_list_registry_error(self) -> None:
         """flow_list_implementation should handle registry errors."""
@@ -95,14 +119,20 @@ class TestFlowSearchImplementation:
         """flow_search_implementation should search flows in registry."""
         context = FlowCommandContext.from_test()
 
-        with patch.object(
-            context.flow_registry, "search", return_value=["matching_flow"]
-        ) as mock_search:
+        mock_registry = Mock()
+        mock_registry.search.return_value = ["matching_flow"]
+        mock_registry.categories = {}
+        mock_registry.tags = {}
+        mock_registry.metadata = {}
+
+        with patch.object(context, "flow_registry", mock_registry):
             result = flow_search_implementation("test_query", context=context)
 
-        mock_search.assert_called_once_with("test_query")
+        mock_registry.search.assert_called_once_with("test_query")
         assert result.success is True
-        assert result.data == ["matching_flow"]
+        assert result.data is not None
+        assert len(result.data) == 1
+        assert result.data[0].name == "matching_flow"
 
     def test_flow_search_no_context(self) -> None:
         """flow_search_implementation should create test context if none provided."""
@@ -111,12 +141,18 @@ class TestFlowSearchImplementation:
         ) as mock_from_test:
             mock_context = Mock()
             mock_context.flow_registry.search.return_value = ["flow1"]
+            mock_context.flow_registry.categories = {}
+            mock_context.flow_registry.tags = {}
+            mock_context.flow_registry.metadata = {}
             mock_from_test.return_value = mock_context
 
             result = flow_search_implementation("query")
 
         mock_from_test.assert_called_once()
         assert result.success is True
+        assert result.data is not None
+        assert len(result.data) == 1
+        assert result.data[0].name == "flow1"
 
     def test_flow_search_registry_error(self) -> None:
         """flow_search_implementation should handle registry errors."""
