@@ -76,11 +76,11 @@ class TestMainCLI:
         result = self.runner.invoke(app, ["--no-color", "flow", "list"])
 
         assert result.exit_code == 0
-        assert "No flows available" in result.output
+        assert "No results found" in result.output
 
     def test_global_plain_option_works(self) -> None:
         """Test that global --plain option works with flow command."""
         result = self.runner.invoke(app, ["--plain", "flow", "list"])
 
         assert result.exit_code == 0
-        assert "No flows available" in result.output
+        assert "No results found" in result.output

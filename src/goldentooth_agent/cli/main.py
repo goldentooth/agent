@@ -97,10 +97,10 @@ def get_global_cli_options() -> dict[str, bool]:
 
 
 # Import and register command groups
-from .commands import flow
+from flow_command.cli import app as flow_app
 
-# Register flow command group
-app.add_typer(flow.app, name="flow")
+# Register flow command group using complete flow_command implementation
+app.add_typer(flow_app, name="flow")
 
 # TODO: Import other command groups as they are implemented
 # from .commands import agents, chat, tools, debug
