@@ -1,0 +1,79 @@
+repos:
+  # Ruff - Fast Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.4
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [--fix]
+        types_or: [python, pyi]
+      # Run the formatter
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Black - Code formatter
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3.11
+
+  # isort - Import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        name: isort (python)
+
+  # mypy - Static type checker
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.17.0
+    hooks:
+      - id: mypy
+        additional_dependencies: []
+        args: [--strict, --ignore-missing-imports]
+
+  # Built-in pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: check-docstring-first
+
+  # Local hooks using our dev dependencies
+  - repo: local
+    hooks:
+      # Local mypy using our exact configuration
+      - id: mypy-local
+        name: mypy (local)
+        entry: uv run mypy
+        language: system
+        types: [python]
+        require_serial: true
+        pass_filenames: false
+        args: [.]
+
+      # Local pytest (when tests exist)
+      - id: pytest-local
+        name: pytest (local)
+        entry: uv run pytest
+        language: system
+        types: [python]
+        require_serial: true
+        pass_filenames: false
+        stages: [manual]  # Only run manually with --hook-stage manual
+        args: [--cov=agent, --cov-report=term-missing]
+
+      # Check that main.py runs without errors
+      - id: smoke-test
+        name: smoke test - main.py
+        entry: uv run python main.py
+        language: system
+        files: ^main\.py$
+        pass_filenames: false

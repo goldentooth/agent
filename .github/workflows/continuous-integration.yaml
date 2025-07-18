@@ -1,0 +1,64 @@
+name: Continuous Integration
+description: "CI workflow for the agent project"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        enable-cache: true
+
+    - name: Install dependencies
+      run: uv sync --dev
+
+    - name: Run linting
+      run: |
+        # Run ruff linting and formatting checks
+        uv run ruff check .
+        uv run ruff format --check .
+
+    - name: Run import sorting check
+      run: |
+        # Run isort to check import ordering
+        uv run isort --check-only --diff .
+
+    - name: Run black formatting check
+      run: |
+        # Run black to check code formatting
+        uv run black --check --diff .
+
+    - name: Run type checking
+      run: |
+        # Run mypy for type checking
+        uv run mypy .
+
+    - name: Run tests
+      run: |
+        # Run pytest with coverage (when tests are added)
+        # Skip tests for now since none exist yet
+        # uv run pytest --cov=agent --cov-report=xml
+        echo "No tests to run yet - placeholder for future test execution"
+
+    - name: Test application runs
+      run: |
+        # Basic smoke test - ensure the application starts
+        uv run python main.py
