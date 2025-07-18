@@ -45,6 +45,8 @@ repos:
       - id: check-merge-conflict
       - id: debug-statements
       - id: check-docstring-first
+      - id: no-commit-to-branch
+        args: [--branch, main]
 
   # Local hooks using our dev dependencies
   - repo: local
