@@ -70,10 +70,10 @@ repos:
         stages: [manual]  # Only run manually with --hook-stage manual
         args: [--cov=agent, --cov-report=term-missing]
 
-      # Check that main.py runs without errors
+      # Check that CLI runs without errors
       - id: smoke-test
-        name: smoke test - main.py
-        entry: uv run python main.py
+        name: smoke test - CLI help
+        entry: uv run goldentooth-agent --help
         language: system
-        files: ^main\.py$
+        files: ^(main\.py|goldentooth_agent/.*)$
         pass_filenames: false

@@ -60,5 +60,11 @@ jobs:
 
     - name: Test application runs
       run: |
-        # Basic smoke test - ensure the application starts
-        uv run python main.py
+        # Basic smoke test - ensure the CLI works
+        uv run python main.py --help
+
+    - name: Test package installation
+      run: |
+        # Test that the package can be installed and both commands work
+        uv run goldentooth-agent --version
+        uv run gta --help
