@@ -4,13 +4,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an experimental intelligent agent for a Pi Bramble. The project is in its early stages with a minimal Python setup.
+This is an experimental intelligent agent for a Pi Bramble. The project uses a modern Python package structure with CLI interface.
 
 ## Development Commands
 
 ### Running the Application
 ```bash
-python main.py
+# Using the installed console script
+goldentooth-agent
+
+# Or using the short alias
+gta
+
+# Available commands:
+goldentooth-agent status   # Show agent status
+goldentooth-agent start    # Start the agent
+goldentooth-agent stop     # Stop the agent
+goldentooth-agent info     # Show detailed information
+goldentooth-agent --help   # Show help
+```
+
+### Development Tools
+```bash
+# Install development dependencies
+uv sync --group dev
+
+# Run linting
+ruff check .
+ruff format .
+
+# Run type checking
+mypy .
+
+# Run tests
+pytest
 ```
 
 ### Python Version
@@ -18,16 +45,21 @@ Requires Python 3.11 or higher (specified in pyproject.toml:6)
 
 ## Project Structure
 
-- `main.py` - Entry point with a basic "Hello from agent!" message
-- `pyproject.toml` - Project configuration with Python 3.11+ requirement
+- `goldentooth_agent/` - Main package directory
+  - `__init__.py` - Package initialization and version info
+  - `main.py` - Core Agent class implementation
+  - `cli.py` - Command-line interface using Typer and Rich
+- `pyproject.toml` - Project configuration with modern Python tooling
 - `README.md` - Basic project description
 - `LICENSE` - Public domain license (Unlicense)
 
 ## Architecture Notes
 
-This is a minimal Python project in its initial stages. The current architecture consists of:
-- Single entry point in main.py:1-6
-- No external dependencies currently defined
-- Simple console output for testing
+The project uses a modern Python package structure with:
+- **Core Agent Class**: `goldentooth_agent.main.Agent` - Main agent implementation with UUID-based identification
+- **CLI Interface**: `goldentooth_agent.cli` - Rich command-line interface using Typer
+- **Console Scripts**: Defined in pyproject.toml for easy installation (`goldentooth-agent` and `gta`)
+- **Modern Tooling**: Configured with ruff, black, isort, mypy, pytest for development
+- **Dependencies**: Uses typer for CLI and rich for beautiful console output
 
-The project appears to be set up for future expansion as an intelligent agent system for Raspberry Pi cluster computing.
+The project is designed for future expansion as an intelligent agent system for Raspberry Pi cluster computing.
