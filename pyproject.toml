@@ -1,10 +1,35 @@
 [project]
-name = "agent"
+name = "goldentooth-agent"
 version = "0.0.1"
 description = "An experimental intelligent agent for my Pi Bramble."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["typer>=0.12.0", "rich>=13.0.0"]
+authors = [{ name = "Nathan Douglas", email = "github@darkdell.net" }]
+keywords = ["raspberry-pi", "cluster", "agent", "goldentooth"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: The Unlicense (Unlicense)",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: System :: Distributed Computing",
+  "Topic :: System :: Systems Administration",
+]
+
+[project.scripts]
+goldentooth-agent = "goldentooth_agent.cli:main"
+gta = "goldentooth_agent.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/goldentooth/agent"
+Repository = "https://github.com/goldentooth/agent"
+Issues = "https://github.com/goldentooth/agent/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
@@ -130,3 +155,7 @@ show_error_codes = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "goldentooth_agent.cli"
+disallow_untyped_decorators = false
