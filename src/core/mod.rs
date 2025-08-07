@@ -3,6 +3,7 @@ pub mod characters;
 pub mod persona;
 pub mod persona_registry;
 pub mod stage_manager;
+pub mod tools;
 
 pub use crate::error::PersonaId;
 pub use agent_foundation::AgentFoundation;
