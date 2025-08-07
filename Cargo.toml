@@ -33,3 +33,10 @@ toml = "0.8"
 tokio-test = "0.4"
 assert_matches = "1.5"
 tempfile = "3.0"
+
+[lints.rust]
+warnings = "deny"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"

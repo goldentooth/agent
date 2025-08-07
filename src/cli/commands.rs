@@ -28,13 +28,13 @@ pub enum CLICommand {
     },
 }
 
-#[derive(Parser, Debug, Clone, PartialEq)]
+#[derive(Parser, Debug, Clone, Copy, PartialEq)]
 pub enum CharactersAction {
     #[command(about = "List all available characters")]
     List,
 }
 
-#[derive(Parser, Debug, Clone, PartialEq)]
+#[derive(Parser, Debug, Clone, Copy, PartialEq)]
 pub enum PulseAction {
     #[command(about = "Trigger manual pulse check")]
     Check,

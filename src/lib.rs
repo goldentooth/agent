@@ -1,6 +1,6 @@
-pub mod core;
 pub mod cli;
-pub mod config; 
+pub mod config;
+pub mod core;
 pub mod error;
 
 pub use core::*;

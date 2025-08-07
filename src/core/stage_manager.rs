@@ -8,66 +8,144 @@ pub struct StageManager {
 }
 
 impl StageManager {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             personas: Arc::new(RwLock::new(HashMap::new())),
         }
     }
-    
+
     // SYNC - Simple in-memory queries
-    pub fn persona_count(&self) -> usize {
-        self.personas.read().unwrap().len()
+    /// Get the number of personas currently managed
+    ///
+    /// # Errors
+    ///
+    /// Returns `AgentError::LockPoisonError` if the lock is poisoned
+    pub fn persona_count(&self) -> Result<usize, AgentError> {
+        let personas = self.personas.read().map_err(|e| {
+            AgentError::LockPoisonError(format!("StageManager read lock poisoned: {e}"))
+        })?;
+        Ok(personas.len())
     }
-    
+
     // ASYNC - Calls persona.start() which may do I/O or setup work
+    /// Spawn a new persona and start it
+    ///
+    /// # Errors
+    ///
+    /// Returns `AgentError::PersonaAlreadyExists` if a persona with the same ID exists
+    /// Returns `AgentError::LockPoisonError` if the lock is poisoned
+    /// Returns any error from the persona's start method
+    ///
+    /// # Panics
+    ///
+    /// Panics if the persona Option is None when expected to be Some (internal logic error)
     pub async fn spawn_persona(&self, mut persona: Box<dyn Persona>) -> Result<(), AgentError> {
         let persona_id = persona.id();
-        let mut personas = self.personas.write().unwrap();
-        
-        if personas.contains_key(&persona_id) {
-            return Err(AgentError::PersonaAlreadyExists(persona_id));
-        }
-        
-        // Start the persona
+
+        // Start the persona first, before any lock operations
+        // This ensures that if starting fails, we haven't modified any shared state
         persona.start().await?;
-        
-        personas.insert(persona_id, persona);
+
+        // Try to insert atomically - return the persona if insertion failed
+        let mut persona_option = Some(persona);
+        let insertion_result = {
+            let mut personas = self.personas.write().map_err(|e| {
+                AgentError::LockPoisonError(format!("StageManager write lock poisoned: {e}"))
+            })?;
+
+            if let std::collections::hash_map::Entry::Vacant(e) = personas.entry(persona_id) {
+                // Take ownership of persona and insert it
+                let persona = persona_option.take().expect("Persona should be Some");
+                e.insert(persona);
+                Ok(())
+            } else {
+                Err(AgentError::PersonaAlreadyExists(persona_id))
+            }
+        }; // Lock is dropped here
+
+        match insertion_result {
+            Ok(()) => Ok(()),
+            Err(error) => {
+                // Persona wasn't inserted, clean it up if we still have it
+                if let Some(mut persona) = persona_option {
+                    let _ = persona.stop().await; // Best effort cleanup
+                }
+                Err(error)
+            }
+        }
+    }
+
+    /// Check if a persona with the given ID exists
+    ///
+    /// # Errors
+    ///
+    /// Returns `AgentError::LockPoisonError` if the lock is poisoned
+    pub fn has_persona(&self, persona_id: PersonaId) -> Result<bool, AgentError> {
+        let personas = self.personas.read().map_err(|e| {
+            AgentError::LockPoisonError(format!("StageManager read lock poisoned: {e}"))
+        })?;
+        Ok(personas.contains_key(&persona_id))
+    }
+
+    // ASYNC - Calls persona.stop() which may do I/O or cleanup work
+    /// Terminate and remove a persona
+    ///
+    /// # Errors
+    ///
+    /// Returns `AgentError::PersonaNotFound` if the persona doesn't exist
+    /// Returns `AgentError::LockPoisonError` if the lock is poisoned
+    /// Returns any error from the persona's stop method
+    pub async fn terminate_persona(&self, persona_id: PersonaId) -> Result<(), AgentError> {
+        // Remove persona from map first
+        let mut persona = {
+            let mut personas = self.personas.write().map_err(|e| {
+                AgentError::LockPoisonError(format!("StageManager write lock poisoned: {e}"))
+            })?;
+
+            personas
+                .remove(&persona_id)
+                .ok_or(AgentError::PersonaNotFound(persona_id))?
+        }; // Drop write lock before async call
+
+        // Now stop the persona without holding any locks
+        persona.stop().await?;
         Ok(())
     }
-    
-    pub fn has_persona(&self, persona_id: PersonaId) -> bool {
-        self.personas.read().unwrap().contains_key(&persona_id)
-    }
-    
-    // ASYNC - Calls persona.stop() which may do I/O or cleanup work  
-    pub async fn terminate_persona(&self, persona_id: PersonaId) -> Result<(), AgentError> {
-        let mut personas = self.personas.write().unwrap();
-        
-        match personas.remove(&persona_id) {
-            Some(mut persona) => {
-                persona.stop().await?;
-                Ok(())
-            },
-            None => Err(AgentError::PersonaNotFound(persona_id)),
-        }
-    }
-    
-    pub fn get_persona(&self, persona_id: PersonaId) -> Option<PersonaRef> {
-        let personas = self.personas.read().unwrap();
-        personas.get(&persona_id).map(|persona| PersonaRef {
+
+    /// Get a persona reference by ID
+    ///
+    /// # Errors
+    ///
+    /// Returns `AgentError::LockPoisonError` if the lock is poisoned
+    pub fn get_persona(&self, persona_id: PersonaId) -> Result<Option<PersonaRef>, AgentError> {
+        let personas = self.personas.read().map_err(|e| {
+            AgentError::LockPoisonError(format!("StageManager read lock poisoned: {e}"))
+        })?;
+        Ok(personas.get(&persona_id).map(|persona| PersonaRef {
             persona_id,
             name: persona.name().to_string(),
             is_running: persona.is_running(),
-        })
+        }))
     }
-    
-    pub fn list_personas(&self) -> Vec<PersonaRef> {
-        let personas = self.personas.read().unwrap();
-        personas.iter().map(|(&id, persona)| PersonaRef {
-            persona_id: id,
-            name: persona.name().to_string(),
-            is_running: persona.is_running(),
-        }).collect()
+
+    /// List all managed personas
+    ///
+    /// # Errors
+    ///
+    /// Returns `AgentError::LockPoisonError` if the lock is poisoned
+    pub fn list_personas(&self) -> Result<Vec<PersonaRef>, AgentError> {
+        let personas = self.personas.read().map_err(|e| {
+            AgentError::LockPoisonError(format!("StageManager read lock poisoned: {e}"))
+        })?;
+        Ok(personas
+            .iter()
+            .map(|(&id, persona)| PersonaRef {
+                persona_id: id,
+                name: persona.name().to_string(),
+                is_running: persona.is_running(),
+            })
+            .collect())
     }
 }
 
@@ -86,10 +164,12 @@ pub struct PersonaRef {
 }
 
 impl PersonaRef {
+    #[must_use]
     pub fn name(&self) -> &str {
         &self.name
     }
-    
+
+    #[must_use]
     pub fn is_running(&self) -> bool {
         self.is_running
     }
