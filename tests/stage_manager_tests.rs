@@ -1,4 +1,7 @@
 use async_trait::async_trait;
+use goldentooth_agent::core::persona::{
+    EvolutionCatalyst, EvolutionResult, InteractionContext, PersonalityProfile, SystemStatus,
+};
 use goldentooth_agent::core::stage_manager::PersonaRef;
 use goldentooth_agent::core::{Persona, StageManager};
 use goldentooth_agent::error::{AgentError, PersonaId};
@@ -8,6 +11,7 @@ struct MockPersona {
     id: PersonaId,
     name: String,
     is_running: bool,
+    personality: PersonalityProfile,
 }
 
 impl MockPersona {
@@ -16,6 +20,7 @@ impl MockPersona {
             id,
             name: name.into(),
             is_running: false,
+            personality: PersonalityProfile::new(),
         }
     }
 }
@@ -30,6 +35,14 @@ impl Persona for MockPersona {
         &self.name
     }
 
+    fn archetype(&self) -> &'static str {
+        "Mock Persona"
+    }
+
+    fn service_domain(&self) -> Option<&str> {
+        Some("Testing")
+    }
+
     async fn start(&mut self) -> Result<(), AgentError> {
         self.is_running = true;
         Ok(())
@@ -42,6 +55,33 @@ impl Persona for MockPersona {
 
     fn is_running(&self) -> bool {
         self.is_running
+    }
+
+    fn personality(&self) -> &PersonalityProfile {
+        &self.personality
+    }
+
+    fn personality_mut(&mut self) -> &mut PersonalityProfile {
+        &mut self.personality
+    }
+
+    async fn respond(
+        &self,
+        _input: &str,
+        _context: &InteractionContext,
+    ) -> Result<String, AgentError> {
+        Ok("Mock response".to_string())
+    }
+
+    async fn status_report(&self, _system_status: &SystemStatus) -> Result<String, AgentError> {
+        Ok("Mock status report".to_string())
+    }
+
+    async fn evolve(
+        &mut self,
+        _catalyst: EvolutionCatalyst,
+    ) -> Result<EvolutionResult, AgentError> {
+        Ok(EvolutionResult::NoChange)
     }
 }
 
