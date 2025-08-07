@@ -1,0 +1,33 @@
+[package]
+name = "goldentooth-agent"
+version = "0.1.0"
+edition = "2024"
+authors = ["Nathan Douglas <github@darkdell.net>"]
+description = "Intelligent agent for Goldentooth cluster management"
+license = "Unlicense"
+
+[dependencies]
+tokio = { version = "1.46.1", features = [
+  "macros",
+  "rt-multi-thread",
+  "io-std",
+  "net",
+  "process",
+  "time",
+  "fs",
+] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = [
+  "json",
+  "rustls-tls",
+], default-features = false }
+thiserror = "2.0"
+async-trait = "0.1"
+log = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4.0", features = ["derive"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+assert_matches = "1.5"

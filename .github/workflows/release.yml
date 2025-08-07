@@ -1,0 +1,128 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build Release (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-22.04
+            name: goldentooth-agent-x86_64-linux
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-22.04
+            name: goldentooth-agent-aarch64-linux
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: 1.86.0
+        targets: ${{ matrix.target }}
+        components: clippy
+
+    - name: Install cross-compilation dependencies (Linux)
+      if: contains(matrix.os, 'ubuntu') && matrix.target == 'aarch64-unknown-linux-gnu'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-aarch64-linux-gnu
+
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache cargo index
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Cache cargo build
+      uses: actions/cache@v4
+      with:
+        path: target
+        key: ${{ runner.os }}-${{ matrix.target }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Run tests
+      run: cargo test --verbose
+
+    - name: Run clippy
+      run: cargo clippy --target ${{ matrix.target }} -- -D warnings
+
+    - name: Build release binary
+      run: |
+        if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+          export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+        fi
+        cargo build --release --target ${{ matrix.target }}
+
+    - name: Prepare artifacts
+      run: |
+        mkdir -p artifacts
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          cp target/${{ matrix.target }}/release/goldentooth-agent.exe artifacts/${{ matrix.name }}.exe
+        else
+          cp target/${{ matrix.target }}/release/goldentooth-agent artifacts/${{ matrix.name }}
+        fi
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.name }}
+        path: artifacts/
+        retention-days: 30
+
+  create-release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: release-artifacts
+
+    - name: Get version from git tag
+      id: version
+      run: |
+        # Get the latest tag
+        TAG_NAME=$(git describe --tags --abbrev=0)
+        VERSION=${TAG_NAME#v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+
+    - name: Delete existing release if it exists
+      run: |
+        gh release view ${{ steps.version.outputs.tag }} >/dev/null 2>&1 && gh release delete ${{ steps.version.outputs.tag }} --yes || true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create release
+      run: |
+        gh release create ${{ steps.version.outputs.tag }} \
+          --title "Release ${{ steps.version.outputs.version }}" \
+          --notes "Automated release of goldentooth-agent ${{ steps.version.outputs.version }}
+
+        - Intelligent agent for Goldentooth cluster management
+        - Architecture-specific Linux binaries (x86_64 and aarch64)
+        - Automated CI/CD with tag-based releases" \
+          --latest \
+          release-artifacts/*/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
