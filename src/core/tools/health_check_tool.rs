@@ -633,7 +633,7 @@ mod tests {
     #[test]
     fn test_parse_node_metrics() {
         let _tool = create_test_tool();
-        let metrics_text = r#"
+        let metrics_text = r"
 # HELP node_boot_time_seconds Node boot time, in unixtime.
 node_boot_time_seconds 1704067200
 # HELP node_load1 1m load average.
@@ -642,7 +642,7 @@ node_load5 0.20
 node_load15 0.18
 node_memory_MemTotal_bytes 8589934592
 node_memory_MemAvailable_bytes 6442450944
-"#;
+";
 
         let result = HealthCheckTool::parse_node_metrics(metrics_text);
         assert!(result.contains("\"load_1m\": \"0.15\""));
@@ -656,7 +656,7 @@ node_memory_MemAvailable_bytes 6442450944
         assert_eq!(format_uptime(0), "0:00");
         assert_eq!(format_uptime(3661), "1:01");
         assert_eq!(format_uptime(86400), "1 days, 0:00");
-        assert_eq!(format_uptime(443700), "5 days, 3:15");
+        assert_eq!(format_uptime(443_700), "5 days, 3:15");
     }
 
     #[test]

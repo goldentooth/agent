@@ -561,7 +561,7 @@ mod tests {
 
         match result.unwrap_err() {
             ToolError::InvalidCommand(msg) => {
-                assert!(msg.contains("Service parameter is required"))
+                assert!(msg.contains("Service parameter is required"));
             }
             _ => panic!("Expected InvalidCommand error"),
         }
