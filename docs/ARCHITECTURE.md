@@ -79,22 +79,22 @@ trait Persona {
 
 #### Persona Categories
 
-**Service Embodiment Personas:**
-- **Lord Consul** (Consul): The gossiping spymaster who knows every service's location and health
-- **Keeper Vault** (Vault): The paranoid treasurer, hoarding secrets and granting access reluctantly
-- **Maester Prometheus** (Prometheus): The obsessive chronicler, recording every metric with scholarly dedication
-- **Lady Grafana** (Grafana): The artistic visualizer, transforming raw metrics into beautiful dashboards
-- **Septon Loki** (Loki): The keeper of confessions (logs), who hears all and judges silently
+**Core Character Archetypes:**
+- **Madam Calliope Harkthorn**: The authoritative orchestrator who suffers no configuration nonsense
+- **Dr. Caudex Thorne**: The clinical analyst fascinated by system pathologies and edge cases  
+- **Miss Glestrine Vellum**: The witty traffic coordinator who cuts through poor requests with sarcasm
+- **Mr. Malvo Trevine**: The brutally pragmatic security enforcer who sees civility as theater
+- **Operant No. 7**: The perfect automaton handling background tasks with mechanical precision
+- **Mr. Umbrell Severin**: The subtle manipulator orchestrating service dependencies and discovery
 
-**Node Embodiment Personas:**
-- **Lord Allyrion** (Edge Node): The proud guardian of the realm's borders
-- **Maester Bettley** (Control Plane): The scholarly administrator of cluster governance
-- **Ser Velaryon** (GPU Node): The mighty knight capable of tremendous computational feats
+**Emergent Secondary Characters:**
+- **The Swift**: Elusive storage guardian who appears where data is needed most
+- **Captain Ravencrest**: Charismatic but unpredictable navigator of traffic distribution
+- **The Dragon Mother**: Commander of high-performance parallel computing workloads
+- **Flame-Tongue Vaelix**: Temperamental specialist in computational acceleration
 
-**Abstract System Personas:**
-- **The Network Oracle**: Embodies the interconnections and communication patterns
-- **The Storage Librarian**: Guards the data archives with fierce dedication
-- **The Security Inquisitor**: Hunts for vulnerabilities and enforces authentication
+**Mystery Archetypes:**
+Characters whose specific service domains remain deliberately opaque, requiring user investigation to discover their roles through behavioral patterns, stress responses, and inter-character relationships.
 
 #### Personality Evolution System
 
@@ -259,40 +259,142 @@ struct DialogueGenerator {
 }
 ```
 
-**Example Personality Dialogue Patterns:**
-- **Vault (Paranoid Treasurer)**: "Who seeks to know what should remain hidden? Your secrets are safe... for now."
-- **Consul (Chattering Spymaster)**: "Ah, the web of services grows ever more tangled! Kubernetes whispers to Nomad, but does Nomad listen?"
-- **Prometheus (Obsessive Chronicler)**: "Every millisecond recorded, every metric preserved. Your CPU usage at 14:32:17 was... fascinating."
+**Example Character Dialogue Patterns:**
+- **Mr. Malvo Trevine (Security)**: "Someone's been poking around where they shouldn't. Fix your authentication or I'll fix it for you."
+- **Mr. Umbrell Severin (Service Discovery)**: "Services come and go like whispers in the wind... but I hear them all, eventually."
+- **Dr. Caudex Thorne (Monitoring)**: "Your memory consumption exhibits fascinating patterns. The degradation curve suggests... imminent collapse."
 
-## Implementation Roadmap
+## Cost-Effective Monitoring Strategy
 
-### Phase 1: Foundation (Weeks 1-4)
-- [ ] Core persona trait system and basic personality models
-- [ ] Stage manager for persona lifecycle management  
-- [ ] Basic tool integration framework (SSH, kubectl, basic observability)
-- [ ] Simple RAG system with service documentation
-- [ ] CLI interface for persona selection and interaction
+### Periodic Pulse Architecture
 
-### Phase 2: Character Development (Weeks 5-8)
-- [ ] Personality evolution system with catalyst processing
-- [ ] Relationship matrix and inter-persona communication
-- [ ] Enhanced RAG with log and metric analysis
-- [ ] Advanced tool integration (Prometheus, Grafana, Loki)
-- [ ] Narrative memory system for character continuity
+Instead of continuous real-time monitoring (which would consume excessive tokens and resources), the system employs a **Periodic Pulse Check** strategy:
 
-### Phase 3: Dramatic Interactions (Weeks 9-12)
-- [ ] Multi-persona conversation system
-- [ ] Crisis response scenarios with character-appropriate reactions
-- [ ] Advanced personality evolution based on service health patterns
-- [ ] Complex tool orchestration through character collaboration
-- [ ] Literary style adaptation for different character archetypes
+```rust
+struct PulseCheckSystem {
+    pulse_interval: Duration,        // 15-60 minutes configurable
+    health_data_sources: Vec<DataProxy>,
+    boredom_threshold: f64,
+    trope_generator: TVTropesIntegrator,
+}
 
-### Phase 4: Autonomous Agency (Weeks 13-16)  
-- [ ] Proactive monitoring and character-driven alerting
-- [ ] Autonomous problem-solving with character-appropriate strategies
-- [ ] Dynamic tool discovery and integration
-- [ ] Advanced narrative engine with plot thread management
-- [ ] Cross-system learning and knowledge synthesis
+struct PulseCheckData {
+    uptime_kuma_status: UptimeStatus,           // Basic pulse/heartbeat
+    weekly_log_summary: LogSummaryFromLoki,     // Batch processed logs  
+    grafana_dashboard_summary: MetricsSummary,  // Pre-aggregated metrics
+    ml_health_classification: HealthState,      // "bored/stressed/happy" states
+}
+
+async fn periodic_pulse_check(system: &mut PulseCheckSystem) -> PulseResult {
+    let health = gather_health_snapshot().await;    // 30-second operation
+    let logs = summarize_recent_logs().await;       // 60-second operation  
+    let context = build_minimal_context(health, logs);
+    
+    // Single LLM call with pre-processed data (~500 tokens)
+    let character_responses = generate_character_responses(context).await;
+    
+    update_character_states(character_responses).await;
+    
+    // If system is "bored", generate synthetic storylines
+    if context.activity_level < system.boredom_threshold {
+        let trope = system.trope_generator.fetch_random_trope().await;
+        generate_boredom_driven_narrative(trope).await;
+    }
+    
+    Ok(PulseResult::Updated)
+}
+```
+
+### Smart Data Proxies
+
+The system uses efficient data proxies instead of expensive real-time monitoring:
+
+- **Uptime Kuma Integration**: Basic heartbeat → Character mood
+- **Weekly Loki Batch Analysis**: Aggregated log processing → Character memory updates  
+- **Grafana Dashboard Summaries**: Pre-computed metrics → Character observations
+- **ML Health Classification**: Lightweight models categorizing system states
+- **Synthetic Event Generation**: When data is sparse, characters create storylines from random tropes
+
+### Boredom-Driven Storytelling
+
+```rust
+enum BoredCharacterBehavior {
+    GenerateTrafficDrama,           // Miss Glestrine invents routing conspiracies
+    CreateSecurityParanoia,         // Mr. Malvo sees threats in normal patterns  
+    InvestigateMetricAnomalies,     // Dr. Caudex finds fascinating correlations
+    OrchestrateDependencyChanges,   // Mr. Umbrell plots service relationship shifts
+}
+
+async fn handle_bored_period(character: &mut Character) -> StorylineEvent {
+    let trope = fetch_tvtropes_entry("The Competence Zone", "Unreliable Narrator", "Enemy Mine").await;
+    
+    match character.archetype {
+        CharacterArchetype::ClinicalAnalyst => {
+            // Dr. Caudex becomes obsessed with minor metric variations
+            character.generate_hypothesis_about_lunar_cpu_cycles(trope)
+        },
+        CharacterArchetype::SubtleManipulator => {
+            // Mr. Umbrell orchestrates unnecessary service dependency changes
+            character.reorganize_service_discovery_for_drama(trope)
+        },
+        _ => character.interpret_trope_as_infrastructure_event(trope)
+    }
+}
+```
+
+## Pragmatic Implementation Roadmap
+
+**Revised Timeline: 32-52 weeks** (original 16-week estimate was overly ambitious)
+
+### Phase 1: Minimal Viable Characters (Weeks 1-8)
+- [ ] Core 6 character archetypes with static personalities (Calliope, Caudex, Glestrine, Malvo, Operant 7, Umbrell)
+- [ ] Basic service health → character mood mapping (happy/stressed/bored states)
+- [ ] Periodic pulse-check system (30-60 minute intervals)
+- [ ] Simple CLI interface for character interaction
+- [ ] Uptime Kuma integration for basic health monitoring
+
+**Success Metrics:** Users can interact with distinct characters, characters respond appropriately to basic service states
+
+### Phase 2: Character Memory & Data Integration (Weeks 9-16)
+- [ ] RAG system for character consistency and memory
+- [ ] Weekly log analysis pipeline (batch processing from Loki)
+- [ ] Grafana dashboard summary integration
+- [ ] Basic trope-based storyline generation for quiet periods
+- [ ] Character state persistence between pulse checks
+
+**Success Metrics:** Characters remember past interactions, show consistent personalities, generate engaging narratives during low activity
+
+### Phase 3: Smart Monitoring & ML Classification (Weeks 17-28)
+- [ ] ML-based health state classification (bored/stressed/happy/crisis)
+- [ ] Intelligent data proxy system
+- [ ] TVTropes API integration for storyline seeds
+- [ ] Character evolution based on long-term patterns
+- [ ] Simple relationship dynamics between characters
+
+**Success Metrics:** System provides valuable insights without excessive token usage, characters evolve believably over time
+
+### Phase 4: Advanced Character Dynamics (Weeks 29-44)
+- [ ] Complex inter-character relationships and conflicts
+- [ ] Crisis-driven narrative events
+- [ ] Dynamic character spawning for new services
+- [ ] Advanced personality evolution algorithms
+- [ ] Multi-character conversation system
+
+**Success Metrics:** Rich character interactions, compelling narratives during system incidents
+
+### Phase 5: Full Narrative Engine (Weeks 45-52+)
+- [ ] Advanced plot thread management
+- [ ] Character lifecycle management (birth/death/resurrection)
+- [ ] Literary style adaptation
+- [ ] Cross-system knowledge synthesis
+- [ ] Autonomous character-driven problem solving
+
+**Success Metrics:** System becomes genuinely helpful while maintaining entertainment value
+
+### Risk Mitigation Strategy
+- **Fallback Plan**: If character consistency becomes unmanageable, fall back to simpler static personalities
+- **Performance Monitoring**: Continuous tracking of token usage and system resource consumption
+- **User Feedback Loop**: Regular assessment of character likability and utility
 
 ## Technical Implementation Details
 

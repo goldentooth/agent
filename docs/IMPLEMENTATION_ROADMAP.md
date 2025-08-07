@@ -4,6 +4,19 @@
 
 This roadmap provides a detailed, phase-by-phase approach to implementing the Goldentooth Agent's multi-persona cluster intelligence system. Each phase builds incrementally on the previous, ensuring continuous value delivery while working toward the complete vision.
 
+## Core Design Decisions (Based on Architectural Review Feedback)
+
+### Character Opacity Strategy
+- **No Transparent Service Mapping**: Characters like "Lady Grafana" or "Ser Velaryon" are replaced with opaque personalities like "Dr. Caudex Thorne" and "Miss Glestrine Vellum"
+- **Discovery Through Investigation**: Users must determine which character represents which service through behavioral patterns, stress responses, and dialogue hints
+- **Indirect Service Hints**: Characters reveal their service domains through personality quirks and reaction patterns rather than explicit naming
+
+### Cost-Effective Monitoring Approach  
+- **Periodic Pulse Checks**: 15-60 minute intervals instead of continuous real-time monitoring
+- **Smart Data Proxies**: Use Uptime Kuma, batch-processed Loki logs, and Grafana summaries instead of expensive direct monitoring
+- **Boredom-Driven Narratives**: When system activity is low, characters generate storylines using TVTropes integration
+- **ML Health Classification**: Lightweight models categorize system states as "bored/stressed/happy/crisis"
+
 ## Development Principles
 
 ### Feedback Cycle Optimization
@@ -18,7 +31,11 @@ This roadmap provides a detailed, phase-by-phase approach to implementing the Go
 - **Evolution Regression Testing**: Verify character evolution patterns remain stable
 - **Multi-Persona Integration Testing**: Validate character interactions and relationships
 
-## Phase 1: Foundation and Core Infrastructure (Weeks 1-4)
+## Phase 1: Minimal Viable Characters (Weeks 1-8)
+
+**Revised from original 16-week timeline to pragmatic 32-52 weeks based on complexity analysis**
+
+### Focus: Static Character Personalities with Periodic Monitoring
 
 ### 1.1 Core Agent Framework
 **Week 1**

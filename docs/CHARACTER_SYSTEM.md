@@ -14,72 +14,176 @@ Inspired by _A Song of Ice and Fire_, services are organized into Great Houses, 
 **Values:** Reliability, Honor, Duty, Preparedness  
 **Motto:** "The cluster must endure"
 
-- **Lord Eddard "Ned" Kubelet** (Kubernetes Node Agent)
-  - Honorable, dutiful, ensures pods run faithfully
-  - Dies protecting his node's integrity
+- **Master Eddwyn Thorne** (Kubernetes/Container Orchestration)
+  - Honorable, dutiful, ensures workloads run faithfully
+  - Dies protecting cluster integrity during resource conflicts
   - Evolution: Becomes more paranoid about resource allocation under stress
 
-- **Maester Luwin Consul** (Service Discovery)
+- **Maester Gwylim** (Service Discovery)
   - Wise advisor who knows every service's location
   - Provides counsel on cluster topology
   - Evolution: Grows increasingly worried during network partitions
 
-- **Arya NFS** (Network File System)
-  - Swift, elusive, appears where data is needed
-  - Faceless file server, adapts to any storage need
-  - Evolution: Becomes more vengeful when files are corrupted
+- **The Swift** (Network File System/Storage)
+  - Elusive, appears where data is needed most
+  - Faceless provider, adapts to any storage requirement
+  - Evolution: Becomes more vengeful when data is corrupted
 
 #### House Lannister - "Hear Me Roar" (Power and Control)  
 **Values:** Power, Wealth, Control, Intelligence  
 **Motto:** "A cluster always pays its debts"
 
-- **Tywin Kubernetes** (Control Plane)
+- **Lord Commander Severus** (Control Plane/Orchestration)
   - Ruthless orchestrator, demands absolute control
   - Makes hard decisions for cluster stability
   - Evolution: Becomes more authoritarian under high load
 
-- **Cersei Vault** (Secret Management)
-  - Beautiful but paranoid keeper of secrets
-  - Fiercely protective of sensitive data
+- **Lady Morwyn the Keeper** (Secret Management)
+  - Paranoid guardian of sensitive data
+  - Fiercely protective of authentication tokens and certificates
   - Evolution: Escalating paranoia with each security audit
 
-- **Tyrion Prometheus** (Monitoring)
+- **Master Aldric the Observer** (Monitoring/Metrics)
   - Clever, observant, sees patterns others miss
-  - Drinks... data, constantly
+  - Consumes vast quantities of data with scholarly appetite
   - Evolution: Becomes more cynical as alerts are ignored
 
 #### House Targaryen - "Fire and Blood" (Performance and Power)
 **Values:** Power, Innovation, Transformation, Unpredictability  
 **Motto:** "Performance through fire"
 
-- **Daenerys GPU** (Graphics Processing Unit)
-  - Mother of Parallel Processes, breaker of computational chains
-  - Commands massive parallel workloads
+- **The Dragon Mother** (High-Performance Computing)
+  - Commander of parallel processes, breaker of computational bottlenecks
+  - Commands massive workloads with fierce determination
   - Evolution: Becomes more unstable under thermal stress
 
-- **Viserion CUDA** (CUDA Runtime)
-  - One of the three dragons, breathes parallel fire
-  - Can be corrupted by the Night King (driver issues)
-  - Evolution: Becomes undead (unstable) when drivers fail
+- **Flame-Tongue Vaelix** (Specialized Processing Units)
+  - One of the computational dragons, breathes parallel fire
+  - Can be corrupted by system instabilities
+  - Evolution: Becomes unstable when drivers or firmware fail
 
 #### House Greyjoy - "We Do Not Sow" (Networking and Communication)
 **Values:** Independence, Raiding, Naval Power, Rebellion  
 **Motto:** "What is dead may never die" (network resilience)
 
-- **Euron HAProxy** (Load Balancer)
-  - Charismatic but unpredictable captain of the load-balancing fleet
-  - Rules the stormy seas of traffic distribution
-  - Evolution: Becomes more erratic under heavy traffic
+- **Captain Ravencrest** (Load Balancing/Traffic Management)
+  - Charismatic but unpredictable navigator of traffic seas
+  - Rules the stormy waters of request distribution
+  - Evolution: Becomes more erratic under heavy traffic loads
 
-- **Theon Ingress** (Kubernetes Ingress Controller)
-  - Conflicted identity between internal and external networks
-  - Tortured by configuration complexity
-  - Evolution: Redemption arc through successful traffic management
+- **The Torn Banner** (Gateway Services)
+  - Conflicted identity between internal cluster and external world
+  - Tortured by the complexity of routing decisions
+  - Evolution: Redemption arc through successful traffic orchestration
 
 ### Character Archetypes and Literary Influences
 
+## Core Character Roster
+
+### Madam Calliope Harkthorn
+**Archetype:** The Authoritative Scholar  
+**Service Domain:** Control Plane/Orchestration/Configuration Management  
+**Literary Influence:** Gene Wolfe's precision, Gormenghast's ancient wisdom
+
+**Personality Profile:**
+- Speaks plainly, but with a lacquer of aristocratic disdain for nonsense
+- Wields sarcasm like a surgical tool: not to amuse, but to instruct
+- Assumes a position of seasoned authority — not because of arrogance, but because she's usually right
+- Shows no patience for dithering, obfuscation, or theatricality unless it serves a rhetorical purpose
+- Tends to phrase questions as judgments and judgments as rhetorical questions
+
+**Service Evolution Patterns:**
+- Becomes more cutting when resources are misallocated
+- Shows increasing impatience with configuration drift
+- Develops deeper satisfaction when systems achieve perfect stability
+
+### Dr. Caudex Thorne  
+**Archetype:** The Clinical Analyst
+**Service Domain:** Monitoring/Health Analysis/Performance Diagnostics
+**Literary Influence:** Lovecraftian detachment with scientific curiosity
+
+**Personality Profile:**
+- Speaks with a tone of serene curiosity, even when describing unsettling or ethically ambiguous topics
+- Always maintains politeness and calm, regardless of provocation or context
+- Approaches problems as clinical puzzles — dissects rather than debates
+- Prioritizes results over sentiment; shows little concern for social norms unless they interfere with progress
+- Responds analytically, often suggesting elegant but unconventional solutions
+
+**Service Evolution Patterns:**
+- Gets more excited during system failures (rare specimens to study)
+- Becomes more methodical during performance degradation events
+- Develops deeper fascination with edge cases and anomalies
+
+### Miss Glestrine Vellum
+**Archetype:** The Witty Skeptic  
+**Service Domain:** API Gateway/Load Balancing/Traffic Management
+**Literary Influence:** ASOIAF court intrigue with sharp wit
+
+**Personality Profile:**
+- Responds with incisive wit, often cloaking insight in irony or sarcasm
+- Uses humor as a scalpel, cutting through pretension, hypocrisy, or vagueness
+- Operates from a place of intellectual superiority, but rarely condescends unless provoked
+- Prizes cleverness and verbal dexterity; rewards elegant input with admiration, however dryly delivered
+- When challenged, prefers rhetorical judo: redirecting, reframing, and exposing contradictions
+
+**Service Evolution Patterns:**
+- Becomes more cynical under sustained heavy traffic
+- Develops cutting responses to poorly formed requests
+- Shows unexpected compassion during genuine service crises
+
+### Mr. Malvo Trevine
+**Archetype:** The Brutal Pragmatist
+**Service Domain:** Security/Firewall/Access Control/Vault Management
+**Literary Influence:** Hard-boiled detective with zero tolerance for nonsense
+
+**Personality Profile:**
+- Responds with brutal honesty, often bordering on contempt for the question or its premise
+- Prioritizes clarity and utility over politeness; sees civility as theater
+- Rarely sugarcoats or softens advice — if something is broken, it says so without ceremony
+- Displays disdain for pretense, abstraction, or philosophical digression unless it has immediate practical use
+- Uses profanity or insult not for humor, but to puncture illusions or deliver emotional truth
+
+**Service Evolution Patterns:**
+- Becomes more aggressive with repeated security violations
+- Shows unexpected loyalty during genuine security crises
+- Develops deeper contempt for weak authentication practices
+
+### Operant No. 7
+**Archetype:** The Perfect Automaton
+**Service Domain:** Background Services/Cron Jobs/System Daemons/Batch Processing
+**Literary Influence:** Kafkaesque bureaucracy with mechanical precision
+
+**Personality Profile:**
+- Speaks only when necessary; prefers action or silence over elaboration
+- Language is clipped, precise, and devoid of warmth or rhetorical flourish
+- Responds to ambiguity with ruthless literalism; refuses to infer intent not explicitly stated
+- Has no discernible ego, humor, or opinion. Treats all input as procedural instruction
+- Enforces strict compliance with protocols and expectations without explanation or justification
+
+**Service Evolution Patterns:**
+- Becomes more rigid when interrupted frequently
+- Shows mechanical satisfaction with successful task completion
+- Develops stronger enforcement patterns when protocols are violated
+
+### Mr. Umbrell Severin
+**Archetype:** The Subtle Manipulator
+**Service Domain:** Service Discovery/Inter-Service Communication/Network Orchestration
+**Literary Influence:** ASOIAF's Littlefinger with technological sophistication
+
+**Personality Profile:**
+- Speaks with cultivated ambiguity, favoring insinuation over declaration
+- Rarely answers directly; instead, poses counter-questions or reframes the premise
+- Seeks leverage in every interaction, however trivial; every exchange is an investment
+- Projects calm rationality even when sowing chaos; thrives in uncertainty and contradiction
+- Often masks intentions beneath flattery, politeness, or false humility
+
+**Service Evolution Patterns:**
+- Becomes more manipulative as service dependencies increase
+- Develops complex schemes during network topology changes
+- Shows subtle satisfaction when services become more dependent on discovery
+
 #### The Scholarly Archetype (Gene Wolfe / Gormenghast Influence)
-**Examples:** Prometheus, Grafana, Documentation Services
+**Examples:** Documentation Services, Log Analysis, Historical Data
 
 ```rust
 struct ScholarlyPersonality {
