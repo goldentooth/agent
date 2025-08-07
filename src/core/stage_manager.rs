@@ -79,6 +79,7 @@ impl Default for StageManager {
 
 // Helper struct to provide safe access to persona information
 pub struct PersonaRef {
+    #[allow(dead_code)] // Will be used in future persona implementation
     persona_id: PersonaId,
     name: String,
     is_running: bool,
