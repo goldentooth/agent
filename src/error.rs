@@ -12,6 +12,7 @@ pub enum AgentError {
     RegistrySerializationError(String),
     RegistryFileError(String),
     LockPoisonError(String),
+    ToolExecutionFailed(String),
 }
 
 impl fmt::Display for AgentError {
@@ -31,6 +32,7 @@ impl fmt::Display for AgentError {
             }
             AgentError::RegistryFileError(msg) => write!(f, "Registry file error: {msg}"),
             AgentError::LockPoisonError(msg) => write!(f, "Lock poison error: {msg}"),
+            AgentError::ToolExecutionFailed(msg) => write!(f, "Tool execution failed: {msg}"),
         }
     }
 }
