@@ -1,135 +1,218 @@
 # 🧞 Goldentooth Agent
 
-An intelligent agent for Goldentooth cluster management, built in Rust.
+**Status: Rebuilding from scratch** - Simple, practical agent for Goldentooth cluster management.
 
-## Overview
+## What This Is
 
-The Goldentooth Agent is a Rust-based intelligent automation system designed to manage and orchestrate operations across the Goldentooth Raspberry Pi cluster infrastructure. It provides autonomous decision-making capabilities and seamless integration with the broader Goldentooth ecosystem.
+A command-line agent that makes managing the Goldentooth Raspberry Pi cluster easier and more conversational. Instead of remembering complex `goldentooth` CLI commands, you can:
 
-## Features
+```bash
+# Simple cluster status
+goldentooth-agent status
 
-- **Cluster Management**: Intelligent monitoring and management of Raspberry Pi cluster nodes
-- **Async Operations**: Built on Tokio for high-performance concurrent operations
-- **Secure Communication**: HTTP client with rustls-tls for secure cluster communication
-- **Cross-Platform**: Supports both x86_64 and ARM64 architectures
-- **CLI Interface**: Command-line interface built with clap
-- **Structured Logging**: Comprehensive logging with the log crate
-- **Error Handling**: Robust error handling with thiserror
+# Ask for help in natural language
+goldentooth-agent chat "Why is allyrion using so much CPU?"
+
+# Execute commands with intelligent context
+goldentooth-agent fix "High memory usage on jast"
+```
+
+**Design Philosophy**: Working software that solves real problems > Perfect architecture that doesn't work.
 
 ## Quick Start
 
-### Prerequisites
+**Prerequisites:**
+- Rust 1.70+
+- SSH access to Goldentooth cluster nodes
+- Working `goldentooth` CLI installation
 
-- Rust 1.70.0 or later
-- For ARM64 builds: `gcc-aarch64-linux-gnu`
-
-### Installation
+**Get Running (< 2 minutes):**
 
 ```bash
-# Clone the repository
-git clone https://github.com/goldentooth/agent.git
+# Clone and build
+git clone <repository-url>
 cd agent
+cargo build
 
-# Install pre-commit hooks
-pre-commit install
+# Test cluster connectivity
+cargo run -- ping allyrion
 
-# Build the project
-cargo build --release
+# Check cluster status
+cargo run -- status
+
+# Start interactive chat
+cargo run -- chat
 ```
 
-### Running
+**Expected Output:**
+```
+$ cargo run -- ping allyrion
+✓ allyrion.goldentooth.net: reachable (15ms)
 
-```bash
-# Run in development mode
-cargo run
-
-# Run the release binary
-./target/release/goldentooth-agent
+$ cargo run -- status
+Cluster Status:
+├─ allyrion: healthy (uptime: 23d 4h)
+├─ jast: healthy (uptime: 23d 4h)
+├─ karstark: warning (high CPU: 85%)
+└─ 10 other nodes: healthy
 ```
 
 ## Development
 
-### Building
-
+**Primary Development Loop** (< 30 seconds):
 ```bash
-# Development build
-cargo build
-
-# Release build
-cargo build --release
-
-# Cross-compile for Raspberry Pi
-cargo build --release --target aarch64-unknown-linux-gnu
+cargo run -- ping allyrion    # Test basic connectivity
+cargo test integration        # Integration tests
+cargo clippy && cargo test    # Quality gates
 ```
 
-### Testing
-
+**Add New Command:**
 ```bash
-# Run all tests
-cargo test
-
-# Run with verbose output
-cargo test --verbose
-
-# Run specific test
-cargo test test_name
+# 1. Add command to src/cli/commands.rs
+# 2. Write integration test in tests/integration/
+# 3. cargo test && commit
 ```
 
-### Code Quality
-
+**Character Development (Phase 2+):**
 ```bash
-# Format code
-cargo fmt
-
-# Run linter
-cargo clippy
-
-# Run all quality checks
-cargo fmt --check && cargo clippy -- -D warnings && cargo test
+cargo run -- chat "Dr. Thorne, what's the cluster status?"
+# Should respond in character with helpful analysis
 ```
+
+## Commands
+
+### Working Commands (Phase 1)
+- `ping <node>` - Test node connectivity
+- `status` - Show cluster health overview
+- `exec <node> <command>` - Execute SSH command on node
+- `logs <node> [service]` - Show service logs
+
+### Planned Commands (Phase 2+)
+- `chat <message>` - Interactive character conversations
+- `ask <character> <question>` - Query specific personas
+- `fix <problem>` - Automated problem resolution
+- `explain <situation>` - Get detailed explanations
 
 ## Architecture
 
-The agent is built using modern Rust patterns with:
+**Current Architecture (Simple & Working):**
+```
+src/
+├── main.rs           # Working CLI interface
+├── cli/              # Command parsing and execution
+├── agent/            # Basic cluster communication
+└── error.rs          # Simple error handling
+```
 
-- **Tokio**: Async runtime for concurrent operations
-- **Reqwest**: HTTP client for cluster communication
-- **Serde**: JSON serialization/deserialization
-- **Clap**: Command-line argument parsing
-- **Thiserror**: Structured error handling
+**Future Architecture (After Phase 1 Success):**
+```
+src/
+├── persona/          # Character system
+├── knowledge/        # RAG integration
+└── automation/       # Intelligent problem solving
+```
 
-## Integration
+## Integration with Goldentooth
 
-This agent integrates with the broader Goldentooth infrastructure:
+**Uses existing infrastructure:**
+- SSH keys for node authentication
+- `goldentooth` CLI for complex operations
+- Existing monitoring endpoints (node_exporter, etc.)
+- Standard cluster networking
 
-- **Cluster Nodes**: Direct communication with Raspberry Pi nodes
-- **Service Discovery**: Integration with Consul service mesh
-- **Monitoring**: Metrics and logging integration
-- **Orchestration**: Works alongside Nomad and Kubernetes workloads
+**Extends with new capabilities:**
+- Natural language interaction
+- Character-driven responses
+- Intelligent problem diagnosis
+- Automated remediation suggestions
+
+## Testing
+
+**Integration Tests (Primary):**
+```bash
+cargo test integration              # Test against real cluster
+cargo test --test cli_tests         # End-to-end CLI testing
+```
+
+**Unit Tests (Secondary):**
+```bash
+cargo test unit                     # Component testing
+```
+
+**Manual Testing:**
+```bash
+# Test SSH connectivity
+ssh pi@allyrion uptime
+
+# Test goldentooth CLI integration
+goldentooth ping allyrion
+
+# Test agent commands
+cargo run -- status
+```
+
+## Troubleshooting
+
+**Common Issues:**
+
+1. **"Connection refused"**: Check SSH keys and cluster network
+   ```bash
+   ssh pi@allyrion uptime  # Test direct SSH
+   ```
+
+2. **"Command not found"**: Ensure `goldentooth` CLI is installed
+   ```bash
+   which goldentooth
+   goldentooth --version
+   ```
+
+3. **Build errors**: Check Rust version
+   ```bash
+   rustc --version  # Should be 1.70+
+   ```
+
+**Debug Mode:**
+```bash
+RUST_LOG=debug cargo run -- status
+```
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Install pre-commit hooks: `pre-commit install`
-4. Make your changes
-5. Ensure all tests pass: `cargo test`
-6. Ensure code quality: `cargo fmt && cargo clippy`
-7. Create a pull request
+**For Contributors:**
+1. Read `CLAUDE.md` for development philosophy
+2. Start with integration tests - test against real cluster
+3. Keep the development cycle fast (< 30 seconds)
+4. Focus on user value over architectural perfection
 
-## CI/CD
+**For Users:**
+1. Try the basic commands first
+2. Report what's helpful vs. what's confusing
+3. Suggest new commands that would solve real problems
+4. Test character interactions when available
 
-The project includes comprehensive GitHub Actions workflows:
+## Release Strategy
 
-- **CI**: Automated testing, linting, and security audits
-- **Release**: Automated releases with cross-platform binaries
-- **Code Review**: Automated Claude-powered code reviews
+**Phase 1 Release** (Week 1): Basic cluster commands working
+**Phase 2 Release** (Week 2-3): Simple character system
+**Phase 3+ Releases**: Advanced features based on user feedback
 
-## License
+**Install from Release:**
+```bash
+# When releases are available
+wget https://github.com/goldentooth/agent/releases/latest/goldentooth-agent
+chmod +x goldentooth-agent
+./goldentooth-agent --version
+```
 
-This project is released under the Unlicense - see the project files for details.
+## Project Status
 
-## Related Projects
+**Current Status**: Rebuilding from scratch with focus on working software
+**Previous Implementation**: Over-engineered, complex abstractions, long feedback cycles
+**New Approach**: Simple, practical, user-focused development
 
-Part of the Goldentooth ecosystem:
-- [goldentooth/mcp-server](https://github.com/goldentooth/mcp-server) - MCP server for cluster management
+**Success Metrics:**
+- Week 1: Basic commands work reliably
+- Week 2: Users find agent more convenient than direct CLI
+- Week 3+: Character system provides engaging, helpful interactions
+
+This agent prioritizes **solving real cluster management problems** over implementing perfect theoretical architectures.

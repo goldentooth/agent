@@ -4,92 +4,238 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the Goldentooth intelligent agent - a Rust application for managing a Raspberry Pi cluster infrastructure. The agent is designed to integrate with the broader Goldentooth ecosystem, providing intelligent automation and management capabilities for the cluster.
+This is the Goldentooth intelligent agent - a **rebuilt from scratch** Rust application for managing a Raspberry Pi cluster infrastructure. The agent provides intelligent automation and management capabilities with a focus on **working software over perfect design**.
+
+**CRITICAL DEVELOPMENT PHILOSOPHY**: This project prioritizes rapid feedback cycles, working end-to-end functionality, and user value over architectural perfection.
 
 ## Essential Commands
 
-### Development Workflow
+### Rapid Development Workflow
+
+**Primary Development Loop** (< 30 seconds):
 ```bash
-# Build and run
-cargo run                              # Run development binary
-cargo build                           # Development build
-cargo build --release                 # Production build
-
-# Testing
-cargo test                            # Run all tests
-cargo test --verbose                  # Run tests with detailed output
-cargo test test_name                  # Run specific test
-cargo test --test '*'                 # Run integration tests only
-
-# Code Quality
-cargo fmt --all                      # Format all code
-cargo fmt --all -- --check          # Check formatting without changing files
-cargo clippy                         # Run linter
-cargo clippy -- -D warnings         # Run linter with warnings as errors
-cargo clippy --all-targets --all-features -- -D warnings  # Full lint check
-
-# Documentation
-cargo doc                            # Generate documentation
-cargo doc --no-deps --document-private-items --all-features  # Full documentation
-
-# Security
-cargo audit                          # Security audit (requires cargo-audit)
-
-# Coverage (requires cargo-llvm-cov)
-cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+# The golden development cycle - keep this fast
+cargo run -- ping allyrion          # Test basic cluster connectivity
+cargo test integration              # Run integration tests against real cluster
+cargo clippy && cargo test          # Quality gates
 ```
 
-### Cross-compilation for Raspberry Pi
+**Extended Development Tasks**:
 ```bash
-# Install target
-rustup target add aarch64-unknown-linux-gnu
+# Development builds
+cargo run                           # Run development binary with real cluster
+cargo run -- --help                # Verify CLI interface works
+cargo run -- status                # Test cluster status command
+cargo run -- exec allyrion uptime  # Test SSH execution
 
-# Build for Raspberry Pi (requires gcc-aarch64-linux-gnu)
-export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
-cargo build --release --target aarch64-unknown-linux-gnu
+# Testing strategy
+cargo test unit                     # Unit tests (mocked)
+cargo test integration             # Integration tests (real cluster)
+cargo test --test cli_tests        # End-to-end CLI tests
 ```
 
-### Pre-commit Setup
+### Code Quality (Keep Fast)
 ```bash
-pre-commit install                   # Install git hooks (required for development)
-pre-commit run --all-files          # Run all hooks manually
+# Daily quality checks (< 60 seconds total)
+cargo fmt                          # Format code
+cargo clippy -- -D warnings       # Linter with warnings as errors
+cargo test                         # All tests must pass
+cargo build --release             # Verify release build
+
+# Weekly quality checks
+cargo audit                        # Security audit
+cargo doc --document-private-items # Documentation check
 ```
 
-## Architecture and Technology Stack
+## Development Principles
 
-### Core Dependencies
-- **Async Runtime**: Tokio with multi-thread runtime for concurrent operations
-- **HTTP Client**: reqwest with rustls-tls for secure cluster communication  
-- **CLI Framework**: clap with derive features for command-line interface
-- **Serialization**: serde with JSON support for data interchange
-- **Error Handling**: thiserror for structured error types
-- **Logging**: log crate for structured logging
-- **Time Handling**: chrono for timestamp management
+### 1. Working Software First
+- `main.rs` must always contain a working CLI - never "Hello, world!"
+- Every commit should maintain a working end-to-end flow
+- Integration tests run against the real Goldentooth cluster
+- Mock only when real cluster is unavailable
 
-### Code Quality Configuration
-- **Edition**: Rust 2024 edition
-- **MSRV**: Minimum supported Rust version 1.70.0
-- **Formatting**: 100 character line width, Unix line endings, 4-space indentation
-- **Linting**: Clippy with warnings as errors, wildcard import warnings enabled
-- **Testing**: Relaxed lint rules in tests (allows unwrap, expect, dbg!)
+### 2. Bottom-Up Development
+```
+Week 1: CLI + Basic SSH → Working agent commands
+Week 2: Simple character responses → Basic persona system
+Week 3: Multi-character → Character interactions
+Week N: Advanced features → Only after previous weeks prove valuable
+```
 
-### GitHub Actions Integration
-The project includes comprehensive CI/CD workflows:
-- **CI Pipeline**: Multi-job testing, security auditing, documentation checks, cross-platform builds
-- **Release Pipeline**: Automated releases for x86_64 and aarch64 Linux targets
-- **Claude Integration**: Automated code review and @claude mention responses with Rust tooling
-- **Version Management**: Automated version bumping on main branch commits
+### 3. Rapid Feedback Cycles
+- Primary development loop: `cargo run -- ping allyrion` (< 5 seconds)
+- Integration test suite: `cargo test integration` (< 30 seconds)
+- Full quality gate: `cargo clippy && cargo test` (< 60 seconds)
+- **If any step takes longer, optimize it immediately**
 
-### Pre-commit Quality Gates
-All commits are enforced with hooks for:
-- Code formatting (rustfmt with edition 2024)
-- Linting (cargo clippy with warnings as errors) 
-- Compilation verification (cargo check)
-- Test execution (cargo test)
-- File hygiene (trailing whitespace, YAML/TOML validation, security checks)
+### 4. Real Integration Early
+```bash
+# Test against real cluster from day 1
+goldentooth ping allyrion           # Use existing goldentooth CLI
+ssh pi@allyrion uptime             # Direct SSH verification
+goldentooth exec allyrion "ps aux" # Command execution verification
+```
 
-## Development Context
+## Architecture Constraints
 
-This agent is part of the larger Goldentooth infrastructure project for Raspberry Pi cluster management. The codebase should integrate seamlessly with existing Goldentooth services and follow the established patterns for cluster communication, error handling, and logging.
+### Core Dependencies (Minimal)
+- **CLI**: `clap` with derive features - simple command interface
+- **SSH**: Direct `std::process::Command` execution initially
+- **Error Handling**: `thiserror` for structured errors
+- **Async**: `tokio` only when proven necessary, not by default
+- **Serialization**: `serde` only for configuration files
 
-The project is configured for deployment to ARM64 Raspberry Pi nodes, with cross-compilation support and release automation targeting both x86_64 and aarch64 Linux architectures.
+### **FORBIDDEN** Dependencies Initially
+- Complex HTTP client abstractions
+- Heavy async trait abstractions
+- ORM or complex data persistence
+- Complex logging frameworks
+- Heavyweight testing frameworks
+
+Add dependencies only when current implementation proves insufficient.
+
+### Code Organization
+```
+src/
+├── main.rs              # Working CLI - never "Hello, world!"
+├── lib.rs               # Minimal public API
+├── cli/
+│   ├── mod.rs
+│   └── commands.rs      # Working commands that solve real problems
+├── agent/
+│   ├── mod.rs
+│   ├── cluster.rs       # Direct SSH execution, simple and fast
+│   └── simple_agent.rs  # Basic agent without personas initially
+└── error.rs             # Simple error types, no over-engineering
+```
+
+### Testing Strategy
+
+**Integration-First Testing**:
+```rust
+#[tokio::test]
+async fn test_can_ping_cluster_node() {
+    // Test against real goldentooth cluster
+    let result = ping_node("allyrion").await;
+    assert!(result.is_ok());
+}
+
+#[tokio::test]
+async fn test_cli_status_command() {
+    // Test actual CLI command
+    let output = run_cli(&["status"]).await;
+    assert!(output.contains("allyrion") && output.contains("healthy"));
+}
+```
+
+**Unit testing** comes after integration tests prove the concept works.
+
+### Character System (Phase 2+)
+
+**DO NOT** implement complex persona system until basic agent provides user value.
+
+When implementing personas:
+1. Start with one simple character (Dr. Thorne)
+2. Static personality - no evolution initially
+3. Simple response generation - no complex trait systems
+4. Focus on helpful responses to real cluster problems
+
+```rust
+// Simple persona trait - no complex abstractions
+trait Persona {
+    fn name(&self) -> &str;
+    async fn respond(&self, input: &str, cluster_status: &ClusterStatus) -> String;
+}
+
+// Not this:
+// Complex personality evolution, modifiers, relationship systems, etc.
+```
+
+## Development Workflow
+
+### Daily Development (Weeks 1-2)
+1. `cargo run -- ping allyrion` - verify basic connectivity
+2. Add one new CLI command that solves a real problem
+3. Write integration test for the new command
+4. `cargo clippy && cargo test` - quality gates
+5. Commit working software
+
+### Weekly Development (Week 3+)
+1. Review what users actually use vs. what we built
+2. Remove unused features/abstractions
+3. Add new features only based on real user requests
+4. Optimize slow development feedback loops
+
+### Crisis Development (When Things Break)
+1. **Don't add abstractions** to fix problems
+2. **Don't refactor** during crisis mode
+3. **Fix the immediate problem** with minimal code
+4. **Add tests** to prevent regression
+5. **Refactor later** when things are stable
+
+## Integration with Goldentooth Ecosystem
+
+### Existing Tools Integration
+- Use `goldentooth` CLI commands where possible
+- Integrate with existing SSH patterns
+- Respect existing node naming conventions
+- Follow established cluster communication patterns
+
+### Service Integration Priority
+1. **Week 1**: SSH connectivity to nodes (allyrion, jast, etc.)
+2. **Week 2**: Basic health checks via node_exporter
+3. **Week 3**: Status queries to services (Consul, Nomad, etc.)
+4. **Week N**: Advanced integrations only after basic value proven
+
+## Troubleshooting Development Issues
+
+### Long Build Times
+- Profile with `cargo build --timings`
+- Remove unnecessary dependencies
+- Use `cargo check` for faster feedback
+- Parallelize tests with `--test-threads`
+
+### Flaky Tests
+- Test against real cluster state, don't mock cluster
+- Add retry logic for network operations
+- Use proper async test timeouts
+- Fix root cause, don't skip tests
+
+### Complex Debugging
+- Add `RUST_LOG=debug` support early
+- Use `dbg!()` macro liberally in development
+- Write reproduction tests for bugs
+- Keep error messages actionable
+
+## Success Metrics
+
+### Week 1 Success
+- `cargo run -- ping allyrion` works
+- `cargo run -- status` shows cluster health
+- Integration tests pass against real cluster
+- Development cycle < 30 seconds
+
+### Week 2 Success
+- Users can query cluster status via agent
+- Basic problem-solving commands work
+- Agent provides more value than direct `goldentooth` CLI usage
+
+### Long-term Success
+- Users prefer agent over direct cluster tools
+- Agent helps solve problems faster than manual investigation
+- Character interactions are engaging and helpful
+- System is reliable and fast
+
+## Anti-Patterns to Avoid
+
+Based on lessons learned from previous implementation:
+
+1. **Don't build complex abstractions** before proving basic functionality
+2. **Don't implement personality evolution** before static personas provide value
+3. **Don't create complex async trait hierarchies** - use simple functions
+4. **Don't mock everything** - integrate with real cluster early
+5. **Don't write extensive documentation** before software works
+6. **Don't optimize prematurely** - optimize feedback cycles instead
+
+**Remember**: Working software that solves real problems beats perfect architecture that doesn't work.
