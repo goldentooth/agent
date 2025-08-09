@@ -1,6 +1,5 @@
 //! Tests for JSON-RPC protocol message handling
 
-#[allow(dead_code)]
 mod common;
 
 use goldentooth_agent::mcp::protocol::*;
@@ -254,9 +253,9 @@ fn test_message_serialization_roundtrip() {
 
         // Verify types match
         match (&message, &parsed) {
-            (JsonRpcMessage::Request(_), JsonRpcMessage::Request(_)) => {}
-            (JsonRpcMessage::Response(_), JsonRpcMessage::Response(_)) => {}
-            (JsonRpcMessage::Notification(_), JsonRpcMessage::Notification(_)) => {}
+            (JsonRpcMessage::Request(_), JsonRpcMessage::Request(_))
+            | (JsonRpcMessage::Response(_), JsonRpcMessage::Response(_))
+            | (JsonRpcMessage::Notification(_), JsonRpcMessage::Notification(_)) => {}
             _ => panic!("Message type mismatch after roundtrip"),
         }
     }

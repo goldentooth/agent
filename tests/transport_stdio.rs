@@ -159,7 +159,7 @@ async fn test_stdio_tools_list() {
                 .map(|tool| tool["name"].as_str().unwrap().to_string())
                 .collect();
 
-            println!("Available tools: {:?}", tool_names);
+            println!("Available tools: {tool_names:?}");
 
             // Check for expected Goldentooth tools (based on actual server response)
             let expected_tools = vec![
@@ -172,8 +172,7 @@ async fn test_stdio_tools_list() {
             for expected_tool in expected_tools {
                 assert!(
                     tool_names.contains(&expected_tool.to_string()),
-                    "Missing expected tool: {}",
-                    expected_tool
+                    "Missing expected tool: {expected_tool}"
                 );
             }
         }
@@ -328,7 +327,7 @@ async fn test_stdio_request_timeout() {
             }
         },
         Err(e) => {
-            println!("Request failed as expected: {}", e);
+            println!("Request failed as expected: {e}");
         }
     }
 

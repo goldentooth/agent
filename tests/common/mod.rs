@@ -79,14 +79,12 @@ async fn build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
             // macOS binaries aren't available in releases, build locally instead
             return build_local_mcp_server().await;
         }
-        _ => return Err(format!("Unsupported platform: {}-{}", os, arch).into()),
+        _ => return Err(format!("Unsupported platform: {os}-{arch}").into()),
     };
 
     // Download the latest release
-    let release_url = format!(
-        "https://github.com/goldentooth/mcp-server/releases/latest/download/{}",
-        binary_name
-    );
+    let release_url =
+        format!("https://github.com/goldentooth/mcp-server/releases/latest/download/{binary_name}");
 
     let client = reqwest::Client::new();
     let response = client.get(&release_url).send().await?;
@@ -135,26 +133,26 @@ async fn build_local_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>>
 
     // Clone the repository
     let clone_output = tokio::process::Command::new("git")
-        .args(&["clone", "https://github.com/goldentooth/mcp-server.git"])
+        .args(["clone", "https://github.com/goldentooth/mcp-server.git"])
         .arg(&temp_dir)
         .output()
         .await?;
 
     if !clone_output.status.success() {
         let stderr = String::from_utf8_lossy(&clone_output.stderr);
-        return Err(format!("Failed to clone MCP server repository: {}", stderr).into());
+        return Err(format!("Failed to clone MCP server repository: {stderr}").into());
     }
 
     // Build the binary
     let build_output = tokio::process::Command::new("cargo")
-        .args(&["build", "--release"])
+        .args(["build", "--release"])
         .current_dir(&temp_dir)
         .output()
         .await?;
 
     if !build_output.status.success() {
         let stderr = String::from_utf8_lossy(&build_output.stderr);
-        return Err(format!("Failed to build MCP server: {}", stderr).into());
+        return Err(format!("Failed to build MCP server: {stderr}").into());
     }
 
     // Copy the built binary to our cache
