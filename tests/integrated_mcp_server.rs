@@ -75,7 +75,7 @@ async fn get_mcp_server_binary() -> Result<PathBuf, Box<dyn std::error::Error>> 
         tokio::fs::set_permissions(&binary_path, permissions).await?;
     }
 
-    eprintln!("Downloaded MCP server binary to: {binary_path:?}");
+    eprintln!("Downloaded MCP server binary to: {}", binary_path.display());
     Ok(binary_path)
 }
 
@@ -140,7 +140,7 @@ async fn build_local_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>>
     // Clean up temp directory
     tokio::fs::remove_dir_all(&temp_dir).await?;
 
-    eprintln!("Built MCP server binary at: {binary_path:?}");
+    eprintln!("Built MCP server binary at: {}", binary_path.display());
     Ok(binary_path)
 }
 
@@ -176,6 +176,7 @@ async fn test_mcp_server_dependency_available() {
 }
 
 #[tokio::test]
+#[allow(clippy::too_many_lines)]
 async fn test_full_mcp_workflow_with_dev_dependency() {
     setup_test();
 

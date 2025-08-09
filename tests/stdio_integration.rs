@@ -6,7 +6,7 @@ use serde_json::json;
 use std::path::PathBuf;
 
 /// Build the MCP server binary for testing
-async fn build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
+fn build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
     let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let mcp_server_dir = project_root
         .parent()
@@ -14,12 +14,16 @@ async fn build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
         .join("mcp-server");
 
     if !mcp_server_dir.exists() {
-        return Err(format!("MCP server directory not found: {mcp_server_dir:?}").into());
+        return Err(format!(
+            "MCP server directory not found: {}",
+            mcp_server_dir.display()
+        )
+        .into());
     }
 
     let server_binary = mcp_server_dir.join("target/release/goldentooth-mcp");
     if !server_binary.exists() {
-        return Err(format!("MCP server binary not found: {server_binary:?}").into());
+        return Err(format!("MCP server binary not found: {}", server_binary.display()).into());
     }
 
     Ok(server_binary)
@@ -30,9 +34,7 @@ async fn test_stdio_connection_lifecycle() {
     // Initialize logging for test visibility
     let _ = goldentooth_agent::logging::init_with_level(log::LevelFilter::Debug);
 
-    let server_path = build_mcp_server()
-        .await
-        .expect("Failed to find MCP server binary");
+    let server_path = build_mcp_server().expect("Failed to find MCP server binary");
     let mut transport = StdioTransport::goldentooth_server(&server_path);
 
     // Initially not connected
@@ -51,9 +53,7 @@ async fn test_stdio_connection_lifecycle() {
 async fn test_stdio_mcp_handshake() {
     let _ = goldentooth_agent::logging::init_with_level(log::LevelFilter::Debug);
 
-    let server_path = build_mcp_server()
-        .await
-        .expect("Failed to find MCP server binary");
+    let server_path = build_mcp_server().expect("Failed to find MCP server binary");
     let mut transport = StdioTransport::goldentooth_server(&server_path);
 
     // Start the transport
@@ -133,9 +133,7 @@ async fn test_stdio_mcp_handshake() {
 async fn test_stdio_tools_discovery() {
     let _ = goldentooth_agent::logging::init_with_level(log::LevelFilter::Debug);
 
-    let server_path = build_mcp_server()
-        .await
-        .expect("Failed to find MCP server binary");
+    let server_path = build_mcp_server().expect("Failed to find MCP server binary");
     let mut transport = StdioTransport::goldentooth_server(&server_path);
 
     // Start and complete MCP handshake
