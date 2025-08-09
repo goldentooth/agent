@@ -34,6 +34,7 @@ futures = "0.3"
 tokio-test = "0.4"
 assert_matches = "1.5"
 tempfile = "3.0"
+paste = "1.0"
 
 [lints.rust]
 warnings = "deny"
