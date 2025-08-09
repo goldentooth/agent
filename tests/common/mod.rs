@@ -28,7 +28,7 @@ impl TestEnvironment {
         init_test_logging();
 
         // Build the MCP server first
-        let server_path = build_mcp_server().await?;
+        let server_path = get_or_build_mcp_server().await?;
 
         // Create both transports
         let stdio_transport = StdioTransport::goldentooth_server(&server_path);
@@ -53,8 +53,8 @@ impl TestEnvironment {
     }
 }
 
-/// Get the path to the MCP server binary from GitHub releases
-async fn build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
+/// Get the path to the MCP server binary from GitHub releases or build locally
+pub async fn get_or_build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
     let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let cache_dir = project_root.join("target").join("test-binaries");
 
@@ -86,11 +86,24 @@ async fn build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
     let release_url =
         format!("https://github.com/goldentooth/mcp-server/releases/latest/download/{binary_name}");
 
-    let client = reqwest::Client::new();
+    // Create client with explicit security settings
+    let client = reqwest::Client::builder()
+        .https_only(true)
+        .timeout(std::time::Duration::from_secs(30))
+        .build()?;
     let response = client.get(&release_url).send().await?;
 
     if !response.status().is_success() {
-        return Err(format!("Failed to download binary: HTTP {}", response.status()).into());
+        return Err(format!(
+            "Failed to download binary from {}: HTTP {} - {}",
+            release_url,
+            response.status(),
+            response
+                .status()
+                .canonical_reason()
+                .unwrap_or("Unknown error")
+        )
+        .into());
     }
 
     let binary_content = response.bytes().await?;
@@ -111,7 +124,7 @@ async fn build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
 }
 
 /// Build MCP server locally from git (fallback for platforms without pre-built binaries)
-async fn build_local_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
+pub async fn build_local_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
     let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let cache_dir = project_root.join("target").join("test-binaries");
 
