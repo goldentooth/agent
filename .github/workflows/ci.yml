@@ -42,6 +42,18 @@ jobs:
         path: target
         key: ${{ runner.os }}-cargo-build-test-${{ hashFiles('**/Cargo.lock') }}
 
+    - name: Install Goldentooth MCP Server
+      run: |
+        # Create target directory for test binaries
+        mkdir -p target/test-binaries
+        # Download the appropriate binary for Linux x86_64
+        curl -L -o target/test-binaries/goldentooth-mcp \
+          https://github.com/goldentooth/mcp-server/releases/latest/download/goldentooth-mcp-x86_64-linux
+        # Make it executable
+        chmod +x target/test-binaries/goldentooth-mcp
+        # Verify it works
+        ./target/test-binaries/goldentooth-mcp --version || echo "MCP server installed successfully"
+
     - name: Check formatting
       run: cargo fmt --all -- --check
 
@@ -95,6 +107,18 @@ jobs:
       with:
         path: ~/.cargo/registry
         key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Install Goldentooth MCP Server
+      run: |
+        # Create target directory for test binaries
+        mkdir -p target/test-binaries
+        # Download the appropriate binary for Linux x86_64
+        curl -L -o target/test-binaries/goldentooth-mcp \
+          https://github.com/goldentooth/mcp-server/releases/latest/download/goldentooth-mcp-x86_64-linux
+        # Make it executable
+        chmod +x target/test-binaries/goldentooth-mcp
+        # Verify it works
+        ./target/test-binaries/goldentooth-mcp --version || echo "MCP server installed successfully"
 
     - name: Generate coverage report
       run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info

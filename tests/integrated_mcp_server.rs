@@ -15,15 +15,8 @@ use serde_json::json;
 async fn test_mcp_server_dependency_available() {
     common::init_test_logging();
 
-    // Verify we can get the server binary (skip if not available in CI)
-    let server_path = match common::get_or_build_mcp_server().await {
-        Ok(Some(path)) => path,
-        Ok(None) => {
-            println!("Skipping test - MCP server binary not available in this environment");
-            return;
-        }
-        Err(e) => panic!("Failed to get MCP server binary: {e}"),
-    };
+    // Verify we can get the server binary
+    let server_path = common::get_mcp_server_path();
 
     assert!(
         server_path.exists(),
@@ -52,14 +45,7 @@ async fn test_mcp_server_dependency_available() {
 async fn test_full_mcp_workflow_with_dev_dependency() {
     common::init_test_logging();
 
-    let server_path = match common::get_or_build_mcp_server().await {
-        Ok(Some(path)) => path,
-        Ok(None) => {
-            println!("Skipping test - MCP server binary not available in this environment");
-            return;
-        }
-        Err(e) => panic!("Failed to get MCP server binary: {e}"),
-    };
+    let server_path = common::get_mcp_server_path();
 
     let mut transport = StdioTransport::goldentooth_server(&server_path);
 
@@ -208,14 +194,7 @@ async fn test_full_mcp_workflow_with_dev_dependency() {
 async fn test_concurrent_requests_with_dev_dependency() {
     common::init_test_logging();
 
-    let server_path = match common::get_or_build_mcp_server().await {
-        Ok(Some(path)) => path,
-        Ok(None) => {
-            println!("Skipping test - MCP server binary not available in this environment");
-            return;
-        }
-        Err(e) => panic!("Failed to get MCP server binary: {e}"),
-    };
+    let server_path = common::get_mcp_server_path();
 
     let mut transport = StdioTransport::goldentooth_server(&server_path);
     transport.start().await.expect("Failed to start transport");
@@ -298,14 +277,7 @@ async fn test_concurrent_requests_with_dev_dependency() {
 async fn test_protocol_version_validation() {
     common::init_test_logging();
 
-    let server_path = match common::get_or_build_mcp_server().await {
-        Ok(Some(path)) => path,
-        Ok(None) => {
-            println!("Skipping test - MCP server binary not available in this environment");
-            return;
-        }
-        Err(e) => panic!("Failed to get MCP server binary: {e}"),
-    };
+    let server_path = common::get_mcp_server_path();
 
     let mut transport = StdioTransport::goldentooth_server(&server_path);
     transport.start().await.expect("Failed to start transport");
@@ -360,14 +332,7 @@ async fn test_protocol_version_validation() {
 async fn test_server_capabilities_inspection() {
     common::init_test_logging();
 
-    let server_path = match common::get_or_build_mcp_server().await {
-        Ok(Some(path)) => path,
-        Ok(None) => {
-            println!("Skipping test - MCP server binary not available in this environment");
-            return;
-        }
-        Err(e) => panic!("Failed to get MCP server binary: {e}"),
-    };
+    let server_path = common::get_mcp_server_path();
 
     let mut transport = StdioTransport::goldentooth_server(&server_path);
     transport.start().await.expect("Failed to start transport");
