@@ -25,9 +25,11 @@ esac
 # Set binary name based on platform
 if [ "$OS" = "linux" ]; then
     BINARY_NAME="goldentooth-mcp-${ARCH}-linux"
+elif [ "$OS" = "darwin" ]; then
+    BINARY_NAME="goldentooth-mcp-${ARCH}-darwin"
 else
-    echo "Unsupported OS: $OS (only Linux binaries are available in releases)"
-    echo "For macOS, you'll need to build the server locally or run tests in CI"
+    echo "Unsupported OS: $OS"
+    echo "Supported platforms: Linux (x86_64, aarch64), macOS (x86_64, aarch64)"
     exit 1
 fi
 
