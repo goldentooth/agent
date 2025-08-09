@@ -24,21 +24,24 @@ pub struct TestEnvironment {
 
 impl TestEnvironment {
     /// Set up test environment with both transports
-    pub async fn setup() -> Result<Self, Box<dyn std::error::Error>> {
+    /// Returns None if MCP server binary is not available (e.g., in CI)
+    pub async fn setup() -> Result<Option<Self>, Box<dyn std::error::Error>> {
         init_test_logging();
 
         // Build the MCP server first
-        let server_path = get_or_build_mcp_server().await?;
+        let Some(server_path) = get_or_build_mcp_server().await? else {
+            return Ok(None);
+        };
 
         // Create both transports
         let stdio_transport = StdioTransport::goldentooth_server(&server_path);
         let http_transport = HttpTransport::goldentooth_server("http://localhost:8080");
 
-        Ok(Self {
+        Ok(Some(Self {
             stdio_transport,
             http_transport,
             server_path,
-        })
+        }))
     }
 
     /// Get the path to the built MCP server
@@ -54,7 +57,8 @@ impl TestEnvironment {
 }
 
 /// Get the path to the MCP server binary from GitHub releases or build locally
-pub async fn get_or_build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
+/// Returns None if running in CI environment without binary access
+pub async fn get_or_build_mcp_server() -> Result<Option<PathBuf>, Box<dyn std::error::Error>> {
     let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let cache_dir = project_root.join("target").join("test-binaries");
 
@@ -65,7 +69,7 @@ pub async fn get_or_build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Er
 
     // Check if we already have the binary cached
     if binary_path.exists() {
-        return Ok(binary_path);
+        return Ok(Some(binary_path));
     }
 
     // Detect the current platform
@@ -77,9 +81,16 @@ pub async fn get_or_build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Er
         ("linux", "aarch64") => "goldentooth-mcp-aarch64-linux",
         ("macos", _) => {
             // macOS binaries aren't available in releases, build locally instead
-            return build_local_mcp_server().await;
+            let built_binary = build_local_mcp_server().await?;
+            return Ok(Some(built_binary));
         }
-        _ => return Err(format!("Unsupported platform: {os}-{arch}").into()),
+        _ => {
+            // In unsupported environments (like CI), gracefully skip tests
+            log::warn!(
+                "Unsupported platform for MCP server download: {os}-{arch}, skipping binary-dependent tests"
+            );
+            return Ok(None);
+        }
     };
 
     // Download the latest release
@@ -94,16 +105,15 @@ pub async fn get_or_build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Er
     let response = client.get(&release_url).send().await?;
 
     if !response.status().is_success() {
-        return Err(format!(
-            "Failed to download binary from {}: HTTP {} - {}",
-            release_url,
+        log::warn!(
+            "Failed to download MCP server binary: HTTP {} - {}, skipping binary-dependent tests",
             response.status(),
             response
                 .status()
                 .canonical_reason()
                 .unwrap_or("Unknown error")
-        )
-        .into());
+        );
+        return Ok(None);
     }
 
     let binary_content = response.bytes().await?;
@@ -120,7 +130,7 @@ pub async fn get_or_build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Er
         tokio::fs::set_permissions(&binary_path, permissions).await?;
     }
 
-    Ok(binary_path)
+    Ok(Some(binary_path))
 }
 
 /// Build MCP server locally from git (fallback for platforms without pre-built binaries)
