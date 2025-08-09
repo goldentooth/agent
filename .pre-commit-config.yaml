@@ -26,7 +26,7 @@ repos:
         language: system
         types: [rust]
         pass_filenames: false
-        args: ["--", "-D", "warnings"]
+        args: ["--all-targets", "--all-features", "--", "-D", "warnings"]
 
       - id: cargo-check
         name: cargo check
@@ -34,6 +34,7 @@ repos:
         language: system
         types: [rust]
         pass_filenames: false
+        args: ["--all-targets", "--all-features"]
 
       - id: cargo-test
         name: cargo test
@@ -41,3 +42,4 @@ repos:
         language: system
         types: [rust]
         pass_filenames: false
+        args: ["--verbose", "--all-features"]
