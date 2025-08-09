@@ -14,12 +14,12 @@ async fn build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
         .join("mcp-server");
 
     if !mcp_server_dir.exists() {
-        return Err(format!("MCP server directory not found: {:?}", mcp_server_dir).into());
+        return Err(format!("MCP server directory not found: {mcp_server_dir:?}").into());
     }
 
     let server_binary = mcp_server_dir.join("target/release/goldentooth-mcp");
     if !server_binary.exists() {
-        return Err(format!("MCP server binary not found: {:?}", server_binary).into());
+        return Err(format!("MCP server binary not found: {server_binary:?}").into());
     }
 
     Ok(server_binary)
@@ -192,7 +192,7 @@ async fn test_stdio_tools_discovery() {
                 .map(|tool| tool["name"].as_str().unwrap().to_string())
                 .collect();
 
-            println!("✓ Available tools: {:?}", tool_names);
+            println!("✓ Available tools: {tool_names:?}");
 
             // Check for key Goldentooth cluster management tools that should be available
             let required_tools = vec!["cluster_ping", "cluster_status", "service_status"];
@@ -200,8 +200,7 @@ async fn test_stdio_tools_discovery() {
             for required_tool in required_tools {
                 assert!(
                     tool_names.contains(&required_tool.to_string()),
-                    "Missing required tool: {}",
-                    required_tool
+                    "Missing required tool: {required_tool}"
                 );
             }
 

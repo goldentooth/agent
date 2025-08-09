@@ -47,14 +47,12 @@ async fn get_mcp_server_binary() -> Result<PathBuf, Box<dyn std::error::Error>> 
             eprintln!("macOS detected - building from local source instead of downloading");
             return build_local_mcp_server().await;
         }
-        _ => return Err(format!("Unsupported platform: {}-{}", os, arch).into()),
+        _ => return Err(format!("Unsupported platform: {os}-{arch}").into()),
     };
 
     // Download the latest release
-    let release_url = format!(
-        "https://github.com/goldentooth/mcp-server/releases/latest/download/{}",
-        binary_name
-    );
+    let release_url =
+        format!("https://github.com/goldentooth/mcp-server/releases/latest/download/{binary_name}");
 
     let client = reqwest::Client::new();
     let response = client.get(&release_url).send().await?;
@@ -77,7 +75,7 @@ async fn get_mcp_server_binary() -> Result<PathBuf, Box<dyn std::error::Error>> 
         tokio::fs::set_permissions(&binary_path, permissions).await?;
     }
 
-    eprintln!("Downloaded MCP server binary to: {:?}", binary_path);
+    eprintln!("Downloaded MCP server binary to: {binary_path:?}");
     Ok(binary_path)
 }
 
@@ -106,26 +104,26 @@ async fn build_local_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>>
 
     // Clone the repository
     let clone_output = tokio::process::Command::new("git")
-        .args(&["clone", "https://github.com/goldentooth/mcp-server.git"])
+        .args(["clone", "https://github.com/goldentooth/mcp-server.git"])
         .arg(&temp_dir)
         .output()
         .await?;
 
     if !clone_output.status.success() {
         let stderr = String::from_utf8_lossy(&clone_output.stderr);
-        return Err(format!("Failed to clone MCP server repository: {}", stderr).into());
+        return Err(format!("Failed to clone MCP server repository: {stderr}").into());
     }
 
     // Build the binary
     let build_output = tokio::process::Command::new("cargo")
-        .args(&["build", "--release"])
+        .args(["build", "--release"])
         .current_dir(&temp_dir)
         .output()
         .await?;
 
     if !build_output.status.success() {
         let stderr = String::from_utf8_lossy(&build_output.stderr);
-        return Err(format!("Failed to build MCP server: {}", stderr).into());
+        return Err(format!("Failed to build MCP server: {stderr}").into());
     }
 
     // Copy the built binary to our cache
@@ -142,7 +140,7 @@ async fn build_local_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>>
     // Clean up temp directory
     tokio::fs::remove_dir_all(&temp_dir).await?;
 
-    eprintln!("Built MCP server binary at: {:?}", binary_path);
+    eprintln!("Built MCP server binary at: {binary_path:?}");
     Ok(binary_path)
 }
 
@@ -157,8 +155,7 @@ async fn test_mcp_server_dependency_available() {
 
     assert!(
         server_path.exists(),
-        "MCP server binary should exist at {:?}",
-        server_path
+        "MCP server binary should exist at {server_path:?}"
     );
 
     // Verify the binary is executable
@@ -175,7 +172,7 @@ async fn test_mcp_server_dependency_available() {
         );
     }
 
-    println!("✓ MCP server binary available at: {:?}", server_path);
+    println!("✓ MCP server binary available at: {server_path:?}");
 }
 
 #[tokio::test]
@@ -258,15 +255,14 @@ async fn test_full_mcp_workflow_with_dev_dependency() {
                 .map(|tool| tool["name"].as_str().unwrap().to_string())
                 .collect();
 
-            println!("✓ Available tools: {:?}", tool_names);
+            println!("✓ Available tools: {tool_names:?}");
 
             // Verify expected tools
             let expected_tools = ["cluster_ping", "cluster_status", "service_status"];
             for expected in expected_tools {
                 assert!(
                     tool_names.contains(&expected.to_string()),
-                    "Missing expected tool: {}",
-                    expected
+                    "Missing expected tool: {expected}"
                 );
             }
 
