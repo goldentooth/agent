@@ -76,7 +76,7 @@ async fn test_full_mcp_workflow_with_dev_dependency() {
 
     match init_response.result {
         ResponseResult::Success { result } => {
-            assert_eq!(result["protocolVersion"], "2025-06-18");
+            assert_eq!(result["protocolVersion"], "2024-11-05");
             assert!(result.get("capabilities").is_some());
             assert!(result.get("serverInfo").is_some());
 

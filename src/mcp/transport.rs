@@ -84,7 +84,8 @@ impl Transport for StdioTransport {
 
         cmd.stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped());
+            .stderr(std::process::Stdio::piped())
+            .env("RUST_LOG", "off"); // Disable logging output that interferes with JSON-RPC
 
         let mut child = cmd.spawn().map_err(TransportError::ProcessSpawnFailed)?;
 

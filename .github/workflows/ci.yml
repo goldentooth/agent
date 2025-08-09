@@ -51,8 +51,9 @@ jobs:
           https://github.com/goldentooth/mcp-server/releases/latest/download/goldentooth-mcp-x86_64-linux
         # Make it executable
         chmod +x target/test-binaries/goldentooth-mcp
-        # Verify it works
-        ./target/test-binaries/goldentooth-mcp --version || echo "MCP server installed successfully"
+        # Verify it works and set environment to suppress logs
+        echo "RUST_LOG=off" >> $GITHUB_ENV
+        ./target/test-binaries/goldentooth-mcp --version 2>/dev/null || echo "MCP server installed successfully"
 
     - name: Check formatting
       run: cargo fmt --all -- --check
@@ -117,8 +118,9 @@ jobs:
           https://github.com/goldentooth/mcp-server/releases/latest/download/goldentooth-mcp-x86_64-linux
         # Make it executable
         chmod +x target/test-binaries/goldentooth-mcp
-        # Verify it works
-        ./target/test-binaries/goldentooth-mcp --version || echo "MCP server installed successfully"
+        # Verify it works and set environment to suppress logs
+        echo "RUST_LOG=off" >> $GITHUB_ENV
+        ./target/test-binaries/goldentooth-mcp --version 2>/dev/null || echo "MCP server installed successfully"
 
     - name: Generate coverage report
       run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
