@@ -5,160 +5,22 @@
 //! - Testing both stdio and in-process communication
 //! - Eliminating external process dependencies
 
+mod common;
+
 use goldentooth_agent::mcp::protocol::*;
 use goldentooth_agent::mcp::transport::{StdioTransport, Transport};
 use serde_json::json;
-use std::path::PathBuf;
-
-/// Setup function to initialize test logging
-fn setup_test() {
-    static INIT: std::sync::Once = std::sync::Once::new();
-    INIT.call_once(|| {
-        let _ = goldentooth_agent::logging::init_with_level(log::LevelFilter::Debug);
-    });
-}
-
-/// Get the path to the MCP server binary from GitHub releases
-async fn get_mcp_server_binary() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let cache_dir = project_root.join("target").join("test-binaries");
-
-    // Create cache directory if it doesn't exist
-    tokio::fs::create_dir_all(&cache_dir).await?;
-
-    let binary_path = cache_dir.join("goldentooth-mcp");
-
-    // Check if we already have the binary cached
-    if binary_path.exists() {
-        return Ok(binary_path);
-    }
-
-    eprintln!("Downloading MCP server binary from GitHub releases...");
-
-    // Detect the current platform
-    let os = std::env::consts::OS;
-    let arch = std::env::consts::ARCH;
-
-    let binary_name = match (os, arch) {
-        ("linux", "x86_64") => "goldentooth-mcp-x86_64-linux",
-        ("linux", "aarch64") => "goldentooth-mcp-aarch64-linux",
-        ("macos", _) => {
-            // macOS binaries aren't available in releases, build locally instead
-            eprintln!("macOS detected - building from local source instead of downloading");
-            return build_local_mcp_server().await;
-        }
-        _ => return Err(format!("Unsupported platform: {}-{}", os, arch).into()),
-    };
-
-    // Download the latest release
-    let release_url = format!(
-        "https://github.com/goldentooth/mcp-server/releases/latest/download/{}",
-        binary_name
-    );
-
-    let client = reqwest::Client::new();
-    let response = client.get(&release_url).send().await?;
-
-    if !response.status().is_success() {
-        return Err(format!("Failed to download binary: HTTP {}", response.status()).into());
-    }
-
-    let binary_content = response.bytes().await?;
-
-    // Write the binary to disk
-    tokio::fs::write(&binary_path, &binary_content).await?;
-
-    // Make it executable on Unix systems
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        let mut permissions = tokio::fs::metadata(&binary_path).await?.permissions();
-        permissions.set_mode(0o755);
-        tokio::fs::set_permissions(&binary_path, permissions).await?;
-    }
-
-    eprintln!("Downloaded MCP server binary to: {:?}", binary_path);
-    Ok(binary_path)
-}
-
-/// Build MCP server locally from git (fallback for platforms without pre-built binaries)
-async fn build_local_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let cache_dir = project_root.join("target").join("test-binaries");
-
-    tokio::fs::create_dir_all(&cache_dir).await?;
-
-    let binary_path = cache_dir.join("goldentooth-mcp-local");
-
-    // Check if we already built it
-    if binary_path.exists() {
-        return Ok(binary_path);
-    }
-
-    let temp_dir = cache_dir.join("mcp-server-build");
-
-    // Clean up any existing temp directory
-    if temp_dir.exists() {
-        tokio::fs::remove_dir_all(&temp_dir).await?;
-    }
-
-    eprintln!("Cloning and building MCP server from source...");
-
-    // Clone the repository
-    let clone_output = tokio::process::Command::new("git")
-        .args(&["clone", "https://github.com/goldentooth/mcp-server.git"])
-        .arg(&temp_dir)
-        .output()
-        .await?;
-
-    if !clone_output.status.success() {
-        let stderr = String::from_utf8_lossy(&clone_output.stderr);
-        return Err(format!("Failed to clone MCP server repository: {}", stderr).into());
-    }
-
-    // Build the binary
-    let build_output = tokio::process::Command::new("cargo")
-        .args(&["build", "--release"])
-        .current_dir(&temp_dir)
-        .output()
-        .await?;
-
-    if !build_output.status.success() {
-        let stderr = String::from_utf8_lossy(&build_output.stderr);
-        return Err(format!("Failed to build MCP server: {}", stderr).into());
-    }
-
-    // Copy the built binary to our cache
-    let built_binary = temp_dir
-        .join("target")
-        .join("release")
-        .join("goldentooth-mcp");
-    if !built_binary.exists() {
-        return Err("Built binary not found".into());
-    }
-
-    tokio::fs::copy(&built_binary, &binary_path).await?;
-
-    // Clean up temp directory
-    tokio::fs::remove_dir_all(&temp_dir).await?;
-
-    eprintln!("Built MCP server binary at: {:?}", binary_path);
-    Ok(binary_path)
-}
 
 #[tokio::test]
 async fn test_mcp_server_dependency_available() {
-    setup_test();
+    common::init_test_logging();
 
     // Verify we can get the server binary
-    let server_path = get_mcp_server_binary()
-        .await
-        .expect("Should be able to get MCP server binary from dev dependency");
+    let server_path = common::get_mcp_server_path();
 
     assert!(
         server_path.exists(),
-        "MCP server binary should exist at {:?}",
-        server_path
+        "MCP server binary should exist at {server_path:?}"
     );
 
     // Verify the binary is executable
@@ -175,16 +37,15 @@ async fn test_mcp_server_dependency_available() {
         );
     }
 
-    println!("✓ MCP server binary available at: {:?}", server_path);
+    println!("✓ MCP server binary available at: {server_path:?}");
 }
 
 #[tokio::test]
+#[allow(clippy::too_many_lines)]
 async fn test_full_mcp_workflow_with_dev_dependency() {
-    setup_test();
+    common::init_test_logging();
 
-    let server_path = get_mcp_server_binary()
-        .await
-        .expect("Failed to get MCP server binary");
+    let server_path = common::get_mcp_server_path();
 
     let mut transport = StdioTransport::goldentooth_server(&server_path);
 
@@ -258,15 +119,14 @@ async fn test_full_mcp_workflow_with_dev_dependency() {
                 .map(|tool| tool["name"].as_str().unwrap().to_string())
                 .collect();
 
-            println!("✓ Available tools: {:?}", tool_names);
+            println!("✓ Available tools: {tool_names:?}");
 
             // Verify expected tools
             let expected_tools = ["cluster_ping", "cluster_status", "service_status"];
             for expected in expected_tools {
                 assert!(
                     tool_names.contains(&expected.to_string()),
-                    "Missing expected tool: {}",
-                    expected
+                    "Missing expected tool: {expected}"
                 );
             }
 
@@ -332,11 +192,9 @@ async fn test_full_mcp_workflow_with_dev_dependency() {
 
 #[tokio::test]
 async fn test_concurrent_requests_with_dev_dependency() {
-    setup_test();
+    common::init_test_logging();
 
-    let server_path = get_mcp_server_binary()
-        .await
-        .expect("Failed to get MCP server binary");
+    let server_path = common::get_mcp_server_path();
 
     let mut transport = StdioTransport::goldentooth_server(&server_path);
     transport.start().await.expect("Failed to start transport");
@@ -417,11 +275,9 @@ async fn test_concurrent_requests_with_dev_dependency() {
 
 #[tokio::test]
 async fn test_protocol_version_validation() {
-    setup_test();
+    common::init_test_logging();
 
-    let server_path = get_mcp_server_binary()
-        .await
-        .expect("Failed to get MCP server binary");
+    let server_path = common::get_mcp_server_path();
 
     let mut transport = StdioTransport::goldentooth_server(&server_path);
     transport.start().await.expect("Failed to start transport");
@@ -474,11 +330,9 @@ async fn test_protocol_version_validation() {
 
 #[tokio::test]
 async fn test_server_capabilities_inspection() {
-    setup_test();
+    common::init_test_logging();
 
-    let server_path = get_mcp_server_binary()
-        .await
-        .expect("Failed to get MCP server binary");
+    let server_path = common::get_mcp_server_path();
 
     let mut transport = StdioTransport::goldentooth_server(&server_path);
     transport.start().await.expect("Failed to start transport");

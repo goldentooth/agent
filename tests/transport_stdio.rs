@@ -9,9 +9,7 @@ use serde_json::json;
 
 #[tokio::test]
 async fn test_stdio_transport_connection() {
-    let env = TestEnvironment::setup()
-        .await
-        .expect("Failed to setup test environment");
+    let env = TestEnvironment::setup();
     let mut transport = env.stdio_transport;
 
     // Initially not connected
@@ -30,9 +28,7 @@ async fn test_stdio_transport_connection() {
 
 #[tokio::test]
 async fn test_stdio_mcp_initialization() {
-    let env = TestEnvironment::setup()
-        .await
-        .expect("Failed to setup test environment");
+    let env = TestEnvironment::setup();
     let mut transport = env.stdio_transport;
 
     // Start the transport
@@ -100,9 +96,7 @@ async fn test_stdio_mcp_initialization() {
 
 #[tokio::test]
 async fn test_stdio_tools_list() {
-    let env = TestEnvironment::setup()
-        .await
-        .expect("Failed to setup test environment");
+    let env = TestEnvironment::setup();
     let mut transport = env.stdio_transport;
 
     // Start and initialize
@@ -159,7 +153,7 @@ async fn test_stdio_tools_list() {
                 .map(|tool| tool["name"].as_str().unwrap().to_string())
                 .collect();
 
-            println!("Available tools: {:?}", tool_names);
+            println!("Available tools: {tool_names:?}");
 
             // Check for expected Goldentooth tools (based on actual server response)
             let expected_tools = vec![
@@ -172,8 +166,7 @@ async fn test_stdio_tools_list() {
             for expected_tool in expected_tools {
                 assert!(
                     tool_names.contains(&expected_tool.to_string()),
-                    "Missing expected tool: {}",
-                    expected_tool
+                    "Missing expected tool: {expected_tool}"
                 );
             }
         }
@@ -191,9 +184,7 @@ async fn test_stdio_tools_list() {
 
 #[tokio::test]
 async fn test_stdio_concurrent_requests() {
-    let env = TestEnvironment::setup()
-        .await
-        .expect("Failed to setup test environment");
+    let env = TestEnvironment::setup();
     let mut transport = env.stdio_transport;
 
     transport.start().await.expect("Failed to start transport");
@@ -266,9 +257,7 @@ async fn test_stdio_concurrent_requests() {
 
 #[tokio::test]
 async fn test_stdio_error_handling() {
-    let env = TestEnvironment::setup()
-        .await
-        .expect("Failed to setup test environment");
+    let env = TestEnvironment::setup();
     let mut transport = env.stdio_transport;
 
     transport.start().await.expect("Failed to start transport");
@@ -303,9 +292,7 @@ async fn test_stdio_error_handling() {
 
 #[tokio::test]
 async fn test_stdio_request_timeout() {
-    let env = TestEnvironment::setup()
-        .await
-        .expect("Failed to setup test environment");
+    let env = TestEnvironment::setup();
     let mut transport = env.stdio_transport;
 
     transport.start().await.expect("Failed to start transport");
@@ -328,7 +315,7 @@ async fn test_stdio_request_timeout() {
             }
         },
         Err(e) => {
-            println!("Request failed as expected: {}", e);
+            println!("Request failed as expected: {e}");
         }
     }
 

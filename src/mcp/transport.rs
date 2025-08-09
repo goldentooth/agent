@@ -84,7 +84,13 @@ impl Transport for StdioTransport {
 
         cmd.stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped());
+            .stderr(std::process::Stdio::null()) // Discard all stderr output to prevent logging interference
+            .env("RUST_LOG", "off") // Disable Rust logging
+            .env("LOG_LEVEL", "OFF") // Disable other logging
+            .env("GOLDENTOOTH_LOG_LEVEL", "OFF") // Disable Goldentooth-specific logging
+            .env("MCP_LOG_LEVEL", "OFF") // Disable MCP-specific logging
+            .env("SILENT", "1") // Request silent mode
+            .env("QUIET", "1"); // Request quiet mode
 
         let mut child = cmd.spawn().map_err(TransportError::ProcessSpawnFailed)?;
 
@@ -113,6 +119,12 @@ impl Transport for StdioTransport {
             while let Ok(Some(line)) = lines.next_line().await {
                 debug!("Received message: {line}");
 
+                // Skip lines that don't look like JSON-RPC (filter out log messages)
+                if !line.trim().starts_with('{') {
+                    debug!("Skipping non-JSON line: {line}");
+                    continue;
+                }
+
                 match serde_json::from_str::<JsonRpcMessage>(&line) {
                     Ok(JsonRpcMessage::Response(response)) => {
                         // Handle response by notifying waiting request
@@ -134,7 +146,9 @@ impl Transport for StdioTransport {
                         // TODO: Handle server requests (if needed)
                     }
                     Err(e) => {
-                        error!("Failed to parse JSON-RPC message: {e} - {line}");
+                        debug!(
+                            "Failed to parse JSON-RPC message (likely a log line): {e} - {line}"
+                        );
                     }
                 }
             }

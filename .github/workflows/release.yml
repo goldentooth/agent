@@ -22,6 +22,12 @@ jobs:
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-22.04
             name: goldentooth-agent-aarch64-linux
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: goldentooth-agent-x86_64-darwin
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            name: goldentooth-agent-aarch64-darwin
     steps:
     - uses: actions/checkout@v4
 
@@ -120,7 +126,7 @@ jobs:
           --notes "Automated release of goldentooth-agent ${{ steps.version.outputs.version }}
 
         - Intelligent agent for Goldentooth cluster management
-        - Architecture-specific Linux binaries (x86_64 and aarch64)
+        - Cross-platform binaries (Linux x86_64/aarch64, macOS x86_64/Apple Silicon)
         - Automated CI/CD with tag-based releases" \
           --latest \
           release-artifacts/*/*

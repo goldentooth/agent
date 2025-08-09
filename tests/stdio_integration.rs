@@ -5,24 +5,13 @@ use goldentooth_agent::mcp::transport::{StdioTransport, Transport};
 use serde_json::json;
 use std::path::PathBuf;
 
-/// Build the MCP server binary for testing
-async fn build_mcp_server() -> Result<PathBuf, Box<dyn std::error::Error>> {
+/// Get the path to the MCP server binary
+fn get_mcp_server_path() -> PathBuf {
     let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let mcp_server_dir = project_root
-        .parent()
-        .ok_or("Cannot find project parent directory")?
-        .join("mcp-server");
-
-    if !mcp_server_dir.exists() {
-        return Err(format!("MCP server directory not found: {:?}", mcp_server_dir).into());
-    }
-
-    let server_binary = mcp_server_dir.join("target/release/goldentooth-mcp");
-    if !server_binary.exists() {
-        return Err(format!("MCP server binary not found: {:?}", server_binary).into());
-    }
-
-    Ok(server_binary)
+    project_root
+        .join("target")
+        .join("test-binaries")
+        .join("goldentooth-mcp")
 }
 
 #[tokio::test]
@@ -30,9 +19,7 @@ async fn test_stdio_connection_lifecycle() {
     // Initialize logging for test visibility
     let _ = goldentooth_agent::logging::init_with_level(log::LevelFilter::Debug);
 
-    let server_path = build_mcp_server()
-        .await
-        .expect("Failed to find MCP server binary");
+    let server_path = get_mcp_server_path();
     let mut transport = StdioTransport::goldentooth_server(&server_path);
 
     // Initially not connected
@@ -51,9 +38,7 @@ async fn test_stdio_connection_lifecycle() {
 async fn test_stdio_mcp_handshake() {
     let _ = goldentooth_agent::logging::init_with_level(log::LevelFilter::Debug);
 
-    let server_path = build_mcp_server()
-        .await
-        .expect("Failed to find MCP server binary");
+    let server_path = get_mcp_server_path();
     let mut transport = StdioTransport::goldentooth_server(&server_path);
 
     // Start the transport
@@ -133,9 +118,7 @@ async fn test_stdio_mcp_handshake() {
 async fn test_stdio_tools_discovery() {
     let _ = goldentooth_agent::logging::init_with_level(log::LevelFilter::Debug);
 
-    let server_path = build_mcp_server()
-        .await
-        .expect("Failed to find MCP server binary");
+    let server_path = get_mcp_server_path();
     let mut transport = StdioTransport::goldentooth_server(&server_path);
 
     // Start and complete MCP handshake
@@ -192,7 +175,7 @@ async fn test_stdio_tools_discovery() {
                 .map(|tool| tool["name"].as_str().unwrap().to_string())
                 .collect();
 
-            println!("✓ Available tools: {:?}", tool_names);
+            println!("✓ Available tools: {tool_names:?}");
 
             // Check for key Goldentooth cluster management tools that should be available
             let required_tools = vec!["cluster_ping", "cluster_status", "service_status"];
@@ -200,8 +183,7 @@ async fn test_stdio_tools_discovery() {
             for required_tool in required_tools {
                 assert!(
                     tool_names.contains(&required_tool.to_string()),
-                    "Missing required tool: {}",
-                    required_tool
+                    "Missing required tool: {required_tool}"
                 );
             }
 
