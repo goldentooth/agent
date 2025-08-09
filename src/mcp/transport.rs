@@ -85,7 +85,12 @@ impl Transport for StdioTransport {
         cmd.stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
-            .env("RUST_LOG", "off"); // Disable logging output that interferes with JSON-RPC
+            .env("RUST_LOG", "off") // Disable Rust logging
+            .env("LOG_LEVEL", "OFF") // Disable other logging
+            .env("GOLDENTOOTH_LOG_LEVEL", "OFF") // Disable Goldentooth-specific logging
+            .env("MCP_LOG_LEVEL", "OFF") // Disable MCP-specific logging
+            .env("SILENT", "1") // Request silent mode
+            .env("QUIET", "1"); // Request quiet mode
 
         let mut child = cmd.spawn().map_err(TransportError::ProcessSpawnFailed)?;
 

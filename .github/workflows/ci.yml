@@ -51,8 +51,13 @@ jobs:
           https://github.com/goldentooth/mcp-server/releases/latest/download/goldentooth-mcp-x86_64-linux
         # Make it executable
         chmod +x target/test-binaries/goldentooth-mcp
-        # Verify it works and set environment to suppress logs
+        # Verify it works and set environment variables to suppress all logs
         echo "RUST_LOG=off" >> $GITHUB_ENV
+        echo "LOG_LEVEL=OFF" >> $GITHUB_ENV
+        echo "GOLDENTOOTH_LOG_LEVEL=OFF" >> $GITHUB_ENV
+        echo "MCP_LOG_LEVEL=OFF" >> $GITHUB_ENV
+        echo "SILENT=1" >> $GITHUB_ENV
+        echo "QUIET=1" >> $GITHUB_ENV
         ./target/test-binaries/goldentooth-mcp --version 2>/dev/null || echo "MCP server installed successfully"
 
     - name: Check formatting
@@ -118,8 +123,13 @@ jobs:
           https://github.com/goldentooth/mcp-server/releases/latest/download/goldentooth-mcp-x86_64-linux
         # Make it executable
         chmod +x target/test-binaries/goldentooth-mcp
-        # Verify it works and set environment to suppress logs
+        # Verify it works and set environment variables to suppress all logs
         echo "RUST_LOG=off" >> $GITHUB_ENV
+        echo "LOG_LEVEL=OFF" >> $GITHUB_ENV
+        echo "GOLDENTOOTH_LOG_LEVEL=OFF" >> $GITHUB_ENV
+        echo "MCP_LOG_LEVEL=OFF" >> $GITHUB_ENV
+        echo "SILENT=1" >> $GITHUB_ENV
+        echo "QUIET=1" >> $GITHUB_ENV
         ./target/test-binaries/goldentooth-mcp --version 2>/dev/null || echo "MCP server installed successfully"
 
     - name: Generate coverage report
