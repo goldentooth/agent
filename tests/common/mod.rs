@@ -2,7 +2,11 @@
 
 #![allow(dead_code)]
 
+mod mock_server;
+
 use goldentooth_agent::mcp::transport::{HttpTransport, StdioTransport, Transport};
+#[allow(unused_imports)]
+pub use mock_server::MockMcpServer;
 use std::path::PathBuf;
 use std::sync::Once;
 
