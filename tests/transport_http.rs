@@ -31,19 +31,13 @@ async fn test_http_transport_goldentooth_server_url_construction() {
 async fn test_http_transport_connection_failure() {
     let mut transport = HttpTransport::new("http://localhost:9999/nonexistent");
 
-    // Should fail to connect to nonexistent server
+    // With Streamable HTTP, start() no longer tests connection
+    // Connection validation happens on first request
     let result = transport.start().await;
-    assert!(result.is_err());
+    assert!(result.is_ok());
 
-    match result.unwrap_err() {
-        goldentooth_agent::error::Error::Transport(TransportError::ConnectionFailed(_)) => {
-            // Expected error type
-        }
-        other => panic!("Expected ConnectionFailed error, got: {other:?}"),
-    }
-
-    // Should still not be connected
-    assert!(!transport.is_connected());
+    // Should be marked as connected after successful start
+    assert!(transport.is_connected());
 }
 
 #[tokio::test]
@@ -95,9 +89,9 @@ async fn test_http_transport_lifecycle() {
     // Initially not connected
     assert!(!transport.is_connected());
 
-    // Attempt to start (will fail due to no server, but test lifecycle)
+    // With Streamable HTTP, start() always succeeds
     let start_result = transport.start().await;
-    assert!(start_result.is_err()); // Expected to fail
+    assert!(start_result.is_ok());
 
     // Close should always succeed regardless of connection state
     let close_result = transport.close().await;

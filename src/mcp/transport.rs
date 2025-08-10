@@ -9,7 +9,6 @@ use log::{debug, error, info, warn};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex, oneshot};
-use tokio_stream::StreamExt;
 
 /// Transport trait that both stdio and HTTP transports implement
 #[async_trait]
@@ -287,33 +286,22 @@ impl Transport for StdioTransport {
     }
 }
 
-/// HTTP transport implementation using POST requests and Server-Sent Events
+/// HTTP transport implementation using POST requests with Streamable HTTP
 pub struct HttpTransport {
     endpoint_url: String,
-    sse_endpoint_url: String,
     client: reqwest::Client,
-    pending_requests: Arc<Mutex<HashMap<RequestId, oneshot::Sender<JsonRpcResponse>>>>,
-    _sse_handler: Option<tokio::task::JoinHandle<()>>,
     connected: bool,
+    auth_token: Option<String>,
 }
 
 impl HttpTransport {
     /// Create a new HTTP transport
     pub fn new(endpoint_url: impl Into<String>) -> Self {
-        let endpoint_url = endpoint_url.into();
-        let sse_endpoint_url = if endpoint_url.ends_with('/') {
-            format!("{endpoint_url}sse")
-        } else {
-            format!("{endpoint_url}/sse")
-        };
-
         Self {
-            endpoint_url,
-            sse_endpoint_url,
+            endpoint_url: endpoint_url.into(),
             client: reqwest::Client::new(),
-            pending_requests: Arc::new(Mutex::new(HashMap::new())),
-            _sse_handler: None,
             connected: false,
+            auth_token: None,
         }
     }
 
@@ -328,106 +316,38 @@ impl HttpTransport {
         Self::new(endpoint_url)
     }
 
-    /// Start the SSE connection handler
-    fn start_sse_handler(
-        sse_url: String,
-        client: reqwest::Client,
-        pending_requests: Arc<Mutex<HashMap<RequestId, oneshot::Sender<JsonRpcResponse>>>>,
-    ) -> tokio::task::JoinHandle<()> {
-        tokio::spawn(async move {
-            info!("Starting SSE connection to: {sse_url}");
+    /// Set authentication token for requests
+    pub fn set_auth_token(&mut self, token: impl Into<String>) {
+        self.auth_token = Some(token.into());
+    }
 
-            match client
-                .get(&sse_url)
-                .header("Accept", "text/event-stream")
-                .header("Cache-Control", "no-cache")
-                .timeout(std::time::Duration::from_secs(30))
-                .send()
-                .await
-            {
-                Ok(response) => {
-                    if !response.status().is_success() {
-                        error!("SSE connection failed with status: {}", response.status());
-                        return;
-                    }
+    /// Parse SSE response format: "data: {...}\n\n"
+    fn parse_sse_response(sse_body: &str) -> Result<JsonRpcResponse> {
+        for line in sse_body.lines() {
+            if let Some(json_data) = line.strip_prefix("data: ") {
+                if !json_data.is_empty() && json_data != "[DONE]" {
+                    let json_rpc_message: JsonRpcMessage =
+                        serde_json::from_str(json_data).map_err(Error::Json)?;
 
-                    info!("SSE connection established");
-                    let mut stream = response.bytes_stream();
-                    let mut buffer = Vec::new();
-
-                    while let Some(chunk_result) = stream.next().await {
-                        match chunk_result {
-                            Ok(chunk) => {
-                                buffer.extend_from_slice(&chunk);
-
-                                // Process complete lines
-                                while let Some(line_end) = buffer.iter().position(|&b| b == b'\n') {
-                                    let line_bytes = buffer.drain(..=line_end).collect::<Vec<_>>();
-                                    let line = String::from_utf8_lossy(
-                                        &line_bytes[..line_bytes.len() - 1],
-                                    );
-
-                                    // Process SSE data lines
-                                    if let Some(data) = line.strip_prefix("data: ") {
-                                        if !data.is_empty() && data != "[DONE]" {
-                                            debug!("Received SSE data: {data}");
-
-                                            match serde_json::from_str::<JsonRpcMessage>(data) {
-                                                Ok(JsonRpcMessage::Response(response)) => {
-                                                    // Handle response by notifying waiting request
-                                                    let mut pending = pending_requests.lock().await;
-                                                    if let Some(sender) =
-                                                        pending.remove(&response.id)
-                                                    {
-                                                        if sender.send(response).is_err() {
-                                                            warn!(
-                                                                "Failed to send response to waiting request"
-                                                            );
-                                                        }
-                                                    } else {
-                                                        warn!(
-                                                            "Received response for unknown request ID: {}",
-                                                            response.id
-                                                        );
-                                                    }
-                                                }
-                                                Ok(JsonRpcMessage::Notification(notification)) => {
-                                                    info!(
-                                                        "Received notification: {}",
-                                                        notification.method
-                                                    );
-                                                    // TODO: Handle notifications (server-initiated messages)
-                                                }
-                                                Ok(JsonRpcMessage::Request(_)) => {
-                                                    warn!(
-                                                        "Received request from server (not yet supported)"
-                                                    );
-                                                    // TODO: Handle server requests (if needed)
-                                                }
-                                                Err(e) => {
-                                                    debug!(
-                                                        "Failed to parse JSON-RPC message: {e} - {data}"
-                                                    );
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            Err(e) => {
-                                error!("SSE stream error: {e}");
-                                break;
-                            }
+                    match json_rpc_message {
+                        JsonRpcMessage::Response(response) => return Ok(response),
+                        JsonRpcMessage::Request(_) => {
+                            return Err(Error::Transport(TransportError::ConnectionFailed(
+                                "Received request in SSE data".to_string(),
+                            )));
+                        }
+                        JsonRpcMessage::Notification(_) => {
+                            // Log notification but continue looking for response
+                            info!("Received notification in SSE response");
                         }
                     }
-
-                    info!("SSE connection closed");
-                }
-                Err(e) => {
-                    error!("Failed to establish SSE connection: {e}");
                 }
             }
-        })
+        }
+
+        Err(Error::Transport(TransportError::ConnectionFailed(
+            "No valid JSON-RPC response found in SSE data".to_string(),
+        )))
     }
 }
 
@@ -436,34 +356,9 @@ impl Transport for HttpTransport {
     async fn start(&mut self) -> Result<()> {
         info!("Starting HTTP transport to: {}", self.endpoint_url);
 
-        // Test connection to the endpoint
-        let response = self
-            .client
-            .get(&self.endpoint_url)
-            .timeout(std::time::Duration::from_secs(10))
-            .send()
-            .await
-            .map_err(|e| {
-                Error::Transport(TransportError::ConnectionFailed(format!(
-                    "Failed to connect: {e}"
-                )))
-            })?;
-
-        if !response.status().is_success() {
-            return Err(Error::Transport(TransportError::ConnectionFailed(format!(
-                "Server returned status: {}",
-                response.status()
-            ))));
-        }
-
-        // Start SSE connection for receiving server messages
-        let sse_handler = Self::start_sse_handler(
-            self.sse_endpoint_url.clone(),
-            self.client.clone(),
-            Arc::clone(&self.pending_requests),
-        );
-
-        self._sse_handler = Some(sse_handler);
+        // For the new MCP Streamable HTTP transport, we don't need to establish
+        // a persistent connection. We simply mark the transport as ready.
+        // Connection validation will happen on first request.
         self.connected = true;
 
         info!("HTTP transport started successfully");
@@ -475,64 +370,59 @@ impl Transport for HttpTransport {
             return Err(Error::Transport(TransportError::ConnectionClosed));
         }
 
-        let (response_sender, response_receiver) = oneshot::channel();
-
-        // Register the pending request
-        {
-            let mut pending = self.pending_requests.lock().await;
-            pending.insert(request.id.clone(), response_sender);
-        }
-
-        // Send the request via POST
+        // Send the request via POST with proper MCP headers
         let message = serde_json::to_string(&JsonRpcMessage::Request(request.clone()))
             .map_err(Error::Json)?;
 
         debug!("Sending HTTP request: {}", message);
 
-        let response = self
+        let mut req_builder = self
             .client
             .post(&self.endpoint_url)
             .header("Content-Type", "application/json")
+            .header("Accept", "text/event-stream") // Request SSE response format
             .body(message)
-            .timeout(std::time::Duration::from_secs(30))
-            .send()
-            .await;
+            .timeout(std::time::Duration::from_secs(30));
 
-        match response {
-            Ok(http_response) => {
-                if !http_response.status().is_success() {
-                    // Clean up pending request
-                    let mut pending = self.pending_requests.lock().await;
-                    pending.remove(&request.id);
-                    return Err(Error::Transport(TransportError::Http(
-                        reqwest::Response::error_for_status(http_response).unwrap_err(),
-                    )));
-                }
+        // Add authentication if available
+        if let Some(ref token) = self.auth_token {
+            req_builder = req_builder.header("Authorization", token);
+        }
 
-                // For HTTP transport, the response comes via SSE, so we wait for it
-                match tokio::time::timeout(std::time::Duration::from_secs(30), response_receiver)
-                    .await
-                {
-                    Ok(Ok(response)) => Ok(response),
-                    Ok(Err(_)) => {
-                        // Clean up pending request
-                        let mut pending = self.pending_requests.lock().await;
-                        pending.remove(&request.id);
-                        Err(Error::Transport(TransportError::ConnectionClosed))
-                    }
-                    Err(_) => {
-                        // Clean up pending request
-                        let mut pending = self.pending_requests.lock().await;
-                        pending.remove(&request.id);
-                        Err(Error::Transport(TransportError::Timeout))
-                    }
+        let http_response = req_builder.send().await.map_err(TransportError::Http)?;
+
+        if !http_response.status().is_success() {
+            return Err(Error::Transport(TransportError::Http(
+                reqwest::Response::error_for_status(http_response).unwrap_err(),
+            )));
+        }
+
+        // Get the response body
+        let response_body = http_response.text().await.map_err(TransportError::Http)?;
+
+        debug!("Received HTTP response: {}", response_body);
+
+        // Parse the response - it might be SSE format or regular JSON
+        if response_body.starts_with("data: ") {
+            // Parse SSE format: "data: {...}\n\n"
+            Self::parse_sse_response(&response_body)
+        } else {
+            // Parse regular JSON response
+            let json_rpc_message: JsonRpcMessage =
+                serde_json::from_str(&response_body).map_err(Error::Json)?;
+
+            match json_rpc_message {
+                JsonRpcMessage::Response(response) => Ok(response),
+                JsonRpcMessage::Request(_) => {
+                    Err(Error::Transport(TransportError::ConnectionFailed(
+                        "Received request instead of response".to_string(),
+                    )))
                 }
-            }
-            Err(e) => {
-                // Clean up pending request
-                let mut pending = self.pending_requests.lock().await;
-                pending.remove(&request.id);
-                Err(Error::Transport(TransportError::Http(e)))
+                JsonRpcMessage::Notification(_) => {
+                    Err(Error::Transport(TransportError::ConnectionFailed(
+                        "Received notification instead of response".to_string(),
+                    )))
+                }
             }
         }
     }
@@ -573,17 +463,6 @@ impl Transport for HttpTransport {
         info!("Closing HTTP transport");
 
         self.connected = false;
-
-        // Cancel SSE handler
-        if let Some(handler) = self._sse_handler.take() {
-            handler.abort();
-        }
-
-        // Clear pending requests
-        {
-            let mut pending = self.pending_requests.lock().await;
-            pending.clear();
-        }
 
         info!("HTTP transport closed");
         Ok(())
