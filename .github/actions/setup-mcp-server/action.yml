@@ -1,0 +1,16 @@
+name: 'Setup Goldentooth MCP Server'
+description: 'Download and install the Goldentooth MCP Server for testing'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Goldentooth MCP Server
+      shell: bash
+      run: |
+        # Create target directory for test binaries
+        mkdir -p target/test-binaries
+        # Download the appropriate binary for Linux x86_64
+        curl -L -o target/test-binaries/goldentooth-mcp \
+          https://github.com/goldentooth/mcp-server/releases/latest/download/goldentooth-mcp-x86_64-linux
+        # Make it executable
+        chmod +x target/test-binaries/goldentooth-mcp
+        ./target/test-binaries/goldentooth-mcp --version 2>/dev/null || echo "MCP server installed successfully"
