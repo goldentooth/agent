@@ -18,47 +18,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Rust with cache
+      uses: ./.github/actions/setup-rust-with-cache
       with:
         toolchain: 1.88.0
         components: clippy, rustfmt
+        cache-key-suffix: -test
 
-    - name: Cache cargo registry
-      uses: actions/cache@v4
-      with:
-        path: ~/.cargo/registry
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Cache cargo index
-      uses: actions/cache@v4
-      with:
-        path: ~/.cargo/git
-        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Cache cargo build
-      uses: actions/cache@v4
-      with:
-        path: target
-        key: ${{ runner.os }}-cargo-build-test-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Install Goldentooth MCP Server
-      run: |
-        # Create target directory for test binaries
-        mkdir -p target/test-binaries
-        # Download the appropriate binary for Linux x86_64
-        curl -L -o target/test-binaries/goldentooth-mcp \
-          https://github.com/goldentooth/mcp-server/releases/latest/download/goldentooth-mcp-x86_64-linux
-        # Make it executable
-        chmod +x target/test-binaries/goldentooth-mcp
-        # Verify it works and set environment variables to suppress all logs
-        echo "RUST_LOG=off" >> $GITHUB_ENV
-        echo "LOG_LEVEL=OFF" >> $GITHUB_ENV
-        echo "GOLDENTOOTH_LOG_LEVEL=OFF" >> $GITHUB_ENV
-        echo "MCP_LOG_LEVEL=OFF" >> $GITHUB_ENV
-        echo "SILENT=1" >> $GITHUB_ENV
-        echo "QUIET=1" >> $GITHUB_ENV
-        ./target/test-binaries/goldentooth-mcp --version 2>/dev/null || echo "MCP server installed successfully"
+    - name: Setup MCP Server
+      uses: ./.github/actions/setup-mcp-server
 
     - name: Check formatting
       run: cargo fmt --all -- --check
@@ -83,8 +51,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Rust with cache
+      uses: ./.github/actions/setup-rust-with-cache
+      with:
+        cache-key-suffix: -audit
 
     - name: Install cargo-audit
       run: cargo install cargo-audit
@@ -100,37 +70,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Rust with cache
+      uses: ./.github/actions/setup-rust-with-cache
       with:
         components: llvm-tools-preview
+        cache-key-suffix: -coverage
+
+    - name: Setup MCP Server
+      uses: ./.github/actions/setup-mcp-server
 
     - name: Install cargo-llvm-cov
       run: cargo install cargo-llvm-cov
-
-    - name: Cache cargo registry
-      uses: actions/cache@v4
-      with:
-        path: ~/.cargo/registry
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Install Goldentooth MCP Server
-      run: |
-        # Create target directory for test binaries
-        mkdir -p target/test-binaries
-        # Download the appropriate binary for Linux x86_64
-        curl -L -o target/test-binaries/goldentooth-mcp \
-          https://github.com/goldentooth/mcp-server/releases/latest/download/goldentooth-mcp-x86_64-linux
-        # Make it executable
-        chmod +x target/test-binaries/goldentooth-mcp
-        # Verify it works and set environment variables to suppress all logs
-        echo "RUST_LOG=off" >> $GITHUB_ENV
-        echo "LOG_LEVEL=OFF" >> $GITHUB_ENV
-        echo "GOLDENTOOTH_LOG_LEVEL=OFF" >> $GITHUB_ENV
-        echo "MCP_LOG_LEVEL=OFF" >> $GITHUB_ENV
-        echo "SILENT=1" >> $GITHUB_ENV
-        echo "QUIET=1" >> $GITHUB_ENV
-        ./target/test-binaries/goldentooth-mcp --version 2>/dev/null || echo "MCP server installed successfully"
 
     - name: Generate coverage report
       run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
@@ -143,8 +93,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Rust with cache
+      uses: ./.github/actions/setup-rust-with-cache
+      with:
+        cache-key-suffix: -docs
 
     - name: Check documentation
       run: cargo doc --no-deps --document-private-items --all-features
@@ -166,28 +118,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Rust with cache
+      uses: ./.github/actions/setup-rust-with-cache
       with:
         targets: ${{ matrix.target }}
+        cache-key-suffix: -${{ matrix.target }}
 
     - name: Install cross-compilation dependencies (Linux aarch64)
       if: matrix.target == 'aarch64-unknown-linux-gnu'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-aarch64-linux-gnu
-
-    - name: Cache cargo registry
-      uses: actions/cache@v4
-      with:
-        path: ~/.cargo/registry
-        key: ${{ runner.os }}-${{ matrix.target }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-    - name: Cache cargo build
-      uses: actions/cache@v4
-      with:
-        path: target
-        key: ${{ runner.os }}-${{ matrix.target }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Build for target
       run: |
